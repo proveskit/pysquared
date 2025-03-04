@@ -43,9 +43,17 @@ class SDCardManager:
         mount_path: str = "/sd",
     ) -> None:
         # TODO: Check if directory exists before mounting, if not create it
+        # dir_name = mount_path.strip("/")
+
+        # if dir_name not in os.listdir("/"):
+        #     print(mount_path, " directory not found, making now...")
+        #     os.mkdir(mount_path)
+        #     print(mount_path, " directory created")
+
         sd = sdcardio.SDCard(spi_bus, chip_select, baudrate)
         vfs = storage.VfsFat(sd)
         storage.mount(vfs, mount_path)
+
         # sys.path.append(mount_path) # Only needed if we plan to load code from the SD card without using direct imports
 
     # Maybe need something new like file management class to handle file operations
