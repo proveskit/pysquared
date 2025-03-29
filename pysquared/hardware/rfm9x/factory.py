@@ -5,11 +5,11 @@ from ..exception import HardwareInitializationError
 from .modulation import RFM9xModulation
 
 try:
-    from adafruit_rfm.rfm9x import RFM9x
-    from adafruit_rfm.rfm9xfsk import RFM9xFSK
-except ImportError:
     from mocks.circuitpython.adafruit_rfm.rfm9x import RFM9x  # type: ignore
     from mocks.circuitpython.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
+except ImportError:
+    from adafruit_rfm.rfm9x import RFM9x
+    from adafruit_rfm.rfm9xfsk import RFM9xFSK
 
 # Type hinting only
 try:
