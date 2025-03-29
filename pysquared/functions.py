@@ -300,7 +300,6 @@ class functions:
     # that will adjust position towards Earth based on Gyro data
     def detumble(self, dur: int = 7) -> None:
         self.logger.debug("Detumbling")
-        self.cubesat.rgb = (255, 255, 255)
 
         try:
             import pysquared.Big_Data as Big_Data
@@ -351,4 +350,3 @@ class functions:
             do_detumble()
         except Exception as e:
             self.logger.error("Detumble error", e)
-        self.cubesat.rgb = (100, 100, 50)

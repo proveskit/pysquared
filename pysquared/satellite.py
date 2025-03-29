@@ -14,14 +14,12 @@ from collections import OrderedDict
 from os import chdir, mkdir, stat
 
 import board
-import digitalio
 import microcontroller
 import sdcardio
 from micropython import const
 from storage import VfsFat, mount, umount
 
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
-import lib.neopixel as neopixel  # RGB LED
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
 
 from .config.config import Config  # Configs
@@ -78,15 +76,7 @@ class Satellite:
         sys.path.append("/sd")
         self.hardware[hardware_key] = True
 
-    def init_neopixel(self, hardware_key: str) -> None:
-        self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
-        self.neopwr.switch_to_output(value=True)
-        self.neopixel: neopixel.NeoPixel = neopixel.NeoPixel(
-            board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
-        )
-        self.neopixel[0] = (0, 0, 255)
-        self.hardware[hardware_key] = True
-
+    # Only used for face stuff, also needs more thought.
     def init_tca_multiplexer(self, hardware_key: str) -> None:
         try:
             self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
@@ -265,26 +255,6 @@ class Satellite:
     """
 
     @property
-    def rgb(self) -> tuple[int, int, int]:
-        return self.neopixel[0]
-
-    @rgb.setter
-    def rgb(self, value: tuple[int, int, int]) -> None:
-        if not self.hardware["NEOPIX"]:
-            self.logger.warning("The NEOPIXEL device is not initialized")
-            return
-
-        # NEOPIX is initialized
-        try:
-            self.neopixel[0] = value
-        except Exception as e:
-            self.logger.error(
-                "There was an error trying to set the new RGB value",
-                e,
-                value=value,
-            )
-
-    @property
     def get_system_uptime(self) -> int:
         self.CURRENTTIME: int = const(time.time())
         return self.CURRENTTIME - self.BOOTTIME
@@ -386,12 +356,9 @@ class Satellite:
         """
         try:
             if "crit" in mode:
-                self.neopixel.brightness = 0
                 self.power_mode: str = "critical"
 
             elif "min" in mode:
-                self.neopixel.brightness = 0
-
                 self.power_mode: str = "minimum"
 
             elif "norm" in mode:
