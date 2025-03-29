@@ -45,6 +45,7 @@ build: uv mpy-cross ## Build the project, store the result in the artifacts dire
 	$(call compile_mpy)
 	$(call rsync_to_dest,.,artifacts/pysquared/)
 	@$(UV) run python -c "import os; [os.remove(os.path.join(root, file)) for root, _, files in os.walk('artifacts/pysquared') for file in files if file.endswith('.py')]"
+	@$(UV) run python -c "import os; [os.remove(os.path.join(root, file)) for root, _, files in os.walk('pysquared') for file in files if file.endswith('.mpy')]"
 	@echo "Creating artifacts/pysquared.zip"
 	@zip -r artifacts/pysquared.zip artifacts/pysquared > /dev/null
 
@@ -106,5 +107,5 @@ endif
 endif
 
 define compile_mpy
-	@$(UV) run python -c "import os, subprocess; [subprocess.run(['$(MPY_CROSS)', os.path.join(root, file)]) for root, _, files in os.walk('lib') for file in files if file.endswith('.py')]" || exit 1
+	@$(UV) run python -c "import os, subprocess; [subprocess.run(['$(MPY_CROSS)', os.path.join(root, file)]) for root, _, files in os.walk('pysquared') for file in files if file.endswith('.py')]" || exit 1
 endef
