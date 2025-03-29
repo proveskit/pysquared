@@ -4,7 +4,7 @@ from ...exception import HardwareInitializationError
 from ..magnetometer_protocol import MagnetometerProto
 
 try:
-    from mocks.circuitpython.adafruit_lis2mdl.lis2mdl import LIS2MDL  # type: ignore
+    from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL  # type: ignore
 except ImportError:
     from lib.adafruit_lis2mdl import LIS2MDL
 

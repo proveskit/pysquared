@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
-from mocks.circuitpython.adafruit_lis2mdl.lis2mdl import LIS2MDL
+from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.magnetometer.lis2mdl.factory import LIS2MDLFactory
 

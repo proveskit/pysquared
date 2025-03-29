@@ -8,8 +8,8 @@ try:
     from lib.adafruit_rfm.rfm9x import RFM9x
     from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
 except ImportError:
-    from mocks.circuitpython.adafruit_rfm.rfm9x import RFM9x  # type: ignore
-    from mocks.circuitpython.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
+    from mocks.adafruit_rfm.rfm9x import RFM9x  # type: ignore
+    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
 
 # Type hinting only
 try:

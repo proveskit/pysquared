@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
-from mocks.circuitpython.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
+from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.imu.lsm6dsox.factory import LSM6DSOXFactory
 

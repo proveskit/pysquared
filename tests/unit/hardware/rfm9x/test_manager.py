@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from mocks.circuitpython.adafruit_rfm.rfm_common import RFMSPI
+from mocks.adafruit_rfm.rfm_common import RFMSPI
 from mocks.circuitpython.byte_array import ByteArray
 from pysquared.hardware.rfm9x.factory import RFM9xFactory
 from pysquared.hardware.rfm9x.manager import RFM9xManager

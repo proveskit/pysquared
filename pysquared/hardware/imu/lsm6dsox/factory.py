@@ -1,5 +1,5 @@
 try:
-    from mocks.circuitpython.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # type: ignore
+    from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # type: ignore
 except ImportError:
     from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 
@@ -16,9 +16,9 @@ except ImportError:
 
 
 class LSM6DSOXFactory(InertialMeasurementUnitProto):
-    """Factory class for creating LIS2MDL magnetometer instances.
-    The purpose of the factory class is to hide the complexity of magnetometer initialization from the caller.
-    Specifically we should try to keep adafruit_lis2mdl to only this factory class.
+    """Factory class for creating LIS2MDL IMU instances.
+    The purpose of the factory class is to hide the complexity of IMU initialization from the caller.
+    Specifically we should try to keep adafruit_lsm6ds to only this factory class.
     """
 
     @with_retries(max_attempts=3, initial_delay=1)
@@ -32,6 +32,7 @@ class LSM6DSOXFactory(InertialMeasurementUnitProto):
 
         :param Logger logger: Logger instance for logging messages.
         :param busio.I2C i2c: The I2C bus connected to the chip.
+        :param int address: The I2C address of the IMU.
 
         :raises HardwareInitializationError: If the IMU fails to initialize.
         """
