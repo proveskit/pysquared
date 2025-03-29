@@ -1,5 +1,5 @@
 {
-"cubesat_name": "Orpheus",
+"cubesat_name": "Test Satellite",
 "callsign": "KO6AZM",
 "last_battery_temp": 20.0,
 "sleep_duration": 30,
@@ -52,7 +52,6 @@
 "normal_charge_current": 0.5,
 "normal_battery_voltage": 6.9,
 "critical_battery_voltage": 6.6,
-"battery_voltage": 5.2,
 "current_draw": 240.5,
 "reboot_time": 3600,
 "turbo_clock": false,

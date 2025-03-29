@@ -115,9 +115,6 @@ def test_floats() -> None:
         config.critical_battery_voltage == json_data["critical_battery_voltage"]
     ), "No match for: critical_battery_voltage"
     assert (
-        config.battery_voltage == json_data["battery_voltage"]
-    ), "No match for: battery_voltage"
-    assert (
         config.current_draw == json_data["current_draw"]
     ), "No match for: current_draw"
 

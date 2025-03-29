@@ -66,7 +66,6 @@ class Satellite:
         self.normal_charge_current: float = config.normal_charge_current
         self.normal_battery_voltage: float = config.normal_battery_voltage
         self.critical_battery_voltage: float = config.critical_battery_voltage
-        self.battery_voltage: float = config.battery_voltage
         self.current_draw: float = config.current_draw
         self.reboot_time: int = config.reboot_time
         self.turbo_clock: bool = config.turbo_clock
@@ -77,16 +76,11 @@ class Satellite:
         """
         Setting up data buffers
         """
-        # Confused here, as self.battery_voltage was initialized to 3.3 in line 113(blakejameson)
-        # NOTE(blakejameson): After asking Michael about the None variables below last night at software meeting, he mentioned they used
-        # None as a state instead of the values to better manage some conditions with Orpheus.
-        # I need to get a better understanding for the values and flow before potentially refactoring code here.
+        # These are here because of problems integrating the battery board on Orphues.
+        # They should be moved to the battery board in the future.
+        # They are only used in state of health
         self.battery_voltage: Optional[float] = None
-        self.draw_current: Optional[float] = None
-        self.charge_voltage: Optional[float] = None
         self.charge_current: Optional[float] = None
-        self.is_charging: Optional[bool] = None
-        self.battery_percentage: Optional[float] = None
 
         """
         Define the boot time and current time

@@ -36,7 +36,6 @@ class Config:
         self.normal_charge_current: float = json_data["normal_charge_current"]
         self.normal_battery_voltage: float = json_data["normal_battery_voltage"]
         self.critical_battery_voltage: float = json_data["critical_battery_voltage"]
-        self.battery_voltage: float = json_data["battery_voltage"]
         self.current_draw: float = json_data["current_draw"]
         self.reboot_time: int = json_data["reboot_time"]
         self.turbo_clock: bool = json_data["turbo_clock"]
