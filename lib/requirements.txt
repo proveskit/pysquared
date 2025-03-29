@@ -10,3 +10,4 @@ adafruit-circuitpython-rfm==1.0.3
 adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A
 adafruit-circuitpython-ticks==1.1.1
 adafruit-circuitpython-veml7700==2.0.2
+adafruit-circuitpython-74HC595==1.4.6
