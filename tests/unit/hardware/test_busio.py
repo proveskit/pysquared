@@ -64,9 +64,8 @@ def test_initialize_spi_bus_failure(mock_spi: MagicMock):
     mock_logger.debug.assert_called_with("Initializing spi bus")
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.busio.SPI")
-def test_configure_spi_bus_failure(mock_spi: MagicMock):
+def test_spi_bus_configure_try_lock_failure(mock_spi: MagicMock):
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
@@ -84,7 +83,35 @@ def test_configure_spi_bus_failure(mock_spi: MagicMock):
         initialize_spi_bus(mock_logger, mock_clock, mock_mosi, mock_miso)
 
     # Assertions
-    assert mock_spi_instance.try_lock.call_count == 3  # Called 3 times due to retries
+    assert (
+        mock_spi_instance.try_lock.call_count == 201
+    )  # Called 200 times due to retries
+    mock_logger.debug.assert_called_with("Configuring spi bus")
+
+
+@patch("pysquared.hardware.busio.SPI")
+def test_spi_bus_configure_failure(mock_spi: MagicMock):
+    # Mock the logger
+    mock_logger = MagicMock(spec=Logger)
+
+    # Mock pins
+    mock_clock = MagicMock(spec=Pin)
+    mock_mosi = MagicMock(spec=Pin)
+    mock_miso = MagicMock(spec=Pin)
+
+    # Mock SPI.try_lock() to return false
+    mock_spi_instance = mock_spi.return_value
+    mock_spi_instance.try_lock.return_value = True
+    mock_spi_instance.configure.side_effect = Exception("Simulated failure")
+
+    # Call the function and assert exception
+    with pytest.raises(HardwareInitializationError):
+        initialize_spi_bus(mock_logger, mock_clock, mock_mosi, mock_miso)
+
+    # Assertions
+    mock_spi_instance.try_lock.assert_called_once()
+    mock_spi_instance.configure.assert_called_once()
+    mock_spi_instance.unlock.assert_called_once()
     mock_logger.debug.assert_called_with("Configuring spi bus")
 
 

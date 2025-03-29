@@ -1,3 +1,5 @@
+import time
+
 from busio import I2C, SPI
 from microcontroller import Pin
 
@@ -77,7 +79,6 @@ def _spi_init(
         raise HardwareInitializationError("Failed to initialize spi bus") from e
 
 
-@with_retries(max_attempts=3, initial_delay=1)
 def _spi_configure(
     logger: Logger,
     spi: SPI,
@@ -89,7 +90,7 @@ def _spi_configure(
     """Configure SPI bus
 
     :param Logger logger: The logger instance to log messages.
-    :param ~busio.SPI: SPI bus to configure
+    :param ~busio.SPI spi: SPI bus to configure
     :param int baudrate: The baudrate of the SPI bus (default is 100000).
     :param int phase: The phase of the SPI bus (default is 0).
     :param int polarity: The polarity of the SPI bus (default is 0).
@@ -101,15 +102,22 @@ def _spi_configure(
     """
     logger.debug("Configuring spi bus")
 
-    try:
-        if not spi.try_lock():
-            raise RuntimeError("Unable to lock spi bus")
+    # Mirroring how tca multiplexer initializes the i2c bus with lock retries
+    tries = 0
+    while not spi.try_lock():
+        if tries >= 200:
+            raise RuntimeError("Unable to lock spi bus.")
+        tries += 1
+        time.sleep(0)
 
+    try:
         spi.configure(baudrate, phase, polarity, bits)
-        spi.unlock()
-        return spi
     except Exception as e:
         raise HardwareInitializationError("Failed to configure spi bus") from e
+    finally:
+        spi.unlock()
+
+    return spi
 
 
 @with_retries(max_attempts=3, initial_delay=1)
