@@ -71,9 +71,7 @@ class Satellite:
         self.reboot_time: int = config.reboot_time
         self.turbo_clock: bool = config.turbo_clock
         self.cubesat_name: str = config.cubesat_name
-        self.legacy: bool = config.legacy
         self.heating: bool = config.heating
-        self.orpheus: bool = config.orpheus  # maybe change var name
         self.is_licensed: bool = config.is_licensed
 
         """

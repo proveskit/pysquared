@@ -138,8 +138,6 @@ def test_bools() -> None:
         config.detumble_enable_y == json_data["detumble_enable_y"]
     ), "No match for: detumble_enable_y"
     assert config.debug == json_data["debug"], "No match for: debug"
-    assert config.legacy == json_data["legacy"], "No match for: legacy"
     assert config.heating == json_data["heating"], "No match for: heating"
-    assert config.orpheus == json_data["orpheus"], "No match for: orpheus"
     assert config.is_licensed == json_data["is_licensed"], "No match for: is_licensed"
     assert config.turbo_clock == json_data["turbo_clock"], "No match for: turbo_clock"

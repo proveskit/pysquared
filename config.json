@@ -44,9 +44,7 @@
         "Everything in life is a spring if you think hard enough!"
     ],
 "debug": true,
-"legacy": false,
 "heating": false,
-"orpheus":true,
 "is_licensed":false,
 "normal_temp": 20,
 "normal_battery_temp": 1,
