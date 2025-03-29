@@ -8,16 +8,11 @@ Library Repo:
 """
 
 # Common CircuitPython Libs
-import sys
 import time
 from collections import OrderedDict
-from os import chdir, mkdir, stat
 
-import board
 import microcontroller
-import sdcardio
 from micropython import const
-from storage import VfsFat, mount, umount
 
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
@@ -28,7 +23,7 @@ from .nvm.counter import Counter
 from .nvm.flag import Flag
 
 try:
-    from typing import Optional, OrderedDict, TextIO, Union
+    from typing import Optional, OrderedDict, Union
 
 except Exception:
     pass
@@ -65,15 +60,6 @@ class Satellite:
 
         # Still need to test these configs
         self.rtc.configure_backup_switchover(mode="level", interrupt=True)
-        self.hardware[hardware_key] = True
-
-    def init_sd_card(self, hardware_key: str) -> None:
-        # Baud rate depends on the card, 4MHz should be safe
-        _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
-        _vfs = VfsFat(_sd)
-        mount(_vfs, "/sd")
-        self.fs = _vfs
-        sys.path.append("/sd")
         self.hardware[hardware_key] = True
 
     # Only used for face stuff, also needs more thought.
@@ -143,8 +129,6 @@ class Satellite:
 
         self.hardware: OrderedDict[str, bool] = OrderedDict(
             [
-                ("SDcard", False),
-                ("NEOPIX", False),
                 ("TCA", False),
                 ("RTC", False),
             ]
@@ -260,22 +244,6 @@ class Satellite:
         return self.CURRENTTIME - self.BOOTTIME
 
     @property
-    def reset_vbus(self) -> None:
-        # unmount SD card to avoid errors
-        if self.hardware["SDcard"]:
-            try:
-                umount("/sd")
-                time.sleep(3)
-            except Exception as e:
-                self.logger.error("There was an error unmounting the SD card", e)
-        try:
-            self.logger.debug(
-                "Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]",
-            )
-        except Exception as e:
-            self.logger.error("There was a vbus reset error", e)
-
-    @property
     def time(self) -> Union[tuple[int, int, int], None]:
         try:
             return self.rtc.get_time()
@@ -373,109 +341,3 @@ class Satellite:
                 e,
                 mode=mode,
             )
-
-    """
-    SD Card Functions
-    """
-
-    def print_file(self, filedir: str = None, binary: bool = False) -> None:
-        try:
-            if filedir is None:
-                raise FileNotFoundError("file directory is empty")
-            self.logger.debug("Printing File", file_dir=filedir)
-            if binary:
-                with open(filedir, "rb") as file:
-                    self.logger.debug(
-                        "Printing in binary mode", content=str(file.read())
-                    )
-            else:
-                with open(filedir, "r") as file:
-                    for line in file:
-                        self.logger.info(line.strip())
-        except Exception as e:
-            self.logger.error(
-                "Can't print file", e, filedir=filedir, binary_mode=binary
-            )
-
-    def read_file(
-        self, filedir: str = None, binary: bool = False
-    ) -> Union[bytes, TextIO, None]:
-        try:
-            if filedir is None:
-                raise FileNotFoundError("file directory is empty")
-            self.logger.debug("Reading a file", file_dir=filedir)
-            if binary:
-                with open(filedir, "rb") as file:
-                    self.logger.debug(str(file.read()))
-                    return file.read()
-            else:
-                with open(filedir, "r") as file:
-                    for line in file:
-                        self.logger.debug(str(line.strip()))
-                    return file
-        except Exception as e:
-            self.logger.error("Can't read file", e, filedir=filedir, binary_mode=binary)
-
-    def new_file(self, substring: str, binary: bool = False) -> Union[str, None]:
-        """
-        substring something like '/data/DATA_'
-        directory is created on the SD!
-        int padded with zeros will be appended to the last found file
-        """
-        if not self.hardware["SDcard"]:
-            self.logger.warning("SD Card not initialized")
-
-        # SDCard is initialized
-        try:
-            ff: str = ""
-            n: int = 0
-            _folder: str = substring[: substring.rfind("/") + 1]
-            _file: str = substring[substring.rfind("/") + 1 :]
-            self.logger.debug(
-                "Creating new file in directory: /sd{} with file prefix: {}".format(
-                    _folder, _file
-                ),
-            )
-            try:
-                chdir("/sd" + _folder)
-            except OSError:
-                self.logger.error(
-                    "The directory was not found. Now Creating...",
-                    directory=_folder,
-                )
-                try:
-                    mkdir("/sd" + _folder)
-                except Exception as e:
-                    self.logger.error(
-                        "Error with creating new file",
-                        e,
-                        filedir="/sd" + _folder,
-                    )
-                    return None
-            for i in range(0xFFFF):
-                ff: str = "/sd{}{}{:05}.txt".format(_folder, _file, (n + i) % 0xFFFF)
-                try:
-                    if n is not None:
-                        stat(ff)
-                except Exception as e:
-                    self.logger.error(
-                        "There was an error running the stat function on this file",
-                        e,
-                        filedir=ff,
-                        file_num=n,
-                    )
-                    n: int = (n + i) % 0xFFFF
-                    # print('file number is',n)
-                    break
-            self.logger.debug("creating a file...", file_dir=str(ff))
-            if binary:
-                b: str = "ab"
-            else:
-                b: str = "a"
-            with open(ff, b) as f:
-                f.tell()
-            chdir("/")
-            return ff
-        except Exception as e:
-            self.logger.error("Error creating file", e, filedir=ff, binary_mode=binary)
-            return None
