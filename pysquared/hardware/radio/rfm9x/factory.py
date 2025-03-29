@@ -1,8 +1,8 @@
-from ...config.radio import FSKConfig, LORAConfig, RadioConfig
-from ...logger import Logger
-from ..decorators import with_retries
-from ..exception import HardwareInitializationError
-from .modulation import RFM9xModulation
+from ....config.radio import FSKConfig, LORAConfig, RadioConfig
+from ....logger import Logger
+from ...decorators import with_retries
+from ...exception import HardwareInitializationError
+from ..modulation import RadioModulation
 
 try:
     from lib.adafruit_rfm.rfm9x import RFM9x
@@ -50,7 +50,7 @@ class RFM9xFactory:
     def create(
         self,
         logger: Logger,
-        modulation: RFM9xModulation,
+        modulation: RadioModulation,
     ) -> RFMSPI:
         """Create a RFM9x radio instance.
 
@@ -64,7 +64,7 @@ class RFM9xFactory:
         logger.debug(message="Initializing radio", modulation=modulation)
 
         try:
-            if modulation == RFM9xModulation.FSK:
+            if modulation == RadioModulation.FSK:
                 radio: RFMSPI = self.create_fsk_radio(
                     self._spi,
                     self._chip_select,
@@ -159,7 +159,7 @@ class RFM9xFactory:
         return radio
 
     @staticmethod
-    def get_instance_modulation(radio: RFMSPI) -> RFM9xModulation:
+    def get_instance_modulation(radio: RFMSPI) -> RadioModulation:
         """Determine the radio modulation in use.
 
         :param RFMSPI radio: The radio instance to check.
@@ -167,6 +167,6 @@ class RFM9xFactory:
         :return The modulation in use.
         """
         if isinstance(radio, RFM9xFSK):
-            return RFM9xModulation.FSK
+            return RadioModulation.FSK
 
-        return RFM9xModulation.LORA
+        return RadioModulation.LORA

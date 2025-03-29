@@ -12,7 +12,7 @@ import time
 from .config.config import Config
 from .hardware.imu.imu_protocol import InertialMeasurementUnitProto
 from .hardware.magnetometer.magnetometer_protocol import MagnetometerProto
-from .hardware.rfm9x.manager import RFM9xManager
+from .hardware.radio.rfm9x.manager import RFM9xManager
 from .logger import Logger
 from .packet_manager import PacketManager
 from .packet_sender import PacketSender
@@ -87,7 +87,7 @@ class functions:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
         """
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
-        self.radio_manager.beacon_radio_message(message)
+        self.radio_manager.send(message)
         if self.cubesat.is_licensed:
             self.logger.debug("Sent Packet", packet_message=message)
         else:
@@ -123,7 +123,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.radio_manager.beacon_radio_message(lora_beacon)
+        self.radio_manager.send(lora_beacon)
 
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
@@ -181,13 +181,13 @@ class functions:
             )
             self.state_of_health_part1: bool = False
 
-        self.radio_manager.beacon_radio_message(message)
+        self.radio_manager.send(message)
 
     def send_face(self) -> None:
         """Calls the data transmit function from the radio manager class"""
 
         self.logger.debug("Sending Face Data")
-        self.radio_manager.beacon_radio_message(
+        self.radio_manager.send(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
 

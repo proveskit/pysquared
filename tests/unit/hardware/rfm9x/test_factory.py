@@ -7,8 +7,8 @@ from mocks.adafruit_rfm.rfm9x import RFM9x
 from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
 from pysquared.config.radio import FSKConfig, LORAConfig, RadioConfig
 from pysquared.hardware.exception import HardwareInitializationError
-from pysquared.hardware.rfm9x.factory import RFM9xFactory
-from pysquared.hardware.rfm9x.modulation import RFM9xModulation
+from pysquared.hardware.radio.modulation import RadioModulation
+from pysquared.hardware.radio.rfm9x.factory import RFM9xFactory
 
 
 @pytest.fixture
@@ -133,7 +133,7 @@ def test_create_fsk(
 
     radio = factory.create(
         mock_logger,
-        RFM9xModulation.FSK,
+        RadioModulation.FSK,
     )
     assert isinstance(radio, RFM9xFSK)
     assert radio.node == mock_radio_config.sender_id
@@ -147,7 +147,7 @@ def test_create_lora(
 
     radio = factory.create(
         mock_logger,
-        RFM9xModulation.LORA,
+        RadioModulation.LORA,
     )
     assert isinstance(radio, RFM9x)
     assert radio.node == mock_radio_config.sender_id
@@ -158,8 +158,8 @@ def test_get_instance_modulation():
     mock_fsk_radio = RFM9xFSK(None, None, None, 915)
     mock_lora_radio = RFM9x(None, None, None, 915)
 
-    assert RFM9xFactory.get_instance_modulation(mock_fsk_radio) == RFM9xModulation.FSK
-    assert RFM9xFactory.get_instance_modulation(mock_lora_radio) == RFM9xModulation.LORA
+    assert RFM9xFactory.get_instance_modulation(mock_fsk_radio) == RadioModulation.FSK
+    assert RFM9xFactory.get_instance_modulation(mock_lora_radio) == RadioModulation.LORA
 
 
 @pytest.mark.slow
@@ -179,7 +179,7 @@ def test_create_with_retries_fsk(
     with pytest.raises(HardwareInitializationError):
         factory.create(
             mock_logger,
-            RFM9xModulation.FSK,
+            RadioModulation.FSK,
         )
     assert mock_create_fsk_radio.call_count == 3
 
@@ -201,6 +201,6 @@ def test_create_with_retries_lora(
     with pytest.raises(HardwareInitializationError):
         factory.create(
             mock_logger,
-            RFM9xModulation.LORA,
+            RadioModulation.LORA,
         )
     assert mock_create_lora_radio.call_count == 3

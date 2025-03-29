@@ -2,8 +2,8 @@ import random
 import time
 
 from .config.config import Config
-from .hardware.rfm9x.manager import RFM9xManager
-from .hardware.rfm9x.modulation import RFM9xModulation
+from .hardware.radio.modulation import RadioModulation
+from .hardware.radio.rfm9x.manager import RFM9xManager
 from .logger import Logger
 from .satellite import Satellite
 
@@ -143,7 +143,7 @@ class CommandDataHandler:
             pass
 
     def fsk(self) -> None:
-        self.radio_manager.set_modulation(RFM9xModulation.FSK)
+        self.radio_manager.set_modulation(RadioModulation.FSK)
 
     def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._joke_reply)

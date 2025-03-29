@@ -4,9 +4,9 @@ import pytest
 
 from mocks.adafruit_rfm.rfm_common import RFMSPI
 from mocks.circuitpython.byte_array import ByteArray
-from pysquared.hardware.rfm9x.factory import RFM9xFactory
-from pysquared.hardware.rfm9x.manager import RFM9xManager
-from pysquared.hardware.rfm9x.modulation import RFM9xModulation
+from pysquared.hardware.radio.modulation import RadioModulation
+from pysquared.hardware.radio.rfm9x.factory import RFM9xFactory
+from pysquared.hardware.radio.rfm9x.manager import RFM9xManager
 from pysquared.logger import Logger
 from pysquared.nvm.counter import Counter
 from pysquared.nvm.flag import Flag
@@ -29,12 +29,12 @@ def mock_radio_factory():
 
 @pytest.mark.parametrize(
     "modulation, use_fsk_initial",
-    [(RFM9xModulation.LORA, False), (RFM9xModulation.FSK, True)],
+    [(RadioModulation.LORA, False), (RadioModulation.FSK, True)],
 )
 def test_radio_property_creates_radio(
     mock_logger: Logger,
     mock_radio_factory: MagicMock,
-    modulation: RFM9xModulation,
+    modulation: RadioModulation,
     use_fsk_initial: bool,
 ):
     mock_radio = MagicMock(spec=RFMSPI)
@@ -76,14 +76,14 @@ def test_set_modulation(
         mock_logger, mock_use_fsk, mock_radio_factory, is_licensed=True
     )
 
-    manager.set_modulation(RFM9xModulation.LORA)
+    manager.set_modulation(RadioModulation.LORA)
     assert manager._use_fsk.get() is False
 
-    manager.set_modulation(RFM9xModulation.FSK)
+    manager.set_modulation(RadioModulation.FSK)
     assert manager._use_fsk.get() is True
 
-    mock_radio_factory.get_instance_modulation.return_value = RFM9xModulation.FSK
-    manager.set_modulation(RFM9xModulation.FSK)
+    mock_radio_factory.get_instance_modulation.return_value = RadioModulation.FSK
+    manager.set_modulation(RadioModulation.FSK)
     assert manager._use_fsk.get() is True
 
 
@@ -130,7 +130,7 @@ def test_beacon_radio_message(
         mock_logger, mock_use_fsk, mock_radio_factory, is_licensed=True
     )
 
-    manager.beacon_radio_message(message)
+    manager.send(message)
 
     mock_radio.send.assert_called_once_with(bytes(message, "UTF-8"))
     assert "I am beaconing" in capsys.readouterr().out
@@ -151,7 +151,7 @@ def test_beacon_radio_message_unlicensed(
         mock_logger, mock_use_fsk, mock_radio_factory, is_licensed=False
     )
 
-    manager.beacon_radio_message(message)
+    manager.send(message)
 
     mock_radio.send.assert_not_called()
     assert "Radio is not licensed" in capsys.readouterr().out

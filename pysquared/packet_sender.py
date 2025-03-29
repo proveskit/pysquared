@@ -1,4 +1,4 @@
-from .hardware.rfm9x.manager import RFM9xManager
+from .hardware.radio.rfm9x.manager import RFM9xManager
 from .logger import Logger
 from .packet_manager import PacketManager
 
