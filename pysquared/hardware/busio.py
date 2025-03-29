@@ -11,7 +11,6 @@ except ImportError:
     pass
 
 
-@with_retries(max_attempts=3, initial_delay=1)
 def initialize_spi_bus(
     logger: Logger,
     clock: Pin,
@@ -22,7 +21,7 @@ def initialize_spi_bus(
     polarity: Optional[int] = 0,
     bits: Optional[int] = 8,
 ) -> SPI:
-    """Initializes a SPI bus"
+    """Initializes a SPI bus
 
     :param Logger logger: The logger instance to log messages.
     :param Pin clock: The pin to use for the clock signal.
@@ -37,16 +36,80 @@ def initialize_spi_bus(
 
     :return ~busio.SPI: The initialized SPI object.
     """
-    logger.debug("Initializing spi")
+    try:
+        return _spi_configure(
+            logger,
+            _spi_init(logger, clock, mosi, miso),
+            baudrate,
+            phase,
+            polarity,
+            bits,
+        )
+    except Exception as e:
+        raise HardwareInitializationError(
+            "Failed to initialize and configure spi bus"
+        ) from e
+
+
+@with_retries(max_attempts=3, initial_delay=1)
+def _spi_init(
+    logger: Logger,
+    clock: Pin,
+    mosi: Optional[Pin] = None,
+    miso: Optional[Pin] = None,
+) -> SPI:
+    """Initializes a SPI bus, does not configure
+
+    :param Logger logger: The logger instance to log messages.
+    :param Pin clock: The pin to use for the clock signal.
+    :param Pin mosi: The pin to use for the MOSI signal.
+    :param Pin miso: The pin to use for the MISO signal.
+
+    :raises HardwareInitializationError: If the SPI bus fails to initialize.
+
+    :return ~busio.SPI: The initialized SPI object.
+    """
+    logger.debug("Initializing spi bus")
 
     try:
-        spi = SPI(clock, mosi, miso)
-        spi.try_lock()
+        return SPI(clock, mosi, miso)
+    except Exception as e:
+        raise HardwareInitializationError("Failed to initialize spi bus") from e
+
+
+@with_retries(max_attempts=3, initial_delay=1)
+def _spi_configure(
+    logger: Logger,
+    spi: SPI,
+    baudrate: Optional[int] = 100000,
+    phase: Optional[int] = 0,
+    polarity: Optional[int] = 0,
+    bits: Optional[int] = 8,
+) -> SPI:
+    """Configure SPI bus
+
+    :param Logger logger: The logger instance to log messages.
+    :param ~busio.SPI: SPI bus to configure
+    :param int baudrate: The baudrate of the SPI bus (default is 100000).
+    :param int phase: The phase of the SPI bus (default is 0).
+    :param int polarity: The polarity of the SPI bus (default is 0).
+    :param int bits: The number of bits per transfer (default is 8).
+
+    :raises HardwareInitializationError: If the SPI bus cannot be configured.
+
+    :return ~busio.SPI: The initialized SPI object.
+    """
+    logger.debug("Configuring spi bus")
+
+    try:
+        if not spi.try_lock():
+            raise RuntimeError("Unable to lock spi bus")
+
         spi.configure(baudrate, phase, polarity, bits)
         spi.unlock()
         return spi
     except Exception as e:
-        raise HardwareInitializationError("Failed to initialize spi") from e
+        raise HardwareInitializationError("Failed to configure spi bus") from e
 
 
 @with_retries(max_attempts=3, initial_delay=1)

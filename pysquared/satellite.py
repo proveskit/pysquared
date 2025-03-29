@@ -14,7 +14,6 @@ from collections import OrderedDict
 from os import chdir, mkdir, stat
 
 import board
-import busio
 import digitalio
 import microcontroller
 import sdcardio
@@ -109,20 +108,6 @@ class Satellite:
     ) -> None:
         self.logger: Logger = logger
         self.config: Config = config
-
-        self.spi0: busio.SPI = None  # only used for sdcard init
-
-        self.i2c1: busio.I2C = (
-            None  # used for rtc, tca multiplexer imu, and magnetometer
-        )
-        board.I2C1_SCL
-        # self.init_general_hardware(
-        #     busio.I2C,
-        #     board.I2C1_SCL,
-        #     board.I2C1_SDA,
-        #     frequency=100000,
-        #     hardware_key="I2C1",
-        # )
 
         """
         Define the normal power modes
