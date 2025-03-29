@@ -13,19 +13,18 @@ import time
 from collections import OrderedDict
 from os import chdir, mkdir, stat
 
+import adafruit_lis2mdl  # Magnetometer
+import adafruit_tca9548a  # I2C Multiplexer
 import board
 import busio
 import digitalio
 import microcontroller
+import neopixel  # RGB LED
+import rv3028.rv3028 as rv3028  # Real Time Clock
 import sdcardio
+from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 from micropython import const
 from storage import VfsFat, mount, umount
-
-import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
-import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
-import lib.neopixel as neopixel  # RGB LED
-import lib.rv3028.rv3028 as rv3028  # Real Time Clock
-from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 
 from .config.config import Config  # Configs
 from .nvm import register

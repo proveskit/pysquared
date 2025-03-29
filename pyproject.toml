@@ -10,6 +10,20 @@ dependencies = [
     "coverage==7.6.10",
     "pre-commit==4.0.1",
     "pytest==8.3.2",
+
+    # CircuitPython Libraries
+    "adafruit-circuitpython-asyncio @ git+https://github.com/adafruit/adafruit_circuitpython_asyncio@1.3.3",
+    "proves-circuitpython-rv3028 @ git+https://github.com/proveskit/PROVES_CircuitPython_RV3028@1.0.0",
+    "adafruit-circuitpython-drv2605==1.3.4",
+    "adafruit-circuitpython-lis2mdl==2.1.23",
+    "adafruit-circuitpython-lsm6ds==4.5.13",
+    "adafruit-circuitpython-mcp9808==3.3.24",
+    "adafruit-circuitpython-neopixel==6.3.12",
+    "adafruit-circuitpython-register==1.10.1",
+    "adafruit-circuitpython-rfm==1.0.3",
+    "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A",
+    "adafruit-circuitpython-ticks==1.1.1",
+    "adafruit-circuitpython-veml7700==2.0.2",
 ]
 
 [tool.setuptools]
@@ -41,9 +55,6 @@ show_missing = true
 skip_covered = false
 include = [
     "pysquared/**/*.py",
-]
-omit = [
-    "lib/**/*.py",
 ]
 
 [tool.coverage.html]

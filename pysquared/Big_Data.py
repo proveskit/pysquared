@@ -1,6 +1,6 @@
 import gc
 
-import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
+import adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 
 from .logger import Logger
 
@@ -45,7 +45,7 @@ class Face:
 
         if "MCP" in senlist:
             try:
-                import lib.adafruit_mcp9808 as adafruit_mcp9808
+                import adafruit_mcp9808 as adafruit_mcp9808
 
                 self.mcp: adafruit_mcp9808.MCP9808 = adafruit_mcp9808.MCP9808(
                     self.tca[address], address=27
@@ -56,7 +56,7 @@ class Face:
 
         if "VEML" in senlist:
             try:
-                import lib.adafruit_veml7700 as adafruit_veml7700
+                import adafruit_veml7700 as adafruit_veml7700
 
                 self.veml: adafruit_veml7700.VEML7700 = adafruit_veml7700.VEML7700(
                     self.tca[address]
@@ -67,7 +67,7 @@ class Face:
 
         if "DRV" in senlist:
             try:
-                import lib.adafruit_drv2605 as adafruit_drv2605
+                import adafruit_drv2605 as adafruit_drv2605
 
                 self.drv: adafruit_drv2605.DRV2605 = adafruit_drv2605.DRV2605(
                     self.tca[address]

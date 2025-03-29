@@ -4,7 +4,8 @@ from .modulation import RFM9xModulation
 try:
     from typing import Any
 
-    from lib.adafruit_rfm.rfm_common import RFMSPI
+    from adafruit_rfm.rfm_common import RFMSPI
+
     from pysquared.hardware.rfm9x.factory import RFM9xFactory
     from pysquared.logger import Logger
     from pysquared.nvm.flag import Flag
@@ -44,7 +45,7 @@ class RFM9xManager:
     @property
     def radio(self) -> RFMSPI:
         """Get the current radio instance, creating it if needed.
-        :return ~lib.adafruit_rfm.rfm_common.RFMSPI: The RFM9x radio instance.
+        :return ~adafruit_rfm.rfm_common.RFMSPI: The RFM9x radio instance.
         """
         if self._radio is None:
             self._radio = self._radio_factory.create(
@@ -83,7 +84,7 @@ class RFM9xManager:
         """
         Set the radio modulation.
         Takes effect on the next reboot.
-        :param lib.radio.RFM9xModulation req_modulation: The modulation to switch to.
+        :param radio.RFM9xModulation req_modulation: The modulation to switch to.
         :return: None
         """
         if self.get_modulation() != req_modulation:
