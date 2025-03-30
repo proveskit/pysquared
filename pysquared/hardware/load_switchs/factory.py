@@ -3,7 +3,7 @@ from ..decorators import with_retries
 from ..exception import HardwareInitializationError
 
 try:
-    from ...lib.adafruit_74hc595 import ShiftRegister74HC595
+    from ....lib.adafruit_74hc595 import ShiftRegister74HC595
 except ImportError:
     pass
 
@@ -35,7 +35,7 @@ class ShiftRegister74HC595Factory:
     def create(
         self,
         logger: Logger,
-    ) -> ShiftRegister74HC595:
+    ) -> list[digitalio.DigitalInOut]:
         """Create a ShiftRegister74HC595 instance.
 
         :param Logger logger: Logger instance for logging messages.
