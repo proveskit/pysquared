@@ -18,11 +18,18 @@ packages = [
     "pysquared",
     "pysquared.config",
     "pysquared.hardware",
-    "pysquared.hardware.rfm9x",
+    "pysquared.hardware.imu",
+    "pysquared.hardware.imu.manager",
+    "pysquared.hardware.magnetometer",
+    "pysquared.hardware.magnetometer.manager",
+    "pysquared.hardware.radio",
+    "pysquared.hardware.radio.manager",
     "pysquared.nvm",
     "pysquared.rtc",
+    "pysquared.rtc.manager",
     "pysquared.usb"
 ]
+
 [tool.ruff.format]
 # Use `\n` line endings for all files
 line-ending = "lf"

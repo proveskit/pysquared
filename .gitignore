@@ -13,7 +13,5 @@ pysquared.egg-info/
 **/*.mpy
 
 # libs
-lib/rv3028*
-lib/adafruit*
-lib/asyncio*
-lib/neopixel.py
+lib/
+!lib/requirements.txt

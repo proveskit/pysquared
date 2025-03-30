@@ -1,26 +1,17 @@
 """
-This module defines a protocol for radio transceiver hardware.
-This allows for flexibility in the design of the system,
-enabling the use of different radio implementations without changing the code that uses them.
-
-CircuitPython does not support Protocols directly, but this class can still be used to define an interface
-for type checking and ensuring structural compatibility.
-
-https://docs.python.org/3/library/typing.html#typing.Protocol
+Protocol defining the interface for a radio.
 """
 
 # Type hinting only
 try:
     from typing import Any
 
-    from .modulation import RadioModulation
+    from ..hardware.radio.modulation import RadioModulation
 except ImportError:
     pass
 
 
 class RadioProto:
-    """Protocol defining the interface for a radio transceiver."""
-
     def send(self, data: Any) -> bool:
         """Send data over the radio.
 
@@ -43,13 +34,5 @@ class RadioProto:
 
         :return: The current modulation mode.
         :rtype: RadioModulation
-        """
-        ...
-
-    def get_temperature(self) -> float:
-        """Get the temperature reading from the radio sensor, if available.
-
-        :return: The temperature in degrees Celsius.
-        :rtype: float
         """
         ...

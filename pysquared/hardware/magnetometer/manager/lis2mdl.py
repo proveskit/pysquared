@@ -1,7 +1,7 @@
 from ....logger import Logger
+from ....protos.magnetometer import MagnetometerProto
 from ...decorators import with_retries
 from ...exception import HardwareInitializationError
-from ..magnetometer_protocol import MagnetometerProto
 
 try:
     from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL  # type: ignore

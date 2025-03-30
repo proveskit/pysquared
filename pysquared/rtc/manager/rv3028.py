@@ -6,7 +6,7 @@ except ImportError:
 from ...hardware.decorators import with_retries
 from ...hardware.exception import HardwareInitializationError
 from ...logger import Logger
-from ..rtc_protocol import RealTimeClockProto
+from ...protos.rtc import RTCProto
 
 # Type hinting only
 try:
@@ -15,7 +15,7 @@ except ImportError:
     pass
 
 
-class RV3028Manager(RealTimeClockProto):
+class RV3028Manager(RTCProto):
     """Manager class for creating RV3028 RTC instances.
     The purpose of the manager class is to hide the complexity of RTC initialization from the caller.
     Specifically we should try to keep adafruit_lis2mdl to only this manager class.

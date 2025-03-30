@@ -1,10 +1,11 @@
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
 from ....nvm.flag import Flag
+from ....protos.radio import RadioProto
+from ....protos.temperature_sensor import TemperatureSensorProto
 from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 from ..modulation import RadioModulation
-from ..radio_protocol import RadioProto
 
 try:
     from mocks.adafruit_rfm.rfm9x import RFM9x  # type: ignore
@@ -19,18 +20,14 @@ try:
 
     from busio import SPI
     from digitalio import DigitalInOut
-
-    from lib.adafruit_rfm.rfm_common import RFMSPI
 except ImportError:
     pass
 
 
-class RFM9xManager(RadioProto):
+class RFM9xManager(RadioProto, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios.
     This class handles the initialization and interaction with RFM9x FSK or LoRa radios.
     """
-
-    _radio: RFMSPI | None = None
 
     @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
@@ -69,7 +66,7 @@ class RFM9xManager(RadioProto):
 
         try:
             if initial_modulation == RadioModulation.FSK:
-                radio: RFMSPI = self._create_fsk_radio(
+                radio: RFM9xFSK = self._create_fsk_radio(
                     self._spi,
                     self._chip_select,
                     self._reset,
@@ -77,7 +74,7 @@ class RFM9xManager(RadioProto):
                     self._radio_config.fsk,
                 )
             else:
-                radio: RFMSPI = self._create_lora_radio(
+                radio: RFM9x = self._create_lora_radio(
                     self._spi,
                     self._chip_select,
                     self._reset,
@@ -87,7 +84,8 @@ class RFM9xManager(RadioProto):
 
             radio.node = self._radio_config.sender_id
             radio.destination = self._radio_config.receiver_id
-            self._radio = radio
+
+            self._radio: RFM9x | RFM9x = radio
 
         except Exception as e:
             raise HardwareInitializationError(
@@ -119,7 +117,7 @@ class RFM9xManager(RadioProto):
             self._log.info("Radio message sent", success=bool(sent), len=len(payload))
             return bool(sent)
         except Exception as e:
-            self._log.error("Error sending radio message", exc_info=e)
+            self._log.error("Error sending radio message", e)
             return False
 
     def set_modulation(self, req_modulation: RadioModulation) -> None:
@@ -164,7 +162,7 @@ class RFM9xManager(RadioProto):
             self._log.error("Radio instance does not support read_u8 for temperature.")
             return float("nan")
         except Exception as e:
-            self._log.error("Error reading radio temperature", exc_info=e)
+            self._log.error("Error reading radio temperature", e)
             return float("nan")
 
     @staticmethod
@@ -174,7 +172,7 @@ class RFM9xManager(RadioProto):
         rst: DigitalInOut,
         transmit_frequency: int,
         fsk_config: FSKConfig,
-    ) -> RFMSPI:
+    ) -> RFM9xFSK:
         """Create a FSK radio instance."""
         radio: RFM9xFSK = RFM9xFSK(
             spi,
@@ -196,7 +194,7 @@ class RFM9xManager(RadioProto):
         rst: DigitalInOut,
         transmit_frequency: int,
         lora_config: LORAConfig,
-    ) -> RFMSPI:
+    ) -> RFM9x:
         """Create a LoRa radio instance."""
         radio: RFM9x = RFM9x(
             spi,

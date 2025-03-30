@@ -1,6 +1,6 @@
-from .hardware.radio.radio_protocol import RadioProto
 from .logger import Logger
 from .packet_manager import PacketManager
+from .protos.radio import RadioProto
 
 try:
     from typing import Union

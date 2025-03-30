@@ -10,12 +10,12 @@ import random
 import time
 
 from .config.config import Config
-from .hardware.imu.imu_protocol import InertialMeasurementUnitProto
-from .hardware.magnetometer.magnetometer_protocol import MagnetometerProto
-from .hardware.radio.radio_protocol import RadioProto
 from .logger import Logger
 from .packet_manager import PacketManager
 from .packet_sender import PacketSender
+from .protos.imu import IMUProto
+from .protos.magnetometer import MagnetometerProto
+from .protos.radio import RadioProto
 from .satellite import Satellite
 from .sleep_helper import SleepHelper
 
@@ -34,7 +34,7 @@ class functions:
         sleep_helper: SleepHelper,
         radio: RadioProto,
         magnetometer: MagnetometerProto,
-        imu: InertialMeasurementUnitProto,
+        imu: IMUProto,
     ) -> None:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
@@ -42,7 +42,7 @@ class functions:
         self.sleep_helper = sleep_helper
         self.radio: RadioProto = radio
         self.magnetometer: MagnetometerProto = magnetometer
-        self.imu: InertialMeasurementUnitProto = imu
+        self.imu: IMUProto = imu
 
         self.logger.info("Initializing Functionalities")
         self.packet_manager: PacketManager = PacketManager(

@@ -4,9 +4,10 @@ except ImportError:
     from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 
 from ....logger import Logger
+from ....protos.imu import IMUProto
+from ....protos.temperature_sensor import TemperatureSensorProto
 from ...decorators import with_retries
 from ...exception import HardwareInitializationError
-from ..imu_protocol import InertialMeasurementUnitProto
 
 # Type hinting only
 try:
@@ -15,7 +16,7 @@ except ImportError:
     pass
 
 
-class LSM6DSOXManager(InertialMeasurementUnitProto):
+class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
     """Manager class for creating LIS2MDL IMU instances.
     The purpose of the manager class is to hide the complexity of IMU initialization from the caller.
     Specifically we should try to keep adafruit_lsm6ds to only this manager class.

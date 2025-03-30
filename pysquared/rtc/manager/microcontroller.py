@@ -1,6 +1,6 @@
 import time
 
-from ..rtc_protocol import RealTimeClockProto
+from ...protos.rtc import RTCProto
 
 try:
     import mocks.circuitpython.rtc as rtc
@@ -8,7 +8,7 @@ except ImportError:
     import rtc
 
 
-class MicrocontrollerManager(RealTimeClockProto):
+class MicrocontrollerManager(RTCProto):
     """
     Class for interfacing with the Microcontroller's Real Time Clock (RTC) via CircuitPython.
 

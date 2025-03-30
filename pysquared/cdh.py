@@ -3,8 +3,8 @@ import time
 
 from .config.config import Config
 from .hardware.radio.modulation import RadioModulation
-from .hardware.radio.radio_protocol import RadioProto
 from .logger import Logger
+from .protos.radio import RadioProto
 from .satellite import Satellite
 
 try:

@@ -1,18 +1,9 @@
 """
-This module defines a protocol for creating RTC instances.
-This is useful for defining an interface that can be implemented by different classes
-for different types of RTCs. This allows for flexibility in the design of the system,
-enabling the use of different RTC implementations without changing the code that uses them.
-
-CircuitPython does not support Protocols directly, but this class can still be used to define an interface
-
-https://docs.python.org/3/library/typing.html#typing.Protocol
+Protocol defining the interface for a Real Time Clock (RTC).
 """
 
 
-class RealTimeClockProto:
-    """Protocol for the Real Time Clock."""
-
+class RTCProto:
     def set_time(
         self,
         year: int,

@@ -419,9 +419,7 @@ def test_send_exception(
     result = manager.send(b"test")
 
     assert result is False
-    mock_logger.error.assert_called_once_with(
-        "Error sending radio message", exc_info=send_error
-    )
+    mock_logger.error.assert_called_once_with("Error sending radio message", send_error)
 
 
 def test_set_modulation_lora_to_fsk(
@@ -617,7 +615,7 @@ def test_get_temperature_read_exception(
 
     assert math.isnan(temp)
     mock_logger.error.assert_called_once_with(
-        "Error reading radio temperature", exc_info=read_error
+        "Error reading radio temperature", read_error
     )
 
 
