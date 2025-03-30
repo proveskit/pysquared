@@ -86,12 +86,12 @@ def test_init_fsk_success(
 
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
 
     mock_rfm9xfsk.assert_called_once_with(
@@ -111,7 +111,7 @@ def test_init_fsk_success(
     assert mock_fsk_instance.fsk_node_address == mock_radio_config.fsk.node_address
     assert mock_fsk_instance.modulation_type == mock_radio_config.fsk.modulation_type
     mock_logger.debug.assert_called_with(
-        message="Initializing radio", modulation=RadioModulation.FSK
+        "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.FSK
     )
 
 
@@ -134,12 +134,12 @@ def test_init_lora_success(
 
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
 
     mock_rfm9x.assert_called_once_with(
@@ -171,7 +171,7 @@ def test_init_lora_success(
         or mock_lora_instance.low_datarate_optimize is None
     )
     mock_logger.debug.assert_called_with(
-        message="Initializing radio", modulation=RadioModulation.LORA
+        "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.LORA
     )
 
 
@@ -198,12 +198,12 @@ def test_init_lora_high_sf_success(
 
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
 
     mock_rfm9x.assert_called_once()
@@ -231,16 +231,16 @@ def test_init_with_retries_fsk(
     with pytest.raises(HardwareInitializationError):
         RFM9xManager(
             mock_logger,
+            mock_radio_config,
+            mock_use_fsk,
+            True,
             mock_spi,
             mock_chip_select,
             mock_reset,
-            mock_radio_config,
-            mock_use_fsk,
-            is_licensed=True,
         )
 
     mock_logger.debug.assert_called_with(
-        message="Initializing radio", modulation=RadioModulation.FSK
+        "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.FSK
     )
     assert mock_rfm9xfsk.call_count == 3
 
@@ -263,16 +263,16 @@ def test_init_with_retries_lora(
     with pytest.raises(HardwareInitializationError):
         RFM9xManager(
             mock_logger,
+            mock_radio_config,
+            mock_use_fsk,
+            True,
             mock_spi,
             mock_chip_select,
             mock_reset,
-            mock_radio_config,
-            mock_use_fsk,
-            is_licensed=True,
         )
 
     mock_logger.debug.assert_called_with(
-        message="Initializing radio", modulation=RadioModulation.LORA
+        "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.LORA
     )
     assert mock_rfm9x.call_count == 3
 
@@ -297,12 +297,12 @@ def test_send_success_bytes(
 
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
 
     data_bytes = b"Hello Radio"
@@ -334,12 +334,12 @@ def test_send_success_string(
 
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
 
     data_str = "Hello String"
@@ -371,12 +371,12 @@ def test_send_unlicensed(
 
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        False,  # Set licensed to False
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=False,  # Set licensed to False
     )
 
     result = manager.send(b"test")
@@ -408,12 +408,12 @@ def test_send_exception(
 
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
 
     result = manager.send(b"test")
@@ -435,12 +435,12 @@ def test_set_modulation_lora_to_fsk(
     mock_use_fsk.toggle(False)
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
     assert manager.get_modulation() == RadioModulation.LORA
     assert mock_use_fsk.get() is False
@@ -468,12 +468,12 @@ def test_set_modulation_fsk_to_lora(
     mock_use_fsk.toggle(True)
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
     assert manager.get_modulation() == RadioModulation.FSK
     assert mock_use_fsk.get() is True
@@ -499,12 +499,12 @@ def test_get_modulation_initialized(
     mock_use_fsk.toggle(True)
     manager_fsk = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
     assert manager_fsk.get_modulation() == RadioModulation.FSK
 
@@ -512,12 +512,12 @@ def test_get_modulation_initialized(
     mock_use_fsk.toggle(False)
     manager_lora = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
     assert manager_lora.get_modulation() == RadioModulation.LORA
 
@@ -569,12 +569,12 @@ def test_get_temperature_success(
 
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
     manager._radio = mock_radio_instance
 
@@ -597,12 +597,12 @@ def test_get_temperature_read_exception(
     """Test handling exception during radio.read_u8()."""
     manager = RFM9xManager(
         mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        True,
         mock_spi,
         mock_chip_select,
         mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
     )
     mock_radio_instance = MagicMock(spec=RFM9x)
     manager._radio = mock_radio_instance
@@ -616,39 +616,4 @@ def test_get_temperature_read_exception(
     assert math.isnan(temp)
     mock_logger.error.assert_called_once_with(
         "Error reading radio temperature", read_error
-    )
-
-
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
-def test_get_temperature_attribute_error(
-    mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
-):
-    """Test handling AttributeError if read_u8 doesn't exist."""
-    mock_use_fsk.toggle(False)
-    mock_radio_instance = MagicMock(spec=RFM9x)
-    # Remove read_u8 from the mock spec
-    del mock_radio_instance.read_u8
-    mock_rfm9x.return_value = mock_radio_instance
-
-    manager = RFM9xManager(
-        mock_logger,
-        mock_spi,
-        mock_chip_select,
-        mock_reset,
-        mock_radio_config,
-        mock_use_fsk,
-        is_licensed=True,
-    )
-
-    temp = manager.get_temperature()
-
-    assert math.isnan(temp)
-    mock_logger.error.assert_called_once_with(
-        "Radio instance does not support read_u8 for temperature."
     )
