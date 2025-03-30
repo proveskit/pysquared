@@ -1,10 +1,10 @@
 """
 This module defines a protocol for creating IMU instances.
-This is useful for defining a factory interface that can be implemented by different classes
+This is useful for defining an interface that can be implemented by different classes
 for different types of IMUs. This allows for flexibility in the design of the system,
 enabling the use of different IMU implementations without changing the code that uses them.
 
-CircuitPython does not support Protocols directly, but this class can still be used to define a factory interface
+CircuitPython does not support Protocols directly, but this class can still be used to define an interface
 
 https://docs.python.org/3/library/typing.html#typing.Protocol
 """

@@ -15,10 +15,10 @@ except ImportError:
     pass
 
 
-class RV3028Factory(RealTimeClockProto):
-    """Factory class for creating RV3028 RTC instances.
-    The purpose of the factory class is to hide the complexity of RTC initialization from the caller.
-    Specifically we should try to keep adafruit_lis2mdl to only this factory class.
+class RV3028Manager(RealTimeClockProto):
+    """Manager class for creating RV3028 RTC instances.
+    The purpose of the manager class is to hide the complexity of RTC initialization from the caller.
+    Specifically we should try to keep adafruit_lis2mdl to only this manager class.
     """
 
     @with_retries(max_attempts=3, initial_delay=1)
@@ -27,7 +27,7 @@ class RV3028Factory(RealTimeClockProto):
         logger: Logger,
         i2c: I2C,
     ) -> None:
-        """Initialize the factory class.
+        """Initialize the manager class.
 
         :param Logger logger: Logger instance for logging messages.
         :param busio.I2C i2c: The I2C bus connected to the chip.

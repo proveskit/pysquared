@@ -3,7 +3,7 @@ import time
 import pytest
 
 import mocks.circuitpython.rtc as MockRTC
-from pysquared.rtc.microcontroller.factory import MicrocontrollerFactory
+from pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 
 
 @pytest.fixture(autouse=True)
@@ -14,7 +14,7 @@ def cleanup():
 
 def test_init():
     """Test that the RTC.datetime is initialized with a time.struct_time"""
-    MicrocontrollerFactory()
+    MicrocontrollerManager()
 
     mrtc: MockRTC = MockRTC.RTC()
     assert mrtc.datetime is not None, "Mock RTC datetime should be set"
@@ -24,7 +24,7 @@ def test_init():
 
 
 def test_set_time():
-    """Test that the RP2040RTCFactory.set_time method correctly sets RTC.datetime"""
+    """Test that the RP2040RTCManager.set_time method correctly sets RTC.datetime"""
     year = 2025
     month = 3
     day = 6
@@ -34,7 +34,7 @@ def test_set_time():
     day_of_week = 2
 
     # Set the time using the RP2040RTC class
-    rtc = MicrocontrollerFactory()
+    rtc = MicrocontrollerManager()
     rtc.set_time(year, month, day, hour, minute, second, day_of_week)
 
     # Get the mock RTC instance and check its datetime

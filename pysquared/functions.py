@@ -12,7 +12,7 @@ import time
 from .config.config import Config
 from .hardware.imu.imu_protocol import InertialMeasurementUnitProto
 from .hardware.magnetometer.magnetometer_protocol import MagnetometerProto
-from .hardware.radio.rfm9x.manager import RFM9xManager
+from .hardware.radio.radio_protocol import RadioProto
 from .logger import Logger
 from .packet_manager import PacketManager
 from .packet_sender import PacketSender
@@ -32,7 +32,7 @@ class functions:
         logger: Logger,
         config: Config,
         sleep_helper: SleepHelper,
-        radio_manager: RFM9xManager,
+        radio: RadioProto,
         magnetometer: MagnetometerProto,
         imu: InertialMeasurementUnitProto,
     ) -> None:
@@ -40,7 +40,7 @@ class functions:
         self.logger: Logger = logger
         self.config: Config = config
         self.sleep_helper = sleep_helper
-        self.radio_manager: RFM9xManager = radio_manager
+        self.radio: RadioProto = radio
         self.magnetometer: MagnetometerProto = magnetometer
         self.imu: InertialMeasurementUnitProto = imu
 
@@ -49,7 +49,7 @@ class functions:
             logger=self.logger, max_packet_size=128
         )
         self.packet_sender: PacketSender = PacketSender(
-            self.logger, radio_manager, self.packet_manager, max_retries=3
+            self.logger, radio, self.packet_manager, max_retries=3
         )
 
         self.cubesat_name: str = config.cubesat_name
@@ -67,7 +67,7 @@ class functions:
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
-        self.radio_manager.radio.receive_timeout = 10
+        self.radio.radio.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
@@ -87,7 +87,7 @@ class functions:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
         """
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
-        self.radio_manager.send(message)
+        self.radio.send(message)
         if self.cubesat.is_licensed:
             self.logger.debug("Sent Packet", packet_message=message)
         else:
@@ -123,7 +123,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.radio_manager.send(lora_beacon)
+        self.radio.send(lora_beacon)
 
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
@@ -154,13 +154,13 @@ class functions:
                 f"UT:{self.cubesat.get_system_uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
-                f"RT:{self.radio_manager.get_temperature()}",
+                f"RT:{self.radio.get_temperature()}",
                 f"AT:{self.imu.get_temperature()}",
                 f"BT:{self.last_battery_temp}",
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{self.radio_manager.get_modulation()}",
+                f"FK:{self.radio.get_modulation()}",
             ]
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", e)
@@ -181,13 +181,13 @@ class functions:
             )
             self.state_of_health_part1: bool = False
 
-        self.radio_manager.send(message)
+        self.radio.send(message)
 
     def send_face(self) -> None:
         """Calls the data transmit function from the radio manager class"""
 
         self.logger.debug("Sending Face Data")
-        self.radio_manager.send(
+        self.radio.send(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
 
@@ -196,15 +196,13 @@ class functions:
         # assigned from the Config object
         from pysquared.cdh import CommandDataHandler
 
-        cdh = CommandDataHandler(self.config, self.logger, self.radio_manager)
+        cdh = CommandDataHandler(self.config, self.logger, self.radio)
 
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            self.radio_manager.radio.receive_timeout = 10
-            received: bytearray = self.radio_manager.radio.receive_with_ack(
-                keep_listening=True
-            )
+            self.radio.radio.receive_timeout = 10
+            received: bytearray = self.radio.radio.receive_with_ack(keep_listening=True)
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", e)
             received = None
@@ -224,8 +222,8 @@ class functions:
     def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
-            self.radio_manager.radio.receive_timeout = 10
-            received: bytearray = self.radio_manager.radio.receive(keep_listening=True)
+            self.radio.radio.receive_timeout = 10
+            received: bytearray = self.radio.radio.receive(keep_listening=True)
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:

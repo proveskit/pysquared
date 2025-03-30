@@ -8,7 +8,7 @@ except ImportError:
     import rtc
 
 
-class MicrocontrollerFactory(RealTimeClockProto):
+class MicrocontrollerManager(RealTimeClockProto):
     """
     Class for interfacing with the Microcontroller's Real Time Clock (RTC) via CircuitPython.
 

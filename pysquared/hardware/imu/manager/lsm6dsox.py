@@ -15,10 +15,10 @@ except ImportError:
     pass
 
 
-class LSM6DSOXFactory(InertialMeasurementUnitProto):
-    """Factory class for creating LIS2MDL IMU instances.
-    The purpose of the factory class is to hide the complexity of IMU initialization from the caller.
-    Specifically we should try to keep adafruit_lsm6ds to only this factory class.
+class LSM6DSOXManager(InertialMeasurementUnitProto):
+    """Manager class for creating LIS2MDL IMU instances.
+    The purpose of the manager class is to hide the complexity of IMU initialization from the caller.
+    Specifically we should try to keep adafruit_lsm6ds to only this manager class.
     """
 
     @with_retries(max_attempts=3, initial_delay=1)
@@ -28,7 +28,7 @@ class LSM6DSOXFactory(InertialMeasurementUnitProto):
         i2c: I2C,
         address: int,
     ) -> None:
-        """Initialize the factory class.
+        """Initialize the manager class.
 
         :param Logger logger: Logger instance for logging messages.
         :param busio.I2C i2c: The I2C bus connected to the chip.

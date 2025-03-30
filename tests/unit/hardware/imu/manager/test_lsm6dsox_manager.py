@@ -5,7 +5,7 @@ import pytest
 
 from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from pysquared.hardware.exception import HardwareInitializationError
-from pysquared.hardware.imu.lsm6dsox.factory import LSM6DSOXFactory
+from pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
 
 # Type hinting only
 try:
@@ -33,14 +33,14 @@ address: int = 0x6A
 
 def test_create_imu(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
     """Test successful creation of an LSM6DSOX IMU instance."""
-    imu_factory = LSM6DSOXFactory(mock_logger, mock_i2c, address)
+    imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
 
-    assert isinstance(imu_factory._imu, LSM6DSOX)
+    assert isinstance(imu_manager._imu, LSM6DSOX)
     mock_logger.debug.assert_called_once_with("Initializing IMU")
 
 
 @pytest.mark.slow
-@patch("pysquared.hardware.imu.lsm6dsox.factory.LSM6DSOX")
+@patch("pysquared.hardware.imu.manager.lsm6dsox.LSM6DSOX")
 def test_create_with_retries(
     mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
@@ -50,7 +50,7 @@ def test_create_with_retries(
     mock_lsm6dsox.side_effect = Exception("Simulated LSM6DSOX failure")
 
     with pytest.raises(HardwareInitializationError):
-        _ = LSM6DSOXFactory(mock_logger, mock_i2c, address)
+        _ = LSM6DSOXManager(mock_logger, mock_i2c, address)
 
     mock_logger.debug.assert_called_with("Initializing IMU")
     assert mock_lsm6dsox.call_count <= 3
@@ -61,13 +61,13 @@ def test_get_acceleration_success(
     mock_logger: MagicMock,
 ) -> None:
     """Test successful retrieval of the acceleration vector."""
-    imu_factory = LSM6DSOXFactory(mock_logger, mock_i2c, address)
+    imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     # Replace the automatically created mock instance with a MagicMock we can configure
-    imu_factory._imu = MagicMock(spec=LSM6DSOX)
+    imu_manager._imu = MagicMock(spec=LSM6DSOX)
     expected_accel = (1.0, 2.0, 9.8)
-    imu_factory._imu.acceleration = expected_accel
+    imu_manager._imu.acceleration = expected_accel
 
-    vector = imu_factory.get_acceleration()
+    vector = imu_manager.get_acceleration()
     assert vector == expected_accel
 
 
@@ -76,9 +76,9 @@ def test_get_acceleration_failure(
     mock_logger: MagicMock,
 ) -> None:
     """Test handling of exceptions when retrieving the acceleration vector."""
-    imu_factory = LSM6DSOXFactory(mock_logger, mock_i2c, address)
+    imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     mock_imu_instance = MagicMock(spec=LSM6DSOX)
-    imu_factory._imu = mock_imu_instance
+    imu_manager._imu = mock_imu_instance
 
     # Configure the mock to raise an exception when accessing the acceleration property
     mock_accel_property = PropertyMock(
@@ -86,7 +86,7 @@ def test_get_acceleration_failure(
     )
     type(mock_imu_instance).acceleration = mock_accel_property
 
-    vector = imu_factory.get_acceleration()
+    vector = imu_manager.get_acceleration()
 
     assert vector is None
     assert mock_logger.error.call_count == 1
@@ -101,12 +101,12 @@ def test_get_gyro_success(
     mock_logger: MagicMock,
 ) -> None:
     """Test successful retrieval of the gyro vector."""
-    imu_factory = LSM6DSOXFactory(mock_logger, mock_i2c, address)
-    imu_factory._imu = MagicMock(spec=LSM6DSOX)
+    imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
+    imu_manager._imu = MagicMock(spec=LSM6DSOX)
     expected_gyro = (0.1, 0.2, 0.3)
-    imu_factory._imu.gyro = expected_gyro
+    imu_manager._imu.gyro = expected_gyro
 
-    vector = imu_factory.get_gyro_data()
+    vector = imu_manager.get_gyro_data()
     assert vector == expected_gyro
 
 
@@ -115,16 +115,16 @@ def test_get_gyro_failure(
     mock_logger: MagicMock,
 ) -> None:
     """Test handling of exceptions when retrieving the gyro vector."""
-    imu_factory = LSM6DSOXFactory(mock_logger, mock_i2c, address)
+    imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     mock_imu_instance = MagicMock(spec=LSM6DSOX)
-    imu_factory._imu = mock_imu_instance
+    imu_manager._imu = mock_imu_instance
 
     mock_gyro_property = PropertyMock(
         side_effect=RuntimeError("Simulated retrieval error")
     )
     type(mock_imu_instance).gyro = mock_gyro_property
 
-    vector = imu_factory.get_gyro_data()
+    vector = imu_manager.get_gyro_data()
 
     assert vector is None
     assert mock_logger.error.call_count == 1
@@ -139,27 +139,27 @@ def test_get_temperature_success(
     mock_logger: MagicMock,
 ) -> None:
     """Test successful retrieval of the temperature."""
-    imu_factory = LSM6DSOXFactory(mock_logger, mock_i2c, address)
-    imu_factory._imu = MagicMock(spec=LSM6DSOX)
+    imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
+    imu_manager._imu = MagicMock(spec=LSM6DSOX)
     expected_temp = 25.5
-    imu_factory._imu.temperature = expected_temp
+    imu_manager._imu.temperature = expected_temp
 
-    temp = imu_factory.get_temperature()
+    temp = imu_manager.get_temperature()
     assert math.isclose(temp, expected_temp, rel_tol=1e-9)
 
 
 def test_get_temperature_failure(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
     """Test handling of exceptions when retrieving the temperature."""
-    imu_factory = LSM6DSOXFactory(mock_logger, mock_i2c, address)
+    imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     mock_imu_instance = MagicMock(spec=LSM6DSOX)
-    imu_factory._imu = mock_imu_instance
+    imu_manager._imu = mock_imu_instance
 
     mock_temp_property = PropertyMock(
         side_effect=RuntimeError("Simulated retrieval error")
     )
     type(mock_imu_instance).temperature = mock_temp_property
 
-    temp = imu_factory.get_temperature()
+    temp = imu_manager.get_temperature()
 
     assert temp is None
     assert mock_logger.error.call_count == 1
