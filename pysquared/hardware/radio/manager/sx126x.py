@@ -4,9 +4,8 @@ from ..modulation import RadioModulation
 from .base import BaseRadioManager
 
 try:
-    # TODO(nateinaction): Replace with mock when available
-    # from mocks.proves_sx126.sx1262 import SX1262 # type: ignore
-    raise ImportError
+    from mocks.proves_sx126.sx126x import ERR_NONE  # type: ignore
+    from mocks.proves_sx126.sx1262 import SX1262  # type: ignore
 except ImportError:
     from lib.proves_sx126._sx126x import ERR_NONE
     from lib.proves_sx126.sx1262 import SX1262
