@@ -21,7 +21,6 @@ class Config:
         self.radio: RadioConfig = RadioConfig(json_data["radio"])
         self.cubesat_name: str = json_data["cubesat_name"]
         self.callsign: str = json_data["callsign"]
-        self.last_battery_temp: float = json_data["last_battery_temp"]
         self.sleep_duration: int = json_data["sleep_duration"]
         self.detumble_enable_z: bool = json_data["detumble_enable_z"]
         self.detumble_enable_x: bool = json_data["detumble_enable_x"]
@@ -38,8 +37,6 @@ class Config:
         self.normal_charge_current: float = json_data["normal_charge_current"]
         self.normal_battery_voltage: float = json_data["normal_battery_voltage"]
         self.critical_battery_voltage: float = json_data["critical_battery_voltage"]
-        self.battery_voltage: float = json_data["battery_voltage"]
-        self.current_draw: float = json_data["current_draw"]
         self.reboot_time: int = json_data["reboot_time"]
         self.turbo_clock: bool = json_data["turbo_clock"]
         self.super_secret_code: str = json_data["super_secret_code"]
@@ -51,12 +48,9 @@ class Config:
             "callsign": {"type": str, "min_length": 3, "max_length": 7},
             "super_secret_code": {"type": bytes, "min": 1, "max": 24},
             "repeat_code": {"type": bytes, "min": 1, "max": 4},
-            # "last_battery_temp": {"type": float, "min": -1, "max": 1},
             "normal_charge_current": {"type": float, "min": 0.0, "max": 2000.0},
             "normal_battery_voltage": {"type": float, "min": 6.0, "max": 8.4},
             "critical_battery_voltage": {"type": float, "min": 5.4, "max": 7.2},
-            # "battery_voltage": {"type": float, "min": 5.4, "max": 8.2},
-            # "current_draw": {"type": float, "min": -1, "max": 1},
             "sleep_duration": {"type": int, "min": 1, "max": 86400},
             "normal_temp": {"type": int, "min": 5, "max": 40},
             "normal_battery_temp": {"type": int, "min": 1, "max": 35},
