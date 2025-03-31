@@ -589,7 +589,7 @@ class Satellite:
         self.logger.info("Starting watchdog petting background task")
         while self.hardware.get("WDT", False):
             self.watchdog_pet()
-            await asyncio.sleep(1.0)  # Pet watchdog every second
+            await asyncio.sleep(10.0)  # Pet watchdog every second
         self.logger.info("Watchdog petting task stopped")
 
     def start_watchdog_background_task(self) -> None:
