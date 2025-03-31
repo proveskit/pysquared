@@ -62,6 +62,7 @@ def mock_radio_config() -> RadioConfig:
     # Using the same config as RFM9x for consistency, adjust if needed
     return RadioConfig(
         {
+            "license": "",
             "sender_id": 1,  # Not directly used by SX126xManager init
             "receiver_id": 2,  # Not directly used by SX126xManager init
             "transmit_frequency": 915.0,  # Needs to be float for SX126x

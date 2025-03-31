@@ -20,7 +20,6 @@ class Config:
 
         self.radio: RadioConfig = RadioConfig(json_data["radio"])
         self.cubesat_name: str = json_data["cubesat_name"]
-        self.callsign: str = json_data["callsign"]
         self.last_battery_temp: float = json_data["last_battery_temp"]
         self.sleep_duration: int = json_data["sleep_duration"]
         self.detumble_enable_z: bool = json_data["detumble_enable_z"]
@@ -29,7 +28,6 @@ class Config:
         self.jokes: list[str] = json_data["jokes"]
         self.debug: bool = json_data["debug"]
         self.heating: bool = json_data["heating"]
-        self.is_licensed: bool = json_data["is_licensed"]
         self.normal_temp: int = json_data["normal_temp"]
         self.normal_battery_temp: int = json_data["normal_battery_temp"]
         self.normal_micro_temp: int = json_data["normal_micro_temp"]

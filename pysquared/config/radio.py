@@ -1,5 +1,6 @@
 class RadioConfig:
     def __init__(self, radio_dict: dict) -> None:
+        self.license: str = radio_dict["license"]
         self.sender_id: int = radio_dict["sender_id"]
         self.receiver_id: int = radio_dict["receiver_id"]
         self.transmit_frequency: float = radio_dict["transmit_frequency"]

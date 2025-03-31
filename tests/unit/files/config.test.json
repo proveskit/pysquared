@@ -1,6 +1,5 @@
 {
-  "cubesat_name": "Orpheus",
-  "callsign": "KO6AZM",
+  "cubesat_name": "Test Satellite",
   "last_battery_temp": 20.0,
   "sleep_duration": 30,
   "detumble_enable_z": true,
@@ -10,10 +9,7 @@
     "Hey it is pretty cold up here, did someone forget to pay the electric bill?"
   ],
   "debug": true,
-  "legacy": false,
   "heating": false,
-  "orpheus": true,
-  "is_licensed": false,
   "normal_temp": 20,
   "normal_battery_temp": 1,
   "normal_micro_temp": 20,
@@ -25,6 +21,7 @@
   "reboot_time": 3600,
   "turbo_clock": false,
   "radio": {
+    "license": "",
     "sender_id": 251,
     "receiver_id": 250,
     "transmit_frequency": 437.4,

@@ -50,6 +50,7 @@ def mock_use_fsk() -> Flag:
 def mock_radio_config() -> RadioConfig:
     return RadioConfig(
         {
+            "license": "",
             "sender_id": 1,
             "receiver_id": 2,
             "transmit_frequency": 915,
