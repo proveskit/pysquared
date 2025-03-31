@@ -113,11 +113,6 @@ class Satellite:
     Maintenence Functions
     """
 
-    def watchdog_pet(self) -> None:
-        self.watchdog_pin.value = True
-        time.sleep(0.01)
-        self.watchdog_pin.value = False
-
     def check_reboot(self) -> None:
         self.UPTIME: int = self.get_system_uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)

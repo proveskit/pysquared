@@ -18,6 +18,7 @@ from .protos.magnetometer import MagnetometerProto
 from .protos.radio import RadioProto
 from .satellite import Satellite
 from .sleep_helper import SleepHelper
+from .watchdog import Watchdog
 
 try:
     from typing import List, OrderedDict, Union
@@ -35,6 +36,7 @@ class functions:
         radio: RadioProto,
         magnetometer: MagnetometerProto,
         imu: IMUProto,
+        watchdog: Watchdog,
     ) -> None:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
@@ -43,6 +45,7 @@ class functions:
         self.radio: RadioProto = radio
         self.magnetometer: MagnetometerProto = magnetometer
         self.imu: IMUProto = imu
+        self.watchdog: Watchdog = watchdog
 
         self.logger.info("Initializing Functionalities")
         self.packet_manager: PacketManager = PacketManager(
@@ -66,15 +69,15 @@ class functions:
 
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
         self.radio.radio.receive_timeout = 10
         self.listen()
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
 
         self.logger.debug("Sleeping for 20 seconds")
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
         self.sleep_helper.safe_sleep(self.sleep_duration)
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
 
     """
     Radio Functions
