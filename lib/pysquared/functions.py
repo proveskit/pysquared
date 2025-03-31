@@ -217,12 +217,14 @@ class functions:
 
         return False
 
-    def listen_joke(self) -> bool:
+    async def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
             self.radio_manager.radio.receive_timeout = 10
-            received: bytearray = self.radio_manager.radio.receive(keep_listening=True)
-            return received is not None and "HAHAHAHAHA!" in received
+            received: Union[
+                bytearray, None
+            ] = await self.radio_manager.radio.asyncio_receive(keep_listening=True)
+            return received is not None and b"HAHAHAHAHA!" in received
 
         except Exception as e:
             self.logger.error("An Error has occured while listening for a joke", e)
