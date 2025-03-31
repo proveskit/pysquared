@@ -4,7 +4,7 @@ Protocol defining the interface for a radio.
 
 # Type hinting only
 try:
-    from typing import Any
+    from typing import Any, Optional
 
     from ..hardware.radio.modulation import RadioModulation
 except ImportError:
@@ -34,5 +34,13 @@ class RadioProto:
 
         :return: The current modulation mode.
         :rtype: RadioModulation
+        """
+        ...
+
+    def receive(self) -> Optional[bytearray]:
+        """Receive data from the radio.
+
+        :return: The received data as a bytearray, or None if no data was received.
+        :rtype: Optional[bytearray]
         """
         ...

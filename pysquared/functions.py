@@ -9,6 +9,7 @@ import gc
 import random
 import time
 
+from .cdh import CommandDataHandler
 from .config.config import Config
 from .logger import Logger
 from .packet_manager import PacketManager
@@ -37,6 +38,7 @@ class functions:
         magnetometer: MagnetometerProto,
         imu: IMUProto,
         watchdog: Watchdog,
+        cdh: CommandDataHandler,
     ) -> None:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
@@ -46,6 +48,7 @@ class functions:
         self.magnetometer: MagnetometerProto = magnetometer
         self.imu: IMUProto = imu
         self.watchdog: Watchdog = watchdog
+        self.cdh: CommandDataHandler = cdh
 
         self.logger.info("Initializing Functionalities")
         self.packet_manager: PacketManager = PacketManager(
@@ -69,7 +72,6 @@ class functions:
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
         self.watchdog.pet()
-        self.radio.radio.receive_timeout = 10
         self.listen()
         self.watchdog.pet()
 
@@ -187,17 +189,10 @@ class functions:
         )
 
     def listen(self) -> bool:
-        # need to instanciate cdh to feed it the config var
-        # assigned from the Config object
-        from pysquared.cdh import CommandDataHandler
-
-        cdh = CommandDataHandler(self.config, self.logger, self.radio)
-
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            self.radio.radio.receive_timeout = 10
-            received: bytearray = self.radio.radio.receive_with_ack(keep_listening=True)
+            received: bytearray = self.radio.receive()
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", e)
             received = None
@@ -205,20 +200,17 @@ class functions:
         try:
             if received is not None:
                 self.logger.debug("Received Packet", packet=received)
-                cdh.message_handler(self.cubesat, received)
+                self.cdh.message_handler(self.cubesat, received)
                 return True
         except Exception as e:
             self.logger.error("An Error has occured while handling a command: ", e)
-        finally:
-            del cdh
 
         return False
 
     def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
-            self.radio.radio.receive_timeout = 10
-            received: bytearray = self.radio.radio.receive(keep_listening=True)
+            received: bytearray = self.radio.receive()
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:

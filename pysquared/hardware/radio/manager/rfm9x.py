@@ -13,7 +13,7 @@ except ImportError:
 
 # Type hinting only
 try:
-    from typing import Any
+    from typing import Any, Optional
 
     from busio import SPI
     from digitalio import DigitalInOut
@@ -24,6 +24,10 @@ except ImportError:
     pass
 
 
+# TODO(nateinaction): Find the right place for this ... receive_timeout = 10
+# listen() -> receive()
+# receive()
+# receive_with_ack() -> receive()
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios."""
 
@@ -166,3 +170,14 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             radio.low_datarate_optimize = 1
 
         return radio
+
+    def receive(self) -> Optional[bytes]:
+        """Receive data from the radio."""
+        try:
+            return self._radio.receive(
+                keep_listening=True,
+                with_ack=True,
+                timeout=10,
+            )
+        except Exception as e:
+            self._log.error("Error receiving data", e)

@@ -1,3 +1,5 @@
+import time
+
 from ....config.radio import FSKConfig, LORAConfig
 from ....logger import Logger
 from ..modulation import RadioModulation
@@ -106,3 +108,32 @@ class SX126xManager(BaseRadioManager):
             sf=lora_config.spreading_factor,
             power=lora_config.transmit_power,
         )
+
+    def receive(self) -> bytearray | None:
+        """Receive data from the radio.
+
+        :return: The received message as a bytearray, or None if no message is received.
+        """
+        try:
+            start_time: float = time.time()
+            timeout = 10
+            while True:
+                if time.time() - start_time > timeout:
+                    return None
+
+                msg: bytes = b""
+                error: int = 0
+                msg, err = self._radio.recv()
+                if msg:
+                    if err != ERR_NONE:
+                        self._log.error(
+                            f"Radio receive failed with error code: {error}"
+                        )
+                        return None
+
+                    return msg
+
+                time.sleep(0)
+        except Exception as e:
+            self._log.error("Error receiving data", e)
+            return None

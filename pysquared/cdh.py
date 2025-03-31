@@ -8,7 +8,7 @@ from .protos.radio import RadioProto
 from .satellite import Satellite
 
 try:
-    from typing import Any, Union
+    from typing import Union
 
     import circuitpython_typing
 except Exception:
@@ -45,24 +45,6 @@ class CommandDataHandler:
             "The satellite has a super secret code!",
             super_secret_code=self._super_secret_code,
         )
-
-    ############### hot start helper ###############
-    def hotstart_handler(self, cubesat: Satellite, msg: Any) -> None:
-        # check that message is for me
-        if msg[0] == self._radio.radio.node:
-            # TODO check for optional radio config
-
-            # manually send ACK
-            self._radio.send("!", identifier=msg[2], flags=0x80)
-            # TODO remove this delay. for testing only!
-            time.sleep(0.5)
-            self.message_handler(cubesat, msg)
-        else:
-            self._log.info(
-                "Message not for me?",
-                target_id=hex(msg[0]),
-                my_id=hex(self._radio.radio.node),
-            )
 
     ############### message handler ###############
     def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
@@ -108,13 +90,7 @@ class CommandDataHandler:
                 if multi_msg:
                     # TODO check for optional radio config
                     self._log.info("multi-message mode enabled")
-                response = self._radio.radio.receive(
-                    keep_listening=True,
-                    with_ack=True,
-                    with_header=True,
-                    view=True,
-                    timeout=10,
-                )
+                response = self._radio.receive()
                 if response is not None:
                     cubesat.c_gs_resp += 1
                     self.message_handler(cubesat, response)
@@ -169,7 +145,7 @@ class CommandDataHandler:
 
         # deep sleep + listen
         # TODO config radio
-        self._radio.radio.listen()
+        self._radio.receive()
         if "st" in cubesat.radio_cfg:
             _t: float = cubesat.radio_cfg["st"]
         else:

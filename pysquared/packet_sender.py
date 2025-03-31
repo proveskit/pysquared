@@ -40,7 +40,7 @@ class PacketSender:
         time.sleep(self.send_delay)
 
         while (time.monotonic() - start_time) < self.ack_timeout:
-            packet: bytearray = self.radio.radio.receive()
+            packet: bytearray = self.radio.receive()
 
             if packet and self.packet_manager.is_ack_packet(packet):
                 ack_seq: Union[int, None] = self.packet_manager.get_ack_seq_num(packet)
@@ -173,7 +173,7 @@ class PacketSender:
         retransmit_end_time: float = time.monotonic() + retransmit_wait
 
         while time.monotonic() < retransmit_end_time:
-            packet: bytearray = self.radio.radio.receive()
+            packet: bytearray = self.radio.receive()
             if not packet:
                 break
 
