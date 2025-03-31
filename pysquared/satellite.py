@@ -80,6 +80,7 @@ class Satellite:
         # They are only used in state of health
         self.battery_voltage: Optional[float] = None
         self.charge_current: Optional[float] = None
+        self.power_mode: str = "normal"
 
         """
         Define the boot time and current time
