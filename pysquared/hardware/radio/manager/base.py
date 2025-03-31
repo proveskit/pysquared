@@ -22,7 +22,6 @@ class BaseRadioManager(RadioProto):
         logger: Logger,
         radio_config: RadioConfig,
         use_fsk: Flag,
-        is_licensed: bool,
         **kwargs: Any,
     ) -> None:
         """Initialize the base manager class.
@@ -30,7 +29,6 @@ class BaseRadioManager(RadioProto):
         :param Logger logger: Logger instance for logging messages.
         :param RadioConfig radio_config: Radio configuration object.
         :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
-        :param bool is_licensed: Flag indicating if radio operation is licensed.
         :param Any kwargs: Hardware-specific arguments (e.g., spi, cs, rst).
 
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
@@ -38,7 +36,6 @@ class BaseRadioManager(RadioProto):
         self._log = logger
         self._radio_config = radio_config
         self._use_fsk = use_fsk
-        self._is_licensed = is_licensed
         self._radio: Any | None = None  # Placeholder for the specific radio instance
 
         initial_modulation = self.get_modulation()
@@ -58,7 +55,7 @@ class BaseRadioManager(RadioProto):
     def send(self, data: Any) -> bool:
         """Send data over the radio."""
         try:
-            if not self._is_licensed:
+            if self._radio_config.license == "":
                 self._log.warning("Radio send attempt failed: Not licensed.")
                 return False
 

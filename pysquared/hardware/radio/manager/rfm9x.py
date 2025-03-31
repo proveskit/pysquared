@@ -32,7 +32,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         logger: Logger,
         radio_config: RadioConfig,
         use_fsk: Flag,
-        is_licensed: bool,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
@@ -42,7 +41,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         :param Logger logger: Logger instance for logging messages.
         :param RadioConfig radio_config: Radio config object.
         :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
-        :param bool is_licensed: Flag indicating if radio operation is licensed.
         :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
         :param ~digitalio.DigitalInOut chip_select: A DigitalInOut object connected to the chip's CS/chip select line.
         :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset line.
@@ -53,7 +51,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             logger=logger,
             radio_config=radio_config,
             use_fsk=use_fsk,
-            is_licensed=is_licensed,
             spi=spi,
             chip_select=chip_select,
             reset=reset,

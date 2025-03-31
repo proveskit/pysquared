@@ -71,7 +71,6 @@ class Satellite:
         self.turbo_clock: bool = config.turbo_clock
         self.cubesat_name: str = config.cubesat_name
         self.heating: bool = config.heating
-        self.is_licensed: bool = config.is_licensed
 
         """
         Setting up data buffers

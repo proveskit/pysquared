@@ -81,7 +81,7 @@ class functions:
     """
 
     def send(self, msg: Union[str, bytearray]) -> None:
-        """Calls the RFM9x to send a message. Currently only sends with default settings.
+        """Calls the radio to send a message. Currently only sends with default settings.
 
         Args:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
@@ -93,17 +93,8 @@ class functions:
         else:
             self.logger.warning("Failed to send packet")
 
-    def send_packets(self, data: Union[str, bytearray]) -> None:
-        """Sends packets of data over the radio with delay between packets.
-
-        Args:
-            data (String, Byte Array): Pass the data to be sent.
-            delay (float): Delay in seconds between packets
-        """
-        self.packet_sender.send_data(data)
-
     def beacon(self) -> None:
-        """Calls the RFM9x to send a beacon."""
+        """Calls the radio to send a beacon."""
 
         try:
             lora_beacon: str = (
@@ -126,7 +117,7 @@ class functions:
         self.radio.send(lora_beacon)
 
     def joke(self) -> None:
-        self.send(random.choice(self.jokes))
+        self.radio.send(random.choice(self.jokes))
 
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return: str = ""
@@ -337,7 +328,7 @@ class functions:
                     data[0] = tuple(data[0])
                     dipole = detumble.magnetorquer_dipole(data[1], data[0])
                     self.logger.debug("Detumbling", dipole=dipole)
-                    self.send("Detumbling! Gyro, Mag: " + str(data))
+                    self.radio.send("Detumbling! Gyro, Mag: " + str(data))
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:

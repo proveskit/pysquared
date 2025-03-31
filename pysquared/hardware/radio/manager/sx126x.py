@@ -31,7 +31,6 @@ class SX126xManager(BaseRadioManager):
         logger: Logger,
         radio_config: RadioConfig,
         use_fsk: Flag,
-        is_licensed: bool,
         spi: SPI,
         chip_select: DigitalInOut,
         irq: DigitalInOut,
@@ -43,7 +42,6 @@ class SX126xManager(BaseRadioManager):
         :param Logger logger: Logger instance for logging messages.
         :param RadioConfig radio_config: Radio configuration object.
         :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
-        :param bool is_licensed: Flag indicating if radio operation is licensed.
         :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
         :param ~digitalio.DigitalInOut chip_select: Chip select pin.
         :param ~digitalio.DigitalInOut irq: Interrupt request pin.
@@ -56,7 +54,6 @@ class SX126xManager(BaseRadioManager):
             logger=logger,
             radio_config=radio_config,
             use_fsk=use_fsk,
-            is_licensed=is_licensed,
             spi=spi,
             chip_select=chip_select,
             irq=irq,

@@ -58,7 +58,7 @@ class PacketSender:
         import time
 
         for attempt in range(self.max_retries):
-            self.radio.radio.send(packet)
+            self.radio.send(packet)
 
             if self.wait_for_ack(seq_num):
                 # Success - minimal delay before next packet
@@ -117,9 +117,9 @@ class PacketSender:
             for seq in missing_packets:
                 if seq < len(packets):
                     self.logger.info("Retransmitting packet ", packet=seq)
-                    self.radio.radio.send(packets[seq])
+                    self.radio.send(packets[seq])
                     time.sleep(0.2)  # Small delay between retransmitted packets
-                    self.radio.radio.send(packets[seq])
+                    self.radio.send(packets[seq])
                     time.sleep(0.2)  # Small delay between retransmitted packets
 
             return True
@@ -148,7 +148,7 @@ class PacketSender:
                 attempt_num=attempt + 1,
                 max_retries=self.max_retries,
             )
-            self.radio.radio.send(packets[0])
+            self.radio.send(packets[0])
 
             if self.wait_for_ack(0):
                 break
@@ -166,7 +166,7 @@ class PacketSender:
                 self.logger.info(
                     "Sending packet", current_packet=i, num_packets=total_packets
                 )
-            self.radio.radio.send(packets[i])
+            self.radio.send(packets[i])
             time.sleep(send_delay)
 
         self.logger.info("Waiting for retransmit requests...")
@@ -197,10 +197,10 @@ class PacketSender:
                     break
 
                 self.logger.info("Retransmitting packet", packet=seq)
-                self.radio.radio.send(packets[seq])
+                self.radio.send(packets[seq])
                 time.sleep(0.5)  # Longer delay between retransmitted packets
                 self.logger.info("Retransmitting packet", packet=seq)
-                self.radio.radio.send(packets[seq])
+                self.radio.send(packets[seq])
                 time.sleep(0.2)  # Longer delay between retransmitted packets
 
             # Reset timeout and add extra delay after retransmission
