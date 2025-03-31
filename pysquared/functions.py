@@ -60,7 +60,6 @@ class functions:
         self.jokes: list[str] = config.jokes
         self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
-        self.callsign: str = config.callsign
         self.state_of_health_part1: bool = False
 
     """
@@ -89,7 +88,9 @@ class functions:
         Args:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
         """
-        message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
+        message: str = (
+            f"{self.config.radio.license} " + str(msg) + f" {self.config.radio.license}"
+        )
         self.radio.send(message)
         if self.cubesat.is_licensed:
             self.logger.debug("Sent Packet", packet_message=message)
@@ -101,20 +102,20 @@ class functions:
 
         try:
             lora_beacon: str = (
-                f"{self.callsign} Hello I am {self.cubesat_name}! I am: "
+                f"{self.config.radio.license} Hello I am {self.cubesat_name}! I am: "
                 + str(self.cubesat.power_mode)
                 + f" UT:{self.cubesat.get_system_uptime} BN:{self.cubesat.boot_count.get()} EC:{self.logger.get_error_count()} "
-                + f"IHBPFJASTMNE! {self.callsign}"
+                + f"IHBPFJASTMNE! {self.config.radio.license}"
             )
         except Exception as e:
             self.logger.error("Error with obtaining power data: ", e)
 
             lora_beacon: str = (
-                f"{self.callsign} Hello I am Yearling^2! I am in: "
+                f"{self.config.radio.license} Hello I am Yearling^2! I am in: "
                 + "an unidentified"
                 + " power mode. V_Batt = "
                 + "Unknown"
-                + f". IHBPFJASTMNE! {self.callsign}"
+                + f". IHBPFJASTMNE! {self.config.radio.license}"
             )
 
         self.radio.send(lora_beacon)
@@ -162,16 +163,16 @@ class functions:
         message: str = ""
         if not self.state_of_health_part1:
             message = (
-                f"{self.callsign} Yearling^2 State of Health 1/2"
+                f"{self.config.radio.license} Yearling^2 State of Health 1/2"
                 + str(self.state_list)
-                + f"{self.callsign}"
+                + f"{self.config.radio.license}"
             )
             self.state_of_health_part1: bool = True
         else:
             message = (
-                f"{self.callsign} YSOH 2/2"
+                f"{self.config.radio.license} YSOH 2/2"
                 + self.format_state_of_health(self.cubesat.hardware)
-                + f"{self.callsign}"
+                + f"{self.config.radio.license}"
             )
             self.state_of_health_part1: bool = False
 
@@ -182,7 +183,7 @@ class functions:
 
         self.logger.debug("Sending Face Data")
         self.radio.send(
-            f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
+            f"{self.config.radio.license} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.config.radio.license}"
         )
 
     def listen(self) -> bool:
