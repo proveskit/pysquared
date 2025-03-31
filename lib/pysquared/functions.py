@@ -196,7 +196,9 @@ class functions:
         try:
             self.logger.debug("Listening")
             self.radio_manager.radio.receive_timeout = 10
-            received: bytearray = self.radio_manager.radio.receive_with_ack(
+            received: Union[
+                bytearray, None
+            ] = await self.radio_manager.radio.asyncio_receive_with_ack(
                 keep_listening=True
             )
         except Exception as e:
