@@ -54,8 +54,6 @@ class SleepHelper:
             duration -= 15
             iterations += 1
 
-            self.cubesat.watchdog_pet()
-
     def short_hibernate(self) -> Literal[True]:
         """Puts the Satellite to sleep for 120 seconds"""
 
@@ -70,7 +68,7 @@ class SleepHelper:
             self.cubesat.enable_rf = False
 
         self.cubesat.f_softboot.toggle(True)
-        self.cubesat.watchdog_pet()
+
         self.safe_sleep(120)
 
         # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
@@ -95,7 +93,7 @@ class SleepHelper:
             self.cubesat.enable_rf = False
 
         self.cubesat.f_softboot.toggle(True)
-        self.cubesat.watchdog_pet()
+
         self.safe_sleep(600)
 
         # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.

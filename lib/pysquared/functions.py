@@ -60,15 +60,11 @@ class functions:
 
     async def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
-        self.cubesat.watchdog_pet()
         self.radio_manager.radio.receive_timeout = 10
         await self.listen()
-        self.cubesat.watchdog_pet()
 
         self.logger.debug("Sleeping for 20 seconds")
-        self.cubesat.watchdog_pet()
         self.sleep_helper.safe_sleep(self.sleep_duration)
-        self.cubesat.watchdog_pet()
 
     """
     Radio Functions
