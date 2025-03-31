@@ -152,7 +152,7 @@ try:
     async def run_tasks():
         # Initialize watchdog petting task
         c.hardware["WDT"] = True
-        watchdog_pet_task = asyncio.create_task(c._watchdog_pet_task())
+        watchdog_pet_task = asyncio.create_task(c.watchdog_pet_task())
         logger.info("Watchdog petting task created.")
 
         # Initialize main task
