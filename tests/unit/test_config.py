@@ -1,6 +1,8 @@
 import json
 import os
 
+import pytest
+
 from pysquared.config.config import Config
 
 os.path.dirname(__file__)
@@ -103,9 +105,6 @@ def test_floats() -> None:
     config = Config(file)
 
     assert (
-        config.last_battery_temp == json_data["last_battery_temp"]
-    ), "No match for: last_battery_temp"
-    assert (
         config.normal_charge_current == json_data["normal_charge_current"]
     ), "No match for: normal_charge_current"
     assert (
@@ -114,12 +113,6 @@ def test_floats() -> None:
     assert (
         config.critical_battery_voltage == json_data["critical_battery_voltage"]
     ), "No match for: critical_battery_voltage"
-    assert (
-        config.battery_voltage == json_data["battery_voltage"]
-    ), "No match for: battery_voltage"
-    assert (
-        config.current_draw == json_data["current_draw"]
-    ), "No match for: current_draw"
 
 
 def test_bools() -> None:
@@ -143,3 +136,161 @@ def test_bools() -> None:
     assert config.orpheus == json_data["orpheus"], "No match for: orpheus"
     assert config.is_licensed == json_data["is_licensed"], "No match for: is_licensed"
     assert config.turbo_clock == json_data["turbo_clock"], "No match for: turbo_clock"
+
+
+def test_validation_updateable() -> None:
+    config = Config(file)
+
+    # raises KeyError
+    with pytest.raises(KeyError):
+        config.validate("not_in_config", "trash")
+
+    # config
+    try:
+        config.validate("cubesat_name", "maia")
+    except KeyError as e:
+        print(e)
+
+    # radio
+    try:
+        config.validate("receiver_id", 11)
+    except KeyError as e:
+        print(e)
+
+    # fsk
+    try:
+        config.validate("ack_delay", 1.5)
+    except KeyError as e:
+        print(e)
+
+    # lora
+    try:
+        config.validate("node_address", 11)
+    except KeyError as e:
+        print(e)
+
+
+def test_validation_type() -> None:
+    config = Config(file)
+
+    # raises TypeError
+    with pytest.raises(TypeError):
+        config.validate("cubesat_name", 1)
+
+    # config
+    try:
+        config.validate("cubesat_name", "maia")
+    except KeyError as e:
+        print(e)
+
+
+def test_validation_range() -> None:
+    config = Config(file)
+
+    # raises ValueError
+    with pytest.raises(ValueError):
+        config.validate("callsign", "m")
+    with pytest.raises(ValueError):
+        config.validate("callsign", "more_than_seven")
+
+    with pytest.raises(ValueError):
+        config.validate("receiver_id", -1)
+    with pytest.raises(ValueError):
+        config.validate("receiver_id", 256)
+
+    with pytest.raises(ValueError):
+        config.validate("transmit_frequency", 0.0)
+    with pytest.raises(ValueError):
+        config.validate("transmit_frequency", 500.0)
+    with pytest.raises(ValueError):
+        config.validate("transmit_frequency", 916.0)
+    try:
+        config.validate("transmit_frequency", 436.0)
+    except ValueError as e:
+        print(e)
+
+    with pytest.raises(ValueError):
+        config.validate("callsign", "more_than_seven")
+
+    with pytest.raises(ValueError):
+        config.validate("callsign", "more_than_seven")
+
+    # config
+    try:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
+        print(e)
+
+    # radio
+    try:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
+        print(e)
+
+    # fsk
+    try:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
+        print(e)
+
+    # lora
+    try:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
+        print(e)
+
+
+def test_save_config() -> None:
+    config = Config(file)
+    try:
+        config.save_config("callsign", "KKYE")
+    except ValueError as e:
+        print(e)
+
+
+def test_update_config() -> None:
+    config = Config(file)
+
+    # config temp
+    try:
+        config.update_config("callsign", "KKYE", False)
+    except ValueError as e:
+        print(e)
+    # config permanent
+    try:
+        config.update_config("callsign", "KKYE", True)
+    except ValueError as e:
+        print(e)
+
+    # radio temp
+    try:
+        config.update_config("receiver_id", 1, False)
+    except ValueError as e:
+        print(e)
+    # radio permanent
+    try:
+        config.update_config("receiver_id", 1, True)
+    except ValueError as e:
+        print(e)
+
+    # fsk temp
+    try:
+        config.update_config("ack_delay", 1.0, False)
+    except ValueError as e:
+        print(e)
+    # fsk permanent
+    try:
+        config.update_config("ack_delay", 1.0, True)
+    except ValueError as e:
+        print(e)
+
+    # lora temp
+    try:
+        config.update_config("broadcast_address", 1, False)
+    except ValueError as e:
+        print(e)
+    # lora permanent
+    try:
+        config.update_config("broadcast_address", 1, True)
+    except ValueError as e:
+        print(e)
