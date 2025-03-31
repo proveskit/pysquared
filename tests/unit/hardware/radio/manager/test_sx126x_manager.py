@@ -62,7 +62,7 @@ def mock_radio_config() -> RadioConfig:
     # Using the same config as RFM9x for consistency, adjust if needed
     return RadioConfig(
         {
-            "license": "",
+            "license": "test license",
             "sender_id": 1,  # Not directly used by SX126xManager init
             "receiver_id": 2,  # Not directly used by SX126xManager init
             "transmit_frequency": 915.0,  # Needs to be float for SX126x
@@ -107,7 +107,6 @@ def test_init_fsk_success(
         mock_logger,
         mock_radio_config,
         mock_use_fsk,
-        True,
         mock_spi,
         mock_chip_select,
         mock_irq,
@@ -152,7 +151,6 @@ def test_init_lora_success(
         mock_logger,
         mock_radio_config,
         mock_use_fsk,
-        True,
         mock_spi,
         mock_chip_select,
         mock_irq,
@@ -205,7 +203,6 @@ def test_init_with_retries_fsk(
             mock_logger,
             mock_radio_config,
             mock_use_fsk,
-            True,
             mock_spi,
             mock_chip_select,
             mock_irq,
@@ -245,7 +242,6 @@ def test_init_with_retries_lora(
             mock_logger,
             mock_radio_config,
             mock_use_fsk,
-            True,
             mock_spi,
             mock_chip_select,
             mock_irq,
@@ -277,7 +273,6 @@ def initialized_manager(
         mock_logger,
         mock_radio_config,
         mock_use_fsk,
-        True,
         mock_spi,
         mock_chip_select,
         mock_irq,
@@ -333,11 +328,12 @@ def test_send_unlicensed(
     mock_use_fsk: Flag,
 ):
     """Test send attempt when not licensed."""
+    mock_radio_config.license = ""  # Simulate unlicensed state
+
     manager = SX126xManager(
         mock_logger,
         mock_radio_config,
         mock_use_fsk,
-        False,
         mock_spi,
         mock_chip_select,
         mock_irq,
