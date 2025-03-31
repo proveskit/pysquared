@@ -14,7 +14,7 @@ except ImportError:
 
 # Type hinting only
 try:
-    from typing import Any
+    from typing import Any, Optional
 
     from busio import SPI
     from digitalio import DigitalInOut
@@ -109,26 +109,33 @@ class SX126xManager(BaseRadioManager):
             power=lora_config.transmit_power,
         )
 
-    def receive(self) -> bytearray | None:
+    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
         """Receive data from the radio.
 
-        :return: The received message as a bytearray, or None if no message is received.
+        :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
+        :return: The received data as bytes, or None if no data was received.
         """
+        _timeout = timeout if not timeout else self._receive_timeout
+        self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
+
         try:
             start_time: float = time.time()
-            timeout = 10
             while True:
-                if time.time() - start_time > timeout:
+                if time.time() - start_time > _timeout:
+                    self._log.debug("Receive timeout reached.")
                     return None
 
                 msg: bytes = b""
                 err: int = 0
-                msg, err = self._radio.recv()
+                msg, err = (
+                    self._radio.recv()
+                )  # Assuming recv handles its own internal timing/blocking
+
                 if msg:
                     if err != ERR_NONE:
                         self._log.error(f"Radio receive failed with error code: {err}")
                         return None
-
+                    self._log.info(f"Received message ({len(msg)} bytes)")
                     return msg
 
                 time.sleep(0)

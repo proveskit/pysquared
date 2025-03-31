@@ -37,10 +37,11 @@ class RadioProto:
         """
         ...
 
-    def receive(self) -> Optional[bytearray]:
+    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
         """Receive data from the radio.
 
-        :return: The received data as a bytearray, or None if no data was received.
-        :rtype: Optional[bytearray]
+        :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
+        :return: The received data as bytes, or None if no data was received.
+        :rtype: Optional[bytes]
         """
         ...

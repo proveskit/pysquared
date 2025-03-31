@@ -8,7 +8,7 @@ from ..modulation import RadioModulation
 
 # Type hinting only
 try:
-    from typing import Any
+    from typing import Any, Optional
 except ImportError:
     pass
 
@@ -36,6 +36,7 @@ class BaseRadioManager(RadioProto):
         self._log = logger
         self._radio_config = radio_config
         self._use_fsk = use_fsk
+        self._receive_timeout: int = 10  # Default receive timeout in seconds
         self._radio: Any | None = None  # Placeholder for the specific radio instance
 
         initial_modulation = self.get_modulation()
@@ -81,6 +82,19 @@ class BaseRadioManager(RadioProto):
         except Exception as e:
             self._log.error("Error sending radio message", e)
             return False
+
+    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+        """Receive data from the radio.
+
+        Must be implemented by subclasses.
+
+        :param int | None timeout: Optional receive timeout in seconds.If None, use the default timeout.
+        :return: The received data as bytes, or None if no data was received.
+
+        :raises NotImplementedError: If not implemented by subclass.
+        :raises Exception: If receiving fails unexpectedly.
+        """
+        raise NotImplementedError
 
     def set_modulation(self, req_modulation: RadioModulation) -> None:
         """Request a change in the radio modulation mode (takes effect on next init)."""

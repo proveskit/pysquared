@@ -24,10 +24,6 @@ except ImportError:
     pass
 
 
-# TODO(nateinaction): Find the right place for this ... receive_timeout = 10
-# listen() -> receive()
-# receive()
-# receive_with_ack() -> receive()
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios."""
 
@@ -171,13 +167,23 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         return radio
 
-    def receive(self) -> Optional[bytes]:
-        """Receive data from the radio."""
+    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+        """Receive data from the radio.
+
+        :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
+        :return: The received data as bytes, or None if no data was received.
+        """
+        _timeout = timeout if timeout is not None else self._receive_timeout
+        self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
         try:
+            # Note: The underlying adafruit_rfm9x library might handle ACKs differently.
+            # Assuming `with_ack=True` is desired default behavior for this manager.
+            # `keep_listening` might also need review based on application needs.
             return self._radio.receive(
                 keep_listening=True,
                 with_ack=True,
-                timeout=10,
+                timeout=_timeout,
             )
         except Exception as e:
             self._log.error("Error receiving data", e)
+            return None
