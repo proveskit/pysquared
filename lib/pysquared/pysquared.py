@@ -577,18 +577,18 @@ class Satellite:
     Maintenence Functions
     """
 
-    def watchdog_pet(self) -> None:
+    async def watchdog_pet(self) -> None:
         """Pet the watchdog timer"""
         self.logger.debug("Petting watchdog")
         self.watchdog_pin.value = True
-        time.sleep(0.01)
+        await asyncio.sleep(0.01)
         self.watchdog_pin.value = False
 
     async def _watchdog_pet_task(self) -> None:
         """Async task to continuously pet the watchdog"""
         self.logger.info("Starting watchdog petting background task")
         while self.hardware.get("WDT", False):
-            self.watchdog_pet()
+            await self.watchdog_pet()
             await asyncio.sleep(10.0)  # Pet watchdog every second
         self.logger.info("Watchdog petting task stopped")
 
