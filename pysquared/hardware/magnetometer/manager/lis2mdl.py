@@ -6,7 +6,7 @@ from ...exception import HardwareInitializationError
 try:
     from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL  # type: ignore
 except ImportError:
-    from lib.adafruit_lis2mdl import LIS2MDL
+    from adafruit_lis2mdl import LIS2MDL
 
 # Type hinting only
 try:

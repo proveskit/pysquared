@@ -1,5 +1,5 @@
 .PHONY: all
-all: .venv download-libraries pre-commit-install help
+all: .venv pre-commit-install help
 
 .PHONY: help
 help: ## Display this help.
@@ -13,13 +13,6 @@ help: ## Display this help.
 	@$(UV) venv
 	@$(UV) pip install --requirement pyproject.toml
 
-.PHONY: download-libraries
-download-libraries: .venv ## Download the required libraries
-	@echo "Downloading libraries..."
-	@$(UV) pip install --requirement lib/requirements.txt --target lib --no-deps --upgrade --quiet
-	@rm -rf lib/*.dist-info
-	@rm -rf lib/.lock
-
 .PHONY: pre-commit-install
 pre-commit-install: uv
 	@echo "Installing pre-commit hooks..."
@@ -30,7 +23,7 @@ fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
 .PHONY: test
-test: .venv download-libraries ## Run tests
+test: .venv ## Run tests
 ifeq ($(TEST_SELECT),ALL)
 	$(UV) run coverage run --rcfile=pyproject.toml -m pytest tests/unit
 else
@@ -40,7 +33,7 @@ endif
 	@$(UV) run coverage xml --rcfile=pyproject.toml > /dev/null
 
 .PHONY: clean
-clean: ## Remove all gitignored files such as downloaded libraries and artifacts
+clean: ## Remove all gitignored files
 	git clean -dfX
 
 ##@ Build
@@ -52,6 +45,7 @@ build: uv mpy-cross ## Build the project, store the result in the artifacts dire
 	$(call compile_mpy)
 	$(call rsync_to_dest,.,artifacts/pysquared/)
 	@$(UV) run python -c "import os; [os.remove(os.path.join(root, file)) for root, _, files in os.walk('artifacts/pysquared') for file in files if file.endswith('.py')]"
+	@$(UV) run python -c "import os; [os.remove(os.path.join(root, file)) for root, _, files in os.walk('pysquared') for file in files if file.endswith('.mpy')]"
 	@echo "Creating artifacts/pysquared.zip"
 	@zip -r artifacts/pysquared.zip artifacts/pysquared > /dev/null
 
@@ -103,8 +97,6 @@ ifeq ($(UNAME_S),Linux)
 ifeq ($(or $(filter x86_64,$(UNAME_M)),$(filter amd64,$(UNAME_M))),$(UNAME_M))
 	@curl -LsSf $(MPY_S3_PREFIX)/linux-amd64/mpy-cross-linux-amd64-$(MPY_CROSS_VERSION).static -o $@
 	@chmod +x $@
-else
-	@echo "Pre-built mpy-cross not available for Linux machine: $(UNAME_M)"
 endif
 else ifeq ($(UNAME_S),Darwin)
 	@curl -LsSf $(MPY_S3_PREFIX)/macos-11/mpy-cross-macos-11-$(MPY_CROSS_VERSION)-universal -o $@
@@ -115,5 +107,5 @@ endif
 endif
 
 define compile_mpy
-	@$(UV) run python -c "import os, subprocess; [subprocess.run(['$(MPY_CROSS)', os.path.join(root, file)]) for root, _, files in os.walk('lib') for file in files if file.endswith('.py')]" || exit 1
+	@$(UV) run python -c "import os, subprocess; [subprocess.run(['$(MPY_CROSS)', os.path.join(root, file)]) for root, _, files in os.walk('pysquared') for file in files if file.endswith('.py')]" || exit 1
 endef

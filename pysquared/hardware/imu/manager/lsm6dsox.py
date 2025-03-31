@@ -1,7 +1,7 @@
 try:
     from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # type: ignore
 except ImportError:
-    from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
+    from adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 
 from ....logger import Logger
 from ....protos.imu import IMUProto

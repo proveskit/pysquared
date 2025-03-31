@@ -1,7 +1,7 @@
 try:
     from mocks.rv3028 import RV3028  # type: ignore
 except ImportError:
-    from lib.rv3028.rv3028 import RV3028  # Real Time Clock
+    from rv3028.rv3028 import RV3028  # Real Time Clock
 
 from ...hardware.decorators import with_retries
 from ...hardware.exception import HardwareInitializationError

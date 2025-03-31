@@ -11,7 +11,3 @@ venv
 build/
 pysquared.egg-info/
 **/*.mpy
-
-# libs
-lib/
-!lib/requirements.txt
