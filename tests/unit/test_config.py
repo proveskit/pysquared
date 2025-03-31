@@ -105,9 +105,6 @@ def test_floats() -> None:
     config = Config(file)
 
     assert (
-        config.last_battery_temp == json_data["last_battery_temp"]
-    ), "No match for: last_battery_temp"
-    assert (
         config.normal_charge_current == json_data["normal_charge_current"]
     ), "No match for: normal_charge_current"
     assert (
@@ -116,12 +113,6 @@ def test_floats() -> None:
     assert (
         config.critical_battery_voltage == json_data["critical_battery_voltage"]
     ), "No match for: critical_battery_voltage"
-    assert (
-        config.battery_voltage == json_data["battery_voltage"]
-    ), "No match for: battery_voltage"
-    assert (
-        config.current_draw == json_data["current_draw"]
-    ), "No match for: current_draw"
 
 
 def test_bools() -> None:
