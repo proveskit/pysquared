@@ -54,9 +54,6 @@ try:
 
     c = pysquared.Satellite(config, logger, __version__)
 
-    # Start the watchdog background task
-    c.start_watchdog_background_task()
-
     sleep_helper = SleepHelper(c, logger)
 
     radio_manager = RFM9xManager(
@@ -153,13 +150,17 @@ try:
 
     # Set up the asyncio event loop
     async def run_tasks():
-        # The watchdog task is already started by c.start_watchdog_background_task()
-        # Just run the main loop as a task
+        # Initialize watchdog petting task
+        c.hardware["WDT"] = True
+        watchdog_pet_task = asyncio.create_task(c._watchdog_pet_task())
+        logger.info("Watchdog petting task created.")
+
+        # Initialize main task
         main_task = asyncio.create_task(main_loop())
 
         try:
-            # Wait for the main task to complete (it should run forever)
-            await main_task
+            # Wait for tasks to complete (should run forever)
+            await asyncio.gather(watchdog_pet_task, main_task)
         except asyncio.CancelledError:
             logger.info("Main task was cancelled")
         except Exception as e:
