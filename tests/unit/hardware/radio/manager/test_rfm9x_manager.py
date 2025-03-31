@@ -605,3 +605,110 @@ def test_get_temperature_read_exception(
     mock_logger.error.assert_called_once_with(
         "Error reading radio temperature", read_error
     )
+
+
+@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")  # Patch LoRa for simplicity
+def test_receive_success(
+    mock_rfm9x: MagicMock,
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+    mock_use_fsk: Flag,
+):
+    """Test successful reception of a message."""
+    mock_use_fsk.toggle(False)  # Use LoRa
+    mock_radio_instance = MagicMock(spec=RFM9x)
+    expected_data = b"Received Data"
+    mock_radio_instance.receive = MagicMock()
+    mock_radio_instance.receive.return_value = expected_data
+    mock_rfm9x.return_value = mock_radio_instance
+
+    manager = RFM9xManager(
+        mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+    )
+
+    received_data = manager.receive()
+
+    assert received_data == expected_data
+    mock_radio_instance.receive.assert_called_once_with(
+        keep_listening=True, with_ack=True, timeout=10
+    )
+    mock_logger.error.assert_not_called()
+
+
+@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
+def test_receive_no_message(
+    mock_rfm9x: MagicMock,
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+    mock_use_fsk: Flag,
+):
+    """Test receiving when no message is available (timeout)."""
+    mock_use_fsk.toggle(False)
+    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance.receive = MagicMock()
+    mock_radio_instance.receive.return_value = None  # Simulate timeout
+    mock_rfm9x.return_value = mock_radio_instance
+
+    manager = RFM9xManager(
+        mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+    )
+
+    received_data = manager.receive()
+
+    assert received_data is None
+    mock_radio_instance.receive.assert_called_once_with(
+        keep_listening=True, with_ack=True, timeout=10
+    )
+    mock_logger.error.assert_not_called()
+
+
+@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
+def test_receive_exception(
+    mock_rfm9x: MagicMock,
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+    mock_use_fsk: Flag,
+):
+    """Test handling of exception during radio.receive()."""
+    mock_use_fsk.toggle(False)
+    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance.receive = MagicMock()
+    receive_error = RuntimeError("Receive Error")
+    mock_radio_instance.receive.side_effect = receive_error
+    mock_rfm9x.return_value = mock_radio_instance
+
+    manager = RFM9xManager(
+        mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+    )
+
+    received_data = manager.receive()
+
+    assert received_data is None
+    mock_radio_instance.receive.assert_called_once_with(
+        keep_listening=True, with_ack=True, timeout=10
+    )
+    mock_logger.error.assert_called_once_with("Error receiving data", receive_error)

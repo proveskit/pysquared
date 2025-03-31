@@ -122,13 +122,11 @@ class SX126xManager(BaseRadioManager):
                     return None
 
                 msg: bytes = b""
-                error: int = 0
+                err: int = 0
                 msg, err = self._radio.recv()
                 if msg:
                     if err != ERR_NONE:
-                        self._log.error(
-                            f"Radio receive failed with error code: {error}"
-                        )
+                        self._log.error(f"Radio receive failed with error code: {err}")
                         return None
 
                     return msg
