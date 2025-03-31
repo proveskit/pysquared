@@ -592,14 +592,6 @@ class Satellite:
             await asyncio.sleep(10.0)  # Pet watchdog every second
         self.logger.info("Watchdog petting task stopped")
 
-    def start_watchdog_background_task(self) -> None:
-        """Start the watchdog petting as a true background task using asyncio"""
-        self._last_watchdog_pet = time.monotonic()
-        self.hardware["WDT"] = True
-        # Create and schedule the task but don't wait for it
-        asyncio.create_task(self._watchdog_pet_task())
-        self.logger.info("Watchdog background task created")
-
     def check_watchdog(self) -> None:
         """
         Legacy method maintained for compatibility
