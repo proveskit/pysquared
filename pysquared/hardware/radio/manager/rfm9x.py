@@ -176,12 +176,8 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         _timeout = timeout if timeout is not None else self._receive_timeout
         self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
         try:
-            # Note: The underlying adafruit_rfm9x library might handle ACKs differently.
-            # Assuming `with_ack=True` is desired default behavior for this manager.
-            # `keep_listening` might also need review based on application needs.
             return self._radio.receive(
                 keep_listening=True,
-                with_ack=True,
                 timeout=_timeout,
             )
         except Exception as e:

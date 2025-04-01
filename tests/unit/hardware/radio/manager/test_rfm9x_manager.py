@@ -637,9 +637,7 @@ def test_receive_success(
     received_data = manager.receive(timeout=10.0)
 
     assert received_data == expected_data
-    mock_radio_instance.receive.assert_called_once_with(
-        keep_listening=True, with_ack=True, timeout=10
-    )
+    mock_radio_instance.receive.assert_called_once_with(keep_listening=True, timeout=10)
     mock_logger.error.assert_not_called()
 
 
@@ -672,9 +670,7 @@ def test_receive_no_message(
     received_data = manager.receive(timeout=10.0)
 
     assert received_data is None
-    mock_radio_instance.receive.assert_called_once_with(
-        keep_listening=True, with_ack=True, timeout=10
-    )
+    mock_radio_instance.receive.assert_called_once_with(keep_listening=True, timeout=10)
     mock_logger.error.assert_not_called()
 
 
@@ -708,7 +704,5 @@ def test_receive_exception(
     received_data = manager.receive(timeout=10.0)
 
     assert received_data is None
-    mock_radio_instance.receive.assert_called_once_with(
-        keep_listening=True, with_ack=True, timeout=10
-    )
+    mock_radio_instance.receive.assert_called_once_with(keep_listening=True, timeout=10)
     mock_logger.error.assert_called_once_with("Error receiving data", receive_error)
