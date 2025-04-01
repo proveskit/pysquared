@@ -143,4 +143,4 @@ def initialize_i2c_bus(
     try:
         return I2C(scl, sda, frequency=frequency)
     except Exception as e:
-        raise HardwareInitializationError("Failed to initialize spi") from e
+        raise HardwareInitializationError("Failed to initialize i2c bus") from e
