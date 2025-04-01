@@ -461,7 +461,7 @@ def test_receive_success(
 
     mock_time.time.side_effect = [0.0, 0.1]  # Start time, time after first check
 
-    received_data = initialized_manager.receive()
+    received_data = initialized_manager.receive(timeout=10.0)
 
     assert received_data == expected_data
     initialized_manager._radio.recv.assert_called_once()
@@ -487,7 +487,8 @@ def test_receive_timeout(
         10.1,  # Timeout check
     ]
 
-    received_data = initialized_manager.receive()
+    # Explicitly test with the default timeout
+    received_data = initialized_manager.receive(timeout=10.0)
 
     assert received_data is None
     assert initialized_manager._radio.recv.call_count > 1
@@ -509,7 +510,7 @@ def test_receive_radio_error(
     initialized_manager._radio.recv.return_value = (b"some data", error_code)
     mock_time.time.side_effect = [0.0, 0.1]
 
-    received_data = initialized_manager.receive()
+    received_data = initialized_manager.receive(timeout=10.0)
 
     assert received_data is None
     initialized_manager._radio.recv.assert_called_once()
@@ -533,7 +534,7 @@ def test_receive_exception(
     # Mock time just enough to enter the loop once
     mock_time.time.side_effect = [0.0, 0.1]
 
-    received_data = initialized_manager.receive()
+    received_data = initialized_manager.receive(timeout=10.0)
 
     assert received_data is None
     initialized_manager._radio.recv.assert_called_once()
