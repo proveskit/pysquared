@@ -43,7 +43,7 @@ class CommandDataHandler:
         self._repeat_code: bytes = config.repeat_code.encode("utf-8")
         self._log.info(
             "The satellite has a super secret code!",
-            super_secret_code=self._super_secret_code,
+            super_secret_code=str(self._super_secret_code),
         )
 
     ############### message handler ###############
