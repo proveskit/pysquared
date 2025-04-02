@@ -1,6 +1,13 @@
 # Development Guide
 Welcome to the development guide for our project! This guide will help you set up your development environment and get you started with contributing to the repository.
 
+## Supported Boards
+
+| Board Version | Proves Repo                          | Firmware                     |
+|---------------|--------------------------------------|------------------------------|
+| v4            | [proveskit/CircuitPython_RP2040_v4](https://github.com/proveskit/CircuitPython_RP2040_v4) | [proveskit_rp2040_v4](https://circuitpython.org/board/proveskit_rp2040_v4/) |
+| v5            | [proveskit/CircuitPython_RP2040_v5](https://github.com/proveskit/CircuitPython_RP2040_v5) | [proveskit_rp2040_v5](https://drive.google.com/file/d/1S_xKkCfLgaMHhTQQ2uGI1fz-TgWfvwOZ/view?usp=drive_link/) |
+
 ## OS Specific Guides
 We suggest you get started with the development guide for your operating system:
 
@@ -13,10 +20,19 @@ Once you have your development environment set up, you should be able to run the
 make
 ```
 
-## Manually testing code on the board
-We are working on improving our automated testing but right now the best way to test your code is to run it on the board. We have provided the following command to make it easy to install code on the board:
+## Manually testing code on a board
+We are working on improving our automated testing but right now the best way to test your code is to run it on the board.
+
+Your board must be connected to your computer, the correct board repository cloned, and you must have installed the latest CircuitPython Firmware.
+
+In the board repository, you can run the following command to install code on the board:
 ```sh
 make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
+```
+
+If you need to install a specific version of the `pysquared` library, you can do so by running:
+```sh
+PYSQUARED_VERSION=VERSION/BRANCH make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
 ```
 
 There is more information in the OS specific guides on how to find your board's mount point.
