@@ -1,12 +1,8 @@
 # Development Guide
 Welcome to the development guide for our project! This guide will help you set up your development environment and get you started with contributing to the repository.
 
-## Supported Boards
-
-| Board Version | Proves Repo                          | Firmware                     |
-|---------------|--------------------------------------|------------------------------|
-| v4            | [proveskit/CircuitPython_RP2040_v4](https://github.com/proveskit/CircuitPython_RP2040_v4) | [proveskit_rp2040_v4](https://circuitpython.org/board/proveskit_rp2040_v4/) |
-| v5            | [proveskit/CircuitPython_RP2040_v5](https://github.com/proveskit/CircuitPython_RP2040_v5) | [proveskit_rp2040_v5](https://drive.google.com/file/d/1S_xKkCfLgaMHhTQQ2uGI1fz-TgWfvwOZ/view?usp=drive_link/) |
+#### CircuitPython
+If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview) to help you get started!
 
 ## OS Specific Guides
 We suggest you get started with the development guide for your operating system:
