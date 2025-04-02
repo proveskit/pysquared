@@ -1,6 +1,8 @@
 import random
 import time
 
+import microcontroller
+
 from .config.config import Config
 from .hardware.radio.modulation import RadioModulation
 from .logger import Logger
@@ -111,8 +113,8 @@ class CommandDataHandler:
         self._log.info("Resetting")
         try:
             self._radio.send(data=b"resetting")
-            cubesat.micro.on_next_reset(cubesat.micro.RunMode.NORMAL)
-            cubesat.micro.reset()
+            microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
+            microcontroller.reset()
         except Exception:
             pass
 

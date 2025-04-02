@@ -9,6 +9,8 @@ import gc
 import random
 import time
 
+import microcontroller
+
 from .cdh import CommandDataHandler
 from .config.config import Config
 from .logger import Logger
@@ -22,7 +24,7 @@ from .sleep_helper import SleepHelper
 from .watchdog import Watchdog
 
 try:
-    from typing import List, OrderedDict, Union
+    from typing import List, OrderedDict
 except Exception:
     pass
 
@@ -84,21 +86,6 @@ class functions:
     Radio Functions
     """
 
-    def send(self, msg: Union[str, bytearray]) -> None:
-        """Calls the radio to send a message. Currently only sends with default settings.
-
-        Args:
-            msg (String,Byte Array): Pass the String or Byte Array to be sent.
-        """
-        message: str = (
-            f"{self.config.radio.license} " + str(msg) + f" {self.config.radio.license}"
-        )
-        self.radio.send(message)
-        if self.cubesat.is_licensed:
-            self.logger.debug("Sent Packet", packet_message=message)
-        else:
-            self.logger.warning("Failed to send packet")
-
     def beacon(self) -> None:
         """Calls the radio to send a beacon."""
 
@@ -150,7 +137,7 @@ class functions:
                 f"IC:{self.cubesat.charge_current}",
                 f"UT:{self.cubesat.get_system_uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
-                f"MT:{self.cubesat.micro.cpu.temperature}",
+                f"MT:{microcontroller.cpu.temperature}",
                 f"RT:{self.radio.get_temperature()}",
                 f"AT:{self.imu.get_temperature()}",
                 f"BT:{self.last_battery_temp}",

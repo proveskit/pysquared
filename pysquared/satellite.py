@@ -118,7 +118,7 @@ class Satellite:
         self.UPTIME: int = self.get_system_uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.reboot_time:
-            self.micro.reset()
+            microcontroller.reset()
 
     def powermode(self, mode: str) -> None:
         """
