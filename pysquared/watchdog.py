@@ -23,6 +23,10 @@ class Watchdog:
 
         :return: None
         """
+        self._log = logger
+
+        self._log.debug("Initializing watchdog", pin=pin)
+
         self._digital_in_out: DigitalInOut = initialize_pin(
             logger,
             pin,
@@ -32,6 +36,7 @@ class Watchdog:
 
     def pet(self) -> None:
         """Pet the watchdog to reset the timer."""
+        self._log.debug("Petting watchdog")
         self._digital_in_out.value = True
         time.sleep(0.01)
         self._digital_in_out.value = False
