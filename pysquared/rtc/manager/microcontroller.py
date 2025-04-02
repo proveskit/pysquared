@@ -1,18 +1,31 @@
 import time
 
+from ...protos.rtc import RTCProto
+
 try:
-    import rtc
-except ImportError:
     import mocks.circuitpython.rtc as rtc
+except ImportError:
+    import rtc
 
 
-class RP2040RTC:
+class MicrocontrollerManager(RTCProto):
     """
-    Class for interfacing with the RP2040's Real Time Clock (RTC)
+    Class for interfacing with the Microcontroller's Real Time Clock (RTC) via CircuitPython.
+
+    rtc.RTC is a singleton and does not need to be stored as a class variable.
     """
 
-    @staticmethod
+    def __init__(self) -> None:
+        """
+        Initialize the RTC
+
+        Required on every boot to ensure the RTC is ready for use
+        """
+        microcontroller_rtc = rtc.RTC()
+        microcontroller_rtc.datetime = time.localtime()
+
     def set_time(
+        self,
         year: int,
         month: int,
         date: int,
@@ -22,7 +35,7 @@ class RP2040RTC:
         day_of_week: int,
     ) -> None:
         """
-        Updates the RP2040's Real Time Clock (RTC) to the date and time passed
+        Updates the Microcontroller's Real Time Clock (RTC) to the date and time passed
 
         :param year: The year value (0-9999)
         :param month: The month value (1-12)
@@ -32,7 +45,7 @@ class RP2040RTC:
         :param second: The second value (0-59)
         :param day_of_week: The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday
         """
-        rp2040_rtc = rtc.RTC()
-        rp2040_rtc.datetime = time.struct_time(
+        microcontroller_rtc = rtc.RTC()
+        microcontroller_rtc.datetime = time.struct_time(
             (year, month, date, hour, minute, second, day_of_week, -1, -1)
         )

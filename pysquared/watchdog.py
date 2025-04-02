@@ -1,0 +1,37 @@
+import time
+
+from digitalio import DigitalInOut, Direction
+
+from .hardware.digitalio import initialize_pin
+
+# type hinting only
+try:
+    from microcontroller import Pin
+
+    from .logger import Logger
+except ImportError:
+    pass
+
+
+class Watchdog:
+    def __init__(self, logger: Logger, pin: Pin) -> None:
+        """Initialize the watchdog timer.
+        :param Logger logger: Logger instance for logging messages.
+        :param Pin pin: Pin to use for the watchdog timer.
+
+        :raises HardwareInitializationError: If the pin fails to initialize.
+
+        :return: None
+        """
+        self._digital_in_out: DigitalInOut = initialize_pin(
+            logger,
+            pin,
+            Direction.OUTPUT,
+            False,
+        )
+
+    def pet(self) -> None:
+        """Pet the watchdog to reset the timer."""
+        self._digital_in_out.value = True
+        time.sleep(0.01)
+        self._digital_in_out.value = False

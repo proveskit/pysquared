@@ -5,6 +5,7 @@ import alarm
 
 from .logger import Logger
 from .satellite import Satellite
+from .watchdog import Watchdog
 
 try:
     from typing import Literal
@@ -19,7 +20,7 @@ class SleepHelper:
     Class responsible for sleeping the Satellite to conserve power
     """
 
-    def __init__(self, cubesat: Satellite, logger: Logger):
+    def __init__(self, cubesat: Satellite, logger: Logger, watchdog: Watchdog) -> None:
         """
         Creates a SleepHelper object.
 
@@ -29,6 +30,7 @@ class SleepHelper:
         """
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
+        self.watchdog: Watchdog = watchdog
 
     def safe_sleep(self, duration: int = 15) -> None:
         """
@@ -53,7 +55,7 @@ class SleepHelper:
             duration -= 15
             iterations += 1
 
-            self.cubesat.watchdog_pet()
+            self.watchdog.pet()
 
     def short_hibernate(self) -> Literal[True]:
         """Puts the Satellite to sleep for 120 seconds"""
@@ -63,7 +65,7 @@ class SleepHelper:
         # all should be off from cubesat powermode
 
         self.cubesat.f_softboot.toggle(True)
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
         self.safe_sleep(120)
 
         return True
@@ -76,7 +78,7 @@ class SleepHelper:
         # all should be off from cubesat powermode
 
         self.cubesat.f_softboot.toggle(True)
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
         self.safe_sleep(600)
 
         return True

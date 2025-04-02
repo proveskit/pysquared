@@ -9,13 +9,17 @@ import gc
 import random
 import time
 
+from .cdh import CommandDataHandler
 from .config.config import Config
-from .hardware.rfm9x.manager import RFM9xManager
 from .logger import Logger
 from .packet_manager import PacketManager
 from .packet_sender import PacketSender
+from .protos.imu import IMUProto
+from .protos.magnetometer import MagnetometerProto
+from .protos.radio import RadioProto
 from .satellite import Satellite
 from .sleep_helper import SleepHelper
+from .watchdog import Watchdog
 
 try:
     from typing import List, OrderedDict, Union
@@ -30,20 +34,28 @@ class functions:
         logger: Logger,
         config: Config,
         sleep_helper: SleepHelper,
-        radio_manager: RFM9xManager,
+        radio: RadioProto,
+        magnetometer: MagnetometerProto,
+        imu: IMUProto,
+        watchdog: Watchdog,
+        cdh: CommandDataHandler,
     ) -> None:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.config: Config = config
         self.sleep_helper = sleep_helper
-        self.radio_manager: RFM9xManager = radio_manager
+        self.radio: RadioProto = radio
+        self.magnetometer: MagnetometerProto = magnetometer
+        self.imu: IMUProto = imu
+        self.watchdog: Watchdog = watchdog
+        self.cdh: CommandDataHandler = cdh
 
         self.logger.info("Initializing Functionalities")
         self.packet_manager: PacketManager = PacketManager(
             logger=self.logger, max_packet_size=128
         )
         self.packet_sender: PacketSender = PacketSender(
-            self.logger, radio_manager, self.packet_manager, max_retries=3
+            self.logger, radio, self.packet_manager, max_retries=3
         )
 
         self.cubesat_name: str = config.cubesat_name
@@ -51,7 +63,6 @@ class functions:
         self.jokes: list[str] = config.jokes
         self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
-        self.callsign: str = config.callsign
         self.state_of_health_part1: bool = False
 
     """
@@ -60,67 +71,59 @@ class functions:
 
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
-        self.cubesat.watchdog_pet()
-        self.radio_manager.radio.receive_timeout = 10
+        self.watchdog.pet()
         self.listen()
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
 
         self.logger.debug("Sleeping for 20 seconds")
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
         self.sleep_helper.safe_sleep(self.sleep_duration)
-        self.cubesat.watchdog_pet()
+        self.watchdog.pet()
 
     """
     Radio Functions
     """
 
     def send(self, msg: Union[str, bytearray]) -> None:
-        """Calls the RFM9x to send a message. Currently only sends with default settings.
+        """Calls the radio to send a message. Currently only sends with default settings.
 
         Args:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
         """
-        message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
-        self.radio_manager.beacon_radio_message(message)
+        message: str = (
+            f"{self.config.radio.license} " + str(msg) + f" {self.config.radio.license}"
+        )
+        self.radio.send(message)
         if self.cubesat.is_licensed:
             self.logger.debug("Sent Packet", packet_message=message)
         else:
             self.logger.warning("Failed to send packet")
 
-    def send_packets(self, data: Union[str, bytearray]) -> None:
-        """Sends packets of data over the radio with delay between packets.
-
-        Args:
-            data (String, Byte Array): Pass the data to be sent.
-            delay (float): Delay in seconds between packets
-        """
-        self.packet_sender.send_data(data)
-
     def beacon(self) -> None:
-        """Calls the RFM9x to send a beacon."""
+        """Calls the radio to send a beacon."""
 
         try:
             lora_beacon: str = (
-                f"{self.callsign} Hello I am {self.cubesat_name}! I am: "
+                f"{self.config.radio.license} Hello I am {self.cubesat_name}! I am: "
                 + str(self.cubesat.power_mode)
                 + f" UT:{self.cubesat.get_system_uptime} BN:{self.cubesat.boot_count.get()} EC:{self.logger.get_error_count()} "
-                + f"IHBPFJASTMNE! {self.callsign}"
+                + f"IHBPFJASTMNE! {self.config.radio.license}"
             )
         except Exception as e:
             self.logger.error("Error with obtaining power data: ", e)
 
             lora_beacon: str = (
-                f"{self.callsign} Hello I am Yearling^2! I am in: "
+                f"{self.config.radio.license} Hello I am Yearling^2! I am in: "
                 + "an unidentified"
                 + " power mode. V_Batt = "
                 + "Unknown"
-                + f". IHBPFJASTMNE! {self.callsign}"
+                + f". IHBPFJASTMNE! {self.config.radio.license}"
             )
 
-        self.radio_manager.beacon_radio_message(lora_beacon)
+        self.radio.send(lora_beacon)
 
     def joke(self) -> None:
-        self.send(random.choice(self.jokes))
+        self.radio.send(random.choice(self.jokes))
 
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return: str = ""
@@ -148,13 +151,13 @@ class functions:
                 f"UT:{self.cubesat.get_system_uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
-                f"RT:{self.radio_manager.get_temperature()}",
-                f"AT:{self.cubesat.internal_temperature}",
+                f"RT:{self.radio.get_temperature()}",
+                f"AT:{self.imu.get_temperature()}",
                 f"BT:{self.last_battery_temp}",
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{self.radio_manager.get_modulation()}",
+                f"FK:{self.radio.get_modulation()}",
             ]
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", e)
@@ -162,43 +165,34 @@ class functions:
         message: str = ""
         if not self.state_of_health_part1:
             message = (
-                f"{self.callsign} Yearling^2 State of Health 1/2"
+                f"{self.config.radio.license} Yearling^2 State of Health 1/2"
                 + str(self.state_list)
-                + f"{self.callsign}"
+                + f"{self.config.radio.license}"
             )
             self.state_of_health_part1: bool = True
         else:
             message = (
-                f"{self.callsign} YSOH 2/2"
+                f"{self.config.radio.license} YSOH 2/2"
                 + self.format_state_of_health(self.cubesat.hardware)
-                + f"{self.callsign}"
+                + f"{self.config.radio.license}"
             )
             self.state_of_health_part1: bool = False
 
-        self.radio_manager.beacon_radio_message(message)
+        self.radio.send(message)
 
     def send_face(self) -> None:
         """Calls the data transmit function from the radio manager class"""
 
         self.logger.debug("Sending Face Data")
-        self.radio_manager.beacon_radio_message(
-            f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
+        self.radio.send(
+            f"{self.config.radio.license} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.config.radio.license}"
         )
 
     def listen(self) -> bool:
-        # need to instanciate cdh to feed it the config var
-        # assigned from the Config object
-        from pysquared.cdh import CommandDataHandler
-
-        cdh = CommandDataHandler(self.config, self.logger, self.radio_manager)
-
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            self.radio_manager.radio.receive_timeout = 10
-            received: bytearray = self.radio_manager.radio.receive_with_ack(
-                keep_listening=True
-            )
+            received: bytearray = self.radio.receive()
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", e)
             received = None
@@ -206,20 +200,17 @@ class functions:
         try:
             if received is not None:
                 self.logger.debug("Received Packet", packet=received)
-                cdh.message_handler(self.cubesat, received)
+                self.cdh.message_handler(self.cubesat, received)
                 return True
         except Exception as e:
             self.logger.error("An Error has occured while handling a command: ", e)
-        finally:
-            del cdh
 
         return False
 
     def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
-            self.radio_manager.radio.receive_timeout = 10
-            received: bytearray = self.radio_manager.radio.receive(keep_listening=True)
+            received: bytearray = self.radio.receive()
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:
@@ -278,18 +269,13 @@ class functions:
                 tuple[float, float, float],
                 tuple[float, float, float],
             ] = []
-            data.append(self.cubesat.accel)
-            data.append(self.cubesat.gyro)
-            data.append(self.cubesat.mag)
+            data.append(self.imu.get_acceleration())
+            data.append(self.imu.get_gyro_data())
+            data.append(self.magnetometer.get_vector())
         except Exception as e:
             self.logger.error("Error retrieving IMU data", e)
 
         return data
-
-    def OTA(self) -> None:
-        # resets file system to whatever new file is received
-        self.logger.debug("Implement an OTA Function Here")
-        pass
 
     """
     Misc Functions
@@ -299,7 +285,6 @@ class functions:
     # that will adjust position towards Earth based on Gyro data
     def detumble(self, dur: int = 7) -> None:
         self.logger.debug("Detumbling")
-        self.cubesat.rgb = (255, 255, 255)
 
         try:
             import pysquared.Big_Data as Big_Data
@@ -330,6 +315,7 @@ class functions:
                 import pysquared.detumble as detumble
 
                 for _ in range(3):
+                    # Hmmm cubesat.IMU.Gyroscope and cubesat.IMU.Magnetometer don't exist
                     data = [self.cubesat.IMU.Gyroscope, self.cubesat.IMU.Magnetometer]
                     data[0] = list(data[0])
                     for x in range(3):
@@ -338,7 +324,7 @@ class functions:
                     data[0] = tuple(data[0])
                     dipole = detumble.magnetorquer_dipole(data[1], data[0])
                     self.logger.debug("Detumbling", dipole=dipole)
-                    self.send("Detumbling! Gyro, Mag: " + str(data))
+                    self.radio.send("Detumbling! Gyro, Mag: " + str(data))
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:
@@ -349,4 +335,3 @@ class functions:
             do_detumble()
         except Exception as e:
             self.logger.error("Detumble error", e)
-        self.cubesat.rgb = (100, 100, 50)

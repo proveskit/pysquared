@@ -1,9 +1,9 @@
-# circuitpy_flight_software
+# PySquared
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![CI](https://github.com/texas-state-space-lab/pikvm-tailscale-certificate-renewer/actions/workflows/ci.yaml/badge.svg)
+![CI](https://github.com/proveskit/pysquared/actions/workflows/ci.yaml/badge.svg)
 
-Software for CircuitPython flight software in the PROVES Kit.
+CircuitPython based Flight Software for the PROVES Kit.
 
 If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview?gad_source=1&gbraid=0AAAAADx9JvTRorSR2psQubn32WqebKusM&gclid=CjwKCAiA-Oi7BhA1EiwA2rIu28YArt-jNTE3W3uwE055Tp7hyH9c9pE_NsqIOOh1aopnW00qXGBedRoChysQAvD_BwE) to help you get started!
 

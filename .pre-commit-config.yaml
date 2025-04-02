@@ -1,22 +1,20 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-    - id: trailing-whitespace
-    - id: end-of-file-fixer
-    - id: check-yaml
-    - id: check-json
-    - id: check-added-large-files
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
     #- id: mixed-line-ending
     #  args: [ --fix=lf ]
 
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.8.6
-  hooks:
-    - id: ruff
-      args: [ --fix ]
-    - id: ruff
-      args: [ --fix, --select, I ] # import sorting
-    - id: ruff-format
-
-exclude: 'lib/adafruit_.*|lib/asyncio/.*|lib/neopixel\.py'
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff
+        args: [--fix, --select, I] # import sorting
+      - id: ruff-format
