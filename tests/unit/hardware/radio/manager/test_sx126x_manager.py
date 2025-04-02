@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 
@@ -295,17 +295,7 @@ def test_send_success_bytes(
 
     assert initialized_manager.send(data_bytes)
 
-    expected_bytes: bytes = b" ".join(
-        [
-            bytes(mock_radio_config.license, "UTF-8"),
-            data_bytes,
-            bytes(mock_radio_config.license, "UTF-8"),
-        ]
-    )
-
-    mock_logger.info.assert_called_once_with(
-        "Radio message sent", success=True, len=len(expected_bytes)
-    )
+    mock_logger.info.assert_called_once_with("Radio message sent")
 
 
 def test_send_success_string(
@@ -325,9 +315,7 @@ def test_send_success_string(
 
     assert initialized_manager.send(data_str)
     initialized_manager._radio.send.assert_called_once_with(expected_bytes)
-    mock_logger.info.assert_called_once_with(
-        "Radio message sent", success=True, len=len(expected_bytes)
-    )
+    mock_logger.info.assert_called_once_with("Radio message sent")
 
 
 def test_send_unlicensed(
@@ -380,11 +368,8 @@ def test_send_radio_error(
     expected_bytes = b" ".join([license_bytes, msg, license_bytes])
     initialized_manager._radio.send.assert_called_once_with(expected_bytes)
 
-    mock_logger.error.assert_called_once_with("Radio send failed with error code: -1")
-    # TODO(nateinaction): Prevent this message from being logged on send failure
-    # Base class logs the info message regardless of internal success/failure
-    mock_logger.info.assert_called_once_with(
-        "Radio message sent", success=False, len=len(expected_bytes)
+    mock_logger.error.assert_has_calls(
+        [call("Radio send failed with error code: -1"), call("Radio send failed")]
     )
 
 

@@ -303,14 +303,12 @@ def test_send_success_bytes(
     msg = b"Hello Radio"
     result = manager.send(msg)
 
-    license: bytes = bytes(mock_radio_config.license, "UTF-8")
-    expected_msg: bytes = b" ".join([license, msg, license])
+    license_bytes: bytes = bytes(mock_radio_config.license, "UTF-8")
+    expected_msg: bytes = b" ".join([license_bytes, msg, license_bytes])
 
     assert result is True
     mock_radio_instance.send.assert_called_once_with(expected_msg)
-    mock_logger.info.assert_called_once_with(
-        "Radio message sent", success=True, len=len(expected_msg)
-    )
+    mock_logger.info.assert_called_once_with("Radio message sent")
 
 
 @patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
@@ -352,9 +350,7 @@ def test_send_success_string(
 
     assert result is True
     mock_radio_instance.send.assert_called_once_with(expected_bytes)
-    mock_logger.info.assert_called_once_with(
-        "Radio message sent", success=True, len=len(expected_bytes)
-    )
+    mock_logger.info.assert_called_once_with("Radio message sent")
 
 
 @patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
