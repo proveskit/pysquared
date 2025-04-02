@@ -240,6 +240,7 @@ def test_validation_range() -> None:
         print(e)
 
 
+# @pytest.mark.skipif(os.getenv("RUN_FILE_MODIFYING_TESTS") != "1", reason="Skipping file-modifying tests")
 def test_save_config() -> None:
     config = Config(file)
     try:
@@ -248,6 +249,7 @@ def test_save_config() -> None:
         print(e)
 
 
+# @pytest.mark.skipif(os.getenv("RUN_FILE_MODIFYING_TESTS") != "1", reason="Skipping file-modifying tests")
 def test_update_config() -> None:
     config = Config(file)
 

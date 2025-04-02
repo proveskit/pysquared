@@ -49,7 +49,7 @@ class functions:
         self.cubesat_name: str = config.cubesat_name
         self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = config.jokes
-        self.last_battery_temp: float = config.last_battery_temp
+        # self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
         self.callsign: str = config.callsign
         self.state_of_health_part1: bool = False
@@ -142,15 +142,15 @@ class functions:
         try:
             self.state_list: list[str] = [
                 f"PM:{self.cubesat.power_mode}",
-                f"VB:{self.cubesat.battery_voltage}",
-                f"ID:{self.cubesat.current_draw}",
+                # f"VB:{self.cubesat.battery_voltage}",
+                # f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
                 f"UT:{self.cubesat.get_system_uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
                 f"RT:{self.radio_manager.get_temperature()}",
                 f"AT:{self.cubesat.internal_temperature}",
-                f"BT:{self.last_battery_temp}",
+                # f"BT:{self.last_battery_temp}",
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",

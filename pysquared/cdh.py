@@ -215,7 +215,7 @@ class CommandDataHandler:
             - Can use this for when a value is not in range in schema
         """
         try:
-            self.config.update_config(key, value, temporary, self.logger)
+            self.config.update_config(key, value, temporary)
             self.logger.info("Updated config value successfully")
         except KeyError as e:
             self.logger.error("Value not in config or immutable", e)

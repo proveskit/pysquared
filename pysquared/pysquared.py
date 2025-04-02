@@ -184,8 +184,8 @@ class Satellite:
         self.normal_charge_current: float = config.normal_charge_current
         self.normal_battery_voltage: float = config.normal_battery_voltage
         self.critical_battery_voltage: float = config.critical_battery_voltage
-        self.battery_voltage: float = config.battery_voltage
-        self.current_draw: float = config.current_draw
+        # self.battery_voltage: float = config.battery_voltage
+        # self.current_draw: float = config.current_draw
         self.reboot_time: int = config.reboot_time
         self.turbo_clock: bool = config.turbo_clock
 
@@ -208,7 +208,7 @@ class Satellite:
         # NOTE(blakejameson): After asking Michael about the None variables below last night at software meeting, he mentioned they used
         # None as a state instead of the values to better manage some conditions with Orpheus.
         # I need to get a better understanding for the values and flow before potentially refactoring code here.
-        self.battery_voltage: Optional[float] = None
+        # self.battery_voltage: Optional[float] = None
         self.draw_current: Optional[float] = None
         self.charge_voltage: Optional[float] = None
         self.charge_current: Optional[float] = None
