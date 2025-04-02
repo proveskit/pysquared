@@ -65,7 +65,6 @@ class functions:
         self.jokes: list[str] = config.jokes
         self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
-        self.state_of_health_part1: bool = False
 
     """
     Satellite Management Functions
@@ -149,23 +148,7 @@ class functions:
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", e)
 
-        message: str = ""
-        if not self.state_of_health_part1:
-            message = (
-                f"{self.config.radio.license} Yearling^2 State of Health 1/2"
-                + str(self.state_list)
-                + f"{self.config.radio.license}"
-            )
-            self.state_of_health_part1: bool = True
-        else:
-            message = (
-                f"{self.config.radio.license} YSOH 2/2"
-                + self.format_state_of_health(self.cubesat.hardware)
-                + f"{self.config.radio.license}"
-            )
-            self.state_of_health_part1: bool = False
-
-        self.radio.send(message)
+        self.radio.send("State of Health " + str(self.state_list))
 
     def send_face(self) -> None:
         """Calls the data transmit function from the radio manager class"""
