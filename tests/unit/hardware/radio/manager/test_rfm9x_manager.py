@@ -300,13 +300,16 @@ def test_send_success_bytes(
         mock_reset,
     )
 
-    data_bytes = b"Hello Radio"
-    result = manager.send(data_bytes)
+    msg = b"Hello Radio"
+    result = manager.send(msg)
+
+    license: bytes = bytes(mock_radio_config.license, "UTF-8")
+    expected_msg: bytes = b" ".join([license, msg, license])
 
     assert result is True
-    mock_radio_instance.send.assert_called_once_with(data_bytes)
+    mock_radio_instance.send.assert_called_once_with(expected_msg)
     mock_logger.info.assert_called_once_with(
-        "Radio message sent", success=True, len=len(data_bytes)
+        "Radio message sent", success=True, len=len(expected_msg)
     )
 
 
@@ -337,7 +340,14 @@ def test_send_success_string(
     )
 
     data_str = "Hello String"
-    expected_bytes = bytes(data_str, "UTF-8")
+    expected_bytes: bytes = b" ".join(
+        [
+            bytes(mock_radio_config.license, "UTF-8"),
+            bytes(data_str, "UTF-8"),
+            bytes(mock_radio_config.license, "UTF-8"),
+        ]
+    )
+
     result = manager.send(data_str)
 
     assert result is True

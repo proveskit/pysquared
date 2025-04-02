@@ -72,11 +72,8 @@ class BaseRadioManager(RadioProto):
                 )
                 payload = bytes(str(data), "UTF-8")
 
-            payload = (
-                bytes(f"{self._radio_config.license} ")
-                + payload
-                + bytes(f" {self._radio_config.license}")
-            )
+            license_bytes = bytes(self._radio_config.license, "UTF-8")
+            payload = b" ".join([license_bytes, payload, license_bytes])
 
             sent = self._send_internal(payload)
             self._log.info(
