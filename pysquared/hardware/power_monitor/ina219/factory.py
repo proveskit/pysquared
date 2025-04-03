@@ -3,9 +3,9 @@ from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 
 try:
-    from mocks.circuitpython.adafruit_ina219.ina219 import INA219
+    from mocks.adafruit_ina219.ina219 import INA219
 except ImportError:
-    from lib.adafruit_ina219 import INA219
+    from adafruit_ina219 import INA219
 
 try:
     from busio import I2C

@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mocks.circuitpython.adafruit_ina219.ina219 import INA219
+from mocks.adafruit_ina219.ina219 import INA219
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.power_monitor.ina219.factory import INA219Factory
 
