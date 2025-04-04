@@ -51,7 +51,6 @@ class INA219Manager(PowerMonitorProto):
             return self._ina219.bus_voltage
         except Exception as e:
             self._log.error("Error retrieving bus voltage", e)
-            return None
 
     def get_shunt_voltage(self) -> float | None:
         """Get the shunt voltage from the INA219.
@@ -65,7 +64,6 @@ class INA219Manager(PowerMonitorProto):
             return self._ina219.shunt_voltage
         except Exception as e:
             self._log.error("Error retrieving shunt voltage", e)
-            return None
 
     def get_current(self) -> float | None:
         """Get the current from the INA219.
@@ -79,4 +77,3 @@ class INA219Manager(PowerMonitorProto):
             return self._ina219.current
         except Exception as e:
             self._log.error("Error retrieving current", e)
-            return None
