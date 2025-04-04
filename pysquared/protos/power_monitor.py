@@ -8,9 +8,8 @@ class PowerMonitorProto:
         """Get the bus voltage from the power monitor.
 
         :return: The bus voltage in volts
-        :rtype: float
+        :rtype: float | None
 
-        :raises Exception: If there is an error retrieving the value.
         """
         ...
 
@@ -18,9 +17,8 @@ class PowerMonitorProto:
         """Get the shunt voltage from the power monitor.
 
         :return: The shunt voltage in volts
-        :rtype: float
+        :rtype: float | None
 
-        :raises Exception: If there is an error retrieving the value.
         """
         ...
 
@@ -28,8 +26,7 @@ class PowerMonitorProto:
         """Get the current from the power monitor.
 
         :return: The current in amps
-        :rtype: float
+        :rtype: float | None
 
-        :raises Exception: If there is an error retrieving the value.
         """
         ...

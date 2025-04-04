@@ -42,10 +42,9 @@ class INA219Manager(PowerMonitorProto):
     def get_bus_voltage(self) -> float | None:
         """Get the bus voltage from the INA219.
 
-        :return: The bus voltage in volts.
-        :rtype: float
+        :return: The bus voltage in volts or None if not available.
+        :rtype: float | None
 
-        :raises Exception: If there is an error retrieving the value.
         """
         try:
             return self._ina219.bus_voltage
@@ -55,10 +54,9 @@ class INA219Manager(PowerMonitorProto):
     def get_shunt_voltage(self) -> float | None:
         """Get the shunt voltage from the INA219.
 
-        :return: The shunt voltage in volts.
-        :rtype: float
+        :return: The shunt voltage in volts or None if not available.
+        :rtype: float | None
 
-        :raises Exception: If there is an error retrieving the value.
         """
         try:
             return self._ina219.shunt_voltage
@@ -68,10 +66,9 @@ class INA219Manager(PowerMonitorProto):
     def get_current(self) -> float | None:
         """Get the current from the INA219.
 
-        :return: The current in amps.
-        :rtype: float
+        :return: The current in amps or None if not available.
+        :rtype: float | None
 
-        :raises Exception: If there is an error retrieving the value.
         """
         try:
             return self._ina219.current
