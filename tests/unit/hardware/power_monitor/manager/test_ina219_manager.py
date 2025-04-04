@@ -6,17 +6,21 @@ from mocks.adafruit_ina219.ina219 import INA219
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.power_monitor.manager.ina219 import INA219Manager
 
+
 @pytest.fixture
 def mock_i2c():
     return MagicMock()
+
 
 @pytest.fixture
 def mock_addr():
     return MagicMock()
 
+
 @pytest.fixture
 def mock_logger():
     return MagicMock()
+
 
 def test_create_power_monitor(mock_i2c, mock_addr, mock_logger):
     """Test successful creation of an INA219 power monitor instance."""
@@ -24,6 +28,7 @@ def test_create_power_monitor(mock_i2c, mock_addr, mock_logger):
 
     assert isinstance(power_monitor._ina219, INA219)
     mock_logger.debug.assert_called_once_with("Initializing INA219 power monitor")
+
 
 @pytest.mark.slow
 @patch("pysquared.hardware.power_monitor.manager.ina219.INA219")
@@ -41,6 +46,7 @@ def test_create_with_retries(mock_ina219, mock_i2c, mock_addr, mock_logger):
     # Verify that INA219 was called 3 times (due to retries)
     assert mock_i2c.call_count <= 3
 
+
 def test_get_bus_voltage_success(mock_i2c, mock_addr, mock_logger):
     """Test successful retrieval of the bus voltage."""
     power_monitor = INA219Manager(mock_logger, mock_i2c, mock_addr)
@@ -50,6 +56,7 @@ def test_get_bus_voltage_success(mock_i2c, mock_addr, mock_logger):
 
     voltage = power_monitor.get_bus_voltage()
     assert voltage == 3.3
+
 
 def test_get_bus_voltage_failure(mock_i2c, mock_addr, mock_logger):
     """Test handling of exceptions when retrieving the bus voltage."""
@@ -66,6 +73,7 @@ def test_get_bus_voltage_failure(mock_i2c, mock_addr, mock_logger):
     voltage = power_monitor.get_bus_voltage()
     assert voltage is None
 
+
 def test_get_shunt_voltage_success(mock_i2c, mock_addr, mock_logger):
     """Test successful retrieval of the shunt voltage."""
     power_monitor = INA219Manager(mock_logger, mock_i2c, mock_addr)
@@ -75,6 +83,8 @@ def test_get_shunt_voltage_success(mock_i2c, mock_addr, mock_logger):
 
     voltage = power_monitor.get_shunt_voltage()
     assert voltage == 0.1
+
+
 def test_get_shunt_voltage_failure(mock_i2c, mock_addr, mock_logger):
     """Test handling of exceptions when retrieving the shunt voltage."""
     power_monitor = INA219Manager(mock_logger, mock_i2c, mock_addr)
@@ -90,6 +100,7 @@ def test_get_shunt_voltage_failure(mock_i2c, mock_addr, mock_logger):
     voltage = power_monitor.get_shunt_voltage()
     assert voltage is None
 
+
 def test_get_current_success(mock_i2c, mock_addr, mock_logger):
     """Test successful retrieval of the current."""
     power_monitor = INA219Manager(mock_logger, mock_i2c, mock_addr)
@@ -99,6 +110,7 @@ def test_get_current_success(mock_i2c, mock_addr, mock_logger):
 
     current = power_monitor.get_current()
     assert current == 0.5
+
 
 def test_get_current_failure(mock_i2c, mock_addr, mock_logger):
     """Test handling of exceptions when retrieving the current."""
@@ -114,4 +126,3 @@ def test_get_current_failure(mock_i2c, mock_addr, mock_logger):
 
     current = power_monitor.get_current()
     assert current is None
-

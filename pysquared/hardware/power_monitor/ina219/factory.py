@@ -12,6 +12,7 @@ try:
 except ImportError:
     pass
 
+
 class INA219Factory:
     """
     Factory class for creating INA219 instances.

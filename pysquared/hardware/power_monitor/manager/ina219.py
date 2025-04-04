@@ -14,8 +14,8 @@ try:
 except ImportError:
     pass
 
+
 class INA219Manager(PowerMonitorProto):
-    
     @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
@@ -38,7 +38,7 @@ class INA219Manager(PowerMonitorProto):
             raise HardwareInitializationError(
                 "Failed to initialize INA219 power monitor"
             ) from e
-    
+
     def get_bus_voltage(self) -> float | None:
         """Get the bus voltage from the INA219.
 
@@ -52,6 +52,7 @@ class INA219Manager(PowerMonitorProto):
         except Exception as e:
             self._log.error("Error retrieving bus voltage", e)
             return None
+
     def get_shunt_voltage(self) -> float | None:
         """Get the shunt voltage from the INA219.
 
@@ -65,7 +66,7 @@ class INA219Manager(PowerMonitorProto):
         except Exception as e:
             self._log.error("Error retrieving shunt voltage", e)
             return None
-        
+
     def get_current(self) -> float | None:
         """Get the current from the INA219.
 
@@ -79,4 +80,3 @@ class INA219Manager(PowerMonitorProto):
         except Exception as e:
             self._log.error("Error retrieving current", e)
             return None
-    
