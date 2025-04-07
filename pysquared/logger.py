@@ -86,6 +86,8 @@ class Logger:
         json_order: OrderedDict[str, str] = OrderedDict(
             [("time", asctime), ("level", level), ("msg", message)]
         )
+
+        # detect if there are kwargs with invalid types (would cause TypeError) and converting object to string type, making it loggable
         for key, value in kwargs.items():
             if not self.is_valid_json_type(value):
                 kwargs[key] = str(value)
