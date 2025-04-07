@@ -188,19 +188,18 @@ def test_critical_log_color(capsys, logger_color):
     assert '"config": "king"' in captured.out
 
 
+# testing a kwarg of value type bytes, which previously caused a TypeError exception
 def test_invalid_json_type_bytes(capsys, logger):
     byte_message = b"forming a bytes message"
-
     logger.debug("This is a random message", attempt=byte_message)
     captured = capsys.readouterr()
     assert "b'forming a bytes message'" in captured.out
+    assert "TypeError" not in captured.out
 
 
-# testing a kwarg of value type Pin, which previously caused a
+# testing a kwarg of value type Pin, which previously caused a TypeError exception
 def test_invalid_json_type_pin(capsys, logger):
     mock_pin = MagicMock(spec=Pin)
-
     logger.debug("Initializing watchdog", pin=mock_pin)
     captured = capsys.readouterr()
-    print(captured.out)
     assert "TypeError" not in captured.out
