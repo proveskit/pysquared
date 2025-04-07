@@ -25,7 +25,7 @@ class Watchdog:
         """
         self._log = logger
 
-        self._log.debug("Initializing watchdog")
+        self._log.debug("Initializing watchdog", pin=pin)
 
         self._digital_in_out: DigitalInOut = initialize_pin(
             logger,
