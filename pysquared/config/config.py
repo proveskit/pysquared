@@ -14,6 +14,7 @@ from .radio import RadioConfig
 
 class Config:
     def __init__(self, config_path: str) -> None:
+        self.temp_config_file = "config.test.json"
         # parses json & assigns data to variables
         with open(config_path, "r") as f:
             json_data = json.loads(f.read())
@@ -150,12 +151,12 @@ class Config:
 
     # permanently updates values
     def save_config(self, key: str, value) -> None:
-        with open("config.json", "r") as f:
+        with open(self.temp_config_file, "r") as f:
             json_data = json.loads(f.read())
 
         json_data[key] = value
 
-        with open("config.json", "w") as f:
+        with open(self.temp_config_file, "w") as f:
             f.write(json.dumps(json_data))
 
     # handles temp or permanent updates
@@ -172,20 +173,20 @@ class Config:
         elif key in self.RADIO_SCHEMA:
             # if permanent, saves to config
             if not temporary:
-                with open("config.json", "r") as f:
+                with open(self.temp_config_file, "r") as f:
                     json_data = json.loads(f.read())
                 json_data["radio"][key] = value
-                with open("config.json", "w") as f:
+                with open(self.temp_config_file, "w") as f:
                     f.write(json.dumps(json_data))
             # updates RAM
             setattr(self.radio, key, value)
         elif key in self.FSK_SCHEMA:
             # if permanent, saves to config
             if not temporary:
-                with open("config.json", "r") as f:
+                with open(self.temp_config_file, "r") as f:
                     json_data = json.loads(f.read())
                 json_data["radio"]["fsk"][key] = value
-                with open("config.json", "w") as f:
+                with open(self.temp_config_file, "w") as f:
                     f.write(json.dumps(json_data))
             # updates RAM
             setattr(self.radio.fsk, key, value)
@@ -193,10 +194,10 @@ class Config:
             # key is in self.LORA_SCHEMA
             # if permanent, saves to config
             if not temporary:
-                with open("config.json", "r") as f:
+                with open(self.temp_config_file, "r") as f:
                     json_data = json.loads(f.read())
                 json_data["radio"]["lora"][key] = value
-                with open("config.json", "w") as f:
+                with open(self.temp_config_file, "w") as f:
                     f.write(json.dumps(json_data))
             # updates RAM
             setattr(self.radio.lora, key, value)
