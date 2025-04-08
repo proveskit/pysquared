@@ -63,7 +63,7 @@ class functions:
         self.cubesat_name: str = config.cubesat_name
         self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = config.jokes
-        self.last_battery_temp: float = config.last_battery_temp
+        # self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
 
     """
@@ -139,7 +139,7 @@ class functions:
                 f"MT:{microcontroller.cpu.temperature}",
                 f"RT:{self.radio.get_temperature()}",
                 f"AT:{self.imu.get_temperature()}",
-                f"BT:{self.last_battery_temp}",
+                # f"BT:{self.last_battery_temp}",
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",
