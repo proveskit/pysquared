@@ -63,7 +63,7 @@ class Logger:
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
 
-    def is_valid_json_type(self, object) -> bool:
+    def _is_valid_json_type(self, object) -> bool:
         valid_types = {dict, list, tuple, str, int, float, bool, None}
 
         return type(object) in valid_types
@@ -89,7 +89,7 @@ class Logger:
 
         # detect if there are kwargs with invalid types (would cause TypeError) and converting object to string type, making it loggable
         for key, value in kwargs.items():
-            if not self.is_valid_json_type(value):
+            if not self._is_valid_json_type(value):
                 kwargs[key] = str(value)
 
         json_order.update(kwargs)
