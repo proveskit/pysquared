@@ -45,6 +45,7 @@ packages = [
     "pysquared.protos",
     "pysquared.rtc",
     "pysquared.rtc.manager",
+    "pysquared.sdcard",
     "pysquared.usb"
 ]
 
