@@ -131,8 +131,8 @@ class functions:
         try:
             self.state_list: list[str] = [
                 f"PM:{self.cubesat.power_mode}",
-                f"VB:{self.cubesat.battery_voltage}",
-                f"ID:{self.cubesat.current_draw}",
+                # f"VB:{self.cubesat.battery_voltage}",
+                # f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
                 f"UT:{self.cubesat.get_system_uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
