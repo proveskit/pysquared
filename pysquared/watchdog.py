@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 from digitalio import DigitalInOut, Direction
@@ -40,3 +41,12 @@ class Watchdog:
         self._digital_in_out.value = True
         time.sleep(0.01)
         self._digital_in_out.value = False
+
+    async def async_petting_task(self) -> None:
+        "Asynchronous task to continuously pet the watchdog"
+
+        self._log.info("Starting watchdog petting task.")
+        while not self._digital_in_out.value:
+            self.pet()
+            await asyncio.sleep(10.0)
+        self._log.info("Stopped watchdog petting task.")
