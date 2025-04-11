@@ -84,10 +84,13 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         return radio
 
-    def _send_internal(self, payload: bytes) -> bool:
+    async def _send_internal(self, payload: bytes) -> bool:
         """Send data using the RFM9x radio."""
+
+        sent = await self._radio.asyncio_send(payload)
+
         # Assuming send returns bool or similar truthy/falsy
-        return bool(self._radio.send(payload))
+        return bool(sent)
 
     def _get_current_modulation(self) -> RadioModulation:
         """Get the modulation mode from the initialized RFM9x radio."""
