@@ -35,9 +35,8 @@ def test_create_rtc(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
     mock_logger.debug.assert_called_once_with("Initializing RTC")
 
 
-@pytest.mark.slow
 @patch("pysquared.rtc.manager.rv3028.RV3028")
-def test_create_with_retries(
+def test_create_error(
     mock_rv3028: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
@@ -49,8 +48,7 @@ def test_create_with_retries(
         _ = RV3028Manager(mock_logger, mock_i2c)
 
     mock_logger.debug.assert_called_with("Initializing RTC")
-    # Verify that RV3028 constructor was called up to 3 times (due to retries)
-    assert mock_rv3028.call_count <= 3
+    assert mock_rv3028.call_count == 1
 
 
 def test_set_time_success(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:

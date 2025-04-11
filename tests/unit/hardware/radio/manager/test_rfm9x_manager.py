@@ -211,9 +211,8 @@ def test_init_lora_high_sf_success(
     assert mock_lora_instance.low_datarate_optimize == 1
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.radio.manager.rfm9x.RFM9xFSK")
-def test_init_with_retries_fsk(
+def test_init_error_fsk(
     mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -239,12 +238,11 @@ def test_init_with_retries_fsk(
     mock_logger.debug.assert_called_with(
         "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.FSK
     )
-    assert mock_rfm9xfsk.call_count == 3
+    assert mock_rfm9xfsk.call_count == 1
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
-def test_init_with_retries_lora(
+def test_init_error_lora(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -270,7 +268,7 @@ def test_init_with_retries_lora(
     mock_logger.debug.assert_called_with(
         "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.LORA
     )
-    assert mock_rfm9x.call_count == 3
+    assert mock_rfm9x.call_count == 1
 
 
 # Test send Method

@@ -25,9 +25,8 @@ def test_create_magnetometer(mock_i2c, mock_logger):
     mock_logger.debug.assert_called_once_with("Initializing magnetometer")
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.magnetometer.manager.lis2mdl.LIS2MDL")
-def test_create_with_retries(mock_lis2mdl, mock_i2c, mock_logger):
+def test_create_error(mock_lis2mdl, mock_i2c, mock_logger):
     """Test that initialization is retried when it fails."""
     mock_lis2mdl.side_effect = Exception("Simulated LIS2MDL failure")
 
@@ -37,9 +36,6 @@ def test_create_with_retries(mock_lis2mdl, mock_i2c, mock_logger):
 
     # Verify that the logger was called
     mock_logger.debug.assert_called_with("Initializing magnetometer")
-
-    # Verify that LIS2MDL was called 3 times (due to retries)
-    assert mock_i2c.call_count <= 3
 
 
 def test_get_vector_success(mock_i2c, mock_logger):

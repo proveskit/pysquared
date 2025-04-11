@@ -39,9 +39,8 @@ def test_create_imu(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
     mock_logger.debug.assert_called_once_with("Initializing IMU")
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.imu.manager.lsm6dsox.LSM6DSOX")
-def test_create_with_retries(
+def test_create_error(
     mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
@@ -53,7 +52,7 @@ def test_create_with_retries(
         _ = LSM6DSOXManager(mock_logger, mock_i2c, address)
 
     mock_logger.debug.assert_called_with("Initializing IMU")
-    assert mock_lsm6dsox.call_count <= 3
+    assert mock_lsm6dsox.call_count == 1
 
 
 def test_get_acceleration_success(

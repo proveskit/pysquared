@@ -4,7 +4,6 @@ from busio import I2C, SPI
 from microcontroller import Pin
 
 from ..logger import Logger
-from .decorators import with_retries
 from .exception import HardwareInitializationError
 
 try:
@@ -53,7 +52,6 @@ def initialize_spi_bus(
         ) from e
 
 
-@with_retries(max_attempts=3, initial_delay=1)
 def _spi_init(
     logger: Logger,
     clock: Pin,
@@ -120,7 +118,6 @@ def _spi_configure(
     return spi
 
 
-@with_retries(max_attempts=3, initial_delay=1)
 def initialize_i2c_bus(
     logger: Logger,
     scl: Pin,

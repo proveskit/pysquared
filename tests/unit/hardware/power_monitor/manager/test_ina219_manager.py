@@ -30,9 +30,8 @@ def test_create_power_monitor(mock_i2c, mock_addr, mock_logger):
     mock_logger.debug.assert_called_once_with("Initializing INA219 power monitor")
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.power_monitor.manager.ina219.INA219")
-def test_create_with_retries(mock_ina219, mock_i2c, mock_addr, mock_logger):
+def test_create_error(mock_ina219, mock_i2c, mock_addr, mock_logger):
     """Test that initialization is retried when it fails."""
     mock_ina219.side_effect = Exception("Simulated INA219 failure")
 
@@ -43,9 +42,6 @@ def test_create_with_retries(mock_ina219, mock_i2c, mock_addr, mock_logger):
     # Verify that the logger was called
     mock_logger.debug.assert_called_with("Initializing INA219 power monitor")
 
-    # Verify that INA219 was called 3 times (due to retries)
-    assert mock_i2c.call_count <= 3
-
 
 def test_get_bus_voltage_success(mock_i2c, mock_addr, mock_logger):
     """Test successful retrieval of the bus voltage."""
@@ -55,7 +51,7 @@ def test_get_bus_voltage_success(mock_i2c, mock_addr, mock_logger):
     power_monitor._ina219.bus_voltage = 3.3
 
     voltage = power_monitor.get_bus_voltage()
-    assert voltage == 3.3
+    assert voltage == pytest.approx(3.3, rel=1e-6)
 
 
 def test_get_bus_voltage_failure(mock_i2c, mock_addr, mock_logger):
@@ -82,7 +78,7 @@ def test_get_shunt_voltage_success(mock_i2c, mock_addr, mock_logger):
     power_monitor._ina219.shunt_voltage = 0.1
 
     voltage = power_monitor.get_shunt_voltage()
-    assert voltage == 0.1
+    assert voltage == pytest.approx(0.1, rel=1e-6)
 
 
 def test_get_shunt_voltage_failure(mock_i2c, mock_addr, mock_logger):
@@ -109,7 +105,7 @@ def test_get_current_success(mock_i2c, mock_addr, mock_logger):
     power_monitor._ina219.current = 0.5
 
     current = power_monitor.get_current()
-    assert current == 0.5
+    assert current == pytest.approx(0.5, rel=1e-6)
 
 
 def test_get_current_failure(mock_i2c, mock_addr, mock_logger):

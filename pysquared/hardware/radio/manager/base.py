@@ -2,7 +2,6 @@ from ....config.radio import RadioConfig
 from ....logger import Logger
 from ....nvm.flag import Flag
 from ....protos.radio import RadioProto
-from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 from ..modulation import RadioModulation
 
@@ -16,7 +15,6 @@ except ImportError:
 class BaseRadioManager(RadioProto):
     """Base class for radio managers (CircuitPython compatible)."""
 
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,

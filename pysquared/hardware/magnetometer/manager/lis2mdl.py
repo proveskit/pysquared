@@ -1,6 +1,5 @@
 from ....logger import Logger
 from ....protos.magnetometer import MagnetometerProto
-from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 
 try:
@@ -21,7 +20,6 @@ class LIS2MDLManager(MagnetometerProto):
     Specifically we should try to keep adafruit_lis2mdl to only this manager class.
     """
 
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,

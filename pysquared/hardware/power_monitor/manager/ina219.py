@@ -1,6 +1,5 @@
 from ....logger import Logger
 from ....protos.power_monitor import PowerMonitorProto
-from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 
 try:
@@ -16,7 +15,6 @@ except ImportError:
 
 
 class INA219Manager(PowerMonitorProto):
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,

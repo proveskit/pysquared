@@ -3,7 +3,6 @@ try:
 except ImportError:
     from rv3028.rv3028 import RV3028  # Real Time Clock
 
-from ...hardware.decorators import with_retries
 from ...hardware.exception import HardwareInitializationError
 from ...logger import Logger
 from ...protos.rtc import RTCProto
@@ -21,7 +20,6 @@ class RV3028Manager(RTCProto):
     Specifically we should try to keep adafruit_lis2mdl to only this manager class.
     """
 
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,

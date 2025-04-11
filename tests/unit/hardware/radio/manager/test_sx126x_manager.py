@@ -177,12 +177,11 @@ def test_init_lora_success(
     )
 
 
-@pytest.mark.slow
 @patch(
     "pysquared.hardware.radio.manager.sx126x.SX1262",
     new_callable=MagicMock(spec=SX1262),
 )
-def test_init_with_retries_fsk(
+def test_init_error_fsk(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -213,15 +212,14 @@ def test_init_with_retries_fsk(
     mock_logger.debug.assert_any_call(
         "Initializing radio", radio_type="SX126xManager", modulation=RadioModulation.FSK
     )
-    assert mock_sx1262_instance.beginFSK.call_count == 3
+    assert mock_sx1262_instance.beginFSK.call_count == 1
 
 
-@pytest.mark.slow
 @patch(
     "pysquared.hardware.radio.manager.sx126x.SX1262",
     new_callable=MagicMock(spec=SX1262),
 )
-def test_init_with_retries_lora(
+def test_init_error_lora(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -254,7 +252,7 @@ def test_init_with_retries_lora(
         radio_type="SX126xManager",
         modulation=RadioModulation.LORA,
     )
-    assert mock_sx1262_instance.begin.call_count == 3
+    assert mock_sx1262_instance.begin.call_count == 1
 
 
 @pytest.fixture

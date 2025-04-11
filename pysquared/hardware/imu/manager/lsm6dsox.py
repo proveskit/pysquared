@@ -6,7 +6,6 @@ except ImportError:
 from ....logger import Logger
 from ....protos.imu import IMUProto
 from ....protos.temperature_sensor import TemperatureSensorProto
-from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 
 # Type hinting only
@@ -22,7 +21,6 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
     Specifically we should try to keep adafruit_lsm6ds to only this manager class.
     """
 
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,
