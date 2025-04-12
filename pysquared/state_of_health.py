@@ -7,6 +7,8 @@ from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
 from pysquared.satellite import Satellite
 
+import microcontroller
+
 try:
     from typing import Any, OrderedDict
 except Exception:
@@ -18,7 +20,6 @@ class StateOfHealth:
         self,
         c: Satellite,
         logger: Logger,
-        f: functions,
         battery_power_monitor: PowerMonitorProto,
         solar_power_monitor: PowerMonitorProto,
         radio_manager: RadioProto,
@@ -26,7 +27,6 @@ class StateOfHealth:
     ) -> None:
         self.c: Satellite = c
         self.logger: Logger = logger
-        self.f: functions = f
         self.battery_power_monitor: PowerMonitorProto = battery_power_monitor
         self.solar_power_monitor: PowerMonitorProto = solar_power_monitor
         self.radio_manager: RadioProto = radio_manager
@@ -39,7 +39,6 @@ class StateOfHealth:
                 ("system_current", None),
                 ("solar_voltage", None),
                 ("solar_current", None),
-                ("battery_temperature", None),
                 ("battery_voltage", None),
                 ("radio_temperature", None),
                 ("radio_modulation", None),
@@ -64,13 +63,10 @@ class StateOfHealth:
             self.state["system_current"] = self.current_draw()
             self.state["solar_voltage"] = self.solar_voltage()
             self.state["solar_current"] = self.charge_current()
-            self.state["battery_temperature"] = (
-                self.f.last_battery_temp
-            )  # literally just gets a value from config
             self.state["battery_voltage"] = self.battery_voltage()
             self.state["radio_temperature"] = self.radio_manager.get_temperature()
             self.state["radio_modulation"] = self.radio_manager.get_modulation()
-            self.state["microcontroller_temperature"] = self.c.micro.cpu.temperature
+            self.state["microcontroller_temperature"] = microcontroller.cpu.temperature
             self.state["internal_temperature"] = self.imu_manager.get_temperature()
             self.state["error_count"] = self.logger.get_error_count()
             self.state["power_mode"] = self.c.power_mode
