@@ -1,4 +1,4 @@
-# Safe Device Failure
+# Graceful Device Initialization Failure
 
 ## Status
 
