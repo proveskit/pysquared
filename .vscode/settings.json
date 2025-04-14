@@ -1,5 +1,6 @@
 {
     "files.eol": "\n",
+    "python.analysis.typeCheckingMode": "basic",
     "python.testing.pytestArgs": [
         "tests/unit"
     ],
