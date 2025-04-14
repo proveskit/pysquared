@@ -70,10 +70,10 @@ class functions:
     Satellite Management Functions
     """
 
-    def listen_loiter(self) -> None:
+    async def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
         self.watchdog.pet()
-        self.listen()
+        await self.listen()
         self.watchdog.pet()
 
         self.logger.debug("Sleeping for 20 seconds")
