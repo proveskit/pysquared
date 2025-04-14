@@ -92,7 +92,7 @@ class CommandDataHandler:
                 if multi_msg:
                     # TODO check for optional radio config
                     self._log.info("multi-message mode enabled")
-                response = self._radio.receive()
+                response = await self._radio.receive()
                 if response is not None:
                     cubesat.c_gs_resp += 1
                     self.message_handler(cubesat, response)
@@ -128,7 +128,7 @@ class CommandDataHandler:
 
     ########### commands with arguments ###########
 
-    def shutdown(self, cubesat: Satellite, args: bytes) -> None:
+    async def shutdown(self, cubesat: Satellite, args: bytes) -> None:
         # make shutdown require yet another pass-code
         if args != b"\x0b\xfdI\xec":
             return
@@ -147,7 +147,7 @@ class CommandDataHandler:
 
         # deep sleep + listen
         # TODO config radio
-        self._radio.receive()
+        await self._radio.receive()
         if "st" in cubesat.radio_cfg:
             _t: float = cubesat.radio_cfg["st"]
         else:
