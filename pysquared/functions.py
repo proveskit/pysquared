@@ -158,11 +158,11 @@ class functions:
             f"{self.config.radio.license} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.config.radio.license}"
         )
 
-    def listen(self) -> bool:
+    async def listen(self) -> bool:
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            received: bytearray = self.radio.receive()
+            received: bytearray = await self.radio.receive()
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", e)
             received = None
@@ -177,10 +177,10 @@ class functions:
 
         return False
 
-    def listen_joke(self) -> bool:
+    async def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
-            received: bytearray = self.radio.receive()
+            received: bytearray = await self.radio.receive()
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:
