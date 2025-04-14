@@ -77,3 +77,9 @@ class RV3028Manager(RTCProto):
             return self._rtc.get_time()
         except Exception as e:
             self._log.error("Error getting RTC time", e)
+
+    def get_date(self):
+        try:
+            return self._rtc.get_date()
+        except Exception as e:
+            self._log.error("Error getting RTC date", e)
