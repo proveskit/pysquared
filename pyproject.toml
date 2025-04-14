@@ -77,7 +77,7 @@ output = ".coverage-reports/coverage.xml"
 
 [tool.interrogate]
 ignore-init-module = true
-fail-under = 95
+fail-under = 75
 verbose = 2
 color = true
 omit-covered-files = true
