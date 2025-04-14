@@ -53,7 +53,7 @@ class BaseRadioManager(RadioProto):
                 f"Failed to initialize radio with modulation {initial_modulation}"
             ) from e
 
-    def send(self, data: Any) -> bool:
+    async def send(self, data: Any) -> bool:
         """Send data over the radio."""
         try:
             if self._radio_config.license == "":
@@ -75,7 +75,7 @@ class BaseRadioManager(RadioProto):
             license_bytes = bytes(self._radio_config.license, "UTF-8")
             payload = b" ".join([license_bytes, payload, license_bytes])
 
-            sent = self._send_internal(payload)
+            sent = await self._send_internal(payload)
 
             if not sent:
                 self._log.error("Radio send failed")
@@ -134,7 +134,7 @@ class BaseRadioManager(RadioProto):
         """
         raise NotImplementedError
 
-    def _send_internal(self, payload: bytes) -> bool:
+    async def _send_internal(self, payload: bytes) -> bool:
         """Send data using the specific radio hardware's method.
 
         Must be implemented by subclasses.
