@@ -85,7 +85,7 @@ class functions:
     Radio Functions
     """
 
-    def beacon(self) -> None:
+    async def beacon(self) -> None:
         """Calls the radio to send a beacon."""
 
         try:
@@ -106,10 +106,10 @@ class functions:
                 + f". IHBPFJASTMNE! {self.config.radio.license}"
             )
 
-        self.radio.send(lora_beacon)
+        await self.radio.send(lora_beacon)
 
-    def joke(self) -> None:
-        self.radio.send(random.choice(self.jokes))
+    async def joke(self) -> None:
+        await self.radio.send(random.choice(self.jokes))
 
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return: str = ""
@@ -125,7 +125,7 @@ class functions:
 
         return to_return
 
-    def state_of_health(self) -> None:
+    async def state_of_health(self) -> None:
         self.state_list: list = []
         # list of state information
         try:
@@ -148,13 +148,13 @@ class functions:
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", e)
 
-        self.radio.send("State of Health " + str(self.state_list))
+        await self.radio.send("State of Health " + str(self.state_list))
 
-    def send_face(self) -> None:
+    async def send_face(self) -> None:
         """Calls the data transmit function from the radio manager class"""
 
         self.logger.debug("Sending Face Data")
-        self.radio.send(
+        await self.radio.send(
             f"{self.config.radio.license} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.config.radio.license}"
         )
 
@@ -253,7 +253,7 @@ class functions:
 
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
-    def detumble(self, dur: int = 7) -> None:
+    async def detumble(self, dur: int = 7) -> None:
         self.logger.debug("Detumbling")
 
         try:
@@ -280,7 +280,7 @@ class functions:
                 a.Face4.drive = 52
                 a.drvz_actuate(duration)
 
-        def do_detumble() -> None:
+        async def do_detumble() -> None:
             try:
                 import pysquared.detumble as detumble
 
@@ -294,7 +294,7 @@ class functions:
                     data[0] = tuple(data[0])
                     dipole = detumble.magnetorquer_dipole(data[1], data[0])
                     self.logger.debug("Detumbling", dipole=dipole)
-                    self.radio.send("Detumbling! Gyro, Mag: " + str(data))
+                    await self.radio.send("Detumbling! Gyro, Mag: " + str(data))
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:
@@ -302,6 +302,6 @@ class functions:
 
         try:
             self.logger.debug("Attempting")
-            do_detumble()
+            await do_detumble()
         except Exception as e:
             self.logger.error("Detumble error", e)
