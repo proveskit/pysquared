@@ -12,7 +12,7 @@ except ImportError:
 
 
 class RadioProto:
-    def send(self, data: Any) -> bool:
+    async def send(self, data: Any) -> bool:
         """Send data over the radio.
 
         :param Any data: The data to send.
