@@ -170,7 +170,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         return radio
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+    async def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
@@ -179,7 +179,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         _timeout = timeout if timeout is not None else self._receive_timeout
         self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
         try:
-            return self._radio.receive(
+            return await self._radio.asyncio_receive(
                 keep_listening=True,
                 timeout=_timeout,
             )
