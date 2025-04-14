@@ -37,7 +37,7 @@ class RadioProto:
         """
         ...
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+    async def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
