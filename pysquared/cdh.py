@@ -49,7 +49,7 @@ class CommandDataHandler:
         )
 
     ############### message handler ###############
-    def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
+    async def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
         multi_msg: bool = False
         if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
             if bytes(msg[4:8]) == self._super_secret_code:
@@ -84,10 +84,10 @@ class CommandDataHandler:
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
                     self._log.error("something went wrong!", e)
-                    self._radio.send(str(e).encode())
+                    await self._radio.send(str(e).encode())
             else:
                 self._log.info("invalid command!")
-                self._radio.send(b"invalid cmd" + msg[4:])
+                await self._radio.send(b"invalid cmd" + msg[4:])
                 # check for multi-message mode
                 if multi_msg:
                     # TODO check for optional radio config
@@ -99,7 +99,7 @@ class CommandDataHandler:
         elif bytes(msg[4:6]) == self._repeat_code:
             self._log.info("Repeating last message!")
             try:
-                self._radio.send(msg[6:])
+                await self._radio.send(msg[6:])
             except Exception as e:
                 self._log.error("There was an error repeating the message!", e)
         else:
@@ -109,10 +109,10 @@ class CommandDataHandler:
     def noop(self) -> None:
         self._log.info("no-op")
 
-    def hreset(self, cubesat: Satellite) -> None:
+    async def hreset(self, cubesat: Satellite) -> None:
         self._log.info("Resetting")
         try:
-            self._radio.send(data=b"resetting")
+            await self._radio.send(data=b"resetting")
             microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
             microcontroller.reset()
         except Exception:
@@ -121,10 +121,10 @@ class CommandDataHandler:
     def fsk(self) -> None:
         self._radio.set_modulation(RadioModulation.FSK)
 
-    def joke_reply(self, cubesat: Satellite) -> None:
+    async def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._joke_reply)
         self._log.info("Sending joke reply", joke=joke)
-        self._radio.send(joke)
+        await self._radio.send(joke)
 
     ########### commands with arguments ###########
 
@@ -161,10 +161,10 @@ class CommandDataHandler:
         cubesat.f_hotstrt.toggle(True)
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
-    def query(self, cubesat: Satellite, args: str) -> None:
+    async def query(self, cubesat: Satellite, args: str) -> None:
         self._log.info("Sending query with args", args=args)
 
-        self._radio.send(data=str(eval(args)))
+        await self._radio.send(data=str(eval(args)))
 
     def exec_cmd(self, cubesat: Satellite, args: str) -> None:
         self._log.info("Executing command", args=args)
