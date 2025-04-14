@@ -53,12 +53,12 @@ class PacketSender:
 
         return False
 
-    def send_packet_with_retry(self, packet: bytes, seq_num: int) -> bool:
+    async def send_packet_with_retry(self, packet: bytes, seq_num: int) -> bool:
         """Optimized packet sending with minimal delays"""
         import time
 
         for attempt in range(self.max_retries):
-            self.radio.send(packet)
+            await self.radio.send(packet)
 
             if self.wait_for_ack(seq_num):
                 # Success - minimal delay before next packet
@@ -98,7 +98,7 @@ class PacketSender:
         )
         return True
 
-    def handle_retransmit_request(
+    async def handle_retransmit_request(
         self, packets: list[bytes], request_packet: list[str]
     ) -> bool:
         """Handle retransmit request by sending requested packets"""
@@ -117,9 +117,9 @@ class PacketSender:
             for seq in missing_packets:
                 if seq < len(packets):
                     self.logger.info("Retransmitting packet ", packet=seq)
-                    self.radio.send(packets[seq])
+                    await self.radio.send(packets[seq])
                     time.sleep(0.2)  # Small delay between retransmitted packets
-                    self.radio.send(packets[seq])
+                    await self.radio.send(packets[seq])
                     time.sleep(0.2)  # Small delay between retransmitted packets
 
             return True
@@ -128,7 +128,7 @@ class PacketSender:
             self.logger.error("Error handling retransmit request", e)
             return False
 
-    def fast_send_data(
+    async def fast_send_data(
         self,
         data: Union[str, bytearray],
         send_delay: float = 0.5,
@@ -148,7 +148,7 @@ class PacketSender:
                 attempt_num=attempt + 1,
                 max_retries=self.max_retries,
             )
-            self.radio.send(packets[0])
+            await self.radio.send(packets[0])
 
             if self.wait_for_ack(0):
                 break
@@ -166,7 +166,7 @@ class PacketSender:
                 self.logger.info(
                     "Sending packet", current_packet=i, num_packets=total_packets
                 )
-            self.radio.send(packets[i])
+            await self.radio.send(packets[i])
             time.sleep(send_delay)
 
         self.logger.info("Waiting for retransmit requests...")
@@ -197,10 +197,10 @@ class PacketSender:
                     break
 
                 self.logger.info("Retransmitting packet", packet=seq)
-                self.radio.send(packets[seq])
+                await self.radio.send(packets[seq])
                 time.sleep(0.5)  # Longer delay between retransmitted packets
                 self.logger.info("Retransmitting packet", packet=seq)
-                self.radio.send(packets[seq])
+                await self.radio.send(packets[seq])
                 time.sleep(0.2)  # Longer delay between retransmitted packets
 
             # Reset timeout and add extra delay after retransmission
