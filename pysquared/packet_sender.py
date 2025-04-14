@@ -28,7 +28,7 @@ class PacketSender:
         self.max_retries: int = max_retries
         self.send_delay: float = send_delay
 
-    def wait_for_ack(self, expected_seq: int) -> bool:
+    async def wait_for_ack(self, expected_seq: int) -> bool:
         """
         Optimized ACK wait with early return
         """
@@ -40,7 +40,7 @@ class PacketSender:
         time.sleep(self.send_delay)
 
         while (time.monotonic() - start_time) < self.ack_timeout:
-            packet: bytearray = self.radio.receive()
+            packet: bytearray = await self.radio.receive()
 
             if packet and self.packet_manager.is_ack_packet(packet):
                 ack_seq: Union[int, None] = self.packet_manager.get_ack_seq_num(packet)
@@ -173,7 +173,7 @@ class PacketSender:
         retransmit_end_time: float = time.monotonic() + retransmit_wait
 
         while time.monotonic() < retransmit_end_time:
-            packet: bytearray = self.radio.receive()
+            packet: bytearray = await self.radio.receive()
             if not packet:
                 break
 
