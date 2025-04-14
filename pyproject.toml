@@ -74,3 +74,10 @@ directory = ".coverage-reports/html"
 
 [tool.coverage.xml]
 output = ".coverage-reports/coverage.xml"
+
+[tool.interrogate]
+ignore-init-module = true
+fail-under = 95
+verbose = 2
+color = true
+omit-covered-files = true
