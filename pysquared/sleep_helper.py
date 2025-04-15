@@ -55,8 +55,6 @@ class SleepHelper:
             duration -= 15
             iterations += 1
 
-            self.watchdog.pet()
-
     def short_hibernate(self) -> Literal[True]:
         """Puts the Satellite to sleep for 120 seconds"""
 
@@ -65,7 +63,6 @@ class SleepHelper:
         # all should be off from cubesat powermode
 
         self.cubesat.f_softboot.toggle(True)
-        self.watchdog.pet()
         self.safe_sleep(120)
 
         return True
@@ -78,7 +75,6 @@ class SleepHelper:
         # all should be off from cubesat powermode
 
         self.cubesat.f_softboot.toggle(True)
-        self.watchdog.pet()
         self.safe_sleep(600)
 
         return True

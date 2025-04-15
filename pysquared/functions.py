@@ -72,14 +72,10 @@ class functions:
 
     async def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
-        self.watchdog.pet()
         await self.listen()
-        self.watchdog.pet()
 
         self.logger.debug("Sleeping for 20 seconds")
-        self.watchdog.pet()
         self.sleep_helper.safe_sleep(self.sleep_duration)
-        self.watchdog.pet()
 
     """
     Radio Functions
