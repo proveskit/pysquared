@@ -57,12 +57,14 @@ class Logger:
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
-        sd_log: bool = False,
+        enable_sd: bool = False,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
         self.colorized: bool = colorized
-        self.sd_log: bool = sd_log
+        self.enable_sd: bool = enable_sd
+
+        print("logger.enable_sd = False")
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -111,7 +113,7 @@ class Logger:
                 ),
             )
 
-        if self.sd_log is True:
+        if self.enable_sd is True:
             log_to_sd(asctime, json_output)
 
         if self._can_print_this_level(level_value):
