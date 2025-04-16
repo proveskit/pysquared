@@ -1,13 +1,12 @@
 from collections import OrderedDict
 
-from pysquared.functions import functions
+import microcontroller
+
 from pysquared.logger import Logger
 from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
 from pysquared.satellite import Satellite
-
-import microcontroller
 
 try:
     from typing import Any, OrderedDict
@@ -88,16 +87,17 @@ class StateOfHealth:
         :rtype: float | None
 
         """
-        voltage: float = 0
-        try:
-            for _ in range(50):
-                voltage += (
-                    self.battery_power_monitor.get_bus_voltage()
-                    + self.battery_power_monitor.get_shunt_voltage()
-                )
-            return voltage / 50
-        except Exception as e:
-            self.logger.error("Couldn't acquire system voltage", err=e)
+        if self.battery_power_monitor is not None:
+            voltage: float = 0
+            try:
+                for _ in range(50):
+                    voltage += (
+                        self.battery_power_monitor.get_bus_voltage()
+                        + self.battery_power_monitor.get_shunt_voltage()
+                    )
+                return voltage / 50
+            except Exception as e:
+                self.logger.error("Couldn't acquire system voltage", err=e)
 
     def battery_voltage(self) -> float | None:
         """
@@ -107,13 +107,14 @@ class StateOfHealth:
         :rtype: float | None
 
         """
-        voltage: float = 0
-        try:
-            for _ in range(50):
-                voltage += self.battery_power_monitor.get_bus_voltage()
-            return voltage / 50 + 0.2  # volts and correction factor
-        except Exception as e:
-            self.logger.error("Couldn't acquire battery voltage", err=e)
+        if self.battery_power_monitor is not None:
+            voltage: float = 0
+            try:
+                for _ in range(50):
+                    voltage += self.battery_power_monitor.get_bus_voltage()
+                return voltage / 50 + 0.2  # volts and correction factor
+            except Exception as e:
+                self.logger.error("Couldn't acquire battery voltage", err=e)
 
     def current_draw(self) -> float | None:
         """
@@ -123,13 +124,14 @@ class StateOfHealth:
         :rtype: float | None
 
         """
-        current: float = 0
-        try:
-            for _ in range(50):
-                current += self.battery_power_monitor.get_current()
-            return current / 50
-        except Exception as e:
-            self.logger.error("Couldn't acquire current draw", err=e)
+        if self.battery_power_monitor is not None:
+            current: float = 0
+            try:
+                for _ in range(50):
+                    current += self.battery_power_monitor.get_current()
+                return current / 50
+            except Exception as e:
+                self.logger.error("Couldn't acquire current draw", err=e)
 
     def charge_current(self) -> float | None:
         """
@@ -139,13 +141,14 @@ class StateOfHealth:
         :rtype: float | None
 
         """
-        current: float = 0
-        try:
-            for _ in range(50):
-                current += self.solar_power_monitor.get_current()
-            return current / 50
-        except Exception as e:
-            self.logger.error("Couldn't acquire charge current", err=e)
+        if self.solar_power_monitor is not None:
+            current: float = 0
+            try:
+                for _ in range(50):
+                    current += self.solar_power_monitor.get_current()
+                return current / 50
+            except Exception as e:
+                self.logger.error("Couldn't acquire charge current", err=e)
 
     def solar_voltage(self) -> float | None:
         """
@@ -155,10 +158,11 @@ class StateOfHealth:
         :rtype: float | None
 
         """
-        voltage: float = 0
-        try:
-            for _ in range(50):
-                voltage += self.solar_power_monitor.get_bus_voltage()
-            return voltage / 50
-        except Exception as e:
-            self.logger.error("Couldn't acquire solar voltage", err=e)
+        if self.solar_power_monitor is not None:
+            voltage: float = 0
+            try:
+                for _ in range(50):
+                    voltage += self.solar_power_monitor.get_bus_voltage()
+                return voltage / 50
+            except Exception as e:
+                self.logger.error("Couldn't acquire solar voltage", err=e)
