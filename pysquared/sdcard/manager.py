@@ -4,6 +4,8 @@ import traceback
 import sdcardio
 import storage
 
+from pysquared.logger import Logger
+
 # type hinting only
 try:
     from typing import Union
@@ -30,6 +32,26 @@ except ImportError:
 # (call storage.enable_usb_drive() in boot.py based on config value)
 
 
+def log_to_sd(json_output: str):
+    if "/logs" not in os.listdir("/sd"):
+        os.chdir("/sd")
+        os.mkdir("logs")
+        os.chdir("/")
+
+    session = len(os.listdir("/sd/logs"))
+
+    # print("cuurent session number is: ", session, "continue this session or start session ", session + 1)
+
+    print("starting new session at /sd/logs/session", session + 1)
+
+    full_path = "/sd/logs/session" + str(session + 1)
+
+    with open(full_path, "a") as f:
+        f.write(json_output + "\n")
+
+    print(f"Log saved to {full_path}")
+
+
 class SDCardManager:
     """Class providing various functionalities related to USB and SD card operations."""
 
@@ -37,25 +59,24 @@ class SDCardManager:
 
     def __init__(
         self,
+        logger: Logger,
         spi_bus: SPI,
         chip_select: Pin,
         baudrate: int = 4000000,
         mount_path: str = "/sd",
-        sd_initialized: bool = True,
+        mounted: bool = False,
     ) -> None:
         # TODO: Check if directory exists before mounting, if not create it
-        # dir_name = mount_path.strip("/")
 
-        # if dir_name not in os.listdir("/"):
-        #     print(mount_path, " directory not found, making now...")
-        #     os.mkdir(mount_path)
-        #     print(mount_path, " directory created")
-        self.sd_initialized = sd_initialized
+        logger.debug("Initializing sd card")
+
+        self.mounted = mounted
 
         sd = sdcardio.SDCard(spi_bus, chip_select, baudrate)
         vfs = storage.VfsFat(sd)
         storage.mount(vfs, mount_path)
-        sd_initialized = True
+        self.mounted = True
+
         # sys.path.append(mount_path) # Only needed if we plan to load code from the SD card without using direct imports
 
     # Maybe need something new like file management class to handle file operations

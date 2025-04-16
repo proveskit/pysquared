@@ -8,6 +8,8 @@ import time
 import traceback
 from collections import OrderedDict
 
+from pysquared.sdcard.manager import log_to_sd
+
 from .nvm.counter import Counter
 
 
@@ -55,10 +57,12 @@ class Logger:
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
+        sd_log: bool = False,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
         self.colorized: bool = colorized
+        self.sd_log: bool = sd_log
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -106,6 +110,9 @@ class Logger:
                     ]
                 ),
             )
+
+        if self.sd_log is True:
+            log_to_sd(asctime, json_output)
 
         if self._can_print_this_level(level_value):
             if self.colorized:
