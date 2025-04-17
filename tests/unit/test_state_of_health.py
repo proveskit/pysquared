@@ -1,8 +1,12 @@
 import pytest
 import sys
 from unittest.mock import MagicMock
+from mocks.circuitpython.microcontroller import Pin  # Import the mock Pin class
+
+# Mock microcontroller and its attributes
 sys.modules['microcontroller'] = MagicMock()
 sys.modules['microcontroller'].nvm = MagicMock()
+sys.modules['microcontroller'].Pin = Pin  # Use the mock Pin class
 import microcontroller
 import pysquared.nvm.counter as counter
 from pysquared.state_of_health import StateOfHealth
