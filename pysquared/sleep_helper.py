@@ -5,6 +5,7 @@ import alarm
 from alarm import time as alarmTime
 from alarm.time import TimeAlarm
 
+from .config.config import Config
 from .logger import Logger
 from .satellite import Satellite
 from .watchdog import Watchdog
@@ -20,7 +21,9 @@ class SleepHelper:
     Class responsible for sleeping the Satellite to conserve power
     """
 
-    def __init__(self, cubesat: Satellite, logger: Logger, watchdog: Watchdog) -> None:
+    def __init__(
+        self, cubesat: Satellite, logger: Logger, watchdog: Watchdog, config: Config
+    ) -> None:
         """
         Creates a SleepHelper object.
 
@@ -31,6 +34,7 @@ class SleepHelper:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.watchdog: Watchdog = watchdog
+        self.config = config
 
     def safe_sleep(self, duration: int = 15) -> None:
         """
@@ -42,18 +46,18 @@ class SleepHelper:
         :param duration: Specified time, in seconds, to sleep the Satellite for
         """
 
+        time_remaining = duration
+
         self.logger.info("Setting Safe Sleep Mode")
 
-        iterations: int = 0
+        while time_remaining > 0:
+            time_increment = time_remaining if time_remaining < 15 else 15
 
-        while duration >= 15 and iterations < 12:
-            time_alarm: TimeAlarm = alarmTime.TimeAlarm(
-                monotonic_time=time.monotonic() + 15
+            time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
+                monotonic_time=time.monotonic() + time_increment
             )
-
             alarm.light_sleep_until_alarms(time_alarm)
-            duration -= 15
-            iterations += 1
+            duration -= time_increment
 
             self.watchdog.pet()
 
