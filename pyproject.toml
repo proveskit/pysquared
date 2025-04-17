@@ -44,8 +44,7 @@ packages = [
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.rtc",
-    "pysquared.rtc.manager",
-    "pysquared.usb"
+    "pysquared.rtc.manager"
 ]
 
 [tool.ruff.format]
