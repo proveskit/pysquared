@@ -40,13 +40,12 @@ class SleepHelper:
         """
         Puts the Satellite to sleep for specified duration, in seconds.
 
-        Current implementation results in an actual sleep duration that is a multiple of 15.
-        Current implementation only allows for a maximum sleep duration of 180 seconds.
+        Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config
 
         :param duration: Specified time, in seconds, to sleep the Satellite for
         """
 
-        time_remaining = duration
+        time_remaining = min(duration, self.config.longest_allowable_sleep_time)
 
         self.logger.info("Setting Safe Sleep Mode")
 
@@ -57,7 +56,7 @@ class SleepHelper:
                 monotonic_time=time.monotonic() + time_increment
             )
             alarm.light_sleep_until_alarms(time_alarm)
-            duration -= time_increment
+            time_remaining -= time_increment
 
             self.watchdog.pet()
 
