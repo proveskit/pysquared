@@ -68,7 +68,7 @@ class SDCardManager:
     ) -> None:
         # TODO: Check if directory exists before mounting, if not create it
 
-        logger.debug("Initializing sd card")
+        logger.debug("Initializing sd card from pysquared")
 
         self.mounted = mounted
 
