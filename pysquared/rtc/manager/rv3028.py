@@ -64,6 +64,13 @@ class RV3028Manager(RTCProto):
         except Exception as e:
             self._log.error("Error setting RTC time", e)
 
+    def get_time(self):
+        try:
+            self._rtc.get_time()
+
+        except Exception as e:
+            self._log.error("Error getting RTC time", e)
+
     def set_alarm(
         self, minute: int = None, hour: int = None, weekday: int = None
     ) -> None:
