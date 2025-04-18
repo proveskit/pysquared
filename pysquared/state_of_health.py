@@ -10,8 +10,9 @@ from pysquared.protos.radio import RadioProto
 try:
     from typing import Any, OrderedDict
 
-    from nvm.counter import Counter
-    from nvm.flag import Flag
+    from .nvm.counter import Counter
+    from .nvm.flag import Flag
+
 except Exception:
     pass
 

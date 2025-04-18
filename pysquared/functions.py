@@ -9,8 +9,6 @@ import gc
 import random
 import time
 
-import microcontroller
-
 from .cdh import CommandDataHandler
 from .config.config import Config
 from .logger import Logger
@@ -24,7 +22,7 @@ from .sleep_helper import SleepHelper
 from .watchdog import Watchdog
 
 try:
-    from typing import List, OrderedDict
+    from typing import List
 except Exception:
     pass
 

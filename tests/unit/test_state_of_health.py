@@ -1,26 +1,21 @@
-import pytest
-import sys
 from unittest.mock import MagicMock
-from mocks.circuitpython.microcontroller import Pin  # Import the mock Pin class
 
-# Mock microcontroller and its attributes
-sys.modules['microcontroller'] = MagicMock()
-sys.modules['microcontroller'].nvm = MagicMock()
-sys.modules['microcontroller'].Pin = Pin  # Use the mock Pin class
 import microcontroller
-import pysquared.nvm.counter as counter
-from pysquared.state_of_health import StateOfHealth
+import pytest
+
+from mocks.circuitpython.byte_array import ByteArray
 from pysquared.logger import Logger
+from pysquared.nvm.counter import Counter
+from pysquared.nvm.flag import Flag
 from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
-from pysquared.satellite import Satellite
+from pysquared.state_of_health import StateOfHealth
 
 
 @pytest.fixture
 def state_of_health():
     # Mock dependencies
-    satellite = MagicMock(spec=Satellite)
     logger = MagicMock(spec=Logger)
     battery_power_monitor = MagicMock(spec=PowerMonitorProto)
     solar_power_monitor = MagicMock(spec=PowerMonitorProto)
@@ -28,15 +23,23 @@ def state_of_health():
     imu_manager = MagicMock(spec=IMUProto)
     radio_manager.get_temperature = MagicMock(return_value=25.0)
     imu_manager.get_temperature = MagicMock(return_value=30.0)
+    boot_count = Counter(index=0, datastore=ByteArray(size=8))
+    burned_flag = Flag(index=0, bit_index=1, datastore=ByteArray(size=8))
+    brownout_flag = Flag(index=0, bit_index=2, datastore=ByteArray(size=8))
+    fsk_flag = Flag(index=0, bit_index=3, datastore=ByteArray(size=8))
+    microcontroller.cpu = MagicMock()
 
     # Create StateOfHealth instance
     return StateOfHealth(
-        c=satellite,
         logger=logger,
         battery_power_monitor=battery_power_monitor,
         solar_power_monitor=solar_power_monitor,
         radio_manager=radio_manager,
         imu_manager=imu_manager,
+        boot_count=boot_count,
+        burned_flag=burned_flag,
+        brownout_flag=brownout_flag,
+        fsk_flag=fsk_flag,
     )
 
 
@@ -98,11 +101,6 @@ def test_update(state_of_health):
     state_of_health.radio_manager.get_modulation.return_value = "FSK"
     state_of_health.imu_manager.get_temperature.return_value = 30.0
     state_of_health.logger.get_error_count.return_value = 0
-    state_of_health.c.power_mode = "Normal"
-    state_of_health.c.get_system_uptime = 1000
-    state_of_health.c.boot_count.get.return_value = 5
-    state_of_health.c.f_burned.get.return_value = False
-    state_of_health.c.f_brownout.get.return_value = False
     microcontroller.cpu.temperature = 45.0
 
     state_of_health.update()
@@ -114,11 +112,10 @@ def test_update(state_of_health):
     assert state_of_health.state["battery_voltage"] == 3.9
     assert state_of_health.state["radio_temperature"] == 25.0
     assert state_of_health.state["radio_modulation"] == "FSK"
-    assert state_of_health.state["microcontroller_temperature"] == microcontroller.cpu.temperature
     assert state_of_health.state["internal_temperature"] == 30.0
+    assert state_of_health.state["microcontroller_temperature"] == 45.0
     assert state_of_health.state["error_count"] == 0
-    assert state_of_health.state["power_mode"] == "Normal"
-    assert state_of_health.state["uptime"] == 1000
-    assert state_of_health.state["boot_count"] == 5
+    assert state_of_health.state["boot_count"] == 0
     assert state_of_health.state["burned_flag"] is False
     assert state_of_health.state["brownout_flag"] is False
+    assert state_of_health.state["fsk_flag"] is False
