@@ -45,6 +45,8 @@ class SleepHelper:
         :param duration: Specified time, in seconds, to sleep the Satellite for
         """
 
+        self.watchdog.pet()
+
         time_remaining = min(duration, self.config.longest_allowable_sleep_time)
 
         self.logger.info("Setting Safe Sleep Mode")
@@ -63,12 +65,12 @@ class SleepHelper:
     def short_hibernate(self) -> Literal[True]:
         """Puts the Satellite to sleep for 120 seconds"""
 
+        self.watchdog.pet()
         self.logger.debug("Short Hibernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
         self.cubesat.f_softboot.toggle(True)
-        self.watchdog.pet()
         self.safe_sleep(120)
 
         return True
@@ -76,12 +78,12 @@ class SleepHelper:
     def long_hibernate(self) -> Literal[True]:
         """Puts the Satellite to sleep for 180 seconds"""
 
+        self.watchdog.pet()
         self.logger.debug("LONG Hibernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
         self.cubesat.f_softboot.toggle(True)
-        self.watchdog.pet()
         self.safe_sleep(600)
 
         return True
