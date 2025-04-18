@@ -10,6 +10,7 @@ from pysquared.protos.radio import RadioProto
 try:
     from typing import Any, OrderedDict
 
+    from nvm.counter import Counter
     from nvm.flag import Flag
 except Exception:
     pass
@@ -33,7 +34,7 @@ class StateOfHealth:
         self.solar_power_monitor: PowerMonitorProto = solar_power_monitor
         self.radio_manager: RadioProto = radio_manager
         self.imu_manager: IMUProto = imu_manager
-        self.boot_count: Flag = boot_count
+        self.boot_count: Counter = boot_count
         self.burned_flag: Flag = burned_flag
         self.brownout_flag: Flag = brownout_flag
         self.fsk_flag: Flag = fsk_flag
@@ -74,10 +75,10 @@ class StateOfHealth:
             self.state["microcontroller_temperature"] = microcontroller.cpu.temperature
             self.state["internal_temperature"] = self.imu_manager.get_temperature()
             self.state["error_count"] = self.logger.get_error_count()
-            self.state["uptime"] = self.c.get_system_uptime
-            self.state["boot_count"] = self.boot_count
-            self.state["burned_flag"] = self.burned_flag
-            self.state["brownout_flag"] = self.brownout_flag
+            self.state["uptime"] = self.c.get_system_uptime.get()
+            self.state["boot_count"] = self.boot_count.get()
+            self.state["burned_flag"] = self.burned_flag.get()
+            self.state["brownout_flag"] = self.brownout_flag.get()
 
         except Exception as e:
             self.logger.error("Couldn't acquire data for state of health", err=e)
