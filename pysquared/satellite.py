@@ -66,7 +66,7 @@ class Satellite:
         self.normal_charge_current: float = config.normal_charge_current
         self.normal_battery_voltage: float = config.normal_battery_voltage
         self.critical_battery_voltage: float = config.critical_battery_voltage
-        self.current_draw: float = config.current_draw
+        # self.current_draw: float = config.current_draw
         self.reboot_time: int = config.reboot_time
         self.turbo_clock: bool = config.turbo_clock
         self.cubesat_name: str = config.cubesat_name
@@ -78,7 +78,8 @@ class Satellite:
         # These are here because of problems integrating the battery board on Orphues.
         # They should be moved to the battery board in the future.
         # They are only used in state of health
-        self.battery_voltage: Optional[float] = None
+
+        # self.battery_voltage: Optional[float] = None
         self.charge_current: Optional[float] = None
         self.power_mode: str = "normal"
 

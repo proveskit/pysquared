@@ -43,6 +43,7 @@ class CommandDataHandler:
         self._joke_reply: list[str] = config.joke_reply
         self._super_secret_code: bytes = config.super_secret_code.encode("utf-8")
         self._repeat_code: bytes = config.repeat_code.encode("utf-8")
+        self.config = config
         self._log.info(
             "The satellite has a super secret code!",
             super_secret_code=str(self._super_secret_code),
@@ -169,3 +170,32 @@ class CommandDataHandler:
     def exec_cmd(self, cubesat: Satellite, args: str) -> None:
         self._log.info("Executing command", args=args)
         exec(args)
+
+    def update_config(self, cubesat: Satellite, args: str) -> None:
+        # update these values with args
+        temporary: bool = False
+        key: str = ""
+        value = ""
+
+        """
+        1. KeyError:
+            Occurs when trying to access a dictionary element using a key that does not exist.
+            - Can use this for when trying to change a value that isn't in config
+
+        2. TypeError:
+            Occurs when an operation or function is applied to an object of an inappropriate type, like adding a number to a string.
+            - Can use this for when a value is of wrong type
+
+        3. ValueError:
+            Signifies that a function received an argument of the correct type but an inappropriate value, like trying to convert "abc" to an integer.
+            - Can use this for when a value is not in range in schema
+        """
+        try:
+            self.config.update_config(key, value, temporary)
+            self.logger.info("Updated config value successfully")
+        except KeyError as e:
+            self.logger.error("Value not in config or immutable", e)
+        except TypeError as e:
+            self.logger.error("Value type incorrect", e)
+        except ValueError as e:
+            self.logger.error("Value not in acceptable range", e)
