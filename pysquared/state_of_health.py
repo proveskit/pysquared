@@ -52,7 +52,6 @@ class StateOfHealth:
                 ("microcontroller_temperature", None),
                 ("internal_temperature", None),
                 ("error_count", None),
-                ("uptime", None),
                 ("boot_count", None),
                 ("burned_flag", None),
                 ("brownout_flag", None),
@@ -75,7 +74,6 @@ class StateOfHealth:
             self.state["microcontroller_temperature"] = microcontroller.cpu.temperature
             self.state["internal_temperature"] = self.imu_manager.get_temperature()
             self.state["error_count"] = self.logger.get_error_count()
-            self.state["uptime"] = self.c.get_system_uptime.get()
             self.state["boot_count"] = self.boot_count.get()
             self.state["burned_flag"] = self.burned_flag.get()
             self.state["brownout_flag"] = self.brownout_flag.get()
