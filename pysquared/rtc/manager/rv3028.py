@@ -89,14 +89,14 @@ class RV3028Manager(RTCProto):
 
     def check_alarm(self, clear: bool = True) -> bool:
         try:
-            self._rtc.check_alarm(clear)
+            return self._rtc.check_alarm(clear)
 
         except Exception as e:
             self._log.error("Error checking alarm", e)
 
     def get_alarm(self) -> tuple:
         try:
-            self._rtc.get_alarm()
+            return self._rtc.get_alarm()
 
         except Exception as e:
             self._log.error("Error getting alarm", e)
