@@ -6,10 +6,11 @@ from pysquared.logger import Logger
 from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
-from pysquared.satellite import Satellite
 
 try:
     from typing import Any, OrderedDict
+
+    from nvm.flag import Flag
 except Exception:
     pass
 
@@ -17,19 +18,25 @@ except Exception:
 class StateOfHealth:
     def __init__(
         self,
-        c: Satellite,
         logger: Logger,
         battery_power_monitor: PowerMonitorProto,
         solar_power_monitor: PowerMonitorProto,
         radio_manager: RadioProto,
         imu_manager: IMUProto,
+        boot_count: Flag,
+        burned_flag: Flag,
+        brownout_flag: Flag,
+        fsk_flag: Flag,
     ) -> None:
-        self.c: Satellite = c
         self.logger: Logger = logger
         self.battery_power_monitor: PowerMonitorProto = battery_power_monitor
         self.solar_power_monitor: PowerMonitorProto = solar_power_monitor
         self.radio_manager: RadioProto = radio_manager
         self.imu_manager: IMUProto = imu_manager
+        self.boot_count: Flag = boot_count
+        self.burned_flag: Flag = burned_flag
+        self.brownout_flag: Flag = brownout_flag
+        self.fsk_flag: Flag = fsk_flag
 
         self.state: OrderedDict[str, Any] = OrderedDict(
             [
@@ -44,7 +51,6 @@ class StateOfHealth:
                 ("microcontroller_temperature", None),
                 ("internal_temperature", None),
                 ("error_count", None),
-                ("power_mode", None),
                 ("uptime", None),
                 ("boot_count", None),
                 ("burned_flag", None),
@@ -68,11 +74,10 @@ class StateOfHealth:
             self.state["microcontroller_temperature"] = microcontroller.cpu.temperature
             self.state["internal_temperature"] = self.imu_manager.get_temperature()
             self.state["error_count"] = self.logger.get_error_count()
-            self.state["power_mode"] = self.c.power_mode
             self.state["uptime"] = self.c.get_system_uptime
-            self.state["boot_count"] = self.c.boot_count.get()
-            self.state["burned_flag"] = self.c.f_burned.get()
-            self.state["brownout_flag"] = self.c.f_brownout.get()
+            self.state["boot_count"] = self.boot_count
+            self.state["burned_flag"] = self.burned_flag
+            self.state["brownout_flag"] = self.brownout_flag
 
         except Exception as e:
             self.logger.error("Couldn't acquire data for state of health", err=e)
