@@ -5,7 +5,6 @@ from ..protos.radio import RadioProto
 
 
 class RadioTest:
-    number_of_attempts = 0
     test_message = "Hello There!"
 
     def __init__(
@@ -161,6 +160,7 @@ class RadioTest:
 
     def run(self):
         options = ["A", "B", "C"]
+        number_of_attempts = 0
 
         print(
             """
@@ -205,12 +205,12 @@ class RadioTest:
 
         while True:
             if device_selection == "A":
-                self.number_of_attempts += 1
-                if self.number_of_attempts >= 5:
+                number_of_attempts += 1
+                if number_of_attempts >= 5:
                     print("Too many attempts. Quitting.")
                     break
                 time.sleep(1)
-                self.device_under_test(self.number_of_attempts)
+                self.device_under_test(number_of_attempts)
             elif device_selection == "B":
                 time.sleep(1)
                 self.receiver()
