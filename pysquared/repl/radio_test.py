@@ -16,14 +16,10 @@ class RadioTest:
         self._log.colorized = True
         self._radio = radio
 
-    def device_under_test(self, attempts):
+    def device_under_test(self):
         self._log.debug("Device Under Test Selected")
-        self._log.debug("Setting up Radio...")
-
-        self._log.debug("Radio Setup Complete")
         self._log.debug("Sending Ping...")
 
-        print(f"Attempt: {attempts}")
         self._radio.send(self.test_message)
 
         self._log.debug("Ping Sent")
@@ -32,31 +28,23 @@ class RadioTest:
         heard_something = self._radio.receive(timeout=10)
 
         if heard_something:
+            self._log.info("Received Ping!", msg=heard_something)
             self.handle_ping()
-
         else:
             self._log.debug("No Response Received")
 
-            self._radio.send("Nothing Received")
-            self._log.debug("Echo Sent")
-
     def receiver(self):
         self._log.debug("Receiver Selected")
-        self._log.debug("Setting up Radio...")
-
-        self._log.debug("Radio Setup Complete")
         self._log.debug("Awaiting Ping...")
 
         heard_something = self._radio.receive(timeout=10)
 
         if heard_something:
+            self._log.info("Received Ping!", msg=heard_something)
             self.handle_ping()
 
         else:
-            self._log.debug("No Ping Received")
-
-            self._radio.send("Nothing Received")
-            self._log.debug("Echo Sent")
+            self._radio.send("No Response Received")
 
     def client(self, passcode):
         self._log.debug("Client Selected")
@@ -112,7 +100,7 @@ class RadioTest:
                 + input("Message to Repeat: ")
             )
         else:
-            print(
+            self._log.warning(
                 "Command is not valid or not implemented open radio_test.py and add them yourself!"
             )
 
@@ -122,17 +110,19 @@ class RadioTest:
 
             if msg is not None:
                 msg_string = "".join([chr(b) for b in msg])
-                print(f"Message Received {msg_string}")
+                self._log.debug(f"Message Received {msg_string}")
 
                 time.sleep(0.1)
                 tries += 1
                 if tries > 5:
-                    print("We tried 5 times! And there was no response. Quitting.")
+                    self._log.warning(
+                        "We tried 5 times! And there was no response. Quitting."
+                    )
                     break
                 success = self._radio.send_with_ack(packet)
-                print("Success " + str(success))
+                self._log.debug("Success " + str(success))
                 if success is True:
-                    print("Sending response")
+                    self._log.debug("Sending response")
                     response = self._radio.receive(keep_listening=True)
                     time.sleep(0.5)
 
@@ -159,8 +149,7 @@ class RadioTest:
             self._log.debug("Echo Sent")
 
     def run(self):
-        options = ["A", "B", "C"]
-        number_of_attempts = 0
+        options = ["a", "b", "c"]
 
         print(
             """
@@ -180,11 +169,12 @@ class RadioTest:
         """
         )
 
-        device_selection = input()
+        device_selection = input().lower()
 
         if device_selection not in options:
-            print("Invalid Selection.")
-            print("Please refresh the device and try again.")
+            self._log.warning(
+                "Invalid Selection. Please refresh the device and try again."
+            )
 
         print(
             """
@@ -197,23 +187,13 @@ class RadioTest:
         """
         )
 
-        passcode = ""
-        if device_selection == "C":
-            passcode = input(
-                "What's the passcode (in plain text, will automagically be converted to UTF-8): "
-            )
-
         while True:
-            if device_selection == "A":
-                number_of_attempts += 1
-                if number_of_attempts >= 5:
-                    print("Too many attempts. Quitting.")
-                    break
-                time.sleep(1)
-                self.device_under_test(number_of_attempts)
-            elif device_selection == "B":
-                time.sleep(1)
+            if device_selection == "a":
+                self.device_under_test()
+            elif device_selection == "b":
                 self.receiver()
-            elif device_selection == "C":
+            elif device_selection == "c":
+                passcode = input("What's the passcode (in plain text): ")
                 self.client(passcode)
-                time.sleep(1)
+
+            time.sleep(1)
