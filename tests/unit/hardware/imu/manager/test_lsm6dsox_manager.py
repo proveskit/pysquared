@@ -145,6 +145,7 @@ def test_get_temperature_success(
     imu_manager._imu.temperature = expected_temp
 
     temp = imu_manager.get_temperature()
+    assert temp is not None
     assert math.isclose(temp, expected_temp, rel_tol=1e-9)
 
 

@@ -86,10 +86,9 @@ class Satellite:
         Define the boot time and current time
         """
 
-        self.BOOTTIME = time.time()
+        self.BOOTTIME: float = time.time()
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
-        self.CURRENTTIME: int = self.BOOTTIME
-        self.UPTIME: int = 0
+        self.CURRENTTIME: float = self.BOOTTIME
 
         if self.f_softboot.get():
             self.f_softboot.toggle(False)
@@ -106,8 +105,8 @@ class Satellite:
     """
 
     @property
-    def get_system_uptime(self) -> int:
-        self.CURRENTTIME: int = const(time.time())
+    def get_system_uptime(self) -> float:
+        self.CURRENTTIME: float = const(time.time())
         return self.CURRENTTIME - self.BOOTTIME
 
     """
@@ -115,7 +114,7 @@ class Satellite:
     """
 
     def check_reboot(self) -> None:
-        self.UPTIME: int = self.get_system_uptime
+        self.UPTIME: float = self.get_system_uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.reboot_time:
             microcontroller.reset()
