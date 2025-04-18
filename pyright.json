@@ -1,6 +1,6 @@
 {
     "version": "1.1.399",
-    "time": "1745010105292",
+    "time": "1745015715029",
     "generalDiagnostics": [
         {
             "file": "c:\\Users\\Allan\\Desktop\\circuitpy_flight_software\\mocks\\circuitpython\\byte_array.py",
@@ -4021,50 +4021,18 @@
         {
             "file": "c:\\Users\\Allan\\Desktop\\circuitpy_flight_software\\pysquared\\satellite.py",
             "severity": "error",
-            "message": "Cannot assign to attribute \"CURRENTTIME\" for class \"Satellite*\"\n  \"float\" is not assignable to \"int\"",
-            "range": {
-                "start": {
-                    "line": 90,
-                    "character": 32
-                },
-                "end": {
-                    "line": 90,
-                    "character": 45
-                }
-            },
-            "rule": "reportAttributeAccessIssue"
-        },
-        {
-            "file": "c:\\Users\\Allan\\Desktop\\circuitpy_flight_software\\pysquared\\satellite.py",
-            "severity": "error",
             "message": "\"Processor\" is not iterable\n  \"__iter__\" method not defined",
             "range": {
                 "start": {
-                    "line": 100,
+                    "line": 99,
                     "character": 19
                 },
                 "end": {
-                    "line": 100,
+                    "line": 99,
                     "character": 39
                 }
             },
             "rule": "reportGeneralTypeIssues"
-        },
-        {
-            "file": "c:\\Users\\Allan\\Desktop\\circuitpy_flight_software\\pysquared\\satellite.py",
-            "severity": "error",
-            "message": "Type \"Unknown | float\" is not assignable to return type \"int\"\n  Type \"Unknown | float\" is not assignable to type \"int\"\n    \"float\" is not assignable to \"int\"",
-            "range": {
-                "start": {
-                    "line": 110,
-                    "character": 15
-                },
-                "end": {
-                    "line": 110,
-                    "character": 47
-                }
-            },
-            "rule": "reportReturnType"
         },
         {
             "file": "c:\\Users\\Allan\\Desktop\\circuitpy_flight_software\\pysquared\\sleep_helper.py",
@@ -5253,9 +5221,9 @@
     ],
     "summary": {
         "filesAnalyzed": 80,
-        "errorCount": 323,
+        "errorCount": 321,
         "warningCount": 5,
         "informationCount": 0,
-        "timeInSec": 2.384
+        "timeInSec": 2.117
     }
 }
