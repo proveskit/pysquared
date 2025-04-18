@@ -73,9 +73,9 @@ class functions:
         self.listen()
         self.watchdog.pet()
 
-        self.logger.debug("Sleeping for 20 seconds")
+        self.logger.debug("Sleeping for 600 seconds")
         self.watchdog.pet()
-        self.sleep_helper.safe_sleep(self.sleep_duration)
+        self.sleep_helper.safe_sleep(600)
         self.watchdog.pet()
 
     """
