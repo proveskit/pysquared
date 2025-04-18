@@ -77,6 +77,7 @@ class StateOfHealth:
             self.state["boot_count"] = self.boot_count.get()
             self.state["burned_flag"] = self.burned_flag.get()
             self.state["brownout_flag"] = self.brownout_flag.get()
+            self.state["fsk_flag"] = self.fsk_flag.get()
 
         except Exception as e:
             self.logger.error("Couldn't acquire data for state of health", err=e)
