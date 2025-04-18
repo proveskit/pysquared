@@ -29,7 +29,6 @@ class RadioTest:
 
         if heard_something:
             self._log.info("Received Ping!", msg=heard_something)
-            self.handle_ping()
         else:
             self._log.debug("No Response Received")
 
@@ -41,10 +40,10 @@ class RadioTest:
 
         if heard_something:
             self._log.info("Received Ping!", msg=heard_something)
-            self.handle_ping()
+            self._radio.send("Ping Received!")
 
         else:
-            self._radio.send("No Response Received")
+            self._log.debug("No Response Received")
 
     def client(self, passcode):
         self._log.debug("Client Selected")
@@ -123,7 +122,7 @@ class RadioTest:
                 self._log.debug("Success " + str(success))
                 if success is True:
                     self._log.debug("Sending response")
-                    response = self._radio.receive(keep_listening=True)
+                    response = self._radio.receive()
                     time.sleep(0.5)
 
                     if response is not None:
@@ -135,7 +134,7 @@ class RadioTest:
                         )
 
     def handle_ping(self):
-        response = self._radio.receive(keep_listening=True)
+        response = self._radio.receive()
 
         if response is not None:
             self._log.debug("Ping Received", msg=response)
