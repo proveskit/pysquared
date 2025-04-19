@@ -1,7 +1,4 @@
-try:
-    from stubs.circuitpython.byte_array import ByteArray
-except ImportError:
-    pass
+import microcontroller
 
 
 class Flag:
@@ -9,10 +6,23 @@ class Flag:
     Flag class for managing boolean flags stored in non-volatile memory
     """
 
-    def __init__(self, index: int, bit_index: int, datastore: ByteArray) -> None:
-        self._index = index  # Index of specific byte in array of bytes
-        self._bit = bit_index  # Position of bit within specific byte
-        self._datastore = datastore  # Array of bytes (Non-volatile Memory)
+    def __init__(
+        self,
+        index: int,
+        bit_index: int,
+    ) -> None:
+        """Initialize a Flag instance.
+
+        :param index int: The index of the flag (byte) in the datastore (array of bytes).
+        :param bit_index int: The index of the bit within the byte.
+        """
+        self._index = index
+        self._bit = bit_index
+
+        if microcontroller.nvm is None:
+            raise ValueError("nvm is not available")
+
+        self._datastore = microcontroller.nvm  # Array of bytes (Non-volatile Memory)
         self._bit_mask = 1 << bit_index  # Creating bitmask with bit position
         # Ex. bit = 3 -> 3 % 8 = 3 -> 1 << 3 = 00001000
 

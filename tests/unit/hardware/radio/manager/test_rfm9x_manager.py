@@ -37,8 +37,8 @@ def mock_logger() -> MagicMock:
 
 
 @pytest.fixture
-def mock_use_fsk() -> Flag:
-    return Flag(index=0, bit_index=0, datastore=ByteArray(size=8))
+def mock_use_fsk() -> MagicMock:
+    return MagicMock(spec=Flag)
 
 
 @pytest.fixture
@@ -73,10 +73,10 @@ def test_init_fsk_success(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test successful initialization when use_fsk flag is True."""
-    mock_use_fsk.toggle(True)
+    mock_use_fsk.get.return_value = True
     mock_fsk_instance = MagicMock(spec=RFM9xFSK)
     mock_rfm9xfsk.return_value = mock_fsk_instance
 
@@ -120,10 +120,10 @@ def test_init_lora_success(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test successful initialization when use_fsk flag is False."""
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     mock_lora_instance = MagicMock(spec=RFM9x)
     mock_rfm9x.return_value = mock_lora_instance
 
@@ -179,10 +179,10 @@ def test_init_lora_high_sf_success(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,  # Use base config
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test LoRa initialization with high spreading factor."""
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     # Modify config for high SF
     mock_radio_config.lora.spreading_factor = 10
     mock_lora_instance = MagicMock(spec=RFM9x)
@@ -215,10 +215,10 @@ def test_init_with_retries_fsk(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test __init__ retries on FSK initialization failure."""
-    mock_use_fsk.toggle(True)
+    mock_use_fsk.get.return_value = True
     mock_rfm9xfsk.side_effect = Exception("Simulated FSK failure")
 
     with pytest.raises(HardwareInitializationError):
@@ -246,10 +246,10 @@ def test_init_with_retries_lora(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test __init__ retries on LoRa initialization failure."""
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     mock_rfm9x.side_effect = Exception("Simulated LoRa failure")
 
     with pytest.raises(HardwareInitializationError):
@@ -277,10 +277,10 @@ def test_send_success_bytes(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test successful sending of bytes."""
-    mock_use_fsk.toggle(False)  # Use LoRa
+    mock_use_fsk.get.return_value = False
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
     mock_radio_instance.send.return_value = True  # Simulate successful send
@@ -314,10 +314,10 @@ def test_send_success_string(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test successful sending of a string (should be converted to bytes)."""
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
     mock_radio_instance.send.return_value = True
@@ -356,10 +356,10 @@ def test_send_unlicensed(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test send attempt when not licensed."""
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
     mock_rfm9x.return_value = mock_radio_instance
@@ -392,10 +392,10 @@ def test_send_exception(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test handling of exception during radio.send()."""
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
     send_error = RuntimeError("SPI Error")
@@ -417,31 +417,35 @@ def test_send_exception(
     mock_logger.error.assert_called_once_with("Error sending radio message", send_error)
 
 
+@patch("pysquared.nvm.flag.microcontroller")
 def test_set_modulation_lora_to_fsk(
+    mock_microcontroller: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
 ):
     """Test toggling the modulation flag."""
+    mock_microcontroller.nvm = ByteArray(size=1)
+    use_fsk = Flag(0, 0)
+
     # Start as LoRa
-    mock_use_fsk.toggle(False)
+    use_fsk.toggle(False)
     manager = RFM9xManager(
         mock_logger,
         mock_radio_config,
-        mock_use_fsk,
+        use_fsk,
         mock_spi,
         mock_chip_select,
         mock_reset,
     )
     assert manager.get_modulation() == RadioModulation.LORA
-    assert mock_use_fsk.get() is False
+    assert use_fsk.get() is False
 
     # Request FSK
     manager.set_modulation(RadioModulation.FSK)
-    assert mock_use_fsk.get() is True
+    assert use_fsk.get() is True
     mock_logger.info.assert_called_with(
         "Radio modulation change requested for next init",
         requested=RadioModulation.FSK,
@@ -449,28 +453,33 @@ def test_set_modulation_lora_to_fsk(
     )
 
 
+@patch("pysquared.nvm.flag.microcontroller")
 def test_set_modulation_fsk_to_lora(
+    mock_microcontroller: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
 ):
     """Test toggling the modulation flag."""
+    mock_microcontroller.nvm = ByteArray(size=1)
+    use_fsk = Flag(0, 0)
+
     # Start as FSK
-    mock_use_fsk.toggle(True)
+    use_fsk.toggle(True)
     manager = RFM9xManager(
         mock_logger,
         mock_radio_config,
-        mock_use_fsk,
+        use_fsk,
         mock_spi,
         mock_chip_select,
         mock_reset,
     )
     assert manager.get_modulation() == RadioModulation.FSK
-    assert mock_use_fsk.get() is True
+    assert use_fsk.get() is True
 
+    # Request LoRa
     manager.set_modulation(RadioModulation.LORA)
     mock_logger.info.assert_called_with(
         "Radio modulation change requested for next init",
@@ -485,11 +494,11 @@ def test_get_modulation_initialized(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test get_modulation when radio is initialized."""
     # Test FSK instance
-    mock_use_fsk.toggle(True)
+    mock_use_fsk.get.return_value = True
     manager_fsk = RFM9xManager(
         mock_logger,
         mock_radio_config,
@@ -501,7 +510,7 @@ def test_get_modulation_initialized(
     assert manager_fsk.get_modulation() == RadioModulation.FSK
 
     # Test LoRa instance
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     manager_lora = RFM9xManager(
         mock_logger,
         mock_radio_config,
@@ -514,7 +523,7 @@ def test_get_modulation_initialized(
 
 
 def test_get_modulation_not_initialized(
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test get_modulation when radio is not initialized (relies on flag)."""
     manager = RFM9xManager.__new__(
@@ -524,11 +533,11 @@ def test_get_modulation_not_initialized(
     manager._use_fsk = mock_use_fsk
 
     # Flag is False (LoRa)
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     assert manager.get_modulation() == RadioModulation.LORA
 
     # Flag is True (FSK)
-    mock_use_fsk.toggle(True)
+    mock_use_fsk.get.return_value = True
     assert manager.get_modulation() == RadioModulation.FSK
 
 
@@ -549,7 +558,7 @@ def test_get_temperature_success(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
     raw_value: int,
     expected_temperature: float,
 ):
@@ -582,7 +591,7 @@ def test_get_temperature_read_exception(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test handling exception during radio.read_u8()."""
     manager = RFM9xManager(
@@ -616,10 +625,10 @@ def test_receive_success(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test successful reception of a message."""
-    mock_use_fsk.toggle(False)  # Use LoRa
+    mock_use_fsk.get.return_value = False
     mock_radio_instance = MagicMock(spec=RFM9x)
     expected_data = b"Received Data"
     mock_radio_instance.receive = MagicMock()
@@ -650,10 +659,10 @@ def test_receive_no_message(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test receiving when no message is available (timeout)."""
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.receive = MagicMock()
     mock_radio_instance.receive.return_value = None  # Simulate timeout
@@ -683,10 +692,10 @@ def test_receive_exception(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: Flag,
+    mock_use_fsk: MagicMock,
 ):
     """Test handling of exception during radio.receive()."""
-    mock_use_fsk.toggle(False)
+    mock_use_fsk.get.return_value = False
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.receive = MagicMock()
     receive_error = RuntimeError("Receive Error")

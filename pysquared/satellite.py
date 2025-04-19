@@ -33,21 +33,13 @@ class Satellite:
     """
 
     # General NVM counters
-    boot_count: Counter = Counter(index=register.BOOTCNT, datastore=microcontroller.nvm)
+    boot_count: Counter = Counter(index=register.BOOTCNT)
 
     # Define NVM flags
-    f_softboot: Flag = Flag(
-        index=register.FLAG, bit_index=0, datastore=microcontroller.nvm
-    )
-    f_brownout: Flag = Flag(
-        index=register.FLAG, bit_index=3, datastore=microcontroller.nvm
-    )
-    f_shtdwn: Flag = Flag(
-        index=register.FLAG, bit_index=5, datastore=microcontroller.nvm
-    )
-    f_burned: Flag = Flag(
-        index=register.FLAG, bit_index=6, datastore=microcontroller.nvm
-    )
+    f_softboot: Flag = Flag(index=register.FLAG, bit_index=0)
+    f_brownout: Flag = Flag(index=register.FLAG, bit_index=3)
+    f_shtdwn: Flag = Flag(index=register.FLAG, bit_index=5)
+    f_burned: Flag = Flag(index=register.FLAG, bit_index=6)
 
     def __init__(
         self,

@@ -1,17 +1,27 @@
-try:
-    from stubs.circuitpython.byte_array import ByteArray
-except ImportError:
-    pass
+import microcontroller
 
 
 class Counter:
+    """
+    Counter class for managing 8-bit counters stored in non-volatile memory
+    """
+
     def __init__(
         self,
         index: int,
-        datastore: ByteArray,
     ) -> None:
+        """Initialize a Counter instance.
+
+        :param index int: The index of the counter in the datastore.
+        :param datastore ByteArray: The non-volatile memory datastore where the counter is stored.
+            Expected to be of type `microcontroller.nvm.ByteArray`.
+        """
         self._index = index
-        self._datastore = datastore
+
+        if microcontroller.nvm is None:
+            raise ValueError("nvm is not available")
+
+        self._datastore = microcontroller.nvm
 
     def get(self) -> int:
         """

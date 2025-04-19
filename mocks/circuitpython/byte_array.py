@@ -2,10 +2,8 @@ from typing import Union
 
 from circuitpython_typing import ReadableBuffer
 
-from stubs.circuitpython.byte_array import ByteArray as ByteArrayStub
 
-
-class ByteArray(ByteArrayStub):
+class ByteArray:
     """
     ByteArray is a class that mocks the implementaion of the CircuitPython non-volatile memory API.
     """

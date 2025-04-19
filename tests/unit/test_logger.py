@@ -4,23 +4,18 @@ import pytest
 from microcontroller import Pin
 
 import pysquared.nvm.counter as counter
-from mocks.circuitpython.byte_array import ByteArray
 from pysquared.logger import Logger, _color
 
 
 @pytest.fixture
 def logger():
-    datastore = ByteArray(size=8)
-    index = 0
-    count = counter.Counter(index, datastore)
+    count = MagicMock(spec=counter.Counter)
     return Logger(count)
 
 
 @pytest.fixture
 def logger_color():
-    datastore = ByteArray(size=8)
-    index = 0
-    count = counter.Counter(index, datastore)
+    count = MagicMock(spec=counter.Counter)
     return Logger(error_counter=count, colorized=True)
 
 

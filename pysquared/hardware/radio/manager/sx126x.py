@@ -1,7 +1,11 @@
 import time
 
-from ....config.radio import FSKConfig, LORAConfig
+from busio import SPI
+from digitalio import DigitalInOut
+
+from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
+from ....nvm.flag import Flag
 from ..modulation import RadioModulation
 from .base import BaseRadioManager
 
@@ -15,12 +19,6 @@ except ImportError:
 # Type hinting only
 try:
     from typing import Any, Optional
-
-    from busio import SPI
-    from digitalio import DigitalInOut
-
-    from ....config.radio import RadioConfig
-    from ....nvm.flag import Flag
 except ImportError:
     pass
 

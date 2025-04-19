@@ -1,3 +1,5 @@
+from busio import I2C
+
 from ....logger import Logger
 from ....protos.power_monitor import PowerMonitorProto
 from ...decorators import with_retries
@@ -7,12 +9,6 @@ try:
     from mocks.adafruit_ina219.ina219 import INA219  # type: ignore
 except ImportError:
     from adafruit_ina219 import INA219
-
-# Type hinting only
-try:
-    from busio import I2C
-except ImportError:
-    pass
 
 
 class INA219Manager(PowerMonitorProto):

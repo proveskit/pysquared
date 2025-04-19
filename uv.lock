@@ -66,6 +66,20 @@ wheels = [
 ]
 
 [[package]]
+name = "adafruit-circuitpython-ina219"
+version = "3.4.26"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "adafruit-blinka" },
+    { name = "adafruit-circuitpython-busdevice" },
+    { name = "adafruit-circuitpython-register" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bb/0c/80c5a668e13eb87f640de19a807c1917e1254936fb13a8e5b128c13b0356/adafruit_circuitpython_ina219-3.4.26.tar.gz", hash = "sha256:181fccd21ad1361a4be498c2529097dac6c29fefe982ee080ec56cb4fc17c33c", size = 29348 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/6c/39e02d39cb9a1e47ed27c8172ef5203821889853c3c80808d07487fc9065/adafruit_circuitpython_ina219-3.4.26-py3-none-any.whl", hash = "sha256:6cc98b870fb354a74bb07c536d99620b2d482099f2ebcde74c53a8de6f02ae51", size = 7746 },
+]
+
+[[package]]
 name = "adafruit-circuitpython-lis2mdl"
 version = "2.1.23"
 source = { registry = "https://pypi.org/simple" }
@@ -359,6 +373,26 @@ wheels = [
 ]
 
 [[package]]
+name = "micropython-rp2-stubs"
+version = "1.25.0.post1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "micropython-stdlib-stubs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/df/a3/fa9d3720d86b52e1a47b9f953a42ca0d447247eca85c8004872b6051bede/micropython_rp2_stubs-1.25.0.post1.tar.gz", hash = "sha256:65875f33f9ad0770eda524513c2dd644cdd584e4a49f518e8045a913dae893ff", size = 68021 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0e/3b/9a523526666f646a9069925f9fe9757df84cc237b759f60de68792309679/micropython_rp2_stubs-1.25.0.post1-py2.py3-none-any.whl", hash = "sha256:2137ce8c6ef4cc58d16a368e845a2dc05cfb7a828622403ac936a086f6174bc4", size = 91635 },
+]
+
+[[package]]
+name = "micropython-stdlib-stubs"
+version = "1.24.1.post2"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/5e/b26e6f7e3f3d412635bb3bab4d950bcb07d7d8ec01a358d05e1216977bc3/micropython_stdlib_stubs-1.24.1.post2-py3-none-any.whl", hash = "sha256:1ef3b2cf4f84cd8a96bf05184c09498a246b87435bcea0235f3b49861a1d1cd1", size = 145403 },
+]
+
+[[package]]
 name = "nodeenv"
 version = "1.9.1"
 source = { registry = "https://pypi.org/simple" }
@@ -487,6 +521,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "adafruit-circuitpython-asyncio" },
     { name = "adafruit-circuitpython-drv2605" },
+    { name = "adafruit-circuitpython-ina219" },
     { name = "adafruit-circuitpython-lis2mdl" },
     { name = "adafruit-circuitpython-lsm6ds" },
     { name = "adafruit-circuitpython-mcp9808" },
@@ -499,6 +534,7 @@ dependencies = [
     { name = "adafruit-circuitpython-veml7700" },
     { name = "circuitpython-stubs" },
     { name = "coverage" },
+    { name = "micropython-rp2-stubs" },
     { name = "pre-commit" },
     { name = "proves-circuitpython-rv3028" },
     { name = "proves-circuitpython-sx126" },
@@ -510,6 +546,7 @@ dependencies = [
 requires-dist = [
     { name = "adafruit-circuitpython-asyncio", git = "https://github.com/adafruit/adafruit_circuitpython_asyncio?rev=1.3.3" },
     { name = "adafruit-circuitpython-drv2605", specifier = "==1.3.4" },
+    { name = "adafruit-circuitpython-ina219", specifier = "==3.4.26" },
     { name = "adafruit-circuitpython-lis2mdl", specifier = "==2.1.23" },
     { name = "adafruit-circuitpython-lsm6ds", specifier = "==4.5.13" },
     { name = "adafruit-circuitpython-mcp9808", specifier = "==3.3.24" },
@@ -522,6 +559,7 @@ requires-dist = [
     { name = "adafruit-circuitpython-veml7700", specifier = "==2.0.2" },
     { name = "circuitpython-stubs", specifier = "==9.2.5" },
     { name = "coverage", specifier = "==7.6.10" },
+    { name = "micropython-rp2-stubs", specifier = "==1.25.0.post1" },
     { name = "pre-commit", specifier = "==4.0.1" },
     { name = "proves-circuitpython-rv3028", git = "https://github.com/proveskit/PROVES_CircuitPython_RV3028?rev=1.0.0" },
     { name = "proves-circuitpython-sx126", git = "https://github.com/proveskit/micropySX126X?rev=1.0.0" },

@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 from mocks.circuitpython.byte_array import ByteArray
@@ -9,15 +11,23 @@ def setup_datastore():
     return ByteArray(size=17)
 
 
-def test_init(setup_datastore):
-    flag = Flag(16, 0, setup_datastore)  # Example flag for softboot
+@patch("pysquared.nvm.flag.microcontroller")
+def test_init(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
+    mock_microcontroller.nvm = (
+        setup_datastore  # Mock the nvm module to use the ByteArray
+    )
+    flag = Flag(16, 0)  # Example flag for softboot
     assert flag._index == 16  # Check if _index (index of byte array) is set to 16
     assert flag._bit == 0  # Check if _bit (bit position) is set to first index of byte
     assert flag._bit_mask == 0b00000001  # Check if _bit_mask is set correctly
 
 
-def test_get(setup_datastore):
-    flag = Flag(16, 1, setup_datastore)  # Example flag for solar
+@patch("pysquared.nvm.flag.microcontroller")
+def test_get(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
+    mock_microcontroller.nvm = (
+        setup_datastore  # Mock the nvm module to use the ByteArray
+    )
+    flag = Flag(16, 1)  # Example flag for solar
     assert setup_datastore[16] == 0b00000000
     assert not flag.get()  # Bit should be 0 by default
 
@@ -25,8 +35,12 @@ def test_get(setup_datastore):
     assert flag.get()  # Should return true since bit position 1 = 1
 
 
-def test_toggle(setup_datastore):
-    flag = Flag(16, 2, setup_datastore)  # Example flag for burnarm
+@patch("pysquared.nvm.flag.microcontroller")
+def test_toggle(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
+    mock_microcontroller.nvm = (
+        setup_datastore  # Mock the nvm module to use the ByteArray
+    )
+    flag = Flag(16, 2)  # Example flag for burnarm
     assert setup_datastore[16] == 0b00000000
     flag.toggle(False)  # Set flag to off (bit to 0)
     assert setup_datastore[16] == 0b00000000
@@ -45,13 +59,17 @@ def test_toggle(setup_datastore):
     assert not flag.get()  # Bit should be 0
 
 
-def test_edge_cases(setup_datastore):
-    first_bit = Flag(0, 0, setup_datastore)
+@patch("pysquared.nvm.flag.microcontroller")
+def test_edge_cases(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
+    mock_microcontroller.nvm = (
+        setup_datastore  # Mock the nvm module to use the ByteArray
+    )
+    first_bit = Flag(0, 0)
     first_bit.toggle(True)
     assert setup_datastore[0] == 0b00000001
     assert first_bit.get()
 
-    last_bit = Flag(0, 7, setup_datastore)
+    last_bit = Flag(0, 7)
     last_bit.toggle(True)
     assert setup_datastore[0] == 0b10000001
     assert last_bit.get()
