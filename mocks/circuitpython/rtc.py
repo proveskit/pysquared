@@ -1,5 +1,6 @@
 class RTC:
     _instance = None
+    datetime = None
 
     def __new__(cls):
         if cls._instance is None:

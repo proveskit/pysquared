@@ -3,16 +3,12 @@ try:
 except ImportError:
     from rv3028.rv3028 import RV3028  # Real Time Clock
 
+from busio import I2C
+
 from ...hardware.decorators import with_retries
 from ...hardware.exception import HardwareInitializationError
 from ...logger import Logger
 from ...protos.rtc import RTCProto
-
-# Type hinting only
-try:
-    from busio import I2C
-except ImportError:
-    pass
 
 
 class RV3028Manager(RTCProto):

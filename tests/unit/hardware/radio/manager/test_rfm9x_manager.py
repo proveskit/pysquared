@@ -2,6 +2,8 @@ import math
 from unittest.mock import MagicMock, patch
 
 import pytest
+from busio import SPI
+from digitalio import DigitalInOut
 
 from mocks.adafruit_rfm.rfm9x import RFM9x
 from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
@@ -12,13 +14,6 @@ from pysquared.hardware.radio.manager.rfm9x import RFM9xManager
 from pysquared.hardware.radio.modulation import RadioModulation
 from pysquared.logger import Logger
 from pysquared.nvm.flag import Flag
-
-# Type hinting only
-try:
-    from busio import SPI
-    from digitalio import DigitalInOut
-except ImportError:
-    pass
 
 
 @pytest.fixture
@@ -640,7 +635,7 @@ def test_receive_success(
         mock_reset,
     )
 
-    received_data = manager.receive(timeout=10.0)
+    received_data = manager.receive(timeout=10)
 
     assert received_data == expected_data
     mock_radio_instance.receive.assert_called_once_with(keep_listening=True, timeout=10)
@@ -673,7 +668,7 @@ def test_receive_no_message(
         mock_reset,
     )
 
-    received_data = manager.receive(timeout=10.0)
+    received_data = manager.receive(timeout=10)
 
     assert received_data is None
     mock_radio_instance.receive.assert_called_once_with(keep_listening=True, timeout=10)
@@ -707,7 +702,7 @@ def test_receive_exception(
         mock_reset,
     )
 
-    received_data = manager.receive(timeout=10.0)
+    received_data = manager.receive(timeout=10)
 
     assert received_data is None
     mock_radio_instance.receive.assert_called_once_with(keep_listening=True, timeout=10)

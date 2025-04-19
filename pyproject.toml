@@ -74,3 +74,14 @@ directory = ".coverage-reports/html"
 
 [tool.coverage.xml]
 output = ".coverage-reports/coverage.xml"
+
+[tool.pyright]
+include = ["pysquared"]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    ".git",
+    "stubs",
+]
+# stubPath = "stubs/circuitpython"
+# stubPath = ".venv/lib/python*/site-packages/adafruit_bus_device-stubs"

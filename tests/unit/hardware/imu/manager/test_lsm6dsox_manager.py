@@ -2,18 +2,12 @@ import math
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
+from busio import I2C
 
 from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
-
-# Type hinting only
-try:
-    from busio import I2C
-
-    from pysquared.logger import Logger
-except ImportError:
-    pass
+from pysquared.logger import Logger
 
 
 @pytest.fixture

@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock, call, patch
 
 import pytest
+from busio import SPI
+from digitalio import DigitalInOut
 
 from mocks.circuitpython.byte_array import ByteArray
-
-# Import the mock directly
 from mocks.proves_sx126.sx126x import ERR_NONE
 from mocks.proves_sx126.sx1262 import SX1262
 from pysquared.config.radio import RadioConfig
@@ -13,13 +13,6 @@ from pysquared.hardware.radio.manager.sx126x import SX126xManager
 from pysquared.hardware.radio.modulation import RadioModulation
 from pysquared.logger import Logger
 from pysquared.nvm.flag import Flag
-
-# Type hinting only
-try:
-    from busio import SPI
-    from digitalio import DigitalInOut
-except ImportError:
-    pass
 
 
 @pytest.fixture
@@ -469,7 +462,7 @@ def test_receive_success(
 
     mock_time.time.side_effect = [0.0, 0.1]  # Start time, time after first check
 
-    received_data = initialized_manager.receive(timeout=10.0)
+    received_data = initialized_manager.receive(timeout=10)
 
     assert received_data == expected_data
     initialized_manager._radio.recv.assert_called_once()
@@ -496,7 +489,7 @@ def test_receive_timeout(
     ]
 
     # Explicitly test with the default timeout
-    received_data = initialized_manager.receive(timeout=10.0)
+    received_data = initialized_manager.receive(timeout=10)
 
     assert received_data is None
     assert initialized_manager._radio.recv.call_count > 1
@@ -518,7 +511,7 @@ def test_receive_radio_error(
     initialized_manager._radio.recv.return_value = (b"some data", error_code)
     mock_time.time.side_effect = [0.0, 0.1]
 
-    received_data = initialized_manager.receive(timeout=10.0)
+    received_data = initialized_manager.receive(timeout=10)
 
     assert received_data is None
     initialized_manager._radio.recv.assert_called_once()
@@ -542,7 +535,7 @@ def test_receive_exception(
     # Mock time just enough to enter the loop once
     mock_time.time.side_effect = [0.0, 0.1]
 
-    received_data = initialized_manager.receive(timeout=10.0)
+    received_data = initialized_manager.receive(timeout=10)
 
     assert received_data is None
     initialized_manager._radio.recv.assert_called_once()

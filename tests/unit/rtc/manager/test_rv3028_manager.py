@@ -1,18 +1,12 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from busio import I2C
 
 from mocks.rv3028 import RV3028  # Mock RTC class
 from pysquared.hardware.exception import HardwareInitializationError
+from pysquared.logger import Logger
 from pysquared.rtc.manager.rv3028 import RV3028Manager
-
-# Type hinting only
-try:
-    from busio import I2C
-
-    from pysquared.logger import Logger
-except ImportError:
-    pass
 
 
 @pytest.fixture

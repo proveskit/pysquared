@@ -1,15 +1,11 @@
 from unittest.mock import MagicMock
 
 import pytest
+from microcontroller import Pin
 
 import pysquared.nvm.counter as counter
 from mocks.circuitpython.byte_array import ByteArray
 from pysquared.logger import Logger, _color
-
-try:
-    from microcontroller import Pin
-except ImportError:
-    pass
 
 
 @pytest.fixture

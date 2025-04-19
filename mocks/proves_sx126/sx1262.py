@@ -3,6 +3,9 @@ Mock for PROVES SX126
 https://github.com/proveskit/micropySX126X/blob/master/proves_sx126/sx1262.py
 """
 
+from busio import SPI
+from digitalio import DigitalInOut
+
 from .sx126x import (
     SX126X_GFSK_ADDRESS_FILT_OFF,
     SX126X_GFSK_PREAMBLE_DETECT_16,
@@ -10,11 +13,10 @@ from .sx126x import (
 )
 
 # type-hinting only
-try:
-    from busio import SPI
-    from digitalio import DigitalInOut
-except ImportError:
-    pass
+# try:
+
+# except ImportError:
+#     pass
 
 
 class SX1262:
