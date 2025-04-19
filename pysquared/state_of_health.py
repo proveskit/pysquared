@@ -25,7 +25,7 @@ class StateOfHealth:
         solar_power_monitor: PowerMonitorProto,
         radio_manager: RadioProto,
         imu_manager: IMUProto,
-        boot_count: Flag,
+        boot_count: Counter,
         burned_flag: Flag,
         brownout_flag: Flag,
         fsk_flag: Flag,
