@@ -6,7 +6,6 @@ from .logger import Logger
 
 try:
     from typing import Union
-
 except Exception:
     pass
 

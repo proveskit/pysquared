@@ -2,11 +2,11 @@
 Protocol defining the interface for a radio.
 """
 
+from ..hardware.radio.modulation import RadioModulation
+
 # Type hinting only
 try:
     from typing import Any, Optional
-
-    from ..hardware.radio.modulation import RadioModulation
 except ImportError:
     pass
 

@@ -9,7 +9,6 @@ dependencies = [
     "adafruit-circuitpython-register==1.10.2",
     "circuitpython-stubs==9.2.5",
     "coverage==7.6.10",
-    "micropython-rp2-stubs==1.25.0.post1",
     "pre-commit==4.0.1",
     "pyright[nodejs]==1.1.399",
     "pytest==8.3.2",
@@ -83,4 +82,7 @@ exclude = [
     "**/__pycache__",
     ".venv",
     ".git",
+    "typings",
 ]
+stubPath = "./typings"
+reportMissingModuleSource = false

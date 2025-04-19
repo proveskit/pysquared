@@ -78,7 +78,7 @@ class BaseRadioManager(RadioProto):
             sent = self._send_internal(payload)
 
             if not sent:
-                self._log.error("Radio send failed")
+                self._log.warning("Radio send failed")
                 return False
 
             self._log.info("Radio message sent")

@@ -360,9 +360,7 @@ def test_send_radio_error(
     expected_bytes = b" ".join([license_bytes, msg, license_bytes])
     initialized_manager._radio.send.assert_called_once_with(expected_bytes)
 
-    mock_logger.error.assert_has_calls(
-        [call("Radio send failed with error code: -1"), call("Radio send failed")]
-    )
+    mock_logger.error.assert_has_calls([call("Radio send failed with error code", -1)])
 
 
 def test_send_exception(

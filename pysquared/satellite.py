@@ -20,7 +20,6 @@ from .nvm.flag import Flag
 
 try:
     from typing import Optional
-
 except Exception:
     pass
 

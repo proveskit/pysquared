@@ -82,7 +82,7 @@ class SX126xManager(BaseRadioManager):
         """Send data using the SX126x radio."""
         _, err = self._radio.send(payload)
         if err != ERR_NONE:
-            self._log.error(f"Radio send failed with error code: {err}")
+            self._log.error("Radio send failed with error code", err)
             return False
         return True
 
