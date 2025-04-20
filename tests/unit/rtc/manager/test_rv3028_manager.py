@@ -1,9 +1,10 @@
+from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
 from busio import I2C
 
-from mocks.rv3028 import RV3028  # Mock RTC class
+from mocks.rv3028 import RV3028
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.logger import Logger
 from pysquared.rtc.manager.rv3028 import RV3028Manager
@@ -21,7 +22,14 @@ def mock_logger() -> MagicMock:
     return MagicMock(spec=Logger)
 
 
-def test_create_rtc(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
+@pytest.fixture
+def mock_rv3028(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+    with patch("pysquared.rtc.manager.rv3028.RV3028") as mock_class:
+        mock_class.return_value = RV3028(mock_i2c)
+        yield mock_class
+
+
+def test_create_rtc(mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
     """Test successful creation of an RV3028 RTC instance."""
     rtc_manager = RV3028Manager(mock_logger, mock_i2c)
 
@@ -30,7 +38,6 @@ def test_create_rtc(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
 
 
 @pytest.mark.slow
-@patch("pysquared.rtc.manager.rv3028.RV3028")
 def test_create_with_retries(
     mock_rv3028: MagicMock,
     mock_i2c: MagicMock,
@@ -47,7 +54,9 @@ def test_create_with_retries(
     assert mock_rv3028.call_count <= 3
 
 
-def test_set_time_success(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
+def test_set_time_success(
+    mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock
+) -> None:
     """Test successful setting of the time."""
     rtc_manager = RV3028Manager(mock_logger, mock_i2c)
 
@@ -64,7 +73,9 @@ def test_set_time_success(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
     mock_logger.error.assert_not_called()
 
 
-def test_set_time_failure_set_date(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
+def test_set_time_failure_set_date(
+    mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock
+) -> None:
     """Test handling of exceptions during set_date."""
     rtc_manager = RV3028Manager(mock_logger, mock_i2c)
     rtc_manager._rtc = MagicMock(spec=RV3028)
@@ -83,7 +94,9 @@ def test_set_time_failure_set_date(mock_i2c: MagicMock, mock_logger: MagicMock) 
     mock_logger.error.assert_called_once_with("Error setting RTC time", simulated_error)
 
 
-def test_set_time_failure_set_time(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
+def test_set_time_failure_set_time(
+    mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock
+) -> None:
     """Test handling of exceptions during set_time."""
     rtc_manager = RV3028Manager(mock_logger, mock_i2c)
     rtc_manager._rtc = MagicMock(spec=RV3028)
