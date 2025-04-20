@@ -5,25 +5,27 @@ from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
 from ....nvm.flag import Flag
 from ....protos.temperature_sensor import TemperatureSensorProto
-from ..modulation import RadioModulation
+from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
 
 try:
-    from mocks.adafruit_rfm.rfm9x import RFM9x  # type: ignore
-    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
+    from mocks.adafruit_rfm.rfm9x import RFM9x
+    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
 except ImportError:
     from adafruit_rfm.rfm9x import RFM9x
     from adafruit_rfm.rfm9xfsk import RFM9xFSK
 
 # Type hinting only
 try:
-    from typing import Any, Optional
+    from typing import Optional, Type
 except ImportError:
     pass
 
 
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios."""
+
+    _radio: RFM9xFSK | RFM9x
 
     def __init__(
         self,
@@ -54,14 +56,27 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             reset=reset,
         )
 
-    def _initialize_radio(self, modulation: RadioModulation, **kwargs: Any) -> Any:
+    def _initialize_radio(
+        self, modulation: Type[RadioModulation], **kwargs: object
+    ) -> None:
         """Initialize the specific RFM9x radio hardware."""
+        if not isinstance(kwargs["spi"], SPI):
+            raise TypeError("Expected 'spi' to be of type SPI")
+
         spi: SPI = kwargs["spi"]
+
+        if not isinstance(kwargs["chip_select"], DigitalInOut):
+            raise TypeError("Expected 'chip_select' to be of type DigitalInOut")
+
         cs: DigitalInOut = kwargs["chip_select"]
+
+        if not isinstance(kwargs["reset"], DigitalInOut):
+            raise TypeError("Expected 'reset' to be of type DigitalInOut")
+
         rst: DigitalInOut = kwargs["reset"]
 
-        if modulation == RadioModulation.FSK:
-            radio: RFM9xFSK = self._create_fsk_radio(
+        if modulation == FSK:
+            self._radio = self._create_fsk_radio(
                 spi,
                 cs,
                 rst,
@@ -69,7 +84,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
                 self._radio_config.fsk,
             )
         else:
-            radio: RFM9x = self._create_lora_radio(
+            self._radio = self._create_lora_radio(
                 spi,
                 cs,
                 rst,
@@ -77,24 +92,17 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
                 self._radio_config.lora,
             )
 
-        radio.node = self._radio_config.sender_id
-        radio.destination = self._radio_config.receiver_id
-
-        return radio
+        self._radio.node = self._radio_config.sender_id
+        self._radio.destination = self._radio_config.receiver_id
 
     def _send_internal(self, payload: bytes) -> bool:
         """Send data using the RFM9x radio."""
         # Assuming send returns bool or similar truthy/falsy
         return bool(self._radio.send(payload))
 
-    def _get_current_modulation(self) -> RadioModulation:
+    def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
-        if isinstance(self._radio, RFM9xFSK):
-            return RadioModulation.FSK
-        elif isinstance(self._radio, RFM9x):
-            return RadioModulation.LORA
-        else:
-            raise TypeError(f"Unknown radio instance type: {type(self._radio)}")
+        return FSK if isinstance(self._radio, RFM9xFSK) else LoRa
 
     def get_temperature(self) -> float:
         """Get the temperature reading from the radio sensor."""
@@ -153,9 +161,8 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             transmit_frequency,
         )
 
-        radio.ack_delay = lora_config.ack_delay
+        radio.ack_delay = lora_config.ack_delay  # type: ignore
         radio.enable_crc = lora_config.cyclic_redundancy_check
-        radio.max_output = lora_config.max_output
         radio.spreading_factor = lora_config.spreading_factor
         radio.tx_power = lora_config.transmit_power
 
@@ -165,7 +172,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         return radio
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+    def receive(self, timeout: Optional[int] = None) -> Optional[bytearray]:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.

@@ -6,16 +6,21 @@ https://github.com/proveskit/micropySX126X/blob/master/proves_sx126/sx1262.py
 from busio import SPI
 from digitalio import DigitalInOut
 
-from pysquared.hardware.radio.modulation import RadioModulation
-
 from .sx126x import (
     SX126X_GFSK_ADDRESS_FILT_OFF,
     SX126X_GFSK_PREAMBLE_DETECT_16,
     SX126X_SYNC_WORD_PRIVATE,
 )
 
+try:
+    from typing import Literal
+except ImportError:
+    pass
+
 
 class SX1262:
+    radio_modulation: str = "FSK"
+
     def __init__(
         self,
         spi: SPI,
@@ -73,4 +78,8 @@ class SX1262:
         blocking=True,
     ): ...
 
-    radio_modulation: RadioModulation = RadioModulation.FSK
+    def send(self, data) -> tuple[Literal[0], int] | tuple[int, int]: ...
+
+    def recv(
+        self, len=0, timeout_en=False, timeout_ms=0
+    ) -> tuple[bytes, int] | tuple[Literal[b""], int]: ...

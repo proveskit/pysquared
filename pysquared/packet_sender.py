@@ -2,11 +2,6 @@ from .logger import Logger
 from .packet_manager import PacketManager
 from .protos.radio import RadioProto
 
-try:
-    from typing import Union
-except Exception:
-    pass
-
 
 class PacketSender:
     def __init__(
@@ -43,7 +38,7 @@ class PacketSender:
             packet: bytearray = self.radio.receive()
 
             if packet and self.packet_manager.is_ack_packet(packet):
-                ack_seq: Union[int, None] = self.packet_manager.get_ack_seq_num(packet)
+                ack_seq: int | None = self.packet_manager.get_ack_seq_num(packet)
                 if ack_seq == expected_seq:
                     # Got our ACK - only wait briefly for a duplicate then continue
                     time.sleep(0.2)
@@ -71,9 +66,7 @@ class PacketSender:
 
         return False
 
-    def send_data(
-        self, data: Union[str, bytearray], progress_interval: int = 10
-    ) -> bool:
+    def send_data(self, data: str | bytearray, progress_interval: int = 10) -> bool:
         """Send data with minimal progress updates"""
         packets: list[bytes] = self.packet_manager.pack_data(data)
         total_packets: int = len(packets)
@@ -130,7 +123,7 @@ class PacketSender:
 
     def fast_send_data(
         self,
-        data: Union[str, bytearray],
+        data: str | bytearray,
         send_delay: float = 0.5,
         retransmit_wait: float = 15.0,
     ) -> bool:

@@ -1,7 +1,7 @@
 from busio import I2C
 
 try:
-    from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # type: ignore
+    from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 except ImportError:
     from adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 

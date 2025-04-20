@@ -4,11 +4,6 @@ import adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 
 from .logger import Logger
 
-try:
-    from typing import Union
-except Exception:
-    pass
-
 
 class Face:
     def __init__(
@@ -103,10 +98,10 @@ class AllFaces:
         for face in self.faces:
             if face:
                 try:
-                    temp: Union[float, None] = (
+                    temp: float | None = (
                         face.mcp.temperature if face.sensors.get("MCP") else None
                     )
-                    light: Union[float, None] = (
+                    light: float | None = (
                         face.veml.lux if face.sensors.get("VEML") else None
                     )
                     results.append([temp, light])

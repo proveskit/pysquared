@@ -51,9 +51,6 @@ def test_radio_cfg() -> None:
         == json_data["radio"]["lora"]["cyclic_redundancy_check"]
     ), "No match for: lora.cyclic_redundancy_check"
     assert (
-        config.radio.lora.max_output == json_data["radio"]["lora"]["max_output"]
-    ), "No match for: lora.max_output"
-    assert (
         config.radio.lora.spreading_factor
         == json_data["radio"]["lora"]["spreading_factor"]
     ), "No match for: lora.spreading_factor"

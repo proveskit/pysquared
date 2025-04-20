@@ -1,5 +1,16 @@
 class RadioModulation:
-    """Enumeration for the RFM9x radio modulation options."""
+    """Base type for radio modulation modes."""
 
-    FSK = "FSK"  # Frequency-shift Keying
-    LORA = "LoRa"  # Long Range
+    pass
+
+
+class FSK(RadioModulation):
+    """FSK modulation mode."""
+
+    pass
+
+
+class LoRa(RadioModulation):
+    """LoRa modulation mode."""
+
+    pass

@@ -11,7 +11,7 @@ from mocks.circuitpython.byte_array import ByteArray
 from pysquared.config.radio import RadioConfig
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.radio.manager.rfm9x import RFM9xManager
-from pysquared.hardware.radio.modulation import RadioModulation
+from pysquared.hardware.radio.modulation import FSK, LoRa
 from pysquared.logger import Logger
 from pysquared.nvm.flag import Flag
 
@@ -55,7 +55,6 @@ def mock_radio_config() -> RadioConfig:
                 "ack_delay": 0.2,
                 "coding_rate": 5,
                 "cyclic_redundancy_check": True,
-                "max_output": True,
                 "spreading_factor": 7,
                 "transmit_power": 23,
             },
@@ -106,7 +105,7 @@ def test_init_fsk_success(
     assert mock_fsk_instance.fsk_node_address == mock_radio_config.fsk.node_address
     assert mock_fsk_instance.modulation_type == mock_radio_config.fsk.modulation_type
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.FSK
+        "Initializing radio", radio_type="RFM9xManager", modulation=FSK
     )
 
 
@@ -150,7 +149,6 @@ def test_init_lora_success(
     assert (
         mock_lora_instance.enable_crc == mock_radio_config.lora.cyclic_redundancy_check
     )
-    assert mock_lora_instance.max_output == mock_radio_config.lora.max_output
     assert (
         mock_lora_instance.spreading_factor == mock_radio_config.lora.spreading_factor
     )
@@ -165,7 +163,7 @@ def test_init_lora_success(
         or mock_lora_instance.low_datarate_optimize is None
     )
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.LORA
+        "Initializing radio", radio_type="RFM9xManager", modulation=LoRa
     )
 
 
@@ -232,7 +230,7 @@ def test_init_with_retries_fsk(
         )
 
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.FSK
+        "Initializing radio", radio_type="RFM9xManager", modulation=FSK
     )
     assert mock_rfm9xfsk.call_count == 3
 
@@ -263,7 +261,7 @@ def test_init_with_retries_lora(
         )
 
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="RFM9xManager", modulation=RadioModulation.LORA
+        "Initializing radio", radio_type="RFM9xManager", modulation=LoRa
     )
     assert mock_rfm9x.call_count == 3
 
@@ -440,16 +438,16 @@ def test_set_modulation_lora_to_fsk(
         mock_chip_select,
         mock_reset,
     )
-    assert manager.get_modulation() == RadioModulation.LORA
+    assert manager.get_modulation() == LoRa
     assert use_fsk.get() is False
 
     # Request FSK
-    manager.set_modulation(RadioModulation.FSK)
+    manager.set_modulation(FSK)
     assert use_fsk.get() is True
     mock_logger.info.assert_called_with(
         "Radio modulation change requested for next init",
-        requested=RadioModulation.FSK,
-        current=RadioModulation.LORA,
+        requested=FSK,
+        current=LoRa,
     )
 
 
@@ -476,15 +474,15 @@ def test_set_modulation_fsk_to_lora(
         mock_chip_select,
         mock_reset,
     )
-    assert manager.get_modulation() == RadioModulation.FSK
+    assert manager.get_modulation() == FSK
     assert use_fsk.get() is True
 
     # Request LoRa
-    manager.set_modulation(RadioModulation.LORA)
+    manager.set_modulation(LoRa)
     mock_logger.info.assert_called_with(
         "Radio modulation change requested for next init",
-        requested=RadioModulation.LORA,
-        current=RadioModulation.FSK,
+        requested=LoRa,
+        current=FSK,
     )
 
 
@@ -507,7 +505,7 @@ def test_get_modulation_initialized(
         mock_chip_select,
         mock_reset,
     )
-    assert manager_fsk.get_modulation() == RadioModulation.FSK
+    assert manager_fsk.get_modulation() == FSK
 
     # Test LoRa instance
     mock_use_fsk.get.return_value = False
@@ -519,26 +517,7 @@ def test_get_modulation_initialized(
         mock_chip_select,
         mock_reset,
     )
-    assert manager_lora.get_modulation() == RadioModulation.LORA
-
-
-def test_get_modulation_not_initialized(
-    mock_use_fsk: MagicMock,
-):
-    """Test get_modulation when radio is not initialized (relies on flag)."""
-    manager = RFM9xManager.__new__(
-        RFM9xManager
-    )  # Create instance without calling __init__
-    manager._radio = None
-    manager._use_fsk = mock_use_fsk
-
-    # Flag is False (LoRa)
-    mock_use_fsk.get.return_value = False
-    assert manager.get_modulation() == RadioModulation.LORA
-
-    # Flag is True (FSK)
-    mock_use_fsk.get.return_value = True
-    assert manager.get_modulation() == RadioModulation.FSK
+    assert manager_lora.get_modulation() == LoRa
 
 
 # Test get_temperature Method

@@ -24,7 +24,7 @@
     "license": "",
     "sender_id": 251,
     "receiver_id": 250,
-    "transmit_frequency": 437.4,
+    "transmit_frequency": 437,
     "start_time": 80000,
     "fsk": {
       "broadcast_address": 255,
@@ -35,7 +35,6 @@
       "ack_delay": 0.2,
       "coding_rate": 8,
       "cyclic_redundancy_check": true,
-      "max_output": true,
       "spreading_factor": 8,
       "transmit_power": 23
     }

@@ -10,7 +10,7 @@ from mocks.proves_sx126.sx1262 import SX1262
 from pysquared.config.radio import RadioConfig
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.radio.manager.sx126x import SX126xManager
-from pysquared.hardware.radio.modulation import RadioModulation
+from pysquared.hardware.radio.modulation import FSK, LoRa
 from pysquared.logger import Logger
 from pysquared.nvm.flag import Flag
 
@@ -58,7 +58,7 @@ def mock_radio_config() -> RadioConfig:
             "license": "test license",
             "sender_id": 1,  # Not directly used by SX126xManager init
             "receiver_id": 2,  # Not directly used by SX126xManager init
-            "transmit_frequency": 915.0,  # Needs to be float for SX126x
+            "transmit_frequency": 915,
             "start_time": 0,
             "fsk": {
                 "broadcast_address": 255,
@@ -69,7 +69,6 @@ def mock_radio_config() -> RadioConfig:
                 "ack_delay": 0.2,  # Not used by SX126x
                 "coding_rate": 5,
                 "cyclic_redundancy_check": True,
-                "max_output": True,  # Not used by SX126x
                 "spreading_factor": 7,
                 "transmit_power": 14,  # Default power for SX126x begin()
             },
@@ -115,9 +114,10 @@ def test_init_fsk_success(
         addr=mock_radio_config.fsk.broadcast_address,
     )
     mock_sx1262_instance.begin.assert_not_called()
+    manager._radio
     assert manager._radio == mock_sx1262_instance
     mock_logger.debug.assert_any_call(
-        "Initializing radio", radio_type="SX126xManager", modulation=RadioModulation.FSK
+        "Initializing radio", radio_type="SX126xManager", modulation=FSK
     )
 
 
@@ -166,7 +166,7 @@ def test_init_lora_success(
     mock_logger.debug.assert_any_call(
         "Initializing radio",
         radio_type="SX126xManager",
-        modulation=RadioModulation.LORA,
+        modulation=LoRa,
     )
 
 
@@ -204,7 +204,7 @@ def test_init_with_retries_fsk(
         )
 
     mock_logger.debug.assert_any_call(
-        "Initializing radio", radio_type="SX126xManager", modulation=RadioModulation.FSK
+        "Initializing radio", radio_type="SX126xManager", modulation=FSK
     )
     assert mock_sx1262_instance.beginFSK.call_count == 3
 
@@ -245,7 +245,7 @@ def test_init_with_retries_lora(
     mock_logger.debug.assert_any_call(
         "Initializing radio",
         radio_type="SX126xManager",
-        modulation=RadioModulation.LORA,
+        modulation=LoRa,
     )
     assert mock_sx1262_instance.begin.call_count == 3
 
@@ -360,7 +360,7 @@ def test_send_radio_error(
     expected_bytes = b" ".join([license_bytes, msg, license_bytes])
     initialized_manager._radio.send.assert_called_once_with(expected_bytes)
 
-    mock_logger.error.assert_has_calls([call("Radio send failed with error code", -1)])
+    mock_logger.warning.assert_has_calls([call("Radio send failed", error_code=-1)])
 
 
 def test_send_exception(
@@ -413,18 +413,18 @@ def test_set_modulation_lora_to_fsk(
     )
 
     manager._radio = MagicMock(spec=SX1262)
-    manager._radio.radio_modulation = RadioModulation.LORA
-    assert manager.get_modulation() == RadioModulation.LORA
+    manager._radio.radio_modulation = "LoRa"
+    assert manager.get_modulation() == LoRa
     assert use_fsk.get() is False
 
     # Set to FSK
-    manager.set_modulation(RadioModulation.FSK)
+    manager.set_modulation(FSK)
     assert use_fsk.get() is True
 
     mock_logger.info.assert_called_with(
         "Radio modulation change requested for next init",
-        requested=RadioModulation.FSK,
-        current=RadioModulation.LORA,
+        requested=FSK,
+        current=LoRa,
     )
 
 
@@ -457,38 +457,19 @@ def test_set_modulation_fsk_to_lora(
     )
 
     manager._radio = MagicMock(spec=SX1262)
-    manager._radio.radio_modulation = RadioModulation.FSK
-    assert manager.get_modulation() == RadioModulation.FSK
+    manager._radio.radio_modulation = "FSK"
+    assert manager.get_modulation() == FSK
     assert use_fsk.get() is True
 
     # Set to LoRa
-    manager.set_modulation(RadioModulation.LORA)
+    manager.set_modulation(LoRa)
     assert use_fsk.get() is False
 
     mock_logger.info.assert_called_with(
         "Radio modulation change requested for next init",
-        requested=RadioModulation.LORA,
-        current=RadioModulation.FSK,
+        requested=LoRa,
+        current=FSK,
     )
-
-
-def test_get_modulation_not_initialized(
-    mock_use_fsk: MagicMock,
-    mock_logger: MagicMock,
-):
-    """Test get_modulation when radio is not initialized (relies on flag)."""
-    manager = SX126xManager.__new__(
-        SX126xManager
-    )  # Create instance without calling __init__
-    manager._radio = None
-    manager._use_fsk = mock_use_fsk
-    manager._log = mock_logger
-
-    mock_use_fsk.get.return_value = False
-    assert manager.get_modulation() == RadioModulation.LORA
-
-    mock_use_fsk.get.return_value = True
-    assert manager.get_modulation() == RadioModulation.FSK
 
 
 @patch("pysquared.hardware.radio.manager.sx126x.time")
@@ -558,8 +539,8 @@ def test_receive_radio_error(
 
     assert received_data is None
     initialized_manager._radio.recv.assert_called_once()
-    mock_logger.error.assert_called_once_with(
-        f"Radio receive failed with error code: {error_code}"
+    mock_logger.warning.assert_called_once_with(
+        "Radio receive failed", error_code=error_code
     )
 
 

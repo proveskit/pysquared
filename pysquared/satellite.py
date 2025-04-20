@@ -88,7 +88,7 @@ class Satellite:
         Set the CPU Clock Speed
         """
         cpu_freq: int = 125000000 if self.turbo_clock else 62500000
-        for cpu in microcontroller.cpus:
+        for cpu in microcontroller.cpus:  # type: ignore # Needs fix in CircuitPython stubs
             cpu.frequency = cpu_freq
 
     """

@@ -1,11 +1,4 @@
-# Written with Claude 3.5
-# Nov 10, 2024
 from .logger import Logger
-
-try:
-    from typing import Union
-except Exception:
-    pass
 
 
 class PacketManager:
@@ -94,7 +87,7 @@ class PacketManager:
 
         return packets
 
-    def unpack_data(self, packets: list) -> Union[bytes, None]:
+    def unpack_data(self, packets: list) -> bytes | None:
         """
         Takes a list of packets and reassembles the original data
         Returns None if packets are missing or corrupted
@@ -130,7 +123,7 @@ class PacketManager:
         """Checks if a packet is an acknowledgment packet"""
         return packet.startswith(b"ACK")
 
-    def get_ack_seq_num(self, ack_packet: str) -> Union[int, None]:
+    def get_ack_seq_num(self, ack_packet: str) -> int | None:
         """Extracts sequence number from an acknowledgment packet"""
         if self.is_ack_packet(ack_packet):
             return int.from_bytes(ack_packet[3:5], "big")

@@ -1,14 +1,14 @@
-try:
-    from mocks.rv3028 import RV3028  # type: ignore
-except ImportError:
-    from rv3028.rv3028 import RV3028  # Real Time Clock
-
 from busio import I2C
 
 from ...hardware.decorators import with_retries
 from ...hardware.exception import HardwareInitializationError
 from ...logger import Logger
 from ...protos.rtc import RTCProto
+
+try:
+    from mocks.rv3028 import RV3028
+except ImportError:
+    from rv3028.rv3028 import RV3028
 
 
 class RV3028Manager(RTCProto):

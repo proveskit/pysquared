@@ -10,8 +10,6 @@ from .protos.radio import RadioProto
 from .satellite import Satellite
 
 try:
-    from typing import Union
-
     import circuitpython_typing
 except Exception:
     pass
@@ -59,7 +57,7 @@ class CommandDataHandler:
                 # strip off RH header
                 msg: bytes = bytes(msg[4:])
                 cmd: bytes = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
-                cmd_args: Union[bytes, None] = None
+                cmd_args: bytes | None = None
                 if len(msg) > 6:
                     self._log.info("This is a command with args")
                 try:

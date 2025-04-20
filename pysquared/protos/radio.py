@@ -6,13 +6,13 @@ from ..hardware.radio.modulation import RadioModulation
 
 # Type hinting only
 try:
-    from typing import Any, Optional
+    from typing import Optional, Type
 except ImportError:
     pass
 
 
 class RadioProto:
-    def send(self, data: Any) -> bool:
+    def send(self, data: object) -> bool:
         """Send data over the radio.
 
         :param Any data: The data to send.
@@ -21,7 +21,7 @@ class RadioProto:
         """
         ...
 
-    def set_modulation(self, modulation: RadioModulation) -> None:
+    def set_modulation(self, modulation: Type[RadioModulation]) -> None:
         """Request a change in the radio modulation mode.
         This change might take effect immediately or after a reset, depending on implementation.
 
@@ -29,7 +29,7 @@ class RadioProto:
         """
         ...
 
-    def get_modulation(self) -> RadioModulation:
+    def get_modulation(self) -> Type[RadioModulation]:
         """Get the currently configured or active radio modulation mode.
 
         :return: The current modulation mode.
@@ -37,7 +37,7 @@ class RadioProto:
         """
         ...
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+    def receive(self, timeout: Optional[int] = None) -> Optional[bytearray]:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.

@@ -6,7 +6,7 @@ from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 
 try:
-    from mocks.adafruit_ina219.ina219 import INA219  # type: ignore
+    from mocks.adafruit_ina219.ina219 import INA219
 except ImportError:
     from adafruit_ina219 import INA219
 

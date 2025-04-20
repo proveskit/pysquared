@@ -83,6 +83,14 @@ exclude = [
     ".venv",
     ".git",
     "typings",
+
+    # Remove these lines as these files are fixed or deleted
+    "pysquared/Big_Data.py",
+    "pysquared/cdh.py",
+    "pysquared/functions.py",
+    "pysquared/packet_manager.py",
+    "pysquared/packet_sender.py",
+    "pysquared/sleep_helper.py",
 ]
 stubPath = "./typings"
 reportMissingModuleSource = false

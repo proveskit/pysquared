@@ -122,7 +122,6 @@ def validate_config(config: Dict[str, Any]) -> None:
         "ack_delay": float,
         "coding_rate": int,
         "cyclic_redundancy_check": bool,
-        "max_output": bool,
         "spreading_factor": int,
         "transmit_power": int,
     }
@@ -267,7 +266,6 @@ def test_field_types(config_data):
         "ack_delay": float,
         "coding_rate": int,
         "cyclic_redundancy_check": bool,
-        "max_output": bool,
         "spreading_factor": int,
         "transmit_power": int,
     }
