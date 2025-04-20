@@ -161,12 +161,16 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         _timeout = timeout if timeout is not None else self._receive_timeout
         self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
         try:
-            return bytes(
-                self._radio.receive(
-                    keep_listening=True,
-                    timeout=_timeout,
-                )
+            msg: bytearray | None = self._radio.receive(
+                keep_listening=True,
+                timeout=_timeout,
             )
+
+            if msg is None:
+                self._log.debug("No message received")
+                return None
+
+            return bytes(msg)
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None

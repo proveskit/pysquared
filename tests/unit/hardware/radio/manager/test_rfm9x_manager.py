@@ -711,6 +711,7 @@ def test_receive_no_message(
 
     assert received_data is None
     mock_radio_instance.receive.assert_called_once_with(keep_listening=True, timeout=10)
+    mock_logger.debug.assert_called_with("No message received")
     mock_logger.error.assert_not_called()
 
 
