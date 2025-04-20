@@ -149,14 +149,6 @@ class functions:
 
         self.radio.send("State of Health " + str(self.state_list))
 
-    def send_face(self) -> None:
-        """Calls the data transmit function from the radio manager class"""
-
-        self.logger.debug("Sending Face Data")
-        self.radio.send(
-            f"{self.config.radio.license} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.config.radio.license}"
-        )
-
     def listen(self) -> bool:
         # This just passes the message through. Maybe add more functionality later.
         try:
@@ -175,13 +167,3 @@ class functions:
             self.logger.error("An Error has occured while handling a command: ", e)
 
         return False
-
-    def listen_joke(self) -> bool:
-        try:
-            self.logger.debug("Listening")
-            received: bytes | None = self.radio.receive()
-            return received is not None and b"HAHAHAHAHA!" in received
-
-        except Exception as e:
-            self.logger.error("An Error has occured while listening for a joke", e)
-            return False
