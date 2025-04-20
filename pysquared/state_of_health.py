@@ -3,6 +3,7 @@ from collections import OrderedDict
 import microcontroller
 
 from .logger import Logger
+from .nvm import register
 from .nvm.counter import Counter
 from .nvm.flag import Flag
 from .protos.imu import IMUProto
@@ -37,16 +38,16 @@ class StateOfHealth:
 
         for sensor in self._sensors:
             if isinstance(sensor, Flag):
-                state[f"{str(sensor._index)}_{sensor.__class__.__name__}"] = (
-                    sensor.get()
-                )
+                state[
+                    f"{register.lookup[sensor._index]}_{sensor.__class__.__name__}"
+                ] = sensor.get()
             if isinstance(sensor, Counter):
-                state[f"{str(sensor._index)}_{sensor.__class__.__name__}"] = (
-                    sensor.get()
-                )
+                state[
+                    f"{register.lookup[sensor._index]}_{sensor.__class__.__name__}"
+                ] = sensor.get()
             if isinstance(sensor, RadioProto):
                 state[f"{sensor.__class__.__name__}_modulation"] = (
-                    sensor.get_modulation().__class__.__name__
+                    sensor.get_modulation().__name__
                 )
             if isinstance(sensor, PowerMonitorProto):
                 name = sensor.__class__.__name__
