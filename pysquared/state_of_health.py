@@ -2,17 +2,16 @@ from collections import OrderedDict
 
 import microcontroller
 
-from pysquared.logger import Logger
-from pysquared.protos.imu import IMUProto
-from pysquared.protos.power_monitor import PowerMonitorProto
-from pysquared.protos.radio import RadioProto
+from .logger import Logger
+from .nvm.counter import Counter
+from .nvm.flag import Flag
+from .protos.imu import IMUProto
+from .protos.power_monitor import PowerMonitorProto
+from .protos.radio import RadioProto
+from .protos.temperature_sensor import TemperatureSensorProto
 
 try:
-    from typing import Any, OrderedDict
-
-    from .nvm.counter import Counter
-    from .nvm.flag import Flag
-
+    from typing import Callable, OrderedDict
 except Exception:
     pass
 
@@ -21,154 +20,65 @@ class StateOfHealth:
     def __init__(
         self,
         logger: Logger,
-        battery_power_monitor: PowerMonitorProto,
-        solar_power_monitor: PowerMonitorProto,
-        radio_manager: RadioProto,
-        imu_manager: IMUProto,
-        boot_count: Counter,
-        burned_flag: Flag,
-        brownout_flag: Flag,
-        fsk_flag: Flag,
+        *args: PowerMonitorProto | RadioProto | IMUProto | Flag | Counter,
     ) -> None:
-        self.logger: Logger = logger
-        self.battery_power_monitor: PowerMonitorProto = battery_power_monitor
-        self.solar_power_monitor: PowerMonitorProto = solar_power_monitor
-        self.radio_manager: RadioProto = radio_manager
-        self.imu_manager: IMUProto = imu_manager
-        self.boot_count: Counter = boot_count
-        self.burned_flag: Flag = burned_flag
-        self.brownout_flag: Flag = brownout_flag
-        self.fsk_flag: Flag = fsk_flag
+        self._log: Logger = logger
+        self._sensors: tuple[
+            PowerMonitorProto | RadioProto | IMUProto | Flag | Counter, ...
+        ] = args
 
-        self.state: OrderedDict[str, Any] = OrderedDict(
-            [
-                # init all values in ordered dict to None
-                ("system_voltage", None),
-                ("system_current", None),
-                ("solar_voltage", None),
-                ("solar_current", None),
-                ("battery_voltage", None),
-                ("radio_temperature", None),
-                ("radio_modulation", None),
-                ("microcontroller_temperature", None),
-                ("internal_temperature", None),
-                ("error_count", None),
-                ("boot_count", None),
-                ("burned_flag", None),
-                ("brownout_flag", None),
-                ("fsk_flag", None),
-            ]
-        )
-
-    def update(self):
+    def get(self) -> OrderedDict[str, object]:
         """
-        Update the state of health
+        Get the state of health
         """
-        try:
-            self.state["system_voltage"] = self.system_voltage()
-            self.state["system_current"] = self.current_draw()
-            self.state["solar_voltage"] = self.solar_voltage()
-            self.state["solar_current"] = self.charge_current()
-            self.state["battery_voltage"] = self.battery_voltage()
-            self.state["radio_temperature"] = self.radio_manager.get_temperature()
-            self.state["radio_modulation"] = self.radio_manager.get_modulation()
-            self.state["microcontroller_temperature"] = microcontroller.cpu.temperature
-            self.state["internal_temperature"] = self.imu_manager.get_temperature()
-            self.state["error_count"] = self.logger.get_error_count()
-            self.state["boot_count"] = self.boot_count.get()
-            self.state["burned_flag"] = self.burned_flag.get()
-            self.state["brownout_flag"] = self.brownout_flag.get()
-            self.state["fsk_flag"] = self.fsk_flag.get()
+        state: OrderedDict[str, object] = OrderedDict()
 
-        except Exception as e:
-            self.logger.error("Couldn't acquire data for state of health", err=e)
+        state["microcontroller_temperature"] = microcontroller.cpu.temperature
 
-        self.logger.info("State of Health", state=self.state)
+        for sensor in self._sensors:
+            if isinstance(sensor, Flag):
+                state[f"{sensor.__class__.__name__}_flag"] = sensor.get()
+            if isinstance(sensor, Counter):
+                state[f"{sensor.__class__.__name__}_counter"] = sensor.get()
+            if isinstance(sensor, RadioProto):
+                state[f"{sensor.__class__.__name__}_modulation"] = (
+                    sensor.get_modulation()
+                )
+            if isinstance(sensor, PowerMonitorProto):
+                name = sensor.__class__.__name__
+                state[f"{name}_current"] = self.avg_readings([sensor.get_current])
+                state[f"{name}_voltage"] = self.avg_readings(
+                    [
+                        sensor.get_bus_voltage,
+                        sensor.get_shunt_voltage,
+                    ]
+                )
+            if isinstance(sensor, TemperatureSensorProto):
+                name = sensor.__class__.__name__
+                state[f"{name}_temperature"] = sensor.get_temperature()
 
-    def system_voltage(self) -> float | None:
+        self._log.info("State of Health", state=state)
+
+        return state
+
+    def avg_readings(
+        self, func: list[Callable[..., float | None]], num_readings: int = 50
+    ) -> float | None:
         """
-        Get the system voltage
+        Get the average of the readings from a function
 
-        :return: The system voltage in volts
+        :param func: The function to call
+        :param num_readings: The number of readings to take
+        :return: The average of the readings
         :rtype: float | None
-
         """
-        if self.battery_power_monitor is not None:
-            voltage: float = 0
-            try:
-                for _ in range(50):
-                    voltage += (
-                        self.battery_power_monitor.get_bus_voltage()
-                        + self.battery_power_monitor.get_shunt_voltage()
-                    )
-                return voltage / 50
-            except Exception as e:
-                self.logger.error("Couldn't acquire system voltage", err=e)
+        readings: float = 0
+        for _ in range(num_readings):
+            for f in func:
+                reading = f()
+                if reading is None:
+                    self._log.warning(f"Couldn't acquire {f.__name__}")
+                    return
 
-    def battery_voltage(self) -> float | None:
-        """
-        Get the battery voltage
-
-        :return: The battery voltage in volts
-        :rtype: float | None
-
-        """
-        if self.battery_power_monitor is not None:
-            voltage: float = 0
-            try:
-                for _ in range(50):
-                    voltage += self.battery_power_monitor.get_bus_voltage()
-                return voltage / 50 + 0.2  # volts and correction factor
-            except Exception as e:
-                self.logger.error("Couldn't acquire battery voltage", err=e)
-
-    def current_draw(self) -> float | None:
-        """
-        Get the current draw
-
-        :return: The current draw in amps
-        :rtype: float | None
-
-        """
-        if self.battery_power_monitor is not None:
-            current: float = 0
-            try:
-                for _ in range(50):
-                    current += self.battery_power_monitor.get_current()
-                return current / 50
-            except Exception as e:
-                self.logger.error("Couldn't acquire current draw", err=e)
-
-    def charge_current(self) -> float | None:
-        """
-        Get the charge current
-
-        :return: The charge current in amps
-        :rtype: float | None
-
-        """
-        if self.solar_power_monitor is not None:
-            current: float = 0
-            try:
-                for _ in range(50):
-                    current += self.solar_power_monitor.get_current()
-                return current / 50
-            except Exception as e:
-                self.logger.error("Couldn't acquire charge current", err=e)
-
-    def solar_voltage(self) -> float | None:
-        """
-        Get the solar voltage
-
-        :return: The solar voltage in volts
-        :rtype: float | None
-
-        """
-        if self.solar_power_monitor is not None:
-            voltage: float = 0
-            try:
-                for _ in range(50):
-                    voltage += self.solar_power_monitor.get_bus_voltage()
-                return voltage / 50
-            except Exception as e:
-                self.logger.error("Couldn't acquire solar voltage", err=e)
+                readings += reading
+        return readings / num_readings

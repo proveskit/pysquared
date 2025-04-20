@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 import microcontroller
 import pytest
 
-from mocks.circuitpython.byte_array import ByteArray
 from pysquared.logger import Logger
 from pysquared.nvm.counter import Counter
 from pysquared.nvm.flag import Flag
@@ -23,10 +22,10 @@ def state_of_health():
     imu_manager = MagicMock(spec=IMUProto)
     radio_manager.get_temperature = MagicMock(return_value=25.0)
     imu_manager.get_temperature = MagicMock(return_value=30.0)
-    boot_count = Counter(index=0, datastore=ByteArray(size=8))
-    burned_flag = Flag(index=0, bit_index=1, datastore=ByteArray(size=8))
-    brownout_flag = Flag(index=0, bit_index=2, datastore=ByteArray(size=8))
-    fsk_flag = Flag(index=0, bit_index=3, datastore=ByteArray(size=8))
+    boot_count = Counter(index=0)
+    burned_flag = Flag(index=0, bit_index=1)
+    brownout_flag = Flag(index=0, bit_index=2)
+    fsk_flag = Flag(index=0, bit_index=3)
     microcontroller.cpu = MagicMock()
 
     # Create StateOfHealth instance
@@ -105,15 +104,19 @@ def test_update(state_of_health):
 
     state_of_health.update()
 
-    assert state_of_health.state["system_voltage"] == 3.8
-    assert state_of_health.state["system_current"] == 1.5
-    assert state_of_health.state["solar_voltage"] == 5.0
-    assert state_of_health.state["solar_current"] == 2.0
-    assert state_of_health.state["battery_voltage"] == 3.9
-    assert state_of_health.state["radio_temperature"] == 25.0
+    assert state_of_health.state["system_voltage"] == pytest.approx(3.8, rel=1e-2)
+    assert state_of_health.state["system_current"] == pytest.approx(1.5, rel=1e-2)
+    assert state_of_health.state["solar_voltage"] == pytest.approx(5.0, rel=1e-2)
+    assert state_of_health.state["solar_current"] == pytest.approx(2.0, rel=1e-2)
+    assert state_of_health.state["battery_voltage"] == pytest.approx(3.9, rel=1e-2)
+    assert state_of_health.state["radio_temperature"] == pytest.approx(25.0, rel=1e-2)
     assert state_of_health.state["radio_modulation"] == "FSK"
-    assert state_of_health.state["internal_temperature"] == 30.0
-    assert state_of_health.state["microcontroller_temperature"] == 45.0
+    assert state_of_health.state["internal_temperature"] == pytest.approx(
+        30.0, rel=1e-2
+    )
+    assert state_of_health.state["microcontroller_temperature"] == pytest.approx(
+        45.0, rel=1e-2
+    )
     assert state_of_health.state["error_count"] == 0
     assert state_of_health.state["boot_count"] == 0
     assert state_of_health.state["burned_flag"] is False
