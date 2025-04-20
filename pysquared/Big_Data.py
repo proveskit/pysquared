@@ -1,11 +1,18 @@
 import gc
 
 import adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
+from adafruit_drv2605 import DRV2605
+from adafruit_mcp9808 import MCP9808
+from adafruit_veml7700 import VEML7700
 
 from .logger import Logger
 
 
 class Face:
+    mcp: MCP9808
+    veml: VEML7700
+    drv: DRV2605
+
     def __init__(
         self, add: int, pos: str, tca: adafruit_tca9548a.TCA9548A, logger: Logger
     ) -> None:
@@ -14,8 +21,6 @@ class Face:
         self.position: str = pos
         self.logger: Logger = logger
 
-        # Use tuple instead of list for immutable data
-        self.senlist: tuple = ()
         # Define sensors based on position using a dictionary lookup instead of if-elif chain
         sensor_map: dict[str, tuple[str, ...]] = {
             "x+": ("MCP", "VEML", "DRV"),
@@ -29,32 +34,19 @@ class Face:
         # Initialize sensor states dict only with needed sensors
         self.sensors: dict[str, bool] = {sensor: False for sensor in self.senlist}
 
-        # Initialize sensor objects as None
-        self.mcp = None
-        self.veml = None
-        self.drv = None
-
     def sensor_init(self, senlist, address) -> None:
         gc.collect()  # Force garbage collection before initializing sensors
 
         if "MCP" in senlist:
             try:
-                import adafruit_mcp9808 as adafruit_mcp9808
-
-                self.mcp: adafruit_mcp9808.MCP9808 = adafruit_mcp9808.MCP9808(
-                    self.tca[address], address=27
-                )
+                self.mcp = MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
             except Exception as e:
                 self.logger.error("Error Initializing Temperature Sensor", e)
 
         if "VEML" in senlist:
             try:
-                import adafruit_veml7700 as adafruit_veml7700
-
-                self.veml: adafruit_veml7700.VEML7700 = adafruit_veml7700.VEML7700(
-                    self.tca[address]
-                )
+                self.veml = VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
             except Exception as e:
                 self.logger.error("Error Initializing Light Sensor", e)
@@ -63,9 +55,7 @@ class Face:
             try:
                 import adafruit_drv2605 as adafruit_drv2605
 
-                self.drv: adafruit_drv2605.DRV2605 = adafruit_drv2605.DRV2605(
-                    self.tca[address]
-                )
+                self.drv = adafruit_drv2605.DRV2605(self.tca[address])
                 self.sensors["DRV"] = True
             except Exception as e:
                 self.logger.error("Error Initializing Motor Driver", e)
@@ -93,8 +83,8 @@ class AllFaces:
             self.faces.append(face)
             gc.collect()  # Clean up after each face initialization
 
-    def face_test_all(self) -> list[list[float]]:
-        results: list[list[float]] = []
+    def face_test_all(self) -> list[list[float | None]]:
+        results: list[list[float | None]] = []
         for face in self.faces:
             if face:
                 try:

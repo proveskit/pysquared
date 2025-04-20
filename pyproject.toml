@@ -85,7 +85,6 @@ exclude = [
     "typings",
 
     # Remove these lines as these files are fixed or deleted
-    "pysquared/Big_Data.py",
     "pysquared/cdh.py",
     "pysquared/functions.py",
     "pysquared/packet_manager.py",
