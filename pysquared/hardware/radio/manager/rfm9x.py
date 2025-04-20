@@ -47,47 +47,32 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
         """
+        self._spi = spi
+        self._chip_select = chip_select
+        self._reset = reset
+
         super().__init__(
             logger=logger,
             radio_config=radio_config,
             use_fsk=use_fsk,
-            spi=spi,
-            chip_select=chip_select,
-            reset=reset,
         )
 
-    def _initialize_radio(
-        self, modulation: Type[RadioModulation], **kwargs: object
-    ) -> None:
+    def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific RFM9x radio hardware."""
-        if not isinstance(kwargs["spi"], SPI):
-            raise TypeError("Expected 'spi' to be of type SPI")
-
-        spi: SPI = kwargs["spi"]
-
-        if not isinstance(kwargs["chip_select"], DigitalInOut):
-            raise TypeError("Expected 'chip_select' to be of type DigitalInOut")
-
-        cs: DigitalInOut = kwargs["chip_select"]
-
-        if not isinstance(kwargs["reset"], DigitalInOut):
-            raise TypeError("Expected 'reset' to be of type DigitalInOut")
-
-        rst: DigitalInOut = kwargs["reset"]
 
         if modulation == FSK:
             self._radio = self._create_fsk_radio(
-                spi,
-                cs,
-                rst,
+                self._spi,
+                self._chip_select,
+                self._reset,
                 self._radio_config.transmit_frequency,
                 self._radio_config.fsk,
             )
         else:
             self._radio = self._create_lora_radio(
-                spi,
-                cs,
-                rst,
+                self._spi,
+                self._chip_select,
+                self._reset,
                 self._radio_config.transmit_frequency,
                 self._radio_config.lora,
             )
@@ -112,7 +97,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             if (raw_temp & 0x80) == 0x80:  # Check sign bit (if 1, it's negative)
                 # Perform two's complement for negative numbers
                 # Invert bits, add 1, mask to 8 bits
-                temp = -((~temp + 1) & 0xFF)
+                temp = -((~raw_temp + 1) & 0xFF)
 
             # This prescaler seems specific and might need verification/context.
             prescaler = 143.0  # Use float for calculation

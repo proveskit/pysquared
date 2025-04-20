@@ -73,3 +73,11 @@ def test_edge_cases(mock_microcontroller: MagicMock, setup_datastore: ByteArray)
     last_bit.toggle(True)
     assert setup_datastore[0] == 0b10000001
     assert last_bit.get()
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+def test_counter_raises_error_when_nvm_is_none(mock_microcontroller: MagicMock):
+    mock_microcontroller.nvm = None
+
+    with pytest.raises(ValueError, match="nvm is not available"):
+        Flag(0, 7)

@@ -46,7 +46,7 @@ class BaseRadioManager(RadioProto):
         )
 
         try:
-            self._initialize_radio(initial_modulation, **kwargs)
+            self._initialize_radio(initial_modulation)
         except Exception as e:
             raise HardwareInitializationError(
                 f"Failed to initialize radio with modulation {initial_modulation}"
@@ -111,9 +111,7 @@ class BaseRadioManager(RadioProto):
             )
 
     # Methods to be overridden by subclasses
-    def _initialize_radio(
-        self, modulation: Type[RadioModulation], **kwargs: object
-    ) -> None:
+    def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific radio hardware.
 
         Must be implemented by subclasses.

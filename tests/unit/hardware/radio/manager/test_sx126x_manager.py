@@ -513,7 +513,7 @@ def test_receive_timeout(
     ]
 
     # Explicitly test with the default timeout
-    received_data = initialized_manager.receive(timeout=10)
+    received_data = initialized_manager.receive()
 
     assert received_data is None
     assert initialized_manager._radio.recv.call_count > 1

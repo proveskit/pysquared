@@ -525,10 +525,10 @@ def test_get_modulation_initialized(
     "raw_value, expected_temperature",
     [
         (0b00011001, 168.0),  # Positive temp: 25 -> 25 + 143 = 168
-        # (0b11100111, 118.0),  # Negative temp: 231 -> -25 -> -25 + 143 = 118
+        (0b11100111, 118.0),  # Negative temp: 231 -> -25 -> -25 + 143 = 118
         (0x00, 143.0),  # Zero
         (0x7F, 270.0),  # Max positive (127)
-        # (0x80, 15.0),         # Max negative (-128) -> -128 + 143 = 15
+        (0x80, 15.0),  # Max negative (-128) -> -128 + 143 = 15
     ],
 )
 def test_get_temperature_success(

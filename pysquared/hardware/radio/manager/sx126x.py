@@ -52,47 +52,23 @@ class SX126xManager(BaseRadioManager):
 
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
         """
+        self._spi = spi
+        self._chip_select = chip_select
+        self._irq = irq
+        self._reset = reset
+        self._gpio = gpio
+
         super().__init__(
             logger=logger,
             radio_config=radio_config,
             use_fsk=use_fsk,
-            spi=spi,
-            chip_select=chip_select,
-            irq=irq,
-            reset=reset,
-            gpio=gpio,
         )
 
-    def _initialize_radio(
-        self, modulation: Type[RadioModulation], **kwargs: object
-    ) -> None:
+    def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific SX126x radio hardware."""
-        if not isinstance(kwargs["spi"], SPI):
-            raise TypeError("Expected 'spi' to be of type SPI")
-
-        spi: SPI = kwargs["spi"]
-
-        if not isinstance(kwargs["chip_select"], DigitalInOut):
-            raise TypeError("Expected 'chip_select' to be of type DigitalInOut")
-
-        cs: DigitalInOut = kwargs["chip_select"]
-
-        if not isinstance(kwargs["irq"], DigitalInOut):
-            raise TypeError("Expected 'irq' to be of type DigitalInOut")
-
-        irq: DigitalInOut = kwargs["irq"]
-
-        if not isinstance(kwargs["reset"], DigitalInOut):
-            raise TypeError("Expected 'reset' to be of type DigitalInOut")
-
-        rst: DigitalInOut = kwargs["reset"]
-
-        if not isinstance(kwargs["gpio"], DigitalInOut):
-            raise TypeError("Expected 'gpio' to be of type DigitalInOut")
-
-        gpio: DigitalInOut = kwargs["gpio"]
-
-        self._radio = SX1262(spi, cs, irq, rst, gpio)
+        self._radio = SX1262(
+            self._spi, self._chip_select, self._irq, self._reset, self._gpio
+        )
 
         if modulation == FSK:
             self._configure_fsk(self._radio, self._radio_config.fsk)
