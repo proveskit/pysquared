@@ -11,11 +11,6 @@ from .logger import Logger
 from .protos.radio import RadioProto
 from .satellite import Satellite
 
-try:
-    pass
-except Exception:
-    pass
-
 
 class CommandDataHandler:
     """
