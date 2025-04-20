@@ -1,3 +1,4 @@
+from typing import Generator
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -76,10 +77,21 @@ def mock_radio_config() -> RadioConfig:
     )
 
 
-@patch(
-    "pysquared.hardware.radio.manager.sx126x.SX1262",
-    new_callable=MagicMock(spec=SX1262),
-)
+@pytest.fixture
+def mock_sx1262(
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_irq: MagicMock,
+    mock_gpio: MagicMock,
+) -> Generator[MagicMock, None, None]:
+    with patch("pysquared.hardware.radio.manager.sx126x.SX1262") as mock_class:
+        mock_class.return_value = SX1262(
+            mock_spi, mock_chip_select, mock_reset, mock_irq, mock_gpio
+        )
+        yield mock_class
+
+
 def test_init_fsk_success(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
@@ -94,6 +106,8 @@ def test_init_fsk_success(
     """Test successful initialization when use_fsk flag is True."""
     mock_use_fsk.get.return_value = True
     mock_sx1262_instance = mock_sx1262.return_value
+    mock_sx1262_instance.beginFSK = MagicMock()
+    mock_sx1262_instance.begin = MagicMock()
 
     manager = SX126xManager(
         mock_logger,
@@ -121,10 +135,6 @@ def test_init_fsk_success(
     )
 
 
-@patch(
-    "pysquared.hardware.radio.manager.sx126x.SX1262",
-    new_callable=MagicMock(spec=SX1262),
-)
 def test_init_lora_success(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
@@ -139,6 +149,8 @@ def test_init_lora_success(
     """Test successful initialization when use_fsk flag is False."""
     mock_use_fsk.get.return_value = False
     mock_sx1262_instance = mock_sx1262.return_value
+    mock_sx1262_instance.beginFSK = MagicMock()
+    mock_sx1262_instance.begin = MagicMock()
 
     manager = SX126xManager(
         mock_logger,
@@ -171,10 +183,6 @@ def test_init_lora_success(
 
 
 @pytest.mark.slow
-@patch(
-    "pysquared.hardware.radio.manager.sx126x.SX1262",
-    new_callable=MagicMock(spec=SX1262),
-)
 def test_init_with_retries_fsk(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
@@ -189,6 +197,7 @@ def test_init_with_retries_fsk(
     """Test __init__ retries on FSK initialization failure."""
     mock_use_fsk.get.return_value = True
     mock_sx1262_instance = mock_sx1262.return_value
+    mock_sx1262_instance.beginFSK = MagicMock()
     mock_sx1262_instance.beginFSK.side_effect = Exception("SPI Error")
 
     with pytest.raises(HardwareInitializationError):
@@ -210,10 +219,6 @@ def test_init_with_retries_fsk(
 
 
 @pytest.mark.slow
-@patch(
-    "pysquared.hardware.radio.manager.sx126x.SX1262",
-    new_callable=MagicMock(spec=SX1262),
-)
 def test_init_with_retries_lora(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
@@ -228,6 +233,7 @@ def test_init_with_retries_lora(
     """Test __init__ retries on FSK initialization failure."""
     mock_use_fsk.get.return_value = False
     mock_sx1262_instance = mock_sx1262.return_value
+    mock_sx1262_instance.begin = MagicMock()
     mock_sx1262_instance.begin.side_effect = Exception("SPI Error")
 
     with pytest.raises(HardwareInitializationError):
@@ -252,6 +258,7 @@ def test_init_with_retries_lora(
 
 @pytest.fixture
 def initialized_manager(
+    mock_sx1262: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -311,6 +318,7 @@ def test_send_success_string(
 
 
 def test_send_unlicensed(
+    mock_sx1262: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -387,6 +395,7 @@ def test_send_exception(
 @patch("pysquared.nvm.flag.microcontroller")
 def test_set_modulation_lora_to_fsk(
     mock_microcontroller: MagicMock,
+    mock_sx1262: MagicMock,
     mock_logger: MagicMock,
     mock_radio_config: RadioConfig,
     mock_spi: MagicMock,
@@ -431,6 +440,7 @@ def test_set_modulation_lora_to_fsk(
 @patch("pysquared.nvm.flag.microcontroller")
 def test_set_modulation_fsk_to_lora(
     mock_microcontroller: MagicMock,
+    mock_sx1262: MagicMock,
     mock_logger: MagicMock,
     mock_radio_config: RadioConfig,
     mock_spi: MagicMock,

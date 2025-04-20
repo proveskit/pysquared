@@ -1,3 +1,5 @@
+from adafruit_rfm.rfm9x import RFM9x
+from adafruit_rfm.rfm9xfsk import RFM9xFSK
 from busio import SPI
 from digitalio import DigitalInOut
 
@@ -7,13 +9,6 @@ from ....nvm.flag import Flag
 from ....protos.temperature_sensor import TemperatureSensorProto
 from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
-
-try:
-    from mocks.adafruit_rfm.rfm9x import RFM9x
-    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
-except ImportError:
-    from adafruit_rfm.rfm9x import RFM9x
-    from adafruit_rfm.rfm9xfsk import RFM9xFSK
 
 # Type hinting only
 try:
@@ -87,7 +82,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
     def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
-        return FSK if isinstance(self._radio, RFM9xFSK) else LoRa
+        return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
     def get_temperature(self) -> float:
         """Get the temperature reading from the radio sensor."""

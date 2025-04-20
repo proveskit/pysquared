@@ -1,4 +1,5 @@
 import math
+from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -62,8 +63,24 @@ def mock_radio_config() -> RadioConfig:
     )
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9xFSK")
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
+@pytest.fixture
+def mock_rfm9x(
+    mock_spi: MagicMock, mock_chip_select: MagicMock, mock_reset: MagicMock
+) -> Generator[MagicMock, None, None]:
+    with patch("pysquared.hardware.radio.manager.rfm9x.RFM9x") as mock_class:
+        mock_class.return_value = RFM9x(mock_spi, mock_chip_select, mock_reset, 0)
+        yield mock_class
+
+
+@pytest.fixture
+def mock_rfm9xfsk(
+    mock_spi: MagicMock, mock_chip_select: MagicMock, mock_reset: MagicMock
+) -> Generator[MagicMock, None, None]:
+    with patch("pysquared.hardware.radio.manager.rfm9x.RFM9xFSK") as mock_class:
+        mock_class.return_value = RFM9xFSK(mock_spi, mock_chip_select, mock_reset, 0)
+        yield mock_class
+
+
 def test_init_fsk_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
@@ -109,8 +126,6 @@ def test_init_fsk_success(
     )
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9xFSK")
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
 def test_init_lora_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
@@ -167,8 +182,6 @@ def test_init_lora_success(
     )
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9xFSK")
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
 def test_init_lora_high_sf_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
@@ -205,7 +218,6 @@ def test_init_lora_high_sf_success(
 
 
 @pytest.mark.slow
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9xFSK")
 def test_init_with_retries_fsk(
     mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
@@ -236,7 +248,6 @@ def test_init_with_retries_fsk(
 
 
 @pytest.mark.slow
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
 def test_init_with_retries_lora(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
@@ -267,7 +278,6 @@ def test_init_with_retries_lora(
 
 
 # Test send Method
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")  # Patch LoRa for simplicity
 def test_send_success_bytes(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
@@ -304,7 +314,6 @@ def test_send_success_bytes(
     mock_logger.info.assert_called_once_with("Radio message sent")
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
 def test_send_success_string(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
@@ -346,7 +355,6 @@ def test_send_success_string(
     mock_logger.info.assert_called_once_with("Radio message sent")
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
 def test_send_unlicensed(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
@@ -382,7 +390,6 @@ def test_send_unlicensed(
     )
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
 def test_send_exception(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
@@ -418,6 +425,8 @@ def test_send_exception(
 @patch("pysquared.nvm.flag.microcontroller")
 def test_set_modulation_lora_to_fsk(
     mock_microcontroller: MagicMock,
+    mock_rfm9x: MagicMock,
+    mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -454,6 +463,8 @@ def test_set_modulation_lora_to_fsk(
 @patch("pysquared.nvm.flag.microcontroller")
 def test_set_modulation_fsk_to_lora(
     mock_microcontroller: MagicMock,
+    mock_rfm9x: MagicMock,
+    mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -487,6 +498,8 @@ def test_set_modulation_fsk_to_lora(
 
 
 def test_get_modulation_initialized(
+    mock_rfm9x: MagicMock,
+    mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -532,6 +545,8 @@ def test_get_modulation_initialized(
     ],
 )
 def test_get_temperature_success(
+    mock_rfm9x: MagicMock,
+    mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -565,6 +580,8 @@ def test_get_temperature_success(
 
 
 def test_get_temperature_read_exception(
+    mock_rfm9x: MagicMock,
+    mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -596,7 +613,6 @@ def test_get_temperature_read_exception(
     )
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")  # Patch LoRa for simplicity
 def test_receive_success(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
@@ -630,7 +646,6 @@ def test_receive_success(
     mock_logger.error.assert_not_called()
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
 def test_receive_no_message(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
@@ -663,7 +678,6 @@ def test_receive_no_message(
     mock_logger.error.assert_not_called()
 
 
-@patch("pysquared.hardware.radio.manager.rfm9x.RFM9x")
 def test_receive_exception(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,

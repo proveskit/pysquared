@@ -2,19 +2,14 @@ import time
 
 from busio import SPI
 from digitalio import DigitalInOut
+from proves_sx126._sx126x import ERR_NONE
+from proves_sx126.sx1262 import SX1262
 
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
 from ....nvm.flag import Flag
 from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
-
-try:
-    from mocks.proves_sx126.sx126x import ERR_NONE
-    from mocks.proves_sx126.sx1262 import SX1262
-except ImportError:
-    from proves_sx126._sx126x import ERR_NONE
-    from proves_sx126.sx1262 import SX1262
 
 # Type hinting only
 try:
