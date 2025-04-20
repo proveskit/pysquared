@@ -99,7 +99,7 @@ class SX126xManager(BaseRadioManager):
             power=lora_config.transmit_power,
         )
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytearray]:
+    def receive(self, timeout: Optional[int] = None) -> bytes | None:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
@@ -128,7 +128,7 @@ class SX126xManager(BaseRadioManager):
                         self._log.warning("Radio receive failed", error_code=err)
                         return None
                     self._log.info(f"Received message ({len(msg)} bytes)")
-                    return bytearray(msg)
+                    return msg
 
                 time.sleep(0)
         except Exception as e:

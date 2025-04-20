@@ -1,3 +1,5 @@
+import time
+
 from .logger import Logger
 from .packet_manager import PacketManager
 from .protos.radio import RadioProto
@@ -35,9 +37,12 @@ class PacketSender:
         time.sleep(self.send_delay)
 
         while (time.monotonic() - start_time) < self.ack_timeout:
-            packet: bytearray = self.radio.receive()
+            packet: bytes | None = self.radio.receive()
 
-            if packet and self.packet_manager.is_ack_packet(packet):
+            if not packet:
+                continue
+
+            if self.packet_manager.is_ack_packet(packet):
                 ack_seq: int | None = self.packet_manager.get_ack_seq_num(packet)
                 if ack_seq == expected_seq:
                     # Got our ACK - only wait briefly for a duplicate then continue
@@ -92,11 +97,9 @@ class PacketSender:
         return True
 
     def handle_retransmit_request(
-        self, packets: list[bytes], request_packet: list[str]
+        self, packets: list[bytes], request_packet: bytes
     ) -> bool:
         """Handle retransmit request by sending requested packets"""
-        import time
-
         try:
             missing_packets: list[int] = self.packet_manager.parse_retransmit_request(
                 request_packet
@@ -166,7 +169,7 @@ class PacketSender:
         retransmit_end_time: float = time.monotonic() + retransmit_wait
 
         while time.monotonic() < retransmit_end_time:
-            packet: bytearray = self.radio.receive()
+            packet: bytes | None = self.radio.receive()
             if not packet:
                 break
 

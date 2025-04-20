@@ -152,7 +152,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         return radio
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytearray]:
+    def receive(self, timeout: Optional[int] = None) -> bytes | None:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
@@ -161,9 +161,11 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         _timeout = timeout if timeout is not None else self._receive_timeout
         self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
         try:
-            return self._radio.receive(
-                keep_listening=True,
-                timeout=_timeout,
+            return bytes(
+                self._radio.receive(
+                    keep_listening=True,
+                    timeout=_timeout,
+                )
             )
         except Exception as e:
             self._log.error("Error receiving data", e)

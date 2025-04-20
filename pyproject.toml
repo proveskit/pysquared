@@ -85,10 +85,8 @@ exclude = [
     "typings",
 
     # Remove these lines as these files are fixed or deleted
-    "pysquared/cdh.py",
-    "pysquared/functions.py",
-    "pysquared/packet_manager.py",
-    "pysquared/packet_sender.py",
+    # Try after new state of health is merged
+    "pysquared/functions.py", # 3 errors
 ]
 stubPath = "./typings"
 reportMissingModuleSource = false

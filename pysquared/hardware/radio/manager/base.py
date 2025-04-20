@@ -86,7 +86,7 @@ class BaseRadioManager(RadioProto):
             self._log.error("Error sending radio message", e)
             return False
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytearray]:
+    def receive(self, timeout: Optional[int] = None) -> bytes | None:
         """Receive data from the radio.
 
         Must be implemented by subclasses.

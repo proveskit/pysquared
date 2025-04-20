@@ -1,8 +1,8 @@
 import gc
-from time import monotonic
+import time
 
 import alarm
-from alarm import time
+from alarm import time as alarmTime
 from alarm.time import TimeAlarm
 
 from .logger import Logger
@@ -47,7 +47,9 @@ class SleepHelper:
         iterations: int = 0
 
         while duration >= 15 and iterations < 12:
-            time_alarm: TimeAlarm = time.TimeAlarm(monotonic_time=monotonic() + 15)
+            time_alarm: TimeAlarm = alarmTime.TimeAlarm(
+                monotonic_time=time.monotonic() + 15
+            )
 
             alarm.light_sleep_until_alarms(time_alarm)
             duration -= 15
