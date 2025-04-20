@@ -5,9 +5,7 @@ our will.
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
-import gc
 import random
-import time
 
 from .cdh import CommandDataHandler
 from .config.config import Config
@@ -20,11 +18,6 @@ from .protos.radio import RadioProto
 from .satellite import Satellite
 from .sleep_helper import SleepHelper
 from .watchdog import Watchdog
-
-try:
-    from typing import List
-except Exception:
-    pass
 
 
 class functions:
@@ -59,7 +52,6 @@ class functions:
         )
 
         self.cubesat_name: str = config.cubesat_name
-        self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = config.jokes
         self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
@@ -109,19 +101,11 @@ class functions:
     def joke(self) -> None:
         self.radio.send(random.choice(self.jokes))
 
-    def send_face(self) -> None:
-        """Calls the data transmit function from the radio manager class"""
-
-        self.logger.debug("Sending Face Data")
-        self.radio.send(
-            f"{self.config.radio.license} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.config.radio.license}"
-        )
-
     def listen(self) -> bool:
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            received: bytearray = self.radio.receive()
+            received: bytes | None = self.radio.receive()
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", e)
             received = None
@@ -135,132 +119,3 @@ class functions:
             self.logger.error("An Error has occured while handling a command: ", e)
 
         return False
-
-    def listen_joke(self) -> bool:
-        try:
-            self.logger.debug("Listening")
-            received: bytearray = self.radio.receive()
-            return received is not None and "HAHAHAHAHA!" in received
-
-        except Exception as e:
-            self.logger.error("An Error has occured while listening for a joke", e)
-            return False
-
-    """
-    Big_Data Face Functions
-    change to remove fet values, move to pysquared
-    """
-
-    def all_face_data(self) -> list:
-        # self.cubesat.all_faces_on()
-        gc.collect()
-        self.logger.debug(
-            "Free Memory Stat at beginning of all_face_data function",
-            bytes_free=gc.mem_free(),
-        )
-
-        try:
-            import pysquared.Big_Data as Big_Data
-
-            self.logger.debug(
-                "Free Memory Stat after importing Big_data library",
-                bytes_free=gc.mem_free(),
-            )
-
-            gc.collect()
-            a: Big_Data.AllFaces = Big_Data.AllFaces(self.cubesat.tca, self.logger)
-            self.logger.debug(
-                "Free Memory Stat after initializing All Faces object",
-                bytes_free=gc.mem_free(),
-            )
-
-            self.facestring: list[list[float]] = a.face_test_all()
-
-            del a
-            del Big_Data
-            gc.collect()
-
-        except Exception as e:
-            self.logger.error("Big_Data error", e)
-
-        return self.facestring
-
-    def get_imu_data(
-        self,
-    ) -> List[
-        tuple[float, float, float],
-        tuple[float, float, float],
-        tuple[float, float, float],
-    ]:
-        try:
-            data: List[
-                tuple[float, float, float],
-                tuple[float, float, float],
-                tuple[float, float, float],
-            ] = []
-            data.append(self.imu.get_acceleration())
-            data.append(self.imu.get_gyro_data())
-            data.append(self.magnetometer.get_vector())
-        except Exception as e:
-            self.logger.error("Error retrieving IMU data", e)
-
-        return data
-
-    """
-    Misc Functions
-    """
-
-    # Goal for torque is to make a control system
-    # that will adjust position towards Earth based on Gyro data
-    def detumble(self, dur: int = 7) -> None:
-        self.logger.debug("Detumbling")
-
-        try:
-            import pysquared.Big_Data as Big_Data
-
-            a: Big_Data.AllFaces = Big_Data.AllFaces(self.cubesat.tca, self.logger)
-        except Exception as e:
-            self.logger.error("Error Importing Big Data", e)
-
-        try:
-            a.sequence = 52
-        except Exception as e:
-            self.logger.error("Error setting motor driver sequences", e)
-
-        def actuate(dipole: list[float], duration) -> None:
-            # TODO figure out if there is a way to reverse direction of sequence
-            if abs(dipole[0]) > 1:
-                a.Face2.drive = 52
-                a.drvx_actuate(duration)
-            if abs(dipole[1]) > 1:
-                a.Face0.drive = 52
-                a.drvy_actuate(duration)
-            if abs(dipole[2]) > 1:
-                a.Face4.drive = 52
-                a.drvz_actuate(duration)
-
-        def do_detumble() -> None:
-            try:
-                import pysquared.detumble as detumble
-
-                for _ in range(3):
-                    # Hmmm cubesat.IMU.Gyroscope and cubesat.IMU.Magnetometer don't exist
-                    data = [self.cubesat.IMU.Gyroscope, self.cubesat.IMU.Magnetometer]
-                    data[0] = list(data[0])
-                    for x in range(3):
-                        if data[0][x] < 0.01:
-                            data[0][x] = 0.0
-                    data[0] = tuple(data[0])
-                    dipole = detumble.magnetorquer_dipole(data[1], data[0])
-                    self.logger.debug("Detumbling", dipole=dipole)
-                    self.radio.send("Detumbling! Gyro, Mag: " + str(data))
-                    time.sleep(1)
-                    actuate(dipole, dur)
-            except Exception as e:
-                self.logger.error("Detumble error", e)
-
-        try:
-            self.logger.debug("Attempting")
-            do_detumble()
-        except Exception as e:
-            self.logger.error("Detumble error", e)

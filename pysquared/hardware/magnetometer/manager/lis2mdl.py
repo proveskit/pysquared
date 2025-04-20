@@ -1,18 +1,10 @@
+from adafruit_lis2mdl import LIS2MDL
+from busio import I2C
+
 from ....logger import Logger
 from ....protos.magnetometer import MagnetometerProto
 from ...decorators import with_retries
 from ...exception import HardwareInitializationError
-
-try:
-    from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL  # type: ignore
-except ImportError:
-    from adafruit_lis2mdl import LIS2MDL
-
-# Type hinting only
-try:
-    from busio import I2C
-except ImportError:
-    pass
 
 
 class LIS2MDLManager(MagnetometerProto):

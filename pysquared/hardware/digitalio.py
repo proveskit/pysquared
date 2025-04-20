@@ -21,10 +21,7 @@ def initialize_pin(
 
     :return ~digitalio.DigitalInOut: The initialized DigitalInOut object.
     """
-    logger.debug(
-        message="Initializing pin",
-        initial_value=initial_value,
-    )
+    logger.debug(message="Initializing pin", initial_value=initial_value, pin=pin)
 
     try:
         digital_in_out = DigitalInOut(pin)

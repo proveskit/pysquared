@@ -1,16 +1,10 @@
 import time
 
 from digitalio import DigitalInOut, Direction
+from microcontroller import Pin
 
 from .hardware.digitalio import initialize_pin
-
-# type hinting only
-try:
-    from microcontroller import Pin
-
-    from .logger import Logger
-except ImportError:
-    pass
+from .logger import Logger
 
 
 class Watchdog:
@@ -25,7 +19,7 @@ class Watchdog:
         """
         self._log = logger
 
-        self._log.debug("Initializing watchdog")
+        self._log.debug("Initializing watchdog", pin=pin)
 
         self._digital_in_out: DigitalInOut = initialize_pin(
             logger,

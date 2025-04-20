@@ -32,7 +32,7 @@ class MicrocontrollerManager(RTCProto):
         hour: int,
         minute: int,
         second: int,
-        day_of_week: int,
+        weekday: int,
     ) -> None:
         """
         Updates the Microcontroller's Real Time Clock (RTC) to the date and time passed
@@ -47,5 +47,5 @@ class MicrocontrollerManager(RTCProto):
         """
         microcontroller_rtc = rtc.RTC()
         microcontroller_rtc.datetime = time.struct_time(
-            (year, month, date, hour, minute, second, day_of_week, -1, -1)
+            (year, month, date, hour, minute, second, weekday, -1, -1)
         )
