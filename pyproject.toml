@@ -89,7 +89,6 @@ exclude = [
     "pysquared/functions.py",
     "pysquared/packet_manager.py",
     "pysquared/packet_sender.py",
-    "pysquared/sleep_helper.py",
 ]
 stubPath = "./typings"
 reportMissingModuleSource = false
