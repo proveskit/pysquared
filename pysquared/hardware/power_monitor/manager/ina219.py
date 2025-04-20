@@ -1,14 +1,10 @@
+from adafruit_ina219 import INA219
 from busio import I2C
 
 from ....logger import Logger
 from ....protos.power_monitor import PowerMonitorProto
 from ...decorators import with_retries
 from ...exception import HardwareInitializationError
-
-try:
-    from mocks.adafruit_ina219.ina219 import INA219
-except ImportError:
-    from adafruit_ina219 import INA219
 
 
 class INA219Manager(PowerMonitorProto):

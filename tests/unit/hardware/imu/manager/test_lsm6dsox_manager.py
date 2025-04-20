@@ -10,6 +10,8 @@ from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
 from pysquared.logger import Logger
 
+address: int = 123
+
 
 @pytest.fixture
 def mock_i2c() -> MagicMock:
@@ -21,9 +23,6 @@ def mock_i2c() -> MagicMock:
 def mock_logger() -> MagicMock:
     """Fixture for mock Logger."""
     return MagicMock(spec=Logger)
-
-
-address: int = 0x6A
 
 
 @pytest.fixture
