@@ -28,8 +28,6 @@ except Exception:
 
 
 class functions:
-    facestring: list[list[float]]
-
     def __init__(
         self,
         cubesat: Satellite,
