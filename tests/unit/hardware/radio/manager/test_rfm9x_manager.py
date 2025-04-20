@@ -355,6 +355,42 @@ def test_send_success_string(
     mock_logger.info.assert_called_once_with("Radio message sent")
 
 
+def test_send_unexpected_type(
+    mock_rfm9x: MagicMock,
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+    mock_use_fsk: MagicMock,
+):
+    """Test successful sending of a string (should be converted to bytes)."""
+    mock_use_fsk.get.return_value = False
+    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance.send = MagicMock()
+    mock_radio_instance.send.return_value = True
+    mock_rfm9x.return_value = mock_radio_instance
+
+    manager = RFM9xManager(
+        mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+    )
+
+    result = manager.send(manager)
+    assert result is True
+
+    mock_radio_instance.send.assert_called_once_with(
+        bytes(f"testlicense {manager} testlicense", "UTF-8")
+    )
+    mock_logger.warning.assert_called_once_with(
+        "Attempting to send non-bytes/str data type: <class 'pysquared.hardware.radio.manager.rfm9x.RFM9xManager'>",
+    )
+
+
 def test_send_unlicensed(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,

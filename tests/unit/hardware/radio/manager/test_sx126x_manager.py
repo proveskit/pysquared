@@ -317,6 +317,25 @@ def test_send_success_string(
     mock_logger.info.assert_called_once_with("Radio message sent")
 
 
+def test_send_unexpected_type(
+    initialized_manager: SX126xManager,
+    mock_logger: MagicMock,
+):
+    """Test successful sending of bytes."""
+    initialized_manager._radio = MagicMock(spec=SX1262)
+    initialized_manager._radio.send = MagicMock()
+    initialized_manager._radio.send.return_value = (
+        len(str(initialized_manager)),
+        ERR_NONE,
+    )
+
+    assert initialized_manager.send(initialized_manager)
+
+    mock_logger.warning.assert_called_once_with(
+        "Attempting to send non-bytes/str data type: <class 'pysquared.hardware.radio.manager.sx126x.SX126xManager'>",
+    )
+
+
 def test_send_unlicensed(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
@@ -430,6 +449,10 @@ def test_set_modulation_lora_to_fsk(
     manager.set_modulation(FSK)
     assert use_fsk.get() is True
 
+    # Set it again
+    manager.set_modulation(FSK)
+    assert use_fsk.get() is True
+
     mock_logger.info.assert_called_with(
         "Radio modulation change requested for next init",
         requested=FSK,
@@ -472,6 +495,10 @@ def test_set_modulation_fsk_to_lora(
     assert use_fsk.get() is True
 
     # Set to LoRa
+    manager.set_modulation(LoRa)
+    assert use_fsk.get() is False
+
+    # Set it again
     manager.set_modulation(LoRa)
     assert use_fsk.get() is False
 
