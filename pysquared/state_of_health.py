@@ -37,21 +37,22 @@ class StateOfHealth:
 
         for sensor in self._sensors:
             if isinstance(sensor, Flag):
-                state[f"{sensor.__class__.__name__}_flag"] = sensor.get()
+                state[f"{str(sensor._index)}_{sensor.__class__.__name__}"] = (
+                    sensor.get()
+                )
             if isinstance(sensor, Counter):
-                state[f"{sensor.__class__.__name__}_counter"] = sensor.get()
+                state[f"{str(sensor._index)}_{sensor.__class__.__name__}"] = (
+                    sensor.get()
+                )
             if isinstance(sensor, RadioProto):
                 state[f"{sensor.__class__.__name__}_modulation"] = (
-                    sensor.get_modulation()
+                    sensor.get_modulation().__class__.__name__
                 )
             if isinstance(sensor, PowerMonitorProto):
                 name = sensor.__class__.__name__
-                state[f"{name}_current"] = self.avg_readings([sensor.get_current])
-                state[f"{name}_voltage"] = self.avg_readings(
-                    [
-                        sensor.get_bus_voltage,
-                        sensor.get_shunt_voltage,
-                    ]
+                state[f"{name}_current_avg"] = self.avg_readings(sensor.get_current)
+                state[f"{name}_voltage_avg"] = self.avg_readings(
+                    sensor.get_bus_voltage, sensor.get_shunt_voltage
                 )
             if isinstance(sensor, TemperatureSensorProto):
                 name = sensor.__class__.__name__
@@ -62,7 +63,7 @@ class StateOfHealth:
         return state
 
     def avg_readings(
-        self, func: list[Callable[..., float | None]], num_readings: int = 50
+        self, *funcs: Callable[..., float | None], num_readings: int = 50
     ) -> float | None:
         """
         Get the average of the readings from a function
@@ -74,7 +75,7 @@ class StateOfHealth:
         """
         readings: float = 0
         for _ in range(num_readings):
-            for f in func:
+            for f in funcs:
                 reading = f()
                 if reading is None:
                     self._log.warning(f"Couldn't acquire {f.__name__}")
