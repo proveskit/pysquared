@@ -16,7 +16,7 @@ from micropython import const
 from .config.config import Config  # Configs
 from .nvm.counter import Counter
 from .nvm.flag import Flag
-from .nvm.register import Register
+from .nvm.register import Flag1, Register
 
 try:
     from typing import Optional
@@ -35,10 +35,10 @@ class Satellite:
     boot_count: Counter = Counter(index=Register.BOOTCNT)
 
     # Define NVM flags
-    f_softboot: Flag = Flag(index=Register.FLAG, bit_index=0)
-    f_brownout: Flag = Flag(index=Register.FLAG, bit_index=3)
-    f_shtdwn: Flag = Flag(index=Register.FLAG, bit_index=5)
-    f_burned: Flag = Flag(index=Register.FLAG, bit_index=6)
+    f_softboot: Flag = Flag(index=Register.FLAG1, bit_index=Flag1.SOFTBOOT)
+    f_brownout: Flag = Flag(index=Register.FLAG1, bit_index=Flag1.BROWNOUT)
+    f_shtdwn: Flag = Flag(index=Register.FLAG1, bit_index=Flag1.SHUTDOWN)
+    f_burned: Flag = Flag(index=Register.FLAG1, bit_index=Flag1.BURNED)
 
     def __init__(
         self,
