@@ -42,7 +42,7 @@ class BaseRadioManager(RadioProto):
         self._log.debug(
             "Initializing radio",
             radio_type=self.__class__.__name__,
-            modulation=initial_modulation,
+            modulation=initial_modulation.__name__,
         )
 
         try:
