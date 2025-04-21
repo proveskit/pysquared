@@ -6,16 +6,20 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import random
+import time
+
+import microcontroller
+from micropython import const
 
 from .cdh import CommandDataHandler
 from .config.config import Config
 from .logger import Logger
+from .nvm.counter import Counter
 from .packet_manager import PacketManager
 from .packet_sender import PacketSender
 from .protos.imu import IMUProto
 from .protos.magnetometer import MagnetometerProto
 from .protos.radio import RadioProto
-from .satellite import Satellite
 from .sleep_helper import SleepHelper
 from .watchdog import Watchdog
 
@@ -23,7 +27,6 @@ from .watchdog import Watchdog
 class functions:
     def __init__(
         self,
-        cubesat: Satellite,
         logger: Logger,
         config: Config,
         sleep_helper: SleepHelper,
@@ -32,8 +35,8 @@ class functions:
         imu: IMUProto,
         watchdog: Watchdog,
         cdh: CommandDataHandler,
+        boot_count: Counter,
     ) -> None:
-        self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.config: Config = config
         self.sleep_helper = sleep_helper
@@ -42,6 +45,7 @@ class functions:
         self.imu: IMUProto = imu
         self.watchdog: Watchdog = watchdog
         self.cdh: CommandDataHandler = cdh
+        self.boot_count: Counter = boot_count
 
         self.logger.info("Initializing Functionalities")
         self.packet_manager: PacketManager = PacketManager(
@@ -55,6 +59,29 @@ class functions:
         self.jokes: list[str] = config.jokes
         self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
+
+        """
+        Define the boot time and current time
+        """
+        self.BOOTTIME: float = time.time()
+        self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
+        self.CURRENTTIME: float = self.BOOTTIME
+
+        """
+        Set the CPU Clock Speed
+        """
+        cpu_freq: int = 125000000 if config.turbo_clock else 62500000
+        for cpu in microcontroller.cpus:  # type: ignore # Needs fix in CircuitPython stubs
+            cpu.frequency = cpu_freq
+
+    """
+    Code to call satellite parameters
+    """
+
+    @property
+    def get_system_uptime(self) -> float:
+        self.CURRENTTIME: float = const(time.time())
+        return self.CURRENTTIME - self.BOOTTIME
 
     """
     Satellite Management Functions
@@ -81,8 +108,7 @@ class functions:
         try:
             lora_beacon: str = (
                 f"{self.config.radio.license} Hello I am {self.cubesat_name}! I am: "
-                + str(self.cubesat.power_mode)
-                + f" UT:{self.cubesat.get_system_uptime} BN:{self.cubesat.boot_count.get()} EC:{self.logger.get_error_count()} "
+                + f" UT:{self.get_system_uptime} BN:{self.boot_count.get()} EC:{self.logger.get_error_count()} "
                 + f"IHBPFJASTMNE! {self.config.radio.license}"
             )
         except Exception as e:
@@ -113,7 +139,7 @@ class functions:
         try:
             if received is not None:
                 self.logger.debug("Received Packet", packet=received)
-                self.cdh.message_handler(self.cubesat, received)
+                self.cdh.message_handler(received)
                 return True
         except Exception as e:
             self.logger.error("An Error has occured while handling a command: ", e)

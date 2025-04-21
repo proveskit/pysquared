@@ -83,10 +83,6 @@ exclude = [
     ".venv",
     ".git",
     "typings",
-
-    # Remove these lines as these files are fixed or deleted
-    # Try after new state of health is merged
-    "pysquared/functions.py", # 3 errors
 ]
 stubPath = "./typings"
 reportMissingModuleSource = false

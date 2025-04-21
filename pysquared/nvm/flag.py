@@ -38,3 +38,9 @@ class Flag:
         else:
             # If false, perform AND on specific byte and inverted bitmask to set bit to 0
             self._datastore[self._index] &= ~self._bit_mask
+
+    def get_name(self) -> str:
+        """
+        get_name returns the name of the counter
+        """
+        return f"{self.__class__.__name__}_idx_{self._index}_bit_{self._bit}"
