@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-import microcontroller
+from microcontroller import Processor
 
 from .logger import Logger
 from .nvm.counter import Counter
@@ -21,11 +21,11 @@ class StateOfHealth:
     def __init__(
         self,
         logger: Logger,
-        *args: PowerMonitorProto | RadioProto | IMUProto | Flag | Counter,
+        *args: PowerMonitorProto | RadioProto | IMUProto | Flag | Counter | Processor,
     ) -> None:
         self._log: Logger = logger
         self._sensors: tuple[
-            PowerMonitorProto | RadioProto | IMUProto | Flag | Counter, ...
+            PowerMonitorProto | RadioProto | IMUProto | Flag | Counter | Processor, ...
         ] = args
 
     def get(self) -> OrderedDict[str, object]:
@@ -34,9 +34,10 @@ class StateOfHealth:
         """
         state: OrderedDict[str, object] = OrderedDict()
 
-        state["microcontroller_temperature"] = microcontroller.cpu.temperature
-
         for sensor in self._sensors:
+            if isinstance(sensor, Processor):
+                name = sensor.__class__.__name__
+                state[f"{name}_temperature"] = sensor.temperature
             if isinstance(sensor, Flag):
                 flag_class = flag_register_lookup[sensor._index]
                 flag_name = register_lookup(flag_class, sensor._bit)
@@ -48,14 +49,16 @@ class StateOfHealth:
                 register_name = register_lookup(Register, sensor._index)
                 state[f"{register_name}_{sensor.__class__.__name__}"] = sensor.get()
             if isinstance(sensor, RadioProto):
-                state[f"{sensor.__class__.__name__}_modulation"] = (
-                    sensor.get_modulation().__name__
-                )
+                name = sensor.__class__.__name__
+                state[f"{name}_modulation"] = sensor.get_modulation().__name__
             if isinstance(sensor, PowerMonitorProto):
                 name = sensor.__class__.__name__
                 state[f"{name}_current_avg"] = self.avg_readings(sensor.get_current)
-                state[f"{name}_voltage_avg"] = self.avg_readings(
-                    sensor.get_bus_voltage, sensor.get_shunt_voltage
+                state[f"{name}_bus_voltage_avg"] = self.avg_readings(
+                    sensor.get_bus_voltage
+                )
+                state[f"{name}_shunt_voltage_avg"] = self.avg_readings(
+                    sensor.get_shunt_voltage
                 )
             if isinstance(sensor, TemperatureSensorProto):
                 name = sensor.__class__.__name__
@@ -66,7 +69,7 @@ class StateOfHealth:
         return state
 
     def avg_readings(
-        self, *funcs: Callable[..., float | None], num_readings: int = 50
+        self, func: Callable[..., float | None], num_readings: int = 50
     ) -> float | None:
         """
         Get the average of the readings from a function
@@ -78,11 +81,10 @@ class StateOfHealth:
         """
         readings: float = 0
         for _ in range(num_readings):
-            for f in funcs:
-                reading = f()
-                if reading is None:
-                    self._log.warning(f"Couldn't acquire {f.__name__}")
-                    return
+            reading = func()
+            if reading is None:
+                self._log.warning(f"Couldn't acquire {func.__name__}")
+                return
 
-                readings += reading
+            readings += reading
         return readings / num_readings
