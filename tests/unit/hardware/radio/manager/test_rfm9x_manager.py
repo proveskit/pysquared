@@ -122,7 +122,7 @@ def test_init_fsk_success(
     assert mock_fsk_instance.fsk_node_address == mock_radio_config.fsk.node_address
     assert mock_fsk_instance.modulation_type == mock_radio_config.fsk.modulation_type
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="RFM9xManager", modulation=FSK
+        "Initializing radio", radio_type="RFM9xManager", modulation=FSK.__name__
     )
 
 
@@ -178,7 +178,7 @@ def test_init_lora_success(
         or mock_lora_instance.low_datarate_optimize is None
     )
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="RFM9xManager", modulation=LoRa
+        "Initializing radio", radio_type="RFM9xManager", modulation=LoRa.__name__
     )
 
 

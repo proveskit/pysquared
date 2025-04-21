@@ -131,7 +131,7 @@ def test_init_fsk_success(
     manager._radio
     assert manager._radio == mock_sx1262_instance
     mock_logger.debug.assert_any_call(
-        "Initializing radio", radio_type="SX126xManager", modulation=FSK
+        "Initializing radio", radio_type="SX126xManager", modulation=FSK.__name__
     )
 
 
@@ -178,7 +178,7 @@ def test_init_lora_success(
     mock_logger.debug.assert_any_call(
         "Initializing radio",
         radio_type="SX126xManager",
-        modulation=LoRa,
+        modulation=LoRa.__name__,
     )
 
 
