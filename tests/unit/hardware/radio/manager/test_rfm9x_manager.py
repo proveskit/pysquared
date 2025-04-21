@@ -242,7 +242,7 @@ def test_init_with_retries_fsk(
         )
 
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="RFM9xManager", modulation=FSK
+        "Initializing radio", radio_type="RFM9xManager", modulation=FSK.__name__
     )
     assert mock_rfm9xfsk.call_count == 3
 
@@ -272,7 +272,7 @@ def test_init_with_retries_lora(
         )
 
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="RFM9xManager", modulation=LoRa
+        "Initializing radio", radio_type="RFM9xManager", modulation=LoRa.__name__
     )
     assert mock_rfm9x.call_count == 3
 
