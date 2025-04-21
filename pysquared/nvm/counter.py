@@ -13,8 +13,7 @@ class Counter:
         """Initialize a Counter instance.
 
         :param index int: The index of the counter in the datastore.
-        :param datastore ByteArray: The non-volatile memory datastore where the counter is stored.
-            Expected to be of type `microcontroller.nvm.ByteArray`.
+        :param name str: The name of the counter.
         """
         self._index = index
 
@@ -35,3 +34,9 @@ class Counter:
         """
         value: int = (self.get() + 1) & 0xFF  # 8-bit counter with rollover
         self._datastore[self._index] = value
+
+    def get_name(self) -> str:
+        """
+        get_name returns the name of the counter
+        """
+        return f"{self.__class__.__name__}_idx_{self._index}"

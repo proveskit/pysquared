@@ -5,7 +5,6 @@ from microcontroller import Processor
 from .logger import Logger
 from .nvm.counter import Counter
 from .nvm.flag import Flag
-from .nvm.register import Register, flag_register_lookup, register_lookup
 from .protos.imu import IMUProto
 from .protos.power_monitor import PowerMonitorProto
 from .protos.radio import RadioProto
@@ -39,15 +38,9 @@ class StateOfHealth:
                 name = sensor.__class__.__name__
                 state[f"{name}_temperature"] = sensor.temperature
             if isinstance(sensor, Flag):
-                flag_class = flag_register_lookup[sensor._index]
-                flag_name = register_lookup(flag_class, sensor._bit)
-                register_name = register_lookup(Register, sensor._index)
-                state[f"{register_name}_{flag_name}_{sensor.__class__.__name__}"] = (
-                    sensor.get()
-                )
+                state[sensor.get_name()] = sensor.get()
             if isinstance(sensor, Counter):
-                register_name = register_lookup(Register, sensor._index)
-                state[f"{register_name}_{sensor.__class__.__name__}"] = sensor.get()
+                state[sensor.get_name()] = sensor.get()
             if isinstance(sensor, RadioProto):
                 name = sensor.__class__.__name__
                 state[f"{name}_modulation"] = sensor.get_modulation().__name__

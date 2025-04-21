@@ -9,7 +9,6 @@ from .config.config import Config
 from .hardware.radio.modulation import FSK
 from .logger import Logger
 from .protos.radio import RadioProto
-from .satellite import Satellite
 
 
 class CommandDataHandler:
@@ -44,7 +43,7 @@ class CommandDataHandler:
         )
 
     ############### message handler ###############
-    def message_handler(self, cubesat: Satellite, msg: bytes) -> None:
+    def message_handler(self, msg: bytes) -> None:
         cmd: bytes | None = None
         cmd_args: bytes | None = None
         multi_msg: bool = False
@@ -71,14 +70,16 @@ class CommandDataHandler:
                             "There are no args provided", command=self._commands[cmd]
                         )
                         # eval a string turns it into a func name
-                        eval(self._commands[cmd])(cubesat)
+                        # Reemplement or choose not to eval directly from commands
+                        # eval(self._commands[cmd])(cubesat)
                     else:
                         self._log.info(
                             "running command with args",
                             command=self._commands[cmd],
                             cmd_args=cmd_args,
                         )
-                    eval(self._commands[cmd])(cubesat, cmd_args)
+                    # Reemplement or choose not to eval directly from commands
+                    # eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
                     self._log.error("something went wrong!", e)
                     self._radio.send(str(e).encode())
@@ -91,7 +92,7 @@ class CommandDataHandler:
                     self._log.info("multi-message mode enabled")
                 response = self._radio.receive()
                 if response is not None:
-                    self.message_handler(cubesat, response)
+                    self.message_handler(response)
         elif bytes(msg[4:6]) == self._repeat_code:
             self._log.info("Repeating last message!")
             try:
@@ -105,7 +106,7 @@ class CommandDataHandler:
     def noop(self) -> None:
         self._log.info("no-op")
 
-    def hreset(self, cubesat: Satellite) -> None:
+    def hreset(self) -> None:
         self._log.info("Resetting")
         try:
             self._radio.send(data=b"resetting")
@@ -117,22 +118,20 @@ class CommandDataHandler:
     def fsk(self) -> None:
         self._radio.set_modulation(FSK)
 
-    def joke_reply(self, cubesat: Satellite) -> None:
+    def joke_reply(self) -> None:
         joke: str = random.choice(self._joke_reply)
         self._log.info("Sending joke reply", joke=joke)
         self._radio.send(joke)
 
     ########### commands with arguments ###########
 
-    def shutdown(self, cubesat: Satellite, args: bytes) -> None:
+    def shutdown(self, args: bytes) -> None:
         # make shutdown require yet another pass-code
         if args != b"\x0b\xfdI\xec":
             return
 
         # This means args does = b"\x0b\xfdI\xec"
         self._log.info("valid shutdown command received")
-        # set shutdown NVM bit flag
-        cubesat.f_shtdwn.toggle(True)
 
         """
         Exercise for the user:
@@ -157,11 +156,11 @@ class CommandDataHandler:
         )  # default 1 day
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
-    def query(self, cubesat: Satellite, args: str) -> None:
+    def query(self, args: str) -> None:
         self._log.info("Sending query with args", args=args)
 
         self._radio.send(data=str(eval(args)))
 
-    def exec_cmd(self, cubesat: Satellite, args: str) -> None:
+    def exec_cmd(self, args: str) -> None:
         self._log.info("Executing command", args=args)
         exec(args)
