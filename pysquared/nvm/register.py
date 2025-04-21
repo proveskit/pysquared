@@ -13,6 +13,7 @@ class Flag1:
     BROWNOUT: int = 3
     SHUTDOWN: int = 5
     BURNED: int = 6
+    USE_FSK: int = 7
 
 
 flag_register_lookup: dict[int, type] = {16: Flag1}
