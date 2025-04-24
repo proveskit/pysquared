@@ -69,12 +69,14 @@ class StateOfHealth:
                     )
             elif isinstance(sensor, TemperatureSensorProto):
                 temperature = self._avg_reading(sensor.get_temperature)
+                self.logger.debug("Temp: ", temperature=temperature)
                 if temperature and abs(temperature - self.config.normal_temp) > 10:
                     errors.append(
                         f"Temperature reading {temperature} is outside of normal range {self.config.normal_temp}"
                     )
             elif isinstance(sensor, Processor):
                 temperature = sensor.temperature
+                self.logger.debug("Temp: ", temperature=temperature)
                 if (
                     temperature
                     and abs(temperature - self.config.normal_micro_temp) > 10
