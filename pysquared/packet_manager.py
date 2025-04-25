@@ -1,11 +1,4 @@
-# Written with Claude 3.5
-# Nov 10, 2024
 from .logger import Logger
-
-try:
-    from typing import Union
-except Exception:
-    pass
 
 
 class PacketManager:
@@ -46,7 +39,7 @@ class PacketManager:
             missing.append(sequence_number)
         return missing
 
-    def pack_data(self, data) -> list[bytes]:
+    def pack_data(self, data: object) -> list[bytes]:
         """
         Takes input data and returns a list of packets ready for transmission
         Each packet includes:
@@ -54,19 +47,23 @@ class PacketManager:
         - 2 bytes: total number of packets
         - remaining bytes: payload
         """
+        packed_data: bytes = bytes()
+
         # Convert data to bytes if it isn't already
         if not isinstance(data, bytes):
             if isinstance(data, str):
-                data: bytes = data.encode("utf-8")
+                packed_data = data.encode("utf-8")
             else:
-                data: bytes = str(data).encode("utf-8")
+                packed_data = str(data).encode("utf-8")
 
         # Calculate number of packets needed
-        total_packets: int = (len(data) + self.payload_size - 1) // self.payload_size
+        total_packets: int = (
+            len(packed_data) + self.payload_size - 1
+        ) // self.payload_size
         self.logger.info(
             "Packing data into packets",
             num_packets=total_packets,
-            data_length=len(data),
+            data_length=len(packed_data),
         )
 
         packets: list[bytes] = []
@@ -80,7 +77,7 @@ class PacketManager:
             # Get payload slice for this packet
             start: int = sequence_number * self.payload_size
             end: int = start + self.payload_size
-            payload: bytes = data[start:end]
+            payload: bytes = packed_data[start:end]
 
             # Combine header and payload
             packet: bytes = header + payload
@@ -94,7 +91,7 @@ class PacketManager:
 
         return packets
 
-    def unpack_data(self, packets: list) -> Union[bytes, None]:
+    def unpack_data(self, packets: list) -> bytes | None:
         """
         Takes a list of packets and reassembles the original data
         Returns None if packets are missing or corrupted
@@ -104,33 +101,35 @@ class PacketManager:
 
         # Sort packets by sequence number
         try:
-            packets: list = sorted(packets, key=lambda p: int.from_bytes(p[:2], "big"))
+            sorted_packets: list = sorted(
+                packets, key=lambda p: int.from_bytes(p[:2], "big")
+            )
         except Exception:
             return None
 
         # Verify all packets are present
-        total_packets: int = int.from_bytes(packets[0][2:4], "big")
-        if len(packets) != total_packets:
+        total_packets: int = int.from_bytes(sorted_packets[0][2:4], "big")
+        if len(sorted_packets) != total_packets:
             return None
 
         # Verify sequence numbers are consecutive
-        for i, packet in enumerate(packets):
+        for i, packet in enumerate(sorted_packets):
             if int.from_bytes(packet[:2], "big") != i:
                 return None
 
         # Combine payloads
-        data: bytes = b"".join(packet[self.header_size :] for packet in packets)
+        data: bytes = b"".join(packet[self.header_size :] for packet in sorted_packets)
         return data
 
     def create_ack_packet(self, sequence_number: int) -> bytes:
         """Creates an acknowledgment packet for a given sequence number"""
         return b"ACK" + sequence_number.to_bytes(2, "big")
 
-    def is_ack_packet(self, packet: str) -> bool:
+    def is_ack_packet(self, packet: bytes) -> bool:
         """Checks if a packet is an acknowledgment packet"""
         return packet.startswith(b"ACK")
 
-    def get_ack_seq_num(self, ack_packet: str) -> Union[int, None]:
+    def get_ack_seq_num(self, ack_packet: bytes) -> int | None:
         """Extracts sequence number from an acknowledgment packet"""
         if self.is_ack_packet(ack_packet):
             return int.from_bytes(ack_packet[3:5], "big")

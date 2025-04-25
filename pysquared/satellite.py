@@ -20,7 +20,6 @@ from .nvm.flag import Flag
 
 try:
     from typing import Optional
-
 except Exception:
     pass
 
@@ -33,21 +32,13 @@ class Satellite:
     """
 
     # General NVM counters
-    boot_count: Counter = Counter(index=register.BOOTCNT, datastore=microcontroller.nvm)
+    boot_count: Counter = Counter(index=register.BOOTCNT)
 
     # Define NVM flags
-    f_softboot: Flag = Flag(
-        index=register.FLAG, bit_index=0, datastore=microcontroller.nvm
-    )
-    f_brownout: Flag = Flag(
-        index=register.FLAG, bit_index=3, datastore=microcontroller.nvm
-    )
-    f_shtdwn: Flag = Flag(
-        index=register.FLAG, bit_index=5, datastore=microcontroller.nvm
-    )
-    f_burned: Flag = Flag(
-        index=register.FLAG, bit_index=6, datastore=microcontroller.nvm
-    )
+    f_softboot: Flag = Flag(index=register.FLAG, bit_index=0)
+    f_brownout: Flag = Flag(index=register.FLAG, bit_index=3)
+    f_shtdwn: Flag = Flag(index=register.FLAG, bit_index=5)
+    f_burned: Flag = Flag(index=register.FLAG, bit_index=6)
 
     def __init__(
         self,
@@ -87,10 +78,9 @@ class Satellite:
         Define the boot time and current time
         """
 
-        self.BOOTTIME = time.time()
+        self.BOOTTIME: float = time.time()
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
-        self.CURRENTTIME: int = self.BOOTTIME
-        self.UPTIME: int = 0
+        self.CURRENTTIME: float = self.BOOTTIME
 
         if self.f_softboot.get():
             self.f_softboot.toggle(False)
@@ -99,7 +89,7 @@ class Satellite:
         Set the CPU Clock Speed
         """
         cpu_freq: int = 125000000 if self.turbo_clock else 62500000
-        for cpu in microcontroller.cpus:
+        for cpu in microcontroller.cpus:  # type: ignore # Needs fix in CircuitPython stubs
             cpu.frequency = cpu_freq
 
     """
@@ -107,8 +97,8 @@ class Satellite:
     """
 
     @property
-    def get_system_uptime(self) -> int:
-        self.CURRENTTIME: int = const(time.time())
+    def get_system_uptime(self) -> float:
+        self.CURRENTTIME: float = const(time.time())
         return self.CURRENTTIME - self.BOOTTIME
 
     """
@@ -116,7 +106,7 @@ class Satellite:
     """
 
     def check_reboot(self) -> None:
-        self.UPTIME: int = self.get_system_uptime
+        self.UPTIME: float = self.get_system_uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.reboot_time:
             microcontroller.reset()

@@ -2,6 +2,8 @@ import gc
 import time
 
 import alarm
+from alarm import time as alarmTime
+from alarm.time import TimeAlarm
 
 from .logger import Logger
 from .satellite import Satellite
@@ -9,8 +11,6 @@ from .watchdog import Watchdog
 
 try:
     from typing import Literal
-
-    import circuitpython_typing
 except Exception:
     pass
 
@@ -47,7 +47,7 @@ class SleepHelper:
         iterations: int = 0
 
         while duration >= 15 and iterations < 12:
-            time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
+            time_alarm: TimeAlarm = alarmTime.TimeAlarm(
                 monotonic_time=time.monotonic() + 15
             )
 

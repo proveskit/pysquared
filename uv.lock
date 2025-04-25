@@ -66,6 +66,20 @@ wheels = [
 ]
 
 [[package]]
+name = "adafruit-circuitpython-ina219"
+version = "3.4.26"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "adafruit-blinka" },
+    { name = "adafruit-circuitpython-busdevice" },
+    { name = "adafruit-circuitpython-register" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bb/0c/80c5a668e13eb87f640de19a807c1917e1254936fb13a8e5b128c13b0356/adafruit_circuitpython_ina219-3.4.26.tar.gz", hash = "sha256:181fccd21ad1361a4be498c2529097dac6c29fefe982ee080ec56cb4fc17c33c", size = 29348 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/6c/39e02d39cb9a1e47ed27c8172ef5203821889853c3c80808d07487fc9065/adafruit_circuitpython_ina219-3.4.26-py3-none-any.whl", hash = "sha256:6cc98b870fb354a74bb07c536d99620b2d482099f2ebcde74c53a8de6f02ae51", size = 7746 },
+]
+
+[[package]]
 name = "adafruit-circuitpython-lis2mdl"
 version = "2.1.23"
 source = { registry = "https://pypi.org/simple" }
@@ -368,6 +382,22 @@ wheels = [
 ]
 
 [[package]]
+name = "nodejs-wheel-binaries"
+version = "22.14.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d7/c7/4fd3871d2b7fd5122216245e273201ab98eda92bbd6fe9ad04846b758c56/nodejs_wheel_binaries-22.14.0.tar.gz", hash = "sha256:c1dc43713598c7310d53795c764beead861b8c5021fe4b1366cb912ce1a4c8bf", size = 8055 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/61/b6/66ef4ef75ea7389ea788f2d5505bf9a8e5c3806d56c7a90cf46a6942f1cf/nodejs_wheel_binaries-22.14.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:d8ab8690516a3e98458041286e3f0d6458de176d15c14f205c3ea2972131420d", size = 50326597 },
+    { url = "https://files.pythonhosted.org/packages/7d/78/023d91a293ba73572a643bc89d11620d189f35f205a309dd8296aa45e69a/nodejs_wheel_binaries-22.14.0-py2.py3-none-macosx_11_0_x86_64.whl", hash = "sha256:b2f200f23b3610bdbee01cf136279e005ffdf8ee74557aa46c0940a7867956f6", size = 51158258 },
+    { url = "https://files.pythonhosted.org/packages/af/86/324f6342c79e5034a13319b02ba9ed1f4ac8813af567d223c9a9e56cd338/nodejs_wheel_binaries-22.14.0-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d0877832abd7a9c75c8c5caafa37f986c9341ee025043c2771213d70c4c1defa", size = 57180264 },
+    { url = "https://files.pythonhosted.org/packages/6d/9f/42bdaab26137e31732bff00147b9aca2185d475b5752b57a443e6c7ba93f/nodejs_wheel_binaries-22.14.0-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8fded5a70a8a55c2135e67bd580d8b7f2e94fcbafcc679b6a2d5b92f88373d69", size = 57693251 },
+    { url = "https://files.pythonhosted.org/packages/ab/d7/94f8f269aa86cf35f9ed2b70d09aca48dc971fb5656fdc4a3b69364b189f/nodejs_wheel_binaries-22.14.0-py2.py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:c1ade6f3ece458b40c02e89c91d5103792a9f18aaad5026da533eb0dcb87090e", size = 58841717 },
+    { url = "https://files.pythonhosted.org/packages/2d/a0/43b7316eaf22b4ee9bfb897ee36c724efceac7b89d7d1bedca28057b7be1/nodejs_wheel_binaries-22.14.0-py2.py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:34fa5ed4cf3f65cbfbe9b45c407ffc2fc7d97a06cd8993e6162191ff81f29f48", size = 59808791 },
+    { url = "https://files.pythonhosted.org/packages/10/0a/814491f751a25136e37de68a2728c9a9e3c1d20494aba5ff3c230d5f9c2d/nodejs_wheel_binaries-22.14.0-py2.py3-none-win_amd64.whl", hash = "sha256:ca7023276327455988b81390fa6bbfa5191c1da7fc45bc57c7abc281ba9967e9", size = 40478921 },
+    { url = "https://files.pythonhosted.org/packages/f4/5c/cab444afaa387dceac8debb817b52fd00596efcd2d54506c27311c6fe6a8/nodejs_wheel_binaries-22.14.0-py2.py3-none-win_arm64.whl", hash = "sha256:fd59c8e9a202221e316febe1624a1ae3b42775b7fb27737bf12ec79565983eaf", size = 36206637 },
+]
+
+[[package]]
 name = "packaging"
 version = "24.2"
 source = { registry = "https://pypi.org/simple" }
@@ -438,6 +468,24 @@ wheels = [
 ]
 
 [[package]]
+name = "pyright"
+version = "1.1.399"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nodeenv" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/db/9d/d91d5f6d26b2db95476fefc772e2b9a16d54c6bd0ea6bb5c1b6d635ab8b4/pyright-1.1.399.tar.gz", hash = "sha256:439035d707a36c3d1b443aec980bc37053fbda88158eded24b8eedcf1c7b7a1b", size = 3856954 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/b5/380380c9e7a534cb1783c70c3e8ac6d1193c599650a55838d0557586796e/pyright-1.1.399-py3-none-any.whl", hash = "sha256:55f9a875ddf23c9698f24208c764465ffdfd38be6265f7faf9a176e1dc549f3b", size = 5592584 },
+]
+
+[package.optional-dependencies]
+nodejs = [
+    { name = "nodejs-wheel-binaries" },
+]
+
+[[package]]
 name = "pyserial"
 version = "3.5"
 source = { registry = "https://pypi.org/simple" }
@@ -453,6 +501,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "adafruit-circuitpython-asyncio" },
     { name = "adafruit-circuitpython-drv2605" },
+    { name = "adafruit-circuitpython-ina219" },
     { name = "adafruit-circuitpython-lis2mdl" },
     { name = "adafruit-circuitpython-lsm6ds" },
     { name = "adafruit-circuitpython-mcp9808" },
@@ -468,6 +517,7 @@ dependencies = [
     { name = "pre-commit" },
     { name = "proves-circuitpython-rv3028" },
     { name = "proves-circuitpython-sx126" },
+    { name = "pyright", extra = ["nodejs"] },
     { name = "pytest" },
 ]
 
@@ -475,6 +525,7 @@ dependencies = [
 requires-dist = [
     { name = "adafruit-circuitpython-asyncio", git = "https://github.com/adafruit/adafruit_circuitpython_asyncio?rev=1.3.3" },
     { name = "adafruit-circuitpython-drv2605", specifier = "==1.3.4" },
+    { name = "adafruit-circuitpython-ina219", specifier = "==3.4.26" },
     { name = "adafruit-circuitpython-lis2mdl", specifier = "==2.1.23" },
     { name = "adafruit-circuitpython-lsm6ds", specifier = "==4.5.13" },
     { name = "adafruit-circuitpython-mcp9808", specifier = "==3.3.24" },
@@ -490,6 +541,7 @@ requires-dist = [
     { name = "pre-commit", specifier = "==4.0.1" },
     { name = "proves-circuitpython-rv3028", git = "https://github.com/proveskit/PROVES_CircuitPython_RV3028?rev=1.0.0" },
     { name = "proves-circuitpython-sx126", git = "https://github.com/proveskit/micropySX126X?rev=1.0.0" },
+    { name = "pyright", extras = ["nodejs"], specifier = "==1.1.399" },
     { name = "pytest", specifier = "==8.3.2" },
 ]
 

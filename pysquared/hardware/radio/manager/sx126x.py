@@ -1,32 +1,27 @@
 import time
 
-from ....config.radio import FSKConfig, LORAConfig
-from ....logger import Logger
-from ..modulation import RadioModulation
-from .base import BaseRadioManager
+from busio import SPI
+from digitalio import DigitalInOut
+from proves_sx126._sx126x import ERR_NONE
+from proves_sx126.sx1262 import SX1262
 
-try:
-    from mocks.proves_sx126.sx126x import ERR_NONE  # type: ignore
-    from mocks.proves_sx126.sx1262 import SX1262  # type: ignore
-except ImportError:
-    from proves_sx126._sx126x import ERR_NONE
-    from proves_sx126.sx1262 import SX1262
+from ....config.radio import FSKConfig, LORAConfig, RadioConfig
+from ....logger import Logger
+from ....nvm.flag import Flag
+from ..modulation import FSK, LoRa, RadioModulation
+from .base import BaseRadioManager
 
 # Type hinting only
 try:
-    from typing import Any, Optional
-
-    from busio import SPI
-    from digitalio import DigitalInOut
-
-    from ....config.radio import RadioConfig
-    from ....nvm.flag import Flag
+    from typing import Optional, Type
 except ImportError:
     pass
 
 
 class SX126xManager(BaseRadioManager):
     """Manager class implementing RadioProto for SX126x radios."""
+
+    _radio: SX1262
 
     def __init__(
         self,
@@ -52,45 +47,40 @@ class SX126xManager(BaseRadioManager):
 
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
         """
+        self._spi = spi
+        self._chip_select = chip_select
+        self._irq = irq
+        self._reset = reset
+        self._gpio = gpio
+
         super().__init__(
             logger=logger,
             radio_config=radio_config,
             use_fsk=use_fsk,
-            spi=spi,
-            chip_select=chip_select,
-            irq=irq,
-            reset=reset,
-            gpio=gpio,
         )
 
-    def _initialize_radio(self, modulation: RadioModulation, **kwargs: Any) -> Any:
+    def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific SX126x radio hardware."""
-        spi: SPI = kwargs["spi"]
-        cs: DigitalInOut = kwargs["chip_select"]
-        irq: DigitalInOut = kwargs["irq"]
-        rst: DigitalInOut = kwargs["reset"]
-        gpio: DigitalInOut = kwargs["gpio"]
+        self._radio = SX1262(
+            self._spi, self._chip_select, self._irq, self._reset, self._gpio
+        )
 
-        radio: SX1262 = SX1262(spi, cs, irq, rst, gpio)
-
-        if modulation == RadioModulation.FSK:
-            self._configure_fsk(radio, self._radio_config.fsk)
+        if modulation == FSK:
+            self._configure_fsk(self._radio, self._radio_config.fsk)
         else:
-            self._configure_lora(radio, self._radio_config.lora)
-
-        return radio
+            self._configure_lora(self._radio, self._radio_config.lora)
 
     def _send_internal(self, payload: bytes) -> bool:
         """Send data using the SX126x radio."""
         _, err = self._radio.send(payload)
         if err != ERR_NONE:
-            self._log.error(f"Radio send failed with error code: {err}")
+            self._log.warning("Radio send failed", error_code=err)
             return False
         return True
 
-    def _get_current_modulation(self) -> RadioModulation:
+    def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized SX126x radio."""
-        return self._radio.radio_modulation
+        return FSK if self._radio.radio_modulation == "FSK" else LoRa
 
     def _configure_fsk(self, radio: SX1262, fsk_config: FSKConfig) -> None:
         """Configure the radio for FSK mode."""
@@ -109,31 +99,33 @@ class SX126xManager(BaseRadioManager):
             power=lora_config.transmit_power,
         )
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+    def receive(self, timeout: Optional[int] = None) -> bytes | None:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
         :return: The received data as bytes, or None if no data was received.
         """
-        _timeout = timeout if not timeout else self._receive_timeout
-        self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
+        if timeout is None:
+            timeout = self._receive_timeout
+
+        self._log.debug(
+            "Attempting to receive data with timeout", timeout_seconds=timeout
+        )
 
         try:
             start_time: float = time.time()
             while True:
-                if time.time() - start_time > _timeout:
+                if time.time() - start_time > timeout:
                     self._log.debug("Receive timeout reached.")
                     return None
 
-                msg: bytes = b""
-                err: int = 0
-                msg, err = (
-                    self._radio.recv()
-                )  # Assuming recv handles its own internal timing/blocking
+                msg: bytes
+                err: int
+                msg, err = self._radio.recv()
 
                 if msg:
                     if err != ERR_NONE:
-                        self._log.error(f"Radio receive failed with error code: {err}")
+                        self._log.warning("Radio receive failed", error_code=err)
                         return None
                     self._log.info(f"Received message ({len(msg)} bytes)")
                     return msg

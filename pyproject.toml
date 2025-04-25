@@ -10,9 +10,11 @@ dependencies = [
     "circuitpython-stubs==9.2.5",
     "coverage==7.6.10",
     "pre-commit==4.0.1",
+    "pyright[nodejs]==1.1.399",
     "pytest==8.3.2",
 
     # CircuitPython Libraries
+    "adafruit-circuitpython-ina219==3.4.26",
     "adafruit-circuitpython-asyncio @ git+https://github.com/adafruit/adafruit_circuitpython_asyncio@1.3.3",
     "adafruit-circuitpython-drv2605==1.3.4",
     "adafruit-circuitpython-lis2mdl==2.1.23",
@@ -44,8 +46,7 @@ packages = [
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.rtc",
-    "pysquared.rtc.manager",
-    "pysquared.usb"
+    "pysquared.rtc.manager"
 ]
 
 [tool.ruff.format]
@@ -74,3 +75,18 @@ directory = ".coverage-reports/html"
 
 [tool.coverage.xml]
 output = ".coverage-reports/coverage.xml"
+
+[tool.pyright]
+include = ["pysquared"]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    ".git",
+    "typings",
+
+    # Remove these lines as these files are fixed or deleted
+    # Try after new state of health is merged
+    "pysquared/functions.py", # 3 errors
+]
+stubPath = "./typings"
+reportMissingModuleSource = false
