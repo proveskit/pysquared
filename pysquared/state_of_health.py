@@ -43,6 +43,7 @@ class StateOfHealth:
         """
         errors: List[str] = []
         for sensor in self._sensors:
+            self.logger.debug("Sensor: ", sensor=sensor)
             if isinstance(sensor, PowerMonitorProto):
                 bus_voltage = self._avg_reading(sensor.get_bus_voltage)
                 shunt_voltage = self._avg_reading(sensor.get_shunt_voltage)
