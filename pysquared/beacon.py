@@ -1,3 +1,4 @@
+import time
 from collections import OrderedDict
 
 from microcontroller import Processor
@@ -16,50 +17,64 @@ except Exception:
     pass
 
 
-class StateOfHealth:
+class Beacon:
     def __init__(
         self,
         logger: Logger,
+        name: str,
+        radio: RadioProto,
+        boot_time: float,
         *args: PowerMonitorProto | RadioProto | IMUProto | Flag | Counter | Processor,
     ) -> None:
         self._log: Logger = logger
+        self._name: str = name
+        self._radio: RadioProto = radio
+        self._boot_time: float = boot_time
         self._sensors: tuple[
             PowerMonitorProto | RadioProto | IMUProto | Flag | Counter | Processor, ...
         ] = args
 
-    def get(self) -> OrderedDict[str, object]:
+    def send(self) -> bool:
         """
-        Get the state of health
+        Send the beacon
         """
         state: OrderedDict[str, object] = OrderedDict()
+        state["name"] = self._name
+
+        now = time.localtime()
+        state["time"] = (
+            f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
+        )
+
+        state["uptime"] = time.time() - self._boot_time
 
         for sensor in self._sensors:
             if isinstance(sensor, Processor):
-                name = sensor.__class__.__name__
-                state[f"{name}_temperature"] = sensor.temperature
+                sensor_name = sensor.__class__.__name__
+                state[f"{sensor_name}_temperature"] = sensor.temperature
             if isinstance(sensor, Flag):
                 state[sensor.get_name()] = sensor.get()
             if isinstance(sensor, Counter):
                 state[sensor.get_name()] = sensor.get()
             if isinstance(sensor, RadioProto):
-                name = sensor.__class__.__name__
-                state[f"{name}_modulation"] = sensor.get_modulation().__name__
+                sensor_name = sensor.__class__.__name__
+                state[f"{sensor_name}_modulation"] = sensor.get_modulation().__name__
             if isinstance(sensor, PowerMonitorProto):
-                name = sensor.__class__.__name__
-                state[f"{name}_current_avg"] = self.avg_readings(sensor.get_current)
-                state[f"{name}_bus_voltage_avg"] = self.avg_readings(
+                sensor_name: str = sensor.__class__.__name__
+                state[f"{sensor_name}_current_avg"] = self.avg_readings(
+                    sensor.get_current
+                )
+                state[f"{sensor_name}_bus_voltage_avg"] = self.avg_readings(
                     sensor.get_bus_voltage
                 )
-                state[f"{name}_shunt_voltage_avg"] = self.avg_readings(
+                state[f"{sensor_name}_shunt_voltage_avg"] = self.avg_readings(
                     sensor.get_shunt_voltage
                 )
             if isinstance(sensor, TemperatureSensorProto):
-                name = sensor.__class__.__name__
-                state[f"{name}_temperature"] = sensor.get_temperature()
+                sensor_name = sensor.__class__.__name__
+                state[f"{sensor_name}_temperature"] = sensor.get_temperature()
 
-        self._log.info("State of Health", state=state)
-
-        return state
+        return self._radio.send(state)
 
     def avg_readings(
         self, func: Callable[..., float | None], num_readings: int = 50
