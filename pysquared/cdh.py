@@ -188,10 +188,10 @@ class CommandDataHandler:
         """
         try:
             self.config.update_config(key, value, temporary)
-            self.logger.info("Updated config value successfully")
+            self._log.info("Updated config value successfully")
         except KeyError as e:
-            self.logger.error("Value not in config or immutable", e)
+            self._log.error("Value not in config or immutable", e)
         except TypeError as e:
-            self.logger.error("Value type incorrect", e)
+            self._log.error("Value type incorrect", e)
         except ValueError as e:
-            self.logger.error("Value not in acceptable range", e)
+            self._log.error("Value not in acceptable range", e)
