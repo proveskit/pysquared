@@ -30,6 +30,8 @@ class SX1280Manager(BaseRadioManager):
         reset: DigitalInOut,
         busy: DigitalInOut,
         frequency: float,
+        txen: DigitalInOut,
+        rxen: DigitalInOut,
     ) -> None:
         """Initialize the manager class and the underlying radio hardware.
 
@@ -49,6 +51,8 @@ class SX1280Manager(BaseRadioManager):
         self._reset = reset
         self._busy = busy
         self._frequency = frequency
+        self._txen = txen
+        self._rxen = rxen
 
         super().__init__(
             logger=logger,
@@ -64,6 +68,8 @@ class SX1280Manager(BaseRadioManager):
             self._reset,
             self._busy,
             frequency=self._frequency,
+            txen=self._txen,
+            rxen=self._rxen,
         )
 
     def _send_internal(self, payload: bytes) -> bool:
