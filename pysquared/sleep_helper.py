@@ -2,8 +2,6 @@ import gc
 import time
 
 import alarm
-from alarm import time as alarmTime
-from alarm.time import TimeAlarm
 
 from .config.config import Config
 from .logger import Logger
@@ -54,7 +52,7 @@ class SleepHelper:
         while time_remaining > 0:
             time_increment = time_remaining if time_remaining < 15 else 15
 
-            time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
+            time_alarm: alarm.time.TimeAlarm = alarm.time.TimeAlarm(
                 monotonic_time=time.monotonic() + time_increment
             )
             alarm.light_sleep_until_alarms(time_alarm)
