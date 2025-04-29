@@ -20,17 +20,13 @@ class RadioTest:
         self._log.debug("Device Under Test Selected")
         self._log.debug("Sending Ping...")
 
-        self._radio.send(self.test_message)
+        attempts = 0
 
-        self._log.debug("Ping Sent")
-        self._log.debug("Awaiting Response...")
+        while attempts < 50:
+            self._radio.send(self.test_message)
+            attempts += 1
 
-        heard_something = self._radio.receive(timeout=10)
-
-        if heard_something:
-            self._log.info("Received Ping!", msg=heard_something)
-        else:
-            self._log.debug("No Response Received")
+            time.sleep(1)
 
     def receiver(self):
         self._log.debug("Receiver Selected")
