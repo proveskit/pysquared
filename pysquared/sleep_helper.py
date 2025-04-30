@@ -49,7 +49,7 @@ class SleepHelper:
 
         time_remaining = min(duration, self.config.longest_allowable_sleep_time)
 
-        self.logger.info("Setting Safe Sleep Mode", duration=time_remaining)
+        self.logger.debug("Setting Safe Sleep Mode", duration=time_remaining)
 
         while time_remaining > 0:
             time_increment = time_remaining if time_remaining < 15 else 15
