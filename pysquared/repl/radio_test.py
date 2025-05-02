@@ -1,3 +1,4 @@
+import random
 import time
 
 from ..logger import Logger
@@ -20,13 +21,39 @@ class RadioTest:
         self._log.debug("Device Under Test Selected")
         self._log.debug("Sending Ping...")
 
+        MAX_ATTEMPTS = 5
         attempts = 0
+        success = False
 
-        while attempts < 50:
-            self._radio.send(self.test_message)
-            attempts += 1
+        while attempts < MAX_ATTEMPTS:
+            random_number = random.randint(1, 500)
+            self._radio.send(
+                f"|PING: {random_number} {
+                             self.test_message}|"
+            )
+
+            response = self._radio.receive(timeout=5)
+            if response:
+                self._log.debug(response)
+
+                response = response.decode("utf-8")
+                header = response.split(" ", 1)[0]
+
+                if (
+                    response
+                    == f"{header} PONG: {random_number} {self.test_message} {header}"
+                ):
+                    break
+            else:
+                attempts += 1
+                self._log.debug("Didn't receive ping, trying again.", attempts=attempts)
 
             time.sleep(1)
+
+        if success:
+            self._log.debug("Radio test passed")
+        else:
+            self._log.debug("Radio test failed: maximum attempts reached.")
 
     def receiver(self):
         self._log.debug("Receiver Selected")
@@ -35,8 +62,18 @@ class RadioTest:
         heard_something = self._radio.receive(timeout=10)
 
         if heard_something:
-            self._log.info("Received Ping!", msg=heard_something)
-            self._radio.send("Ping Received!")
+            self._log.debug(heard_something)
+            heard_something = heard_something.decode("utf-8")
+            split_message = heard_something.split("|")
+            self._log.debug("Split message", ping=split_message)
+
+            if split_message[1][0:4] == "PING":
+                self._log.info("Received Ping!", ping=heard_something)
+                self._radio.send(f"PONG{split_message[1][4:]}")
+            else:
+                self._log.info(
+                    "Received unknown message, discarding", ping=heard_something
+                )
 
         else:
             self._log.debug("No Response Received")
