@@ -1,19 +1,11 @@
-try:
-    from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # type: ignore
-except ImportError:
-    from adafruit_lsm6ds.lsm6dsox import LSM6DSOX
+from adafruit_lsm6ds.lsm6dsox import LSM6DSOX
+from busio import I2C
 
 from ....logger import Logger
 from ....protos.imu import IMUProto
 from ....protos.temperature_sensor import TemperatureSensorProto
 from ...decorators import with_retries
 from ...exception import HardwareInitializationError
-
-# Type hinting only
-try:
-    from busio import I2C
-except ImportError:
-    pass
 
 
 class LSM6DSOXManager(IMUProto, TemperatureSensorProto):

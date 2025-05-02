@@ -22,6 +22,9 @@ pre-commit-install: uv
 fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
+typecheck: .venv ## Run type check
+	@$(UV) run -m pyright .
+
 .PHONY: test
 test: .venv ## Run tests
 ifeq ($(TEST_SELECT),ALL)

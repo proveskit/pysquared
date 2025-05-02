@@ -4,11 +4,11 @@ from ....nvm.flag import Flag
 from ....protos.radio import RadioProto
 from ...decorators import with_retries
 from ...exception import HardwareInitializationError
-from ..modulation import RadioModulation
+from ..modulation import FSK, LoRa, RadioModulation
 
 # Type hinting only
 try:
-    from typing import Any, Optional
+    from typing import Optional, Type
 except ImportError:
     pass
 
@@ -22,7 +22,7 @@ class BaseRadioManager(RadioProto):
         logger: Logger,
         radio_config: RadioConfig,
         use_fsk: Flag,
-        **kwargs: Any,
+        **kwargs: object,
     ) -> None:
         """Initialize the base manager class.
 
@@ -37,9 +37,8 @@ class BaseRadioManager(RadioProto):
         self._radio_config = radio_config
         self._use_fsk = use_fsk
         self._receive_timeout: int = 10  # Default receive timeout in seconds
-        self._radio: Any | None = None  # Placeholder for the specific radio instance
 
-        initial_modulation = self.get_modulation()
+        initial_modulation = FSK if self._use_fsk.get() else LoRa
         self._log.debug(
             "Initializing radio",
             radio_type=self.__class__.__name__,
@@ -47,13 +46,13 @@ class BaseRadioManager(RadioProto):
         )
 
         try:
-            self._radio = self._initialize_radio(initial_modulation, **kwargs)
+            self._initialize_radio(initial_modulation)
         except Exception as e:
             raise HardwareInitializationError(
                 f"Failed to initialize radio with modulation {initial_modulation}"
             ) from e
 
-    def send(self, data: Any) -> bool:
+    def send(self, data: object) -> bool:
         """Send data over the radio."""
         try:
             if self._radio_config.license == "":
@@ -78,7 +77,7 @@ class BaseRadioManager(RadioProto):
             sent = self._send_internal(payload)
 
             if not sent:
-                self._log.error("Radio send failed")
+                self._log.warning("Radio send failed")
                 return False
 
             self._log.info("Radio message sent")
@@ -87,7 +86,7 @@ class BaseRadioManager(RadioProto):
             self._log.error("Error sending radio message", e)
             return False
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+    def receive(self, timeout: Optional[int] = None) -> bytes | None:
         """Receive data from the radio.
 
         Must be implemented by subclasses.
@@ -100,28 +99,19 @@ class BaseRadioManager(RadioProto):
         """
         raise NotImplementedError
 
-    def set_modulation(self, req_modulation: RadioModulation) -> None:
+    def set_modulation(self, modulation: Type[RadioModulation]) -> None:
         """Request a change in the radio modulation mode (takes effect on next init)."""
         current_modulation = self.get_modulation()
-        if current_modulation != req_modulation:
-            self._use_fsk.toggle(req_modulation == RadioModulation.FSK)
+        if current_modulation != modulation:
+            self._use_fsk.toggle(modulation == FSK)
             self._log.info(
                 "Radio modulation change requested for next init",
-                requested=req_modulation,
+                requested=modulation,
                 current=current_modulation,
             )
 
-    def get_modulation(self) -> RadioModulation:
-        """Get the currently configured radio modulation mode."""
-        if self._radio is None:
-            # If radio not initialized yet, rely on the flag
-            return RadioModulation.FSK if self._use_fsk.get() else RadioModulation.LORA
-        else:
-            # Ask the initialized radio instance
-            return self._get_current_modulation()
-
     # Methods to be overridden by subclasses
-    def _initialize_radio(self, modulation: RadioModulation, **kwargs: Any) -> Any:
+    def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific radio hardware.
 
         Must be implemented by subclasses.
@@ -146,7 +136,7 @@ class BaseRadioManager(RadioProto):
         """
         raise NotImplementedError
 
-    def _get_current_modulation(self) -> RadioModulation:
+    def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized radio hardware.
 
         Must be implemented by subclasses.

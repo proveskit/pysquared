@@ -1,20 +1,15 @@
 import random
 import time
 
+import alarm
 import microcontroller
+from alarm import time as alarmTime
 
 from .config.config import Config
-from .hardware.radio.modulation import RadioModulation
+from .hardware.radio.modulation import FSK
 from .logger import Logger
 from .protos.radio import RadioProto
 from .satellite import Satellite
-
-try:
-    from typing import Union
-
-    import circuitpython_typing
-except Exception:
-    pass
 
 
 class CommandDataHandler:
@@ -49,7 +44,9 @@ class CommandDataHandler:
         )
 
     ############### message handler ###############
-    def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
+    def message_handler(self, cubesat: Satellite, msg: bytes) -> None:
+        cmd: bytes | None = None
+        cmd_args: bytes | None = None
         multi_msg: bool = False
         if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
             if bytes(msg[4:8]) == self._super_secret_code:
@@ -57,9 +54,9 @@ class CommandDataHandler:
                 if msg[3] & 0x08:
                     multi_msg = True
                 # strip off RH header
-                msg: bytes = bytes(msg[4:])
-                cmd: bytes = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
-                cmd_args: Union[bytes, None] = None
+                msg = bytes(msg[4:])
+                cmd = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
+                cmd_args: bytes | None = None
                 if len(msg) > 6:
                     self._log.info("This is a command with args")
                 try:
@@ -94,7 +91,6 @@ class CommandDataHandler:
                     self._log.info("multi-message mode enabled")
                 response = self._radio.receive()
                 if response is not None:
-                    cubesat.c_gs_resp += 1
                     self.message_handler(cubesat, response)
         elif bytes(msg[4:6]) == self._repeat_code:
             self._log.info("Repeating last message!")
@@ -119,7 +115,7 @@ class CommandDataHandler:
             pass
 
     def fsk(self) -> None:
-        self._radio.set_modulation(RadioModulation.FSK)
+        self._radio.set_modulation(FSK)
 
     def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._joke_reply)
@@ -147,18 +143,18 @@ class CommandDataHandler:
 
         # deep sleep + listen
         # TODO config radio
-        self._radio.receive()
-        if "st" in cubesat.radio_cfg:
-            _t: float = cubesat.radio_cfg["st"]
-        else:
-            _t = 5
-        import alarm
+        # What was "st" in cubesat.radio_cfg?
+        # Maybe "sleep time"?
+        # self._radio.receive()
+        # if "st" in cubesat.radio_cfg:
+        #     _t: float = cubesat.radio_cfg["st"]
+        # else:
+        #     _t = 5
 
-        time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
+        _t = 5
+        time_alarm: alarmTime.TimeAlarm = alarmTime.TimeAlarm(
             monotonic_time=time.monotonic() + eval("1e" + str(_t))
         )  # default 1 day
-        # set hot start flag right before sleeping
-        cubesat.f_hotstrt.toggle(True)
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat: Satellite, args: str) -> None:

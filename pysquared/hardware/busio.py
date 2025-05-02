@@ -82,10 +82,10 @@ def _spi_init(
 def _spi_configure(
     logger: Logger,
     spi: SPI,
-    baudrate: Optional[int] = 100000,
-    phase: Optional[int] = 0,
-    polarity: Optional[int] = 0,
-    bits: Optional[int] = 8,
+    baudrate: Optional[int],
+    phase: Optional[int],
+    polarity: Optional[int],
+    bits: Optional[int],
 ) -> SPI:
     """Configure SPI bus
 
@@ -102,6 +102,11 @@ def _spi_configure(
     """
     logger.debug("Configuring spi bus")
 
+    baudrate = baudrate if baudrate else 100000
+    phase = phase if phase else 0
+    polarity = polarity if polarity else 0
+    bits = bits if bits else 8
+
     # Mirroring how tca multiplexer initializes the i2c bus with lock retries
     tries = 0
     while not spi.try_lock():
@@ -111,7 +116,7 @@ def _spi_configure(
         time.sleep(0)
 
     try:
-        spi.configure(baudrate, phase, polarity, bits)
+        spi.configure(baudrate=baudrate, phase=phase, polarity=polarity, bits=bits)
     except Exception as e:
         raise HardwareInitializationError("Failed to configure spi bus") from e
     finally:
@@ -124,8 +129,8 @@ def _spi_configure(
 def initialize_i2c_bus(
     logger: Logger,
     scl: Pin,
-    sda: Pin = None,
-    frequency: Optional[int] = 100000,
+    sda: Pin,
+    frequency: Optional[int],
 ) -> I2C:
     """Initializes a I2C bus"
 
@@ -139,6 +144,8 @@ def initialize_i2c_bus(
     :return ~busio.I2C: The initialized I2C object.
     """
     logger.debug("Initializing i2c")
+
+    frequency = frequency if frequency else 100000
 
     try:
         return I2C(scl, sda, frequency=frequency)

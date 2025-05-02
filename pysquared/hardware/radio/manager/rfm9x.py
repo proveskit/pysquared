@@ -1,31 +1,26 @@
-from ....config.radio import FSKConfig, LORAConfig
-from ....logger import Logger
-from ....protos.temperature_sensor import TemperatureSensorProto
-from ..modulation import RadioModulation
-from .base import BaseRadioManager
+from adafruit_rfm.rfm9x import RFM9x
+from adafruit_rfm.rfm9xfsk import RFM9xFSK
+from busio import SPI
+from digitalio import DigitalInOut
 
-try:
-    from mocks.adafruit_rfm.rfm9x import RFM9x  # type: ignore
-    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
-except ImportError:
-    from adafruit_rfm.rfm9x import RFM9x
-    from adafruit_rfm.rfm9xfsk import RFM9xFSK
+from ....config.radio import FSKConfig, LORAConfig, RadioConfig
+from ....logger import Logger
+from ....nvm.flag import Flag
+from ....protos.temperature_sensor import TemperatureSensorProto
+from ..modulation import FSK, LoRa, RadioModulation
+from .base import BaseRadioManager
 
 # Type hinting only
 try:
-    from typing import Any, Optional
-
-    from busio import SPI
-    from digitalio import DigitalInOut
-
-    from ....config.radio import RadioConfig
-    from ....nvm.flag import Flag
+    from typing import Optional, Type
 except ImportError:
     pass
 
 
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios."""
+
+    _radio: RFM9xFSK | RFM9x
 
     def __init__(
         self,
@@ -47,56 +42,47 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
         """
+        self._spi = spi
+        self._chip_select = chip_select
+        self._reset = reset
+
         super().__init__(
             logger=logger,
             radio_config=radio_config,
             use_fsk=use_fsk,
-            spi=spi,
-            chip_select=chip_select,
-            reset=reset,
         )
 
-    def _initialize_radio(self, modulation: RadioModulation, **kwargs: Any) -> Any:
+    def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific RFM9x radio hardware."""
-        spi: SPI = kwargs["spi"]
-        cs: DigitalInOut = kwargs["chip_select"]
-        rst: DigitalInOut = kwargs["reset"]
 
-        if modulation == RadioModulation.FSK:
-            radio: RFM9xFSK = self._create_fsk_radio(
-                spi,
-                cs,
-                rst,
+        if modulation == FSK:
+            self._radio = self._create_fsk_radio(
+                self._spi,
+                self._chip_select,
+                self._reset,
                 self._radio_config.transmit_frequency,
                 self._radio_config.fsk,
             )
         else:
-            radio: RFM9x = self._create_lora_radio(
-                spi,
-                cs,
-                rst,
+            self._radio = self._create_lora_radio(
+                self._spi,
+                self._chip_select,
+                self._reset,
                 self._radio_config.transmit_frequency,
                 self._radio_config.lora,
             )
 
-        radio.node = self._radio_config.sender_id
-        radio.destination = self._radio_config.receiver_id
-
-        return radio
+        self._radio.node = self._radio_config.sender_id
+        self._radio.destination = self._radio_config.receiver_id
 
     def _send_internal(self, payload: bytes) -> bool:
         """Send data using the RFM9x radio."""
         # Assuming send returns bool or similar truthy/falsy
         return bool(self._radio.send(payload))
 
-    def _get_current_modulation(self) -> RadioModulation:
+    def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
-        if isinstance(self._radio, RFM9xFSK):
-            return RadioModulation.FSK
-        elif isinstance(self._radio, RFM9x):
-            return RadioModulation.LORA
-        else:
-            raise TypeError(f"Unknown radio instance type: {type(self._radio)}")
+        return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
     def get_temperature(self) -> float:
         """Get the temperature reading from the radio sensor."""
@@ -106,7 +92,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             if (raw_temp & 0x80) == 0x80:  # Check sign bit (if 1, it's negative)
                 # Perform two's complement for negative numbers
                 # Invert bits, add 1, mask to 8 bits
-                temp = -((~temp + 1) & 0xFF)
+                temp = -((~raw_temp + 1) & 0xFF)
 
             # This prescaler seems specific and might need verification/context.
             prescaler = 143.0  # Use float for calculation
@@ -155,9 +141,8 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             transmit_frequency,
         )
 
-        radio.ack_delay = lora_config.ack_delay
+        radio.ack_delay = lora_config.ack_delay  # type: ignore
         radio.enable_crc = lora_config.cyclic_redundancy_check
-        radio.max_output = lora_config.max_output
         radio.spreading_factor = lora_config.spreading_factor
         radio.tx_power = lora_config.transmit_power
 
@@ -167,7 +152,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         return radio
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+    def receive(self, timeout: Optional[int] = None) -> bytes | None:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
@@ -176,10 +161,16 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         _timeout = timeout if timeout is not None else self._receive_timeout
         self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
         try:
-            return self._radio.receive(
+            msg: bytearray | None = self._radio.receive(
                 keep_listening=True,
                 timeout=_timeout,
             )
+
+            if msg is None:
+                self._log.debug("No message received")
+                return None
+
+            return bytes(msg)
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None

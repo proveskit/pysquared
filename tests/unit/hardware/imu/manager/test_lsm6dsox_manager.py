@@ -1,19 +1,16 @@
 import math
+from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
+from busio import I2C
 
 from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
+from pysquared.logger import Logger
 
-# Type hinting only
-try:
-    from busio import I2C
-
-    from pysquared.logger import Logger
-except ImportError:
-    pass
+address: int = 123
 
 
 @pytest.fixture
@@ -28,10 +25,16 @@ def mock_logger() -> MagicMock:
     return MagicMock(spec=Logger)
 
 
-address: int = 0x6A
+@pytest.fixture
+def mock_lsm6dsox(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+    with patch("pysquared.hardware.imu.manager.lsm6dsox.LSM6DSOX") as mock_class:
+        mock_class.return_value = LSM6DSOX(mock_i2c, address)
+        yield mock_class
 
 
-def test_create_imu(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
+def test_create_imu(
+    mock_lsm6dsox: MagicMock, mock_i2c: MagicMock, mock_logger: MagicMock
+) -> None:
     """Test successful creation of an LSM6DSOX IMU instance."""
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
 
@@ -40,7 +43,6 @@ def test_create_imu(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
 
 
 @pytest.mark.slow
-@patch("pysquared.hardware.imu.manager.lsm6dsox.LSM6DSOX")
 def test_create_with_retries(
     mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
@@ -57,6 +59,7 @@ def test_create_with_retries(
 
 
 def test_get_acceleration_success(
+    mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
@@ -72,6 +75,7 @@ def test_get_acceleration_success(
 
 
 def test_get_acceleration_failure(
+    mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
@@ -97,6 +101,7 @@ def test_get_acceleration_failure(
 
 
 def test_get_gyro_success(
+    mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
@@ -111,6 +116,7 @@ def test_get_gyro_success(
 
 
 def test_get_gyro_failure(
+    mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
@@ -135,6 +141,7 @@ def test_get_gyro_failure(
 
 
 def test_get_temperature_success(
+    mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
@@ -145,10 +152,13 @@ def test_get_temperature_success(
     imu_manager._imu.temperature = expected_temp
 
     temp = imu_manager.get_temperature()
+    assert temp is not None
     assert math.isclose(temp, expected_temp, rel_tol=1e-9)
 
 
-def test_get_temperature_failure(mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
+def test_get_temperature_failure(
+    mock_lsm6dsox: MagicMock, mock_i2c: MagicMock, mock_logger: MagicMock
+) -> None:
     """Test handling of exceptions when retrieving the temperature."""
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     mock_imu_instance = MagicMock(spec=LSM6DSOX)
