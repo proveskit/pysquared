@@ -29,7 +29,7 @@ class RadioTest:
             random_number = random.randint(1, 500)
             self._radio.send(
                 f"|PING: {random_number} {
-                             self.test_message}|"
+                    self.test_message}|"
             )
 
             response = self._radio.receive(timeout=5)
@@ -56,27 +56,28 @@ class RadioTest:
             self._log.debug("Radio test failed: maximum attempts reached.")
 
     def receiver(self):
-        self._log.debug("Receiver Selected")
-        self._log.debug("Awaiting Ping...")
+        # Run receiver test forever to make it easier to test other boards.
+        while True:
+            self._log.debug("Receiver Selected")
+            self._log.debug("Awaiting Ping...")
 
-        heard_something = self._radio.receive(timeout=10)
+            heard_something = self._radio.receive(timeout=10)
 
-        if heard_something:
-            self._log.debug(heard_something)
-            heard_something = heard_something.decode("utf-8")
-            split_message = heard_something.split("|")
-            self._log.debug("Split message", ping=split_message)
+            if heard_something:
+                self._log.debug(heard_something)
+                heard_something = heard_something.decode("utf-8")
+                split_message = heard_something.split("|")
 
-            if split_message[1][0:4] == "PING":
-                self._log.info("Received Ping!", ping=heard_something)
-                self._radio.send(f"PONG{split_message[1][4:]}")
+                if split_message[1][0:4] == "PING":
+                    self._log.info("Received Ping!", ping=heard_something)
+                    self._radio.send(f"PONG{split_message[1][4:]}")
+                else:
+                    self._log.info(
+                        "Received unknown message, discarding", ping=heard_something
+                    )
+
             else:
-                self._log.info(
-                    "Received unknown message, discarding", ping=heard_something
-                )
-
-        else:
-            self._log.debug("No Response Received")
+                self._log.debug("No Response Received")
 
     def client(self, passcode):
         self._log.debug("Client Selected")
@@ -183,43 +184,42 @@ class RadioTest:
     def run(self):
         options = ["a", "b", "c"]
 
-        print(
+        while True:
+            print(
+                """
+            =======================================
+            |                                     |
+            |              WELCOME!               |
+            |       Radio Test Version 1.0        |
+            |                                     |
+            =======================================
+            |       Please Select Your Node       |
+            | 'A': Device Under Test              |
+            | 'B': Receiver                       |
+            ================ OR ===================
+            |      Act as a client                |
+            | 'C': for an active satalite         |
+            =======================================
             """
-        =======================================
-        |                                     |
-        |              WELCOME!               |
-        |       Radio Test Version 1.0        |
-        |                                     |
-        =======================================
-        |       Please Select Your Node       |
-        | 'A': Device Under Test              |
-        | 'B': Receiver                       |
-        ================ OR ===================
-        |      Act as a client                |
-        | 'C': for an active satalite         |
-        =======================================
-        """
-        )
-
-        device_selection = input().lower()
-
-        if device_selection not in options:
-            self._log.warning(
-                "Invalid Selection. Please refresh the device and try again."
             )
 
-        print(
-            """
-        =======================================
-        |                                     |
-        |        Beginning Radio Test         |
-        |       Radio Test Version 1.0        |
-        |                                     |
-        =======================================
-        """
-        )
+            device_selection = input().lower()
 
-        while True:
+            if device_selection not in options:
+                self._log.warning("Invalid Selection. Please try again.")
+                continue
+
+            print(
+                """
+            =======================================
+            |                                     |
+            |        Beginning Radio Test         |
+            |       Radio Test Version 1.0        |
+            |                                     |
+            =======================================
+            """
+            )
+
             if device_selection == "a":
                 self.device_under_test()
             elif device_selection == "b":
