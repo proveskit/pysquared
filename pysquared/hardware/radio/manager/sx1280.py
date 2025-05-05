@@ -1,6 +1,6 @@
 from busio import SPI
 from digitalio import DigitalInOut
-from sx1280.sx1280 import SX1280
+from proves_sx1280.sx1280 import SX1280
 
 from ....config.radio import RadioConfig
 from ....logger import Logger
