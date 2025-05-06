@@ -45,3 +45,10 @@ class RadioProto:
         :rtype: Optional[bytes]
         """
         ...
+
+    def modify_config(self, **kwargs) -> None:
+        """Modify the radio configuration.
+
+        :param kwargs: Configuration parameters to modify.
+        """
+        ...

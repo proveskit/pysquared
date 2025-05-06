@@ -174,3 +174,30 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+
+    def modify_config(self, **kwargs) -> None:
+        """Modify the radio configuration.
+
+        :param kwargs: Configuration parameters to modify.
+        """
+        if kwargs["sender_id"] is not None:
+            # verify is string?
+            self._radio.node = kwargs["sender_id"]
+            self._log.debug(
+                "Radio sender ID modified",
+                sender_id=kwargs["sender_id"],
+            )
+
+        if self.get_modulation() == FSK:
+            if kwargs["broadcast_address"] is not None:
+                self._radio.fsk_broadcast_address = kwargs["broadcast_address"]
+                self._log.debug(
+                    "Radio broadcast address modified",
+                    broadcast_address=kwargs["broadcast_address"],
+                )
+            if kwargs["node_address"] is not None:
+                self._radio.fsk_node_address = kwargs["node_address"]
+                self._log.debug(
+                    "Radio node address modified",
+                    node_address=kwargs["node_address"],
+                )

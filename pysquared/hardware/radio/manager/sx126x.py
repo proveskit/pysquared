@@ -134,3 +134,10 @@ class SX126xManager(BaseRadioManager):
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+
+    def modify_config(self, **kwargs) -> None:
+        """Modify the radio configuration.
+
+        :param kwargs: Configuration parameters to modify.
+        """
+        self._log.warning("Modify config not implemented for SX126xManager")
