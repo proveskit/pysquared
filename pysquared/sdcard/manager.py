@@ -38,13 +38,13 @@ def log_to_sd(json_output: str):
         os.mkdir("logs")
         os.chdir("/")
 
-    session = len(os.listdir("/sd/logs"))
+    session = len(os.listdir("/sd/logs")) + 1
 
     # print("cuurent session number is: ", session, "continue this session or start session ", session + 1)
 
-    print("starting new session at /sd/logs/session", session + 1)
+    print("starting new session at /sd/logs/session", session)
 
-    full_path = "/sd/logs/session" + str(session + 1)
+    full_path = "/sd/logs/session" + str(session)
 
     with open(full_path, "a") as f:
         f.write(json_output + "\n")

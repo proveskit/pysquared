@@ -55,14 +55,14 @@ class Logger:
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
-        enable_sd: bool = False,
+        sd_write: bool = False,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
         self.colorized: bool = colorized
-        self.enable_sd: bool = enable_sd
+        self.sd_write: bool = sd_write
 
-        print("logger.enable_sd = False")
+        print("logger.sd_write = False")
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -111,7 +111,7 @@ class Logger:
                 ),
             )
 
-        if self.enable_sd is True:
+        if self.sd_write is True:
             from pysquared.sdcard.manager import log_to_sd
 
             log_to_sd(asctime, json_output)
@@ -122,6 +122,9 @@ class Logger:
                     f'"level": "{level}"', f'"level": "{LogColors[level]}"'
                 )
             print(json_output)
+
+    def toggle_sd_write(self):
+        self.sd_write = not self.sd_write
 
     def debug(self, message: str, **kwargs) -> None:
         """
