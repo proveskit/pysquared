@@ -9,11 +9,13 @@ Attempting to follow the FPrime model.
 
 import json
 
+from ..logger import Logger
 from .radio import RadioConfig
 
 
 class Config:
-    def __init__(self, config_path: str) -> None:
+    def __init__(self, config_path: str, logger: Logger) -> None:
+        self._log: Logger = logger
         # parses json & assigns data to variables
         with open(config_path, "r") as f:
             json_data = json.loads(f.read())
