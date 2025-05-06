@@ -70,6 +70,11 @@ class SDCardManager:
 
         logger.debug("Initializing sd card from pysquared")
 
+        if "sd" not in os.listdir("/"):
+            print("/sd directory does not exist, creating...")
+            os.chdir("/")
+            os.mkdir("/sd")
+
         self.mounted = mounted
 
         sd = sdcardio.SDCard(spi_bus, chip_select, baudrate)
