@@ -74,11 +74,7 @@ class SX1280Manager(BaseRadioManager):
 
     def _send_internal(self, payload: bytes) -> bool:
         """Send data using the SX1280 radio."""
-        success = self._radio.send(payload)
-        if not success:
-            self._log.warning("Radio send failed")
-
-        return success
+        return bool(self._radio.send(payload))
 
     def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized SX1280 radio."""
