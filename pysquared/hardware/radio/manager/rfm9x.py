@@ -80,6 +80,27 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         # Assuming send returns bool or similar truthy/falsy
         return bool(self._radio.send(payload))
 
+    def modify_config(self, radio_config: RadioConfig) -> None:
+        """Modify the radio configuration. This will apply any new configuration options during runtime."""
+
+        # TODO: Add config validation
+        self._radio.node = radio_config.sender_id
+        self._radio.destination = radio_config.receiver_id
+
+        if self._radio.__class__.__name__ == "RFM9xFSK":
+            self._radio.fsk_broadcast_address = radio_config.fsk.broadcast_address
+            self._radio.fsk_node_address = radio_config.fsk.node_address
+            self._radio.modulation_type = radio_config.fsk.modulation_type
+        else:
+            self._radio.ack_delay = radio_config.lora.ack_delay
+            self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check
+            self._radio.spreading_factor = radio_config.lora.spreading_factor
+            self._radio.tx_power = radio_config.lora.transmit_power
+
+            if self._radio.spreading_factor > 9:
+                self._radio.preamble_length = self._radio.spreading_factor
+                self._radio.low_datarate_optimize = 1
+
     def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
         return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa

@@ -111,9 +111,14 @@ class BaseRadioManager(RadioProto):
             )
 
     def modify_config(self, radio_config: RadioConfig) -> None:
-        """Modify the radio configuration. This will apply the new configuration and reinitialize the radio."""
-        self._radio_config = radio_config
-        self._initialize_radio(self.get_modulation())
+        """Modify the radio configuration. This will apply the new configuration and reinitialize the radio.
+
+        Must be implemented by subclasses.
+
+        :param RadioConfig radio_config: The new radio configuration to apply.
+        :raises NotImplementedError: If not implemented by subclass.
+        """
+        raise NotImplementedError
 
     # Methods to be overridden by subclasses
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:

@@ -48,7 +48,7 @@ class RadioProto:
         ...
 
     def modify_config(self, radio_config: RadioConfig) -> None:
-        """Modify the radio configuration. This will apply the new configuration and reinitialize the radio.
+        """Modify the radio configuration. This will apply any new configuration options during runtime.
 
         :param RadioConfig radio_config: The new radio configuration.
         """
