@@ -87,23 +87,23 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         self._radio.node = radio_config.sender_id
         self._radio.destination = radio_config.receiver_id
 
-        if isinstance(self._radio, RFM9xFSK):
-            self._radio.fsk_broadcast_address = radio_config.fsk.broadcast_address
-            self._radio.fsk_node_address = radio_config.fsk.node_address
-            self._radio.modulation_type = radio_config.fsk.modulation_type
-        elif isinstance(self._radio, RFM9x):
+        if self._radio.__class__.__name__ == "RFM9xFSK":
+            self._radio.fsk_broadcast_address = radio_config.fsk.broadcast_address  # type: ignore
+            self._radio.fsk_node_address = radio_config.fsk.node_address  # type: ignore
+            self._radio.modulation_type = radio_config.fsk.modulation_type  # type: ignore
+        elif self._radio.__class__.__name__ == "RFM9x":
             self._radio.ack_delay = radio_config.lora.ack_delay  # type: ignore
-            self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check
-            self._radio.spreading_factor = radio_config.lora.spreading_factor
-            self._radio.tx_power = radio_config.lora.transmit_power
+            self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check  # type: ignore
+            self._radio.spreading_factor = radio_config.lora.spreading_factor  # type: ignore
+            self._radio.tx_power = radio_config.lora.transmit_power  # type: ignore
 
-            if self._radio.spreading_factor > 9:
-                self._radio.preamble_length = self._radio.spreading_factor
-                self._radio.low_datarate_optimize = 1
+            if self._radio.spreading_factor > 9:  # type: ignore
+                self._radio.preamble_length = self._radio.spreading_factor  # type: ignore
+                self._radio.low_datarate_optimize = 1  # type: ignore
 
     def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
-        return FSK if isinstance(self._radio, RFM9xFSK) else LoRa
+        return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
     def get_temperature(self) -> float:
         """Get the temperature reading from the radio sensor."""
