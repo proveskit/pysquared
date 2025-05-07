@@ -81,6 +81,31 @@ def mock_rfm9xfsk(
         yield mock_class
 
 
+@pytest.fixture
+def initialized_manager(
+    mock_rfm9x: MagicMock,
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+    mock_use_fsk: MagicMock,
+) -> RFM9xManager:
+    """Provides an initialized RFM9xManager instance with a mock radio."""
+    mock_use_fsk.get.return_value = False
+    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_rfm9x.return_value = mock_radio_instance
+
+    return RFM9xManager(
+        mock_logger,
+        mock_radio_config,
+        mock_use_fsk,
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+    )
+
+
 def test_init_fsk_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
@@ -746,3 +771,23 @@ def test_receive_exception(
     assert received_data is None
     mock_radio_instance.receive.assert_called_once_with(keep_listening=True, timeout=10)
     mock_logger.error.assert_called_once_with("Error receiving data", receive_error)
+
+
+def test_modify_config(
+    initialized_manager: RFM9xManager,
+    mock_logger: MagicMock,
+    mock_radio_config: RadioConfig,
+):
+    """Test modifying the radio configuration."""
+    # Create a new config with modified node address
+    new_config = mock_radio_config
+    new_config.sender_id = 255
+
+    # Modify the config
+    initialized_manager.modify_config(new_config)
+
+    # Verify the radio was reinitialized with new config
+    assert initialized_manager._radio.node == 255
+    mock_logger.debug.assert_any_call(
+        "Initializing radio", radio_type="RFM9xManager", modulation=LoRa
+    )
