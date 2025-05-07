@@ -110,6 +110,11 @@ class BaseRadioManager(RadioProto):
                 current=current_modulation,
             )
 
+    def modify_config(self, radio_config: RadioConfig) -> None:
+        """Modify the radio configuration. This will apply the new configuration and reinitialize the radio."""
+        self._radio_config = radio_config
+        self._initialize_radio(self.get_modulation())
+
     # Methods to be overridden by subclasses
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific radio hardware.

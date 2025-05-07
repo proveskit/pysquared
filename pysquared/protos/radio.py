@@ -2,6 +2,7 @@
 Protocol defining the interface for a radio.
 """
 
+from ..config.radio import RadioConfig
 from ..hardware.radio.modulation import RadioModulation
 
 # Type hinting only
@@ -46,9 +47,9 @@ class RadioProto:
         """
         ...
 
-    def modify_config(self, **kwargs) -> None:
-        """Modify the radio configuration.
+    def modify_config(self, radio_config: RadioConfig) -> None:
+        """Modify the radio configuration. This will apply the new configuration and reinitialize the radio.
 
-        :param kwargs: Configuration parameters to modify.
+        :param RadioConfig radio_config: The new radio configuration.
         """
         ...
