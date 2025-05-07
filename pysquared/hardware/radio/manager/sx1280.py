@@ -42,7 +42,8 @@ class SX1280Manager(BaseRadioManager):
         :param ~digitalio.DigitalInOut chip_select: Chip select pin.
         :param ~digitalio.DigitalInOut busy: Interrupt request pin.
         :param ~digitalio.DigitalInOut reset: Reset pin.
-        :param ~digitalio.DigitalInOut gpio: General purpose IO pin (used by SX1280).
+        :param ~digitalio.DigitalInOut txen: Transmit enable pin.
+        :param ~digitalio.DigitalInOut rxen: Receive enable pin.
 
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
         """
