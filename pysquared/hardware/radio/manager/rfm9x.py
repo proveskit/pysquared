@@ -87,12 +87,12 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         self._radio.node = radio_config.sender_id
         self._radio.destination = radio_config.receiver_id
 
-        if self._radio.__class__.__name__ == "RFM9xFSK":
+        if isinstance(self._radio, RFM9xFSK):
             self._radio.fsk_broadcast_address = radio_config.fsk.broadcast_address
             self._radio.fsk_node_address = radio_config.fsk.node_address
             self._radio.modulation_type = radio_config.fsk.modulation_type
-        else:
-            self._radio.ack_delay = radio_config.lora.ack_delay
+        elif isinstance(self._radio, RFM9x):
+            self._radio.ack_delay = radio_config.lora.ack_delay  # type: ignore
             self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check
             self._radio.spreading_factor = radio_config.lora.spreading_factor
             self._radio.tx_power = radio_config.lora.transmit_power
@@ -103,7 +103,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
     def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
-        return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
+        return FSK if isinstance(self._radio, RFM9xFSK) else LoRa
 
     def get_temperature(self) -> float:
         """Get the temperature reading from the radio sensor."""
