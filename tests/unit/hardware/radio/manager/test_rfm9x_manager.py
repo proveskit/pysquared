@@ -779,6 +779,9 @@ def test_modify_config(
     mock_radio_config: RadioConfig,
 ):
     """Test modifying the radio configuration."""
+    # Verify the radio was initialized with the correct node address
+    assert initialized_manager._radio.node == mock_radio_config.sender_id
+
     # Create a new config with modified node address
     new_config = mock_radio_config
     new_config.sender_id = 255
@@ -787,7 +790,7 @@ def test_modify_config(
     initialized_manager.modify_config(new_config)
 
     # Verify the radio was reinitialized with new config
-    assert initialized_manager._radio.node == 255
+    assert initialized_manager._radio.node == new_config.sender_id
     mock_logger.debug.assert_any_call(
         "Initializing radio", radio_type="RFM9xManager", modulation=LoRa
     )
