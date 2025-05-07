@@ -81,31 +81,6 @@ def mock_rfm9xfsk(
         yield mock_class
 
 
-@pytest.fixture
-def initialized_manager(
-    mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_radio_config: RadioConfig,
-    mock_use_fsk: MagicMock,
-) -> RFM9xManager:
-    """Provides an initialized RFM9xManager instance with a mock radio."""
-    mock_use_fsk.get.return_value = False
-    mock_radio_instance = MagicMock(spec=RFM9x)
-    mock_rfm9x.return_value = mock_radio_instance
-
-    return RFM9xManager(
-        mock_logger,
-        mock_radio_config,
-        mock_use_fsk,
-        mock_spi,
-        mock_chip_select,
-        mock_reset,
-    )
-
-
 def test_init_fsk_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
@@ -809,7 +784,7 @@ def test_modify_config(
     # Modify the config
     manager.modify_config(new_config)
 
-    # Verify the radio was reinitialized with new config
+    # Verify the radio was modified with the new config
     assert manager._radio.node == new_config.sender_id
     assert manager._radio.ack_delay == new_config.lora.ack_delay
 
