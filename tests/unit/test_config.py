@@ -1,15 +1,27 @@
 import json
 import os
+import tempfile
 
 import pytest
 
 from pysquared.config.config import Config
 
-os.path.dirname(__file__)
-file = f"{os.path.dirname(__file__)}/files/config.test.json"
+
+@pytest.fixture(autouse=True)
+def cleanup():
+    temp_dir = tempfile.mkdtemp()
+    file = os.path.join(temp_dir, "config.test.json")
+
+    source_file = f"{os.path.dirname(__file__)}/files/config.test.json"
+    with open(source_file, "r") as src, open(file, "w") as dest:
+        dest.write(src.read())
+
+    yield file
+    os.remove(file)
 
 
-def test_radio_cfg() -> None:
+def test_radio_cfg(cleanup) -> None:
+    file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
 
@@ -61,7 +73,8 @@ def test_radio_cfg() -> None:
     ), "No match for: lora.transmit_power"
 
 
-def test_strings() -> None:
+def test_strings(cleanup) -> None:
+    file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
 
@@ -76,7 +89,8 @@ def test_strings() -> None:
     assert config.repeat_code == json_data["repeat_code"], "No match for: repeat_code"
 
 
-def test_ints() -> None:
+def test_ints(cleanup) -> None:
+    file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
 
@@ -95,7 +109,8 @@ def test_ints() -> None:
     assert config.reboot_time == json_data["reboot_time"], "No match for: reboot_time"
 
 
-def test_floats() -> None:
+def test_floats(cleanup) -> None:
+    file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
 
@@ -112,7 +127,8 @@ def test_floats() -> None:
     ), "No match for: critical_battery_voltage"
 
 
-def test_bools() -> None:
+def test_bools(cleanup) -> None:
+    file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
 
@@ -132,101 +148,106 @@ def test_bools() -> None:
     assert config.turbo_clock == json_data["turbo_clock"], "No match for: turbo_clock"
 
 
-def test_validation_updateable() -> None:
+def test_validation_updateable(cleanup) -> None:
+    file = cleanup
     config = Config(file)
 
     # raises KeyError
     with pytest.raises(KeyError):
-        config.validate("not_in_config", "trash")
+        config._validate("not_in_config", "trash")
 
     # config
     try:
-        config.validate("cubesat_name", "maia")
+        config._validate("cubesat_name", "maia")
     except KeyError as e:
         print(e)
 
     # radio
     try:
-        config.validate("receiver_id", 11)
+        config._validate("receiver_id", 11)
     except KeyError as e:
         print(e)
 
     # fsk
     try:
-        config.validate("ack_delay", 1.5)
+        config._validate("ack_delay", 1.5)
     except KeyError as e:
         print(e)
 
     # lora
     try:
-        config.validate("node_address", 11)
+        config._validate("node_address", 11)
     except KeyError as e:
         print(e)
 
 
-def test_validation_type() -> None:
+def test_validation_type(cleanup) -> None:
+    file = cleanup
     config = Config(file)
 
     # raises TypeError
     with pytest.raises(TypeError):
-        config.validate("cubesat_name", 1)
+        config._validate("cubesat_name", 1)
 
     # config
     try:
-        config.validate("cubesat_name", "maia")
+        config._validate("cubesat_name", "maia")
     except KeyError as e:
         print(e)
 
 
-def test_validation_range() -> None:
+def test_validation_range(cleanup) -> None:
+    file = cleanup
     config = Config(file)
 
     # normal config
     with pytest.raises(ValueError):
-        config.validate("cubesat_name", "")
+        config._validate("cubesat_name", "")
     with pytest.raises(ValueError):
-        config.validate("cubesat_name", "more_than_seven")
+        config._validate("cubesat_name", "more_than_seven")
 
     # radio config
     with pytest.raises(ValueError):
-        config.validate("receiver_id", -1)
+        config._validate("receiver_id", -1)
     with pytest.raises(ValueError):
-        config.validate("receiver_id", 256)
+        config._validate("receiver_id", 256)
 
     # transmit_frequency specific
     with pytest.raises(ValueError):
-        config.validate("transmit_frequency", 0.0)
+        config._validate("transmit_frequency", 0.0)
     with pytest.raises(ValueError):
-        config.validate("transmit_frequency", 500.0)
+        config._validate("transmit_frequency", 500.0)
     with pytest.raises(ValueError):
-        config.validate("transmit_frequency", 916.0)
+        config._validate("transmit_frequency", 916.0)
     try:
-        config.validate("transmit_frequency", 436.0)
+        config._validate("transmit_frequency", 436.0)
     except ValueError as e:
         print(e)
 
     with pytest.raises(ValueError):
-        config.validate("cubesat_name", "more_than_10____")
+        config._validate("cubesat_name", "more_than_10____")
 
     with pytest.raises(ValueError):
-        config.validate("cubesat_name", "more_than_10____")
+        config._validate("cubesat_name", "more_than_10____")
 
     # config
     try:
-        config.validate("cubesat_name", "accept")
+        config._validate("cubesat_name", "accept")
     except ValueError as e:
         print(e)
 
 
-def test_save_config() -> None:
+def test_save_config(cleanup) -> None:
+    file = cleanup
     config = Config(file)
     try:
-        config.save_config("cubesat_name", "accept")
+        config._save_config("cubesat_name", "accept")
     except ValueError as e:
         print(e)
 
 
-def test_update_config() -> None:
+def test_update_config(cleanup) -> None:
+    file = cleanup
     config = Config(file)
 
     # config temp

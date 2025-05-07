@@ -4,7 +4,11 @@ distribute these values across the files & variables
 that use them. Instantiation happens in main.
 
 Also it allow values to be set temporarily or permanently using the
-Attempting to follow the FPrime model.
+update_config method. Validation occurs before the update.
+
+It is assumed the key and value to update are not empty when the
+funciton is called. Also, it's important not to use the same key for
+different values in the config file.
 """
 
 import json
@@ -14,9 +18,9 @@ from .radio import RadioConfig
 
 class Config:
     def __init__(self, config_path: str) -> None:
-        self.temp_config_file = "tests/unit/files/config.test.json"
+        self.config_file = config_path
         # parses json & assigns data to variables
-        with open(config_path, "r") as f:
+        with open(self.config_file, "r") as f:
             json_data = json.loads(f.read())
 
         self.radio: RadioConfig = RadioConfig(json_data["radio"])
@@ -90,7 +94,7 @@ class Config:
         }
 
     # validates values from input
-    def validate(self, key: str, value) -> None:
+    def _validate(self, key: str, value) -> None:
         # first checks if key is actually part of config/radio dict
         if key in self.CONFIG_SCHEMA:
             schema = self.CONFIG_SCHEMA[key]
@@ -143,54 +147,57 @@ class Config:
                 raise ValueError
 
     # permanently updates values
-    def save_config(self, key: str, value) -> None:
-        with open(self.temp_config_file, "r") as f:
+    def _save_config(self, key: str, value) -> None:
+        with open(self.config_file, "r") as f:
             json_data = json.loads(f.read())
 
         json_data[key] = value
 
-        with open(self.temp_config_file, "w") as f:
-            f.write(json.dumps(json_data))
+        with open(self.config_file, "w") as f:
+            f.write(json.dumps(json_data, indent=2))
 
     # handles temp or permanent updates
     def update_config(self, key: str, value, temporary: bool) -> None:
         # validates key and value and should raise error if any
-        self.validate(key, value)
+        self._validate(key, value)
 
         if key in self.CONFIG_SCHEMA:
             # if permanent, saves to config
             if not temporary:
-                self.save_config(key, value)
+                self._save_config(key, value)
             # updates RAM
             setattr(self, key, value)
+
         elif key in self.RADIO_SCHEMA:
             # if permanent, saves to config
             if not temporary:
-                with open(self.temp_config_file, "r") as f:
+                with open(self.config_file, "r") as f:
                     json_data = json.loads(f.read())
                 json_data["radio"][key] = value
-                with open(self.temp_config_file, "w") as f:
-                    f.write(json.dumps(json_data))
+                with open(self.config_file, "w") as f:
+                    f.write(json.dumps(json_data, indent=2))
             # updates RAM
             setattr(self.radio, key, value)
+
         elif key in self.FSK_SCHEMA:
             # if permanent, saves to config
             if not temporary:
-                with open(self.temp_config_file, "r") as f:
+                with open(self.config_file, "r") as f:
                     json_data = json.loads(f.read())
                 json_data["radio"]["fsk"][key] = value
-                with open(self.temp_config_file, "w") as f:
-                    f.write(json.dumps(json_data))
+                with open(self.config_file, "w") as f:
+                    f.write(json.dumps(json_data, indent=2))
             # updates RAM
             setattr(self.radio.fsk, key, value)
+
         else:
             # key is in self.LORA_SCHEMA
             # if permanent, saves to config
             if not temporary:
-                with open(self.temp_config_file, "r") as f:
+                with open(self.config_file, "r") as f:
                     json_data = json.loads(f.read())
                 json_data["radio"]["lora"][key] = value
-                with open(self.temp_config_file, "w") as f:
-                    f.write(json.dumps(json_data))
+                with open(self.config_file, "w") as f:
+                    f.write(json.dumps(json_data, indent=2))
             # updates RAM
             setattr(self.radio.lora, key, value)
