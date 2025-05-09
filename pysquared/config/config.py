@@ -154,7 +154,7 @@ class Config:
         json_data[key] = value
 
         with open(self.config_file, "w") as f:
-            f.write(json.dumps(json_data, indent=2))
+            f.write(json.dumps(json_data))
 
     # handles temp or permanent updates
     def update_config(self, key: str, value, temporary: bool) -> None:
@@ -175,7 +175,7 @@ class Config:
                     json_data = json.loads(f.read())
                 json_data["radio"][key] = value
                 with open(self.config_file, "w") as f:
-                    f.write(json.dumps(json_data, indent=2))
+                    f.write(json.dumps(json_data))
             # updates RAM
             setattr(self.radio, key, value)
 
@@ -186,7 +186,7 @@ class Config:
                     json_data = json.loads(f.read())
                 json_data["radio"]["fsk"][key] = value
                 with open(self.config_file, "w") as f:
-                    f.write(json.dumps(json_data, indent=2))
+                    f.write(json.dumps(json_data))
             # updates RAM
             setattr(self.radio.fsk, key, value)
 
@@ -198,6 +198,6 @@ class Config:
                     json_data = json.loads(f.read())
                 json_data["radio"]["lora"][key] = value
                 with open(self.config_file, "w") as f:
-                    f.write(json.dumps(json_data, indent=2))
+                    f.write(json.dumps(json_data))
             # updates RAM
             setattr(self.radio.lora, key, value)
