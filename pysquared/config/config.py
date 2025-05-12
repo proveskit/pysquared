@@ -81,7 +81,7 @@ class Config:
             },
         }
 
-        self.FSK_SCHEMA = {
+        self.LORA_SCHEMA = {
             "ack_delay": {"type": float, "min": 0.0, "max": 2.0},
             "coding_rate": {"type": int, "min": 4, "max": 8},
             "cyclic_redundancy_check": {"type": bool, "allowed_values": [True, False]},
@@ -90,7 +90,7 @@ class Config:
             "transmit_power": {"type": int, "min": 5, "max": 23},
         }
 
-        self.LORA_SCHEMA = {
+        self.FSK_SCHEMA = {
             "broadcast_address": {"type": int, "min": 0, "max": 255},
             "node_address": {"type": int, "min": 0, "max": 255},
             "modulation_type": {"type": int, "min": 0, "max": 1},
