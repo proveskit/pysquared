@@ -21,6 +21,11 @@ We are working on improving our automated testing but right now the best way to 
 
 Your board must be connected to your computer, the correct board repository cloned, and you must have installed the latest CircuitPython Firmware.
 
+Firmware can be installed by placing the board in Bootloader mode (by pressing both of the buttons simultaneously) and running the following command:
+```sh
+make install-firmware
+```
+
 In the board repository, you can run the following command to install code on the board:
 ```sh
 make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
