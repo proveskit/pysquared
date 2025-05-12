@@ -108,6 +108,10 @@ def test_ints(cleanup) -> None:
     ), "No match for: normal_micro_temp"
     assert config.reboot_time == json_data["reboot_time"], "No match for: reboot_time"
 
+    assert (
+        config.longest_allowable_sleep_time == json_data["longest_allowable_sleep_time"]
+    ), "No match for: longest_allowable_sleep_time"
+
 
 def test_floats(cleanup) -> None:
     file = cleanup

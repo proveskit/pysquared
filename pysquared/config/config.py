@@ -43,6 +43,9 @@ class Config:
         self.super_secret_code: str = json_data["super_secret_code"]
         self.repeat_code: str = json_data["repeat_code"]
         self.joke_reply: list[str] = json_data["joke_reply"]
+        self.longest_allowable_sleep_time: int = json_data[
+            "longest_allowable_sleep_time"
+        ]
 
         self.CONFIG_SCHEMA = {
             "cubesat_name": {"type": str, "min_length": 1, "max_length": 10},
@@ -78,7 +81,7 @@ class Config:
             },
         }
 
-        self.FSK_SCHEMA = {
+        self.LORA_SCHEMA = {
             "ack_delay": {"type": float, "min": 0.0, "max": 2.0},
             "coding_rate": {"type": int, "min": 4, "max": 8},
             "cyclic_redundancy_check": {"type": bool, "allowed_values": [True, False]},
@@ -87,7 +90,7 @@ class Config:
             "transmit_power": {"type": int, "min": 5, "max": 23},
         }
 
-        self.LORA_SCHEMA = {
+        self.FSK_SCHEMA = {
             "broadcast_address": {"type": int, "min": 0, "max": 255},
             "node_address": {"type": int, "min": 0, "max": 255},
             "modulation_type": {"type": int, "min": 0, "max": 1},
