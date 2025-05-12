@@ -60,7 +60,7 @@ class functions:
 
         self.cubesat_name: str = config.cubesat_name
         self.jokes: list[str] = config.jokes
-        self.last_battery_temp: float = config.last_battery_temp
+        # self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
 
     """
@@ -73,7 +73,7 @@ class functions:
         self.listen()
         self.watchdog.pet()
 
-        self.logger.debug("Sleeping for 20 seconds")
+        self.logger.debug("Sleeping!", duration=self.sleep_duration)
         self.watchdog.pet()
         self.sleep_helper.safe_sleep(self.sleep_duration)
         self.watchdog.pet()
@@ -128,15 +128,15 @@ class functions:
         try:
             self.state_list: list[str] = [
                 f"PM:{self.cubesat.power_mode}",
-                f"VB:{self.cubesat.battery_voltage}",
-                f"ID:{self.cubesat.current_draw}",
+                # f"VB:{self.cubesat.battery_voltage}",
+                # f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
                 f"UT:{self.cubesat.get_system_uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{microcontroller.cpu.temperature}",
                 f"RT:{self.radio.get_temperature()}",
                 f"AT:{self.imu.get_temperature()}",
-                f"BT:{self.last_battery_temp}",
+                # f"BT:{self.last_battery_temp}",
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",
