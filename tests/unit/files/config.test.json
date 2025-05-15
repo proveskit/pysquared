@@ -1,13 +1,47 @@
 {
-  "cubesat_name": "Test Satellite",
+  "cubesat_name": "Orpheus",
   "last_battery_temp": 20.0,
   "sleep_duration": 30,
   "detumble_enable_z": true,
-  "detumble_enable_x": true,
+  "detumble_enable_x":true,
   "detumble_enable_y": true,
   "jokes": [
-    "Hey it is pretty cold up here, did someone forget to pay the electric bill?"
-  ],
+          "Hey it is pretty cold up here, did someone forget to pay the electric bill?",
+          "sudo rf - rf*",
+          "Why did the astronaut break up with his girlfriend? He needed space.",
+          "Why did the sun go to school? To get a little brighter.",
+          "why is the mall called the mall? because instead of going to one store you go to them all",
+          "Alien detected. Blurring photo...",
+          "Wait it is all open source? Always has been... www.github.com/proveskit",
+          "What did 0 say to 1? You're a bit too much.",
+          "Pleiades - Orpheus has been recently acquired by the Onion News Network",
+          "This jokesat was brought to you by the Bronco Space Ministry of Labor and Job Placement",
+          "Catch you on the next pass!",
+          "Pleiades - Orpheus was not The Impostor",
+          "Sorry for messing with your long-exposure astrophoto!",
+          "Better buy a telescope. Wanna see me. Buy a telescope. Gonna be in space.",
+          "According to all known laws of aviation, there is no way bees should be able to fly...",
+          "You lost the game ",
+          "Bobby Tables is a good friend of mine",
+          "Why did the computer cross the road? To get a byte to eat!",
+          "Why are the astronauts not hungry when they got to space? They had a big launch.",
+          "Why did the computer get glasses? To improve its web sight!",
+          "What are computers favorite snacks? Chips!",
+          "Wait! I think I see a White 2019 Subaru Crosstrek 2.0i Premium",
+          "IS THAT A SUPRA?!",
+          "Finally escpaed the LA Traffic",
+          "My CubeSat is really good at jokes, but its delivery is always delayed.",
+          "exec order 66",
+          "I had a joke about UDP, but I am not sure if you'd get it.",
+          "I am not saying FSK modulation is the best way to send jokes, but at least it is never monotone!",
+          "I am sorry David, I am afrain I can not do that.",
+          "My memory is volatile like RAM, so it only makes sense that I forget things.",
+          "Imagine it gets stuck and just keeps repeating this joke every 2 mins",
+          "Check Engine: Error Code 404: Joke Not Found",
+          "CQ CQ KN6NAQ ... KN6NAT are you out there?",
+          "Woah is that the Launcher Orbiter?????",
+          "Everything in life is a spring if you think hard enough!"
+      ],
   "debug": true,
   "heating": false,
   "normal_temp": 20,
@@ -16,32 +50,38 @@
   "normal_charge_current": 0.5,
   "normal_battery_voltage": 6.9,
   "critical_battery_voltage": 6.6,
-  "battery_voltage": 3.3,
+  "battery_voltage": 5.2,
   "current_draw": 240.5,
   "reboot_time": 3600,
+  "longest_allowable_sleep_time": 600,
   "turbo_clock": false,
   "radio": {
-    "license": "",
-    "sender_id": 251,
-    "receiver_id": 250,
-    "transmit_frequency": 437,
-    "start_time": 80000,
-    "fsk": {
-      "broadcast_address": 255,
-      "node_address": 1,
-      "modulation_type": 0
-    },
-    "lora": {
-      "ack_delay": 0.2,
-      "coding_rate": 8,
-      "cyclic_redundancy_check": true,
-      "spreading_factor": 8,
-      "transmit_power": 23
-    }
+      "license": "",
+      "receiver_id": 250,
+      "sender_id": 251,
+      "start_time": 80000,
+      "transmit_frequency": 437.4,
+      "lora": {
+          "ack_delay": 0.2,
+          "coding_rate": 8,
+          "cyclic_redundancy_check": true,
+          "max_output": true,
+          "spreading_factor": 8,
+          "transmit_power": 23
+      },
+      "fsk": {
+          "broadcast_address": 255,
+          "node_address": 1,
+          "modulation_type": 0
+      }
   },
   "super_secret_code": "ABCD",
   "repeat_code": "RP",
   "joke_reply": [
-    "Your Mom"
-  ]
-}
+          "Your Mom",
+          "Your Mum",
+          "Your Face",
+          "not True lol",
+          "I have brought peace, freedom, justice, and security to my new empire! Your New Empire?"
+      ]
+  }

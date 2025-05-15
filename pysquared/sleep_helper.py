@@ -5,6 +5,7 @@ import alarm
 from alarm import time as alarmTime
 from alarm.time import TimeAlarm
 
+from .config.config import Config
 from .logger import Logger
 from .watchdog import Watchdog
 
@@ -19,7 +20,7 @@ class SleepHelper:
     Class responsible for sleeping the Satellite to conserve power
     """
 
-    def __init__(self, logger: Logger, watchdog: Watchdog) -> None:
+    def __init__(self, logger: Logger, watchdog: Watchdog, config: Config) -> None:
         """
         Creates a SleepHelper object.
 
@@ -29,35 +30,38 @@ class SleepHelper:
         """
         self.logger: Logger = logger
         self.watchdog: Watchdog = watchdog
+        self.config = config
 
     def safe_sleep(self, duration: int = 15) -> None:
         """
         Puts the Satellite to sleep for specified duration, in seconds.
 
-        Current implementation results in an actual sleep duration that is a multiple of 15.
-        Current implementation only allows for a maximum sleep duration of 180 seconds.
+        Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config
 
         :param duration: Specified time, in seconds, to sleep the Satellite for
         """
 
-        self.logger.info("Setting Safe Sleep Mode")
+        self.watchdog.pet()
 
-        iterations: int = 0
+        time_remaining = min(duration, self.config.longest_allowable_sleep_time)
 
-        while duration >= 15 and iterations < 12:
+        self.logger.debug("Setting Safe Sleep Mode", duration=time_remaining)
+
+        while time_remaining > 0:
+            time_increment = time_remaining if time_remaining < 15 else 15
+
             time_alarm: TimeAlarm = alarmTime.TimeAlarm(
-                monotonic_time=time.monotonic() + 15
+                monotonic_time=time.monotonic() + time_increment
             )
-
             alarm.light_sleep_until_alarms(time_alarm)
-            duration -= 15
-            iterations += 1
+            time_remaining -= time_increment
 
             self.watchdog.pet()
 
     def short_hibernate(self) -> Literal[True]:
         """Puts the Satellite to sleep for 120 seconds"""
 
+        self.watchdog.pet()
         self.logger.debug("Short Hibernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
@@ -70,6 +74,7 @@ class SleepHelper:
     def long_hibernate(self) -> Literal[True]:
         """Puts the Satellite to sleep for 180 seconds"""
 
+        self.watchdog.pet()
         self.logger.debug("LONG Hibernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
