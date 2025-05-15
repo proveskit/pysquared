@@ -69,29 +69,30 @@ class Config:
 
     # validates values from input
     def validate(self, key: str, value) -> None:
-        if key not in self.CONFIG_SCHEMA:
-            raise KeyError
+        if key in self.CONFIG_SCHEMA:
+            schema = self.CONFIG_SCHEMA[key]
+            expected_type = schema["type"]
 
-        schema = self.CONFIG_SCHEMA[key]
-        expected_type = schema["type"]
+            # checks value is of same type; also covers bools
+            if not isinstance(value, expected_type):
+                raise TypeError
 
-        # checks value is of same type; also covers bools
-        if not isinstance(value, expected_type):
-            raise TypeError
+            # checks int, float, and bytes range
+            if isinstance(value, (int, float, bytes)):
+                if "min" in schema and value < schema["min"]:
+                    raise ValueError
+                if "max" in schema and value > schema["max"]:
+                    raise ValueError
 
-        # checks int, float, and bytes range
-        if isinstance(value, (int, float, bytes)):
-            if "min" in schema and value < schema["min"]:
-                raise ValueError
-            if "max" in schema and value > schema["max"]:
-                raise ValueError
-
-        # checks string range
+            # checks string range
+            else:
+                if "min_length" in schema and len(value) < schema["min_length"]:
+                    raise ValueError
+                if "max_length" in schema and len(value) > schema["max_length"]:
+                    raise ValueError
         else:
-            if "min_length" in schema and len(value) < schema["min_length"]:
-                raise ValueError
-            if "max_length" in schema and len(value) > schema["max_length"]:
-                raise ValueError
+            # Delegate radio-related validation to RadioConfig
+            self.radio.validate(key, value)
 
     # permanently updates values
     def _save_config(self, key: str, value) -> None:

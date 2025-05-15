@@ -16,12 +16,12 @@ class RadioConfig:
         self.lora: LORAConfig = LORAConfig(radio_dict["lora"])
 
         self.RADIO_SCHEMA = {
-            "license": {"type": bool, "allowed_values": [True, False]},
+            "license": {"type": str},
             "receiver_id": {"type": int, "min": 0, "max": 255},
             "sender_id": {"type": int, "min": 0, "max": 255},
             "start_time": {"type": int, "min": 0, "max": 80000},
             "transmit_frequency": {
-                "type": float,
+                "type": (int, float),
                 "min0": 435,
                 "max0": 438.0,
                 "min1": 915.0,
