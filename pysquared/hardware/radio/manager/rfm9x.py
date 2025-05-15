@@ -83,15 +83,47 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     def modify_config(self, radio_config: RadioConfig) -> None:
         """Modify the radio configuration. This will apply any new configuration options during runtime."""
 
-        # TODO: Add config validation
+        # Validate all radio config parameters
+        self._radio_config.validate("sender_id", radio_config.sender_id)
+        self._radio_config.validate("receiver_id", radio_config.receiver_id)
+        self._radio_config.validate(
+            "transmit_frequency", radio_config.transmit_frequency
+        )
+        self._radio_config.validate("start_time", radio_config.start_time)
+        self._radio_config.validate("license", radio_config.license)
+
+        # Apply base radio config
         self._radio.node = radio_config.sender_id
         self._radio.destination = radio_config.receiver_id
 
         if self._radio.__class__.__name__ == "RFM9xFSK":
+            # Validate FSK specific parameters
+            self._radio_config.validate(
+                "broadcast_address", radio_config.fsk.broadcast_address
+            )
+            self._radio_config.validate("node_address", radio_config.fsk.node_address)
+            self._radio_config.validate(
+                "modulation_type", radio_config.fsk.modulation_type
+            )
+
+            # Apply FSK specific config
             self._radio.fsk_broadcast_address = radio_config.fsk.broadcast_address  # type: ignore
             self._radio.fsk_node_address = radio_config.fsk.node_address  # type: ignore
             self._radio.modulation_type = radio_config.fsk.modulation_type  # type: ignore
         elif self._radio.__class__.__name__ == "RFM9x":
+            # Validate LoRa specific parameters
+            self._radio_config.validate("ack_delay", radio_config.lora.ack_delay)
+            self._radio_config.validate(
+                "cyclic_redundancy_check", radio_config.lora.cyclic_redundancy_check
+            )
+            self._radio_config.validate(
+                "spreading_factor", radio_config.lora.spreading_factor
+            )
+            self._radio_config.validate(
+                "transmit_power", radio_config.lora.transmit_power
+            )
+
+            # Apply LoRa specific config
             self._radio.ack_delay = radio_config.lora.ack_delay  # type: ignore
             self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check  # type: ignore
             self._radio.spreading_factor = radio_config.lora.spreading_factor  # type: ignore
