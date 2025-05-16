@@ -813,7 +813,7 @@ def test_modify_fsk_config(
     # Verify the radio was initialized with the correct node address
     assert manager._radio.node == mock_radio_config.sender_id
     assert (
-        manager._radio.fsk_broadcast_address == mock_radio_config.fsk.broadcast_address
+        manager._radio.fsk_broadcast_address == mock_radio_config.fsk.broadcast_address  # type: ignore
     )
 
     # Create a new config with modified node address
@@ -825,7 +825,7 @@ def test_modify_fsk_config(
 
     # Verify the radio was modified with the new config
     assert manager._radio.node == new_config.sender_id
-    assert manager._radio.fsk_broadcast_address == new_config.fsk.broadcast_address
+    assert manager._radio.fsk_broadcast_address == new_config.fsk.broadcast_address  # type: ignore
 
     mock_logger.debug.assert_any_call(
         "Initializing radio", radio_type="RFM9xManager", modulation=FSK
