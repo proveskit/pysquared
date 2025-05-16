@@ -140,7 +140,7 @@ def test_init_fsk_success(
     )
     assert manager._radio == mock_radio_instance
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="SX1280Manager", modulation=FSK
+        "Initializing radio", radio_type="SX1280Manager", modulation="FSK"
     )
 
 
@@ -185,7 +185,7 @@ def test_init_lora_success(
     )
     assert manager._radio == mock_radio_instance
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="SX1280Manager", modulation=LoRa
+        "Initializing radio", radio_type="SX1280Manager", modulation="LoRa"
     )
 
 
