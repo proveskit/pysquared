@@ -16,6 +16,12 @@ try:
 except ImportError:
     pass
 
+# try:
+#     from mocks.adafruit_rfm.rfm9x import RFM9x
+#     from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
+# except ImportError:
+#     pass
+
 
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios."""
@@ -86,11 +92,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         # Validate all radio config parameters
         self._radio_config.validate("sender_id", radio_config.sender_id)
         self._radio_config.validate("receiver_id", radio_config.receiver_id)
-        self._radio_config.validate(
-            "transmit_frequency", radio_config.transmit_frequency
-        )
-        self._radio_config.validate("start_time", radio_config.start_time)
-        self._radio_config.validate("license", radio_config.license)
 
         # Apply base radio config
         self._radio.node = radio_config.sender_id
@@ -113,21 +114,12 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         elif self._radio.__class__.__name__ == "RFM9x":
             # Validate LoRa specific parameters
             self._radio_config.validate("ack_delay", radio_config.lora.ack_delay)
-            self._radio_config.validate(
-                "cyclic_redundancy_check", radio_config.lora.cyclic_redundancy_check
-            )
-            self._radio_config.validate(
-                "spreading_factor", radio_config.lora.spreading_factor
-            )
-            self._radio_config.validate(
-                "transmit_power", radio_config.lora.transmit_power
-            )
 
             # Apply LoRa specific config
-            self._radio.ack_delay = radio_config.lora.ack_delay  # type: ignore
+            self._radio.ack_delay = radio_config.lora.ack_delay  # type: ignore # https://github.com/adafruit/Adafruit_CircuitPython_RFM/pull/13
             self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check  # type: ignore
             self._radio.spreading_factor = radio_config.lora.spreading_factor  # type: ignore
-            self._radio.tx_power = radio_config.lora.transmit_power  # type: ignore
+            self._radio.tx_power = radio_config.lora.transmit_power
 
             if self._radio.spreading_factor > 9:  # type: ignore
                 self._radio.preamble_length = self._radio.spreading_factor  # type: ignore
@@ -194,7 +186,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             transmit_frequency,
         )
 
-        radio.ack_delay = lora_config.ack_delay  # type: ignore
+        radio.ack_delay = lora_config.ack_delay  # type: ignore # https://github.com/adafruit/Adafruit_CircuitPython_RFM/pull/13
         radio.enable_crc = lora_config.cyclic_redundancy_check
         radio.spreading_factor = lora_config.spreading_factor
         radio.tx_power = lora_config.transmit_power

@@ -14,7 +14,7 @@ except ImportError:
 
 class RFM9x(RFMSPI):
     ack_delay: float | None = None
-    enable_crc: int
+    enable_crc: bool = True
     spreading_factor: Literal[6, 7, 8, 9, 10, 11, 12]
     tx_power: int
     preamble_length: int
