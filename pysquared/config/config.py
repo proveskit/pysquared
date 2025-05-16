@@ -67,87 +67,32 @@ class Config:
             "turbo_clock": {"type": bool, "allowed_values": [True, False]},
         }
 
-        self.RADIO_SCHEMA = {
-            "license": {"type": bool, "allowed_values": [True, False]},
-            "receiver_id": {"type": int, "min": 0, "max": 255},
-            "sender_id": {"type": int, "min": 0, "max": 255},
-            "start_time": {"type": int, "min": 0, "max": 80000},
-            "transmit_frequency": {
-                "type": float,
-                "min0": 435,
-                "max0": 438.0,
-                "min1": 915.0,
-                "max1": 915.0,
-            },
-        }
-
-        self.LORA_SCHEMA = {
-            "ack_delay": {"type": float, "min": 0.0, "max": 2.0},
-            "coding_rate": {"type": int, "min": 4, "max": 8},
-            "cyclic_redundancy_check": {"type": bool, "allowed_values": [True, False]},
-            "max_output": {"type": bool, "allowed_values": [True, False]},
-            "spreading_factor": {"type": int, "min": 6, "max": 12},
-            "transmit_power": {"type": int, "min": 5, "max": 23},
-        }
-
-        self.FSK_SCHEMA = {
-            "broadcast_address": {"type": int, "min": 0, "max": 255},
-            "node_address": {"type": int, "min": 0, "max": 255},
-            "modulation_type": {"type": int, "min": 0, "max": 1},
-        }
-
     # validates values from input
-    def _validate(self, key: str, value) -> None:
-        # first checks if key is actually part of config/radio dict
+    def validate(self, key: str, value) -> None:
         if key in self.CONFIG_SCHEMA:
             schema = self.CONFIG_SCHEMA[key]
+            expected_type = schema["type"]
 
-        elif key in self.RADIO_SCHEMA:
-            schema = self.RADIO_SCHEMA[key]
+            # checks value is of same type; also covers bools
+            if not isinstance(value, expected_type):
+                raise TypeError
 
-        elif key in self.FSK_SCHEMA:
-            schema = self.FSK_SCHEMA[key]
+            # checks int, float, and bytes range
+            if isinstance(value, (int, float, bytes)):
+                if "min" in schema and value < schema["min"]:
+                    raise ValueError
+                if "max" in schema and value > schema["max"]:
+                    raise ValueError
 
-        elif key in self.LORA_SCHEMA:
-            schema = self.LORA_SCHEMA[key]
-
+            # checks string range
+            else:
+                if "min_length" in schema and len(value) < schema["min_length"]:
+                    raise ValueError
+                if "max_length" in schema and len(value) > schema["max_length"]:
+                    raise ValueError
         else:
-            raise KeyError
-
-        expected_type = schema["type"]
-
-        # checks value is of same type; also covers bools
-        if not isinstance(value, expected_type):
-            raise TypeError
-
-        # checks int, float, and bytes range
-        if isinstance(value, (int, float, bytes)):
-            if "min" in schema and value < schema["min"]:
-                raise ValueError
-            if "max" in schema and value > schema["max"]:
-                raise ValueError
-
-            # specific to transmit_frequency
-            if key == "transmit_frequency":
-                if "min0" in schema and value < schema["min0"]:
-                    raise ValueError
-                if "max1" in schema and value > schema["max1"]:
-                    raise ValueError
-                if (
-                    "max0" in schema
-                    and value > schema["max0"]
-                    and "min1" in schema
-                    and value < schema["min1"]
-                ):
-                    raise ValueError
-
-        # checks string range
-        else:
-            # isinstance(value, str):
-            if "min_length" in schema and len(value) < schema["min_length"]:
-                raise ValueError
-            if "max_length" in schema and len(value) > schema["max_length"]:
-                raise ValueError
+            # Delegate radio-related validation to RadioConfig
+            self.radio.validate(key, value)
 
     # permanently updates values
     def _save_config(self, key: str, value) -> None:
@@ -162,45 +107,32 @@ class Config:
     # handles temp or permanent updates
     def update_config(self, key: str, value, temporary: bool) -> None:
         # validates key and value and should raise error if any
-        self._validate(key, value)
-
         if key in self.CONFIG_SCHEMA:
+            self.validate(key, value)
             # if permanent, saves to config
             if not temporary:
                 self._save_config(key, value)
             # updates RAM
             setattr(self, key, value)
-
-        elif key in self.RADIO_SCHEMA:
-            # if permanent, saves to config
-            if not temporary:
-                with open(self.config_file, "r") as f:
-                    json_data = json.loads(f.read())
-                json_data["radio"][key] = value
-                with open(self.config_file, "w") as f:
-                    f.write(json.dumps(json_data))
-            # updates RAM
-            setattr(self.radio, key, value)
-
-        elif key in self.FSK_SCHEMA:
-            # if permanent, saves to config
-            if not temporary:
-                with open(self.config_file, "r") as f:
-                    json_data = json.loads(f.read())
-                json_data["radio"]["fsk"][key] = value
-                with open(self.config_file, "w") as f:
-                    f.write(json.dumps(json_data))
-            # updates RAM
-            setattr(self.radio.fsk, key, value)
-
         else:
-            # key is in self.LORA_SCHEMA
+            # Delegate radio-related validation to RadioConfig
+            self.radio.validate(key, value)
             # if permanent, saves to config
             if not temporary:
                 with open(self.config_file, "r") as f:
                     json_data = json.loads(f.read())
-                json_data["radio"]["lora"][key] = value
+                if key in self.radio.RADIO_SCHEMA:
+                    json_data["radio"][key] = value
+                elif key in self.radio.fsk.FSK_SCHEMA:
+                    json_data["radio"]["fsk"][key] = value
+                else:  # key is in self.radio.lora.LORA_SCHEMA
+                    json_data["radio"]["lora"][key] = value
                 with open(self.config_file, "w") as f:
                     f.write(json.dumps(json_data))
             # updates RAM
-            setattr(self.radio.lora, key, value)
+            if key in self.radio.RADIO_SCHEMA:
+                setattr(self.radio, key, value)
+            elif key in self.radio.fsk.FSK_SCHEMA:
+                setattr(self.radio.fsk, key, value)
+            else:  # key is in self.radio.lora.LORA_SCHEMA
+                setattr(self.radio.lora, key, value)
