@@ -28,14 +28,15 @@ def mock_radio() -> MagicMock:
     return radio
 
 
-@pytest.fixture
-def mock_power_monitor() -> MagicMock:
-    power_monitor = MagicMock(spec=PowerMonitorProto)
-    power_monitor.get_current.return_value = 0.5
-    power_monitor.get_bus_voltage.return_value = 3.3
-    power_monitor.get_shunt_voltage.return_value = 0.1
-    power_monitor.__class__.__name__ = "MockPowerMonitor"
-    return power_monitor
+class mock_power_monitor(PowerMonitorProto):
+    def get_current(self) -> float:
+        return 0.5
+
+    def get_bus_voltage(self) -> float:
+        return 3.3
+
+    def get_shunt_voltage(self) -> float:
+        return 0.1
 
 
 @pytest.fixture
@@ -60,19 +61,6 @@ def mock_counter() -> MagicMock:
     counter.get_name.return_value = "test_counter"
     counter.get.return_value = 42
     return counter
-
-
-# @pytest.fixture
-# def mock_time_localtime() -> Generator[MagicMock, None, None]:
-#     with patch("time.localtime") as mock_time:
-#         mock_time = MagicMock()
-#         mock_time.tm_year = 2025
-#         mock_time.tm_mon = 5
-#         mock_time.tm_mday = 16
-#         mock_time.tm_hour = 12
-#         mock_time.tm_min = 34
-#         mock_time.tm_sec = 56
-#         yield mock_time
 
 
 def test_beacon_init(mock_logger, mock_radio):
