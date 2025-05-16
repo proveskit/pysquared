@@ -355,6 +355,18 @@ wheels = [
 ]
 
 [[package]]
+name = "freezegun"
+version = "1.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2c/ef/722b8d71ddf4d48f25f6d78aa2533d505bf3eec000a7cacb8ccc8de61f2f/freezegun-1.5.1.tar.gz", hash = "sha256:b29dedfcda6d5e8e083ce71b2b542753ad48cfec44037b3fc79702e2980a89e9", size = 33697 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/0b/0d7fee5919bccc1fdc1c2a7528b98f65c6f69b223a3fd8f809918c142c36/freezegun-1.5.1-py3-none-any.whl", hash = "sha256:bf111d7138a8abe55ab48a71755673dbaa4ab87f4cff5634a4442dfec34c15f1", size = 17569 },
+]
+
+[[package]]
 name = "identify"
 version = "2.6.6"
 source = { registry = "https://pypi.org/simple" }
@@ -525,6 +537,7 @@ dependencies = [
     { name = "adafruit-circuitpython-veml7700" },
     { name = "circuitpython-stubs" },
     { name = "coverage" },
+    { name = "freezegun" },
     { name = "pre-commit" },
     { name = "proves-circuitpython-rv3028" },
     { name = "proves-circuitpython-sx126" },
@@ -550,6 +563,7 @@ requires-dist = [
     { name = "adafruit-circuitpython-veml7700", specifier = "==2.0.2" },
     { name = "circuitpython-stubs", specifier = "==9.2.5" },
     { name = "coverage", specifier = "==7.6.10" },
+    { name = "freezegun", specifier = ">=1.5.1" },
     { name = "pre-commit", specifier = "==4.0.1" },
     { name = "proves-circuitpython-rv3028", git = "https://github.com/proveskit/PROVES_CircuitPython_RV3028?rev=1.0.0" },
     { name = "proves-circuitpython-sx126", git = "https://github.com/proveskit/micropySX126X?rev=1.0.0" },
@@ -571,6 +585,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b4/8c/9862305bdcd6020bc7b45b1b5e7397a6caf1a33d3025b9a003b39075ffb2/pytest-8.3.2.tar.gz", hash = "sha256:c132345d12ce551242c87269de812483f5bcc87cdbb4722e48487ba194f9fdce", size = 1439314 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0f/f9/cf155cf32ca7d6fa3601bc4c5dd19086af4b320b706919d48a4c79081cf9/pytest-8.3.2-py3-none-any.whl", hash = "sha256:4ba08f9ae7dcf84ded419494d229b48d0903ea6407b030eaec46df5e6a73bba5", size = 341802 },
+]
+
+[[package]]
+name = "python-dateutil"
+version = "2.9.0.post0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/66/c0/0c8b6ad9f17a802ee498c46e004a0eb49bc148f2fd230864601a86dcf6db/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3", size = 342432 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427", size = 229892 },
 ]
 
 [[package]]
@@ -597,6 +623,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/fe/0f/25911a9f080464c59fab9027482f822b86bf0608957a5fcc6eaac85aa515/PyYAML-6.0.2-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:68ccc6023a3400877818152ad9a1033e3db8625d899c72eacb5a668902e4d652", size = 751597 },
     { url = "https://files.pythonhosted.org/packages/14/0d/e2c3b43bbce3cf6bd97c840b46088a3031085179e596d4929729d8d68270/PyYAML-6.0.2-cp313-cp313-win32.whl", hash = "sha256:bc2fa7c6b47d6bc618dd7fb02ef6fdedb1090ec036abab80d4681424b84c1183", size = 140527 },
     { url = "https://files.pythonhosted.org/packages/fa/de/02b54f42487e3d3c6efb3f89428677074ca7bf43aae402517bc7cca949f3/PyYAML-6.0.2-cp313-cp313-win_amd64.whl", hash = "sha256:8388ee1976c416731879ac16da0aff3f63b286ffdd57cdeb95f3f2e085687563", size = 156446 },
+]
+
+[[package]]
+name = "six"
+version = "1.17.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050 },
 ]
 
 [[package]]

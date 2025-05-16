@@ -1,7 +1,11 @@
 import time
 from collections import OrderedDict
 
-from microcontroller import Processor
+try:
+    from mocks.circuitpython.microcontroller import Processor
+except ImportError:
+    # microcontroller does not exist in upstream python so it must be mocked for testing
+    from microcontroller import Processor
 
 from .logger import Logger
 from .nvm.counter import Counter
@@ -41,7 +45,7 @@ class Beacon:
         state: OrderedDict[str, object] = OrderedDict()
         state["name"] = self._name
 
-        now = time.localtime()
+        now = time.gmtime()
         state["time"] = (
             f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         )
