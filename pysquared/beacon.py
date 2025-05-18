@@ -4,7 +4,6 @@ from collections import OrderedDict
 try:
     from mocks.circuitpython.microcontroller import Processor
 except ImportError:
-    # microcontroller does not exist in upstream python so it must be mocked for testing
     from microcontroller import Processor
 
 from .logger import Logger
