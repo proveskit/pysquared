@@ -221,7 +221,7 @@ def test_init_with_retries_fsk(
         )
 
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="SX1280Manager", modulation=FSK
+        "Initializing radio", radio_type="SX1280Manager", modulation="FSK"
     )
     assert mock_sx1280.call_count == 3
 
@@ -258,7 +258,7 @@ def test_init_with_retries_lora(
         )
 
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="SX1280Manager", modulation=FSK
+        "Initializing radio", radio_type="SX1280Manager", modulation="FSK"
     )
     assert mock_sx1280.call_count == 3
 
