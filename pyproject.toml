@@ -21,7 +21,7 @@ dependencies = [
     "adafruit-circuitpython-mcp9808==3.3.24",
     "adafruit-circuitpython-neopixel==6.3.12",
     "adafruit-circuitpython-register==1.10.2",
-    "adafruit-circuitpython-rfm==1.0.3",
+    "adafruit-circuitpython-rfm==1.0.6",
     "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A@1.0.0",
     "adafruit-circuitpython-ticks==1.1.1",
     "adafruit-circuitpython-veml7700==2.0.2",

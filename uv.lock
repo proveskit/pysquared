@@ -178,16 +178,16 @@ wheels = [
 
 [[package]]
 name = "adafruit-circuitpython-rfm"
-version = "1.0.3"
+version = "1.0.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "adafruit-blinka" },
     { name = "adafruit-circuitpython-busdevice" },
     { name = "asyncio" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/62/9f/f2c2c97cfaf569f6d0d1ded45d191806a32de54bfe6fa15b73324f693ddb/adafruit_circuitpython_rfm-1.0.3.tar.gz", hash = "sha256:200819805cbb5957cdd3feb4c8177d4f73f4a327aa0a37f1f6db1847aeb7498f", size = 46218 }
+sdist = { url = "https://files.pythonhosted.org/packages/8f/01/c18b6b5644c907df9fa697900faf422220b7f11c14fb5e73f049cd7367bf/adafruit_circuitpython_rfm-1.0.6.tar.gz", hash = "sha256:9e1965ea2f38e26b2d90b29b5e217e2ec8f33157b20b121de42d18d1563e10a1", size = 47171 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d1/8a/0c74b202d323dcafef75534f6c993103a4f37122d71455d222cc10e93a4e/adafruit_circuitpython_rfm-1.0.3-py3-none-any.whl", hash = "sha256:295061b5597a9691767fbe393f314eb752cf699d52cc1ecb8c608a957b154cb6", size = 31407 },
+    { url = "https://files.pythonhosted.org/packages/07/85/62c6b0a835b53244c6893307b2b04f26d8c843149908ee023379233db8d2/adafruit_circuitpython_rfm-1.0.6-py3-none-any.whl", hash = "sha256:092a06f1db0e600dcb62b6711d8d4b2a4be3d36c79721e328e951b5429e018a0", size = 31629 },
 ]
 
 [[package]]
@@ -556,7 +556,7 @@ requires-dist = [
     { name = "adafruit-circuitpython-mcp9808", specifier = "==3.3.24" },
     { name = "adafruit-circuitpython-neopixel", specifier = "==6.3.12" },
     { name = "adafruit-circuitpython-register", specifier = "==1.10.2" },
-    { name = "adafruit-circuitpython-rfm", specifier = "==1.0.3" },
+    { name = "adafruit-circuitpython-rfm", specifier = "==1.0.6" },
     { name = "adafruit-circuitpython-tca9548a", git = "https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A?rev=1.0.0" },
     { name = "adafruit-circuitpython-ticks", specifier = "==1.1.1" },
     { name = "adafruit-circuitpython-typing", specifier = "==1.11.2" },

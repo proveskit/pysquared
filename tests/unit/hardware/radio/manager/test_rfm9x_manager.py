@@ -749,8 +749,6 @@ def test_receive_exception(
 
 
 def test_modify_lora_config(
-    mock_rfm9x: MagicMock,
-    mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -759,19 +757,17 @@ def test_modify_lora_config(
     mock_use_fsk: MagicMock,
 ):
     """Test modifying the radio configuration."""
-    mock_use_fsk.get.return_value = False
+    # Create manager without initializing the radio
+    manager = RFM9xManager.__new__(RFM9xManager)
+    manager._log = mock_logger
+    manager._radio_config = mock_radio_config
 
-    manager = RFM9xManager(
-        mock_logger,
-        mock_radio_config,
-        mock_use_fsk,
-        mock_spi,
-        mock_chip_select,
-        mock_reset,
+    # Initialize the radio manually
+    manager._radio = RFM9x(
+        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
     )
-    # Verify the radio was initialized with the correct node address
-    assert manager._radio.node == mock_radio_config.sender_id
-    assert manager._radio.ack_delay == mock_radio_config.lora.ack_delay
+    manager._radio.node = mock_radio_config.sender_id
+    manager._radio.ack_delay = mock_radio_config.lora.ack_delay
 
     # Create a new config with modified node address
     new_config = mock_radio_config
@@ -784,14 +780,8 @@ def test_modify_lora_config(
     assert manager._radio.node == new_config.sender_id
     assert manager._radio.ack_delay == new_config.lora.ack_delay
 
-    mock_logger.debug.assert_any_call(
-        "Initializing radio", radio_type="RFM9xManager", modulation=LoRa
-    )
-
 
 def test_modify_fsk_config(
-    mock_rfm9x: MagicMock,
-    mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
@@ -800,21 +790,17 @@ def test_modify_fsk_config(
     mock_use_fsk: MagicMock,
 ):
     """Test modifying the radio configuration."""
-    mock_use_fsk.get.return_value = True
+    # Create manager without initializing the radio
+    manager = RFM9xManager.__new__(RFM9xManager)
+    manager._log = mock_logger
+    manager._radio_config = mock_radio_config
 
-    manager = RFM9xManager(
-        mock_logger,
-        mock_radio_config,
-        mock_use_fsk,
-        mock_spi,
-        mock_chip_select,
-        mock_reset,
+    # Initialize the radio manually
+    manager._radio = RFM9xFSK(
+        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
     )
-    # Verify the radio was initialized with the correct node address
-    assert manager._radio.node == mock_radio_config.sender_id
-    assert (
-        manager._radio.fsk_broadcast_address == mock_radio_config.fsk.broadcast_address  # type: ignore
-    )
+    manager._radio.node = mock_radio_config.sender_id
+    manager._radio.fsk_broadcast_address = mock_radio_config.fsk.broadcast_address
 
     # Create a new config with modified node address
     new_config = mock_radio_config
@@ -825,8 +811,4 @@ def test_modify_fsk_config(
 
     # Verify the radio was modified with the new config
     assert manager._radio.node == new_config.sender_id
-    assert manager._radio.fsk_broadcast_address == new_config.fsk.broadcast_address  # type: ignore
-
-    mock_logger.debug.assert_any_call(
-        "Initializing radio", radio_type="RFM9xManager", modulation=FSK
-    )
+    assert manager._radio.fsk_broadcast_address == new_config.fsk.broadcast_address

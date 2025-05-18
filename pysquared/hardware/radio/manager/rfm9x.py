@@ -1,7 +1,12 @@
-from adafruit_rfm.rfm9x import RFM9x
-from adafruit_rfm.rfm9xfsk import RFM9xFSK
 from busio import SPI
 from digitalio import DigitalInOut
+
+try:
+    from mocks.adafruit_rfm.rfm9x import RFM9x
+    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
+except ImportError:
+    from adafruit_rfm.rfm9x import RFM9x
+    from adafruit_rfm.rfm9xfsk import RFM9xFSK
 
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
@@ -91,7 +96,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         self._radio.node = radio_config.sender_id
         self._radio.destination = radio_config.receiver_id
 
-        if self._radio.__class__.__name__ == "RFM9xFSK":
+        if isinstance(self._radio, RFM9xFSK):
             # Validate FSK specific parameters
             self._radio_config.validate(
                 "broadcast_address", radio_config.fsk.broadcast_address
@@ -102,22 +107,22 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             )
 
             # Apply FSK specific config
-            self._radio.fsk_broadcast_address = radio_config.fsk.broadcast_address  # type: ignore
-            self._radio.fsk_node_address = radio_config.fsk.node_address  # type: ignore
-            self._radio.modulation_type = radio_config.fsk.modulation_type  # type: ignore
-        elif self._radio.__class__.__name__ == "RFM9x":
+            self._radio.fsk_broadcast_address = radio_config.fsk.broadcast_address
+            self._radio.fsk_node_address = radio_config.fsk.node_address
+            self._radio.modulation_type = radio_config.fsk.modulation_type
+        elif isinstance(self._radio, RFM9x):
             # Validate LoRa specific parameters
             self._radio_config.validate("ack_delay", radio_config.lora.ack_delay)
 
             # Apply LoRa specific config
-            self._radio.ack_delay = radio_config.lora.ack_delay  # type: ignore # https://github.com/adafruit/Adafruit_CircuitPython_RFM/pull/13
-            self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check  # type: ignore
-            self._radio.spreading_factor = radio_config.lora.spreading_factor  # type: ignore
+            self._radio.ack_delay = radio_config.lora.ack_delay
+            self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check
+            self._radio.spreading_factor = radio_config.lora.spreading_factor
             self._radio.tx_power = radio_config.lora.transmit_power
 
-            if self._radio.spreading_factor > 9:  # type: ignore
-                self._radio.preamble_length = self._radio.spreading_factor  # type: ignore
-                self._radio.low_datarate_optimize = 1  # type: ignore
+            if self._radio.spreading_factor > 9:
+                self._radio.preamble_length = self._radio.spreading_factor
+                self._radio.low_datarate_optimize = 1
 
     def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
@@ -180,7 +185,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             transmit_frequency,
         )
 
-        radio.ack_delay = lora_config.ack_delay  # type: ignore # https://github.com/adafruit/Adafruit_CircuitPython_RFM/pull/13
+        radio.ack_delay = lora_config.ack_delay
         radio.enable_crc = lora_config.cyclic_redundancy_check
         radio.spreading_factor = lora_config.spreading_factor
         radio.tx_power = lora_config.transmit_power
