@@ -16,12 +16,6 @@ try:
 except ImportError:
     pass
 
-# try:
-#     from mocks.adafruit_rfm.rfm9x import RFM9x
-#     from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
-# except ImportError:
-#     pass
-
 
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios."""
