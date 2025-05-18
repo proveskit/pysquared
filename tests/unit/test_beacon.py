@@ -118,10 +118,10 @@ def setup_datastore():
 
 @patch("pysquared.nvm.flag.microcontroller")
 @patch("pysquared.nvm.counter.microcontroller")
-def test_beacon_send_with_power_monitor(
+def test_beacon_send_with_sensors(
     mock_flag_microcontroller, mock_counter_microcontroller, mock_logger, mock_radio
 ):
-    """Test sending a beacon with a power monitor."""
+    """Test sending a beacon with sensors."""
     mock_flag_microcontroller.nvm = (
         setup_datastore  # Mock the nvm module to use the ByteArray
     )
