@@ -1,13 +1,14 @@
 import time
+from typing import Optional, Type
 from unittest.mock import MagicMock, patch
 
 import pytest
 from freezegun import freeze_time
 
 from mocks.circuitpython.byte_array import ByteArray
-from mocks.circuitpython.microcontroller import Processor as MockProcessor
+from mocks.circuitpython.microcontroller import Processor
 from pysquared.beacon import Beacon
-from pysquared.hardware.radio.modulation import LoRa
+from pysquared.hardware.radio.modulation import LoRa, RadioModulation
 from pysquared.logger import Logger
 from pysquared.nvm.counter import Counter
 from pysquared.nvm.flag import Flag
@@ -30,18 +31,18 @@ def mock_radio() -> MagicMock:
     return radio
 
 
-# class MockRadio(RadioProto):
-#     def send(self, data: object) -> bool:
-#         return True
+class MockRadio(RadioProto):
+    def send(self, data: object) -> bool:
+        return True
 
-#     def set_modulation(self, modulation: Type[RadioModulation]) -> None:
-#         pass
+    def set_modulation(self, modulation: Type[RadioModulation]) -> None:
+        pass
 
-#     def get_modulation(self) -> Type[RadioModulation]:
-#         return LoRa
+    def get_modulation(self) -> Type[RadioModulation]:
+        return LoRa
 
-#     def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
-#         return b"test_data"
+    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+        return b"test_data"
 
 
 # class MockProcessor(Processor):
@@ -133,9 +134,10 @@ def test_beacon_send_with_power_monitor(
         "test_beacon",
         mock_radio,
         0,
-        MockProcessor(),
+        Processor(),
         MockFlag(0, 0),
         MockCounter(0),
+        MockRadio(),
         MockPowerMonitor(),
         MockTemperatureSensor(),
     )
@@ -155,20 +157,7 @@ def test_beacon_send_with_power_monitor(
     assert state_dict["test_counter"] == 42
 
     # radio
-    # for key in state_dict:
-    #     assert key in [
-    #         "name",
-    #         "time",
-    #         "uptime",
-    #         "test_flag",
-    #         "test_counter",
-    #         "Processor_temperature",
-    #         "MockPowerMonitor_modulation",
-    #         "MockPowerMonitor_current_avg",
-    #         "MockPowerMonitor_bus_voltage_avg",
-    #         "MockPowerMonitor_shunt_voltage_avg",
-    #     ]
-    # assert state_dict["MockPowerMonitor_modulation"] == "LoRa"
+    assert state_dict["MockRadio_modulation"] == "LoRa"
 
     # power monitor sensor
     assert pytest.approx(state_dict["MockPowerMonitor_current_avg"], 0.01) == 0.5
@@ -177,3 +166,45 @@ def test_beacon_send_with_power_monitor(
 
     # temperature sensor
     assert pytest.approx(state_dict["MockTemperatureSensor_temperature"], 0.01) == 22.5
+
+
+def test_beacon_avg_readings(mock_logger, mock_radio):
+    """Test the avg_readings method in the context of the Beacon class."""
+    beacon = Beacon(mock_logger, "test_beacon", mock_radio, 0.0)
+
+    # Test with a function that returns consistent values
+    def constant_func():
+        return 5.0
+
+    result = beacon.avg_readings(constant_func, num_readings=5)
+    assert pytest.approx(result, 0.01) == 5.0
+
+    # Test with a function that returns None
+    def none_func():
+        return None
+
+    result = beacon.avg_readings(none_func)
+    assert result is None
+    mock_logger.warning.assert_called_once()
+
+
+def test_avg_readings_varying_values(mock_logger, mock_radio):
+    """Test avg_readings with values that vary."""
+    beacon = Beacon(mock_logger, "test_beacon", mock_radio, 0.0)
+
+    # Create a simple counter function that returns incrementing values
+    # Starting from 1 and incrementing by 1 each time
+    values = list(range(1, 6))  # [1, 2, 3, 4, 5]
+    expected_avg = sum(values) / len(values)  # (1+2+3+4+5)/5 = 15/5 = 3
+
+    read_count = 0
+
+    def incrementing_func():
+        nonlocal read_count
+        value = values[read_count % len(values)]
+        read_count += 1
+        return value
+
+    # Test with a specific number of readings that's a multiple of our pattern length
+    result = beacon.avg_readings(incrementing_func, num_readings=5)
+    assert result == expected_avg
