@@ -16,6 +16,12 @@ try:
 except ImportError:
     pass
 
+# try:
+#     from mocks.adafruit_rfm.rfm9x import RFM9x
+#     from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
+# except ImportError:
+#     pass
+
 
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios."""
@@ -80,6 +86,45 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         # Assuming send returns bool or similar truthy/falsy
         return bool(self._radio.send(payload))
 
+    def modify_config(self, radio_config: RadioConfig) -> None:
+        """Modify the radio configuration. This will apply any new configuration options during runtime."""
+
+        # Validate all radio config parameters
+        self._radio_config.validate("sender_id", radio_config.sender_id)
+        self._radio_config.validate("receiver_id", radio_config.receiver_id)
+
+        # Apply base radio config
+        self._radio.node = radio_config.sender_id
+        self._radio.destination = radio_config.receiver_id
+
+        if self._radio.__class__.__name__ == "RFM9xFSK":
+            # Validate FSK specific parameters
+            self._radio_config.validate(
+                "broadcast_address", radio_config.fsk.broadcast_address
+            )
+            self._radio_config.validate("node_address", radio_config.fsk.node_address)
+            self._radio_config.validate(
+                "modulation_type", radio_config.fsk.modulation_type
+            )
+
+            # Apply FSK specific config
+            self._radio.fsk_broadcast_address = radio_config.fsk.broadcast_address  # type: ignore
+            self._radio.fsk_node_address = radio_config.fsk.node_address  # type: ignore
+            self._radio.modulation_type = radio_config.fsk.modulation_type  # type: ignore
+        elif self._radio.__class__.__name__ == "RFM9x":
+            # Validate LoRa specific parameters
+            self._radio_config.validate("ack_delay", radio_config.lora.ack_delay)
+
+            # Apply LoRa specific config
+            self._radio.ack_delay = radio_config.lora.ack_delay  # type: ignore # https://github.com/adafruit/Adafruit_CircuitPython_RFM/pull/13
+            self._radio.enable_crc = radio_config.lora.cyclic_redundancy_check  # type: ignore
+            self._radio.spreading_factor = radio_config.lora.spreading_factor  # type: ignore
+            self._radio.tx_power = radio_config.lora.transmit_power
+
+            if self._radio.spreading_factor > 9:  # type: ignore
+                self._radio.preamble_length = self._radio.spreading_factor  # type: ignore
+                self._radio.low_datarate_optimize = 1  # type: ignore
+
     def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
         return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
@@ -141,7 +186,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             transmit_frequency,
         )
 
-        radio.ack_delay = lora_config.ack_delay  # type: ignore
+        radio.ack_delay = lora_config.ack_delay  # type: ignore # https://github.com/adafruit/Adafruit_CircuitPython_RFM/pull/13
         radio.enable_crc = lora_config.cyclic_redundancy_check
         radio.spreading_factor = lora_config.spreading_factor
         radio.tx_power = lora_config.transmit_power

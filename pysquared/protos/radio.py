@@ -2,6 +2,7 @@
 Protocol defining the interface for a radio.
 """
 
+from ..config.radio import RadioConfig
 from ..hardware.radio.modulation import RadioModulation
 
 # Type hinting only
@@ -43,5 +44,12 @@ class RadioProto:
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
         :return: The received data as bytes, or None if no data was received.
         :rtype: Optional[bytes]
+        """
+        ...
+
+    def modify_config(self, radio_config: RadioConfig) -> None:
+        """Modify the radio configuration. This will apply any new configuration options during runtime.
+
+        :param RadioConfig radio_config: The new radio configuration.
         """
         ...

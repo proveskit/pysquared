@@ -158,29 +158,29 @@ def test_validation_updateable(cleanup) -> None:
 
     # raises KeyError
     with pytest.raises(KeyError):
-        config._validate("not_in_config", "trash")
+        config.validate("not_in_config", "trash")
 
     # config
     try:
-        config._validate("cubesat_name", "maia")
+        config.validate("cubesat_name", "maia")
     except KeyError as e:
         print(e)
 
     # radio
     try:
-        config._validate("receiver_id", 11)
+        config.validate("receiver_id", 11)
     except KeyError as e:
         print(e)
 
     # fsk
     try:
-        config._validate("ack_delay", 1.5)
+        config.validate("ack_delay", 1.5)
     except KeyError as e:
         print(e)
 
     # lora
     try:
-        config._validate("node_address", 11)
+        config.validate("node_address", 11)
     except KeyError as e:
         print(e)
 
@@ -191,11 +191,11 @@ def test_validation_type(cleanup) -> None:
 
     # raises TypeError
     with pytest.raises(TypeError):
-        config._validate("cubesat_name", 1)
+        config.validate("cubesat_name", 1)
 
     # config
     try:
-        config._validate("cubesat_name", "maia")
+        config.validate("cubesat_name", "maia")
     except KeyError as e:
         print(e)
 
@@ -206,37 +206,37 @@ def test_validation_range(cleanup) -> None:
 
     # normal config
     with pytest.raises(ValueError):
-        config._validate("cubesat_name", "")
+        config.validate("cubesat_name", "")
     with pytest.raises(ValueError):
-        config._validate("cubesat_name", "more_than_seven")
+        config.validate("cubesat_name", "more_than_seven")
 
     # radio config
     with pytest.raises(ValueError):
-        config._validate("receiver_id", -1)
+        config.validate("receiver_id", -1)
     with pytest.raises(ValueError):
-        config._validate("receiver_id", 256)
+        config.validate("receiver_id", 256)
 
     # transmit_frequency specific
     with pytest.raises(ValueError):
-        config._validate("transmit_frequency", 0.0)
+        config.validate("transmit_frequency", 0.0)
     with pytest.raises(ValueError):
-        config._validate("transmit_frequency", 500.0)
+        config.validate("transmit_frequency", 500.0)
     with pytest.raises(ValueError):
-        config._validate("transmit_frequency", 916.0)
+        config.validate("transmit_frequency", 916.0)
     try:
-        config._validate("transmit_frequency", 436.0)
+        config.validate("transmit_frequency", 436.0)
     except ValueError as e:
         print(e)
 
     with pytest.raises(ValueError):
-        config._validate("cubesat_name", "more_than_10____")
+        config.validate("cubesat_name", "more_than_10____")
 
     with pytest.raises(ValueError):
-        config._validate("cubesat_name", "more_than_10____")
+        config.validate("cubesat_name", "more_than_10____")
 
     # config
     try:
-        config._validate("cubesat_name", "accept")
+        config.validate("cubesat_name", "accept")
     except ValueError as e:
         print(e)
 
