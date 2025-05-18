@@ -173,10 +173,6 @@ def test_init_lora_success(
         not hasattr(mock_lora_instance, "preamble_length")
         or mock_lora_instance.preamble_length is None
     )
-    assert (
-        not hasattr(mock_lora_instance, "low_datarate_optimize")
-        or mock_lora_instance.low_datarate_optimize is None
-    )
     mock_logger.debug.assert_called_with(
         "Initializing radio", radio_type="RFM9xManager", modulation=LoRa.__name__
     )
@@ -214,7 +210,6 @@ def test_init_lora_high_sf_success(
     assert manager._radio == mock_lora_instance
     # Check high SF optimization IS set
     assert mock_lora_instance.preamble_length == 10
-    assert mock_lora_instance.low_datarate_optimize == 1
 
 
 @pytest.mark.slow

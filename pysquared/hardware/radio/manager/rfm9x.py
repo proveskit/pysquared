@@ -122,7 +122,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
             if self._radio.spreading_factor > 9:
                 self._radio.preamble_length = self._radio.spreading_factor
-                self._radio.low_datarate_optimize = 1
 
     def get_modulation(self) -> Type[FSK] | Type[LoRa]:
         """Get the modulation mode from the initialized RFM9x radio."""
@@ -192,7 +191,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         if radio.spreading_factor > 9:
             radio.preamble_length = radio.spreading_factor
-            radio.low_datarate_optimize = 1
 
         return radio
 
