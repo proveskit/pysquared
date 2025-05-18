@@ -28,14 +28,27 @@ class Beacon:
         name: str,
         radio: RadioProto,
         boot_time: float,
-        *args: PowerMonitorProto | RadioProto | IMUProto | Flag | Counter | Processor,
+        *args: PowerMonitorProto
+        | RadioProto
+        | IMUProto
+        | TemperatureSensorProto
+        | Flag
+        | Counter
+        | Processor,
     ) -> None:
         self._log: Logger = logger
         self._name: str = name
         self._radio: RadioProto = radio
         self._boot_time: float = boot_time
         self._sensors: tuple[
-            PowerMonitorProto | RadioProto | IMUProto | Flag | Counter | Processor, ...
+            PowerMonitorProto
+            | RadioProto
+            | IMUProto
+            | TemperatureSensorProto
+            | Flag
+            | Counter
+            | Processor,
+            ...,
         ] = args
 
     def send(self) -> bool:

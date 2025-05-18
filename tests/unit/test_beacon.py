@@ -4,6 +4,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from freezegun import freeze_time
 
+from mocks.circuitpython.byte_array import ByteArray
+from mocks.circuitpython.microcontroller import Processor as MockProcessor
 from pysquared.beacon import Beacon
 from pysquared.hardware.radio.modulation import LoRa
 from pysquared.logger import Logger
@@ -28,7 +30,41 @@ def mock_radio() -> MagicMock:
     return radio
 
 
-class mock_power_monitor(PowerMonitorProto):
+# class MockRadio(RadioProto):
+#     def send(self, data: object) -> bool:
+#         return True
+
+#     def set_modulation(self, modulation: Type[RadioModulation]) -> None:
+#         pass
+
+#     def get_modulation(self) -> Type[RadioModulation]:
+#         return LoRa
+
+#     def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+#         return b"test_data"
+
+
+# class MockProcessor(Processor):
+#     temperature: float = 25.0
+
+
+class MockFlag(Flag):
+    def get(self) -> bool:
+        return True
+
+    def get_name(self) -> str:
+        return "test_flag"
+
+
+class MockCounter(Counter):
+    def get(self) -> int:
+        return 42
+
+    def get_name(self) -> str:
+        return "test_counter"
+
+
+class MockPowerMonitor(PowerMonitorProto):
     def get_current(self) -> float:
         return 0.5
 
@@ -39,28 +75,9 @@ class mock_power_monitor(PowerMonitorProto):
         return 0.1
 
 
-@pytest.fixture
-def mock_temperature_sensor() -> MagicMock:
-    temp_sensor = MagicMock(spec=TemperatureSensorProto)
-    temp_sensor.get_temperature.return_value = 25.5
-    temp_sensor.__class__.__name__ = "MockTemperatureSensor"
-    return temp_sensor
-
-
-@pytest.fixture
-def mock_flag() -> MagicMock:
-    flag = MagicMock(spec=Flag)
-    flag.get_name.return_value = "test_flag"
-    flag.get.return_value = True
-    return flag
-
-
-@pytest.fixture
-def mock_counter() -> MagicMock:
-    counter = MagicMock(spec=Counter)
-    counter.get_name.return_value = "test_counter"
-    counter.get.return_value = 42
-    return counter
+class MockTemperatureSensor(TemperatureSensorProto):
+    def get_temperature(self) -> float:
+        return 22.5
 
 
 def test_beacon_init(mock_logger, mock_radio):
@@ -78,7 +95,7 @@ def test_beacon_init(mock_logger, mock_radio):
 @freeze_time(time_to_freeze="2025-05-16 12:34:56", tz_offset=0)
 @patch("time.time")
 def test_beacon_send_basic(mock_time, mock_logger, mock_radio):
-    """Test sending a basic beacon with minimal sensors."""
+    """Test sending a basic beacon with no sensors."""
     boot_time = 1000.0
     mock_time.return_value = 1060.0  # 60 seconds after boot
 
@@ -91,3 +108,72 @@ def test_beacon_send_basic(mock_time, mock_logger, mock_radio):
     assert state_dict["name"] == "test_beacon"
     assert state_dict["time"] == "2025-05-16 12:34:56"
     assert state_dict["uptime"] == 60.0
+
+
+@pytest.fixture
+def setup_datastore():
+    return ByteArray(size=17)
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_send_with_power_monitor(
+    mock_flag_microcontroller, mock_counter_microcontroller, mock_logger, mock_radio
+):
+    """Test sending a beacon with a power monitor."""
+    mock_flag_microcontroller.nvm = (
+        setup_datastore  # Mock the nvm module to use the ByteArray
+    )
+    mock_counter_microcontroller.nvm = (
+        setup_datastore  # Mock the nvm module to use the ByteArray
+    )
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_radio,
+        0,
+        MockProcessor(),
+        MockFlag(0, 0),
+        MockCounter(0),
+        MockPowerMonitor(),
+        MockTemperatureSensor(),
+    )
+
+    result = beacon.send()
+    assert result is True
+
+    state_dict = mock_radio.send.call_args[0][0]
+
+    # processor sensor
+    assert pytest.approx(state_dict["Processor_temperature"], 0.01) == 35.0
+
+    # flag
+    assert state_dict["test_flag"] is True
+
+    # counter
+    assert state_dict["test_counter"] == 42
+
+    # radio
+    # for key in state_dict:
+    #     assert key in [
+    #         "name",
+    #         "time",
+    #         "uptime",
+    #         "test_flag",
+    #         "test_counter",
+    #         "Processor_temperature",
+    #         "MockPowerMonitor_modulation",
+    #         "MockPowerMonitor_current_avg",
+    #         "MockPowerMonitor_bus_voltage_avg",
+    #         "MockPowerMonitor_shunt_voltage_avg",
+    #     ]
+    # assert state_dict["MockPowerMonitor_modulation"] == "LoRa"
+
+    # power monitor sensor
+    assert pytest.approx(state_dict["MockPowerMonitor_current_avg"], 0.01) == 0.5
+    assert pytest.approx(state_dict["MockPowerMonitor_bus_voltage_avg"], 0.01) == 3.3
+    assert pytest.approx(state_dict["MockPowerMonitor_shunt_voltage_avg"], 0.01) == 0.1
+
+    # temperature sensor
+    assert pytest.approx(state_dict["MockTemperatureSensor_temperature"], 0.01) == 22.5
