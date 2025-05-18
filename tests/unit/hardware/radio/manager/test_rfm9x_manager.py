@@ -774,6 +774,43 @@ def test_modify_lora_config(
     # Verify the radio was modified with the new config
     assert manager._radio.node == new_config.sender_id
     assert manager._radio.ack_delay == new_config.lora.ack_delay
+    assert manager._radio.preamble_length == 8
+
+
+def test_modify_lora_config_high_sf_success(
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,  # Use base config
+    mock_use_fsk: MagicMock,
+):
+    """Test LoRa initialization with high spreading factor."""
+    # Create manager without initializing the radio
+    manager = RFM9xManager.__new__(RFM9xManager)
+    manager._log = mock_logger
+    manager._radio_config = mock_radio_config
+
+    # Initialize the radio manually
+    manager._radio = RFM9x(
+        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
+    )
+    manager._radio.node = mock_radio_config.sender_id
+    manager._radio.ack_delay = mock_radio_config.lora.ack_delay
+    manager._radio.spreading_factor = mock_radio_config.lora.spreading_factor
+
+    # Create a new config with modified node address
+    new_config = mock_radio_config
+    new_config.sender_id = 255
+    new_config.lora.spreading_factor = 10
+
+    # Modify the config
+    manager.modify_config(new_config)
+
+    # Verify the radio was modified with the new config
+    assert manager._radio.node == new_config.sender_id
+    assert manager._radio.ack_delay == new_config.lora.ack_delay
+    assert manager._radio.preamble_length == 10
 
 
 def test_modify_fsk_config(
