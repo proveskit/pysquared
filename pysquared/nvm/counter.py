@@ -39,4 +39,4 @@ class Counter:
         """
         get_name returns the name of the counter
         """
-        return f"{self.__class__.__name__}_idx_{self._index}"
+        return f"{self.__class__.__name__}_index_{self._index}"

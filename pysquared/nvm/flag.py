@@ -43,4 +43,4 @@ class Flag:
         """
         get_name returns the name of the counter
         """
-        return f"{self.__class__.__name__}_idx_{self._index}_bit_{self._bit}"
+        return f"{self.__class__.__name__}_index_{self._index}_bit_{self._bit}"
