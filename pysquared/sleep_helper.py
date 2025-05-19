@@ -7,7 +7,6 @@ from alarm.time import TimeAlarm
 
 from .config.config import Config
 from .logger import Logger
-from .satellite import Satellite
 from .watchdog import Watchdog
 
 try:
@@ -21,9 +20,7 @@ class SleepHelper:
     Class responsible for sleeping the Satellite to conserve power
     """
 
-    def __init__(
-        self, cubesat: Satellite, logger: Logger, watchdog: Watchdog, config: Config
-    ) -> None:
+    def __init__(self, logger: Logger, watchdog: Watchdog, config: Config) -> None:
         """
         Creates a SleepHelper object.
 
@@ -31,7 +28,6 @@ class SleepHelper:
         :param logger: The Logger object allowing for log output
 
         """
-        self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.watchdog: Watchdog = watchdog
         self.config = config
@@ -70,7 +66,7 @@ class SleepHelper:
         gc.collect()
         # all should be off from cubesat powermode
 
-        self.cubesat.f_softboot.toggle(True)
+        self.watchdog.pet()
         self.safe_sleep(120)
 
         return True
@@ -83,7 +79,7 @@ class SleepHelper:
         gc.collect()
         # all should be off from cubesat powermode
 
-        self.cubesat.f_softboot.toggle(True)
+        self.watchdog.pet()
         self.safe_sleep(600)
 
         return True

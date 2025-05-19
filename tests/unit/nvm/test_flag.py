@@ -81,3 +81,13 @@ def test_counter_raises_error_when_nvm_is_none(mock_microcontroller: MagicMock):
 
     with pytest.raises(ValueError, match="nvm is not available"):
         Flag(0, 7)
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+def test_get_name(mock_microcontroller: MagicMock):
+    mock_microcontroller.nvm = (
+        setup_datastore  # Mock the nvm module to use the ByteArray
+    )
+
+    flag = Flag(0, 7)
+    assert flag.get_name() == "Flag_index_0_bit_7"
