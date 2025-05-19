@@ -13,7 +13,6 @@ class Counter:
         """Initialize a Counter instance.
 
         :param index int: The index of the counter in the datastore.
-        :param name str: The name of the counter.
         """
         self._index = index
 
