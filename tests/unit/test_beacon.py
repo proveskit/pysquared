@@ -107,7 +107,7 @@ def test_beacon_send_basic(mock_time, mock_logger, mock_radio):
     mock_radio.send.assert_called_once()
     state_dict = mock_radio.send.call_args[0][0]
     assert state_dict["name"] == "test_beacon"
-    assert state_dict["time"] == "2025-05-16 12:34:56"
+    assert state_dict["time"] == time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     assert state_dict["uptime"] == 60.0
 
 

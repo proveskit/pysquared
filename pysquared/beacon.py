@@ -57,7 +57,7 @@ class Beacon:
         state: OrderedDict[str, object] = OrderedDict()
         state["name"] = self._name
 
-        now = time.gmtime()
+        now = time.localtime()  # Warning: CircuitPython does not support time.gmtime(), when testing this code it will use your local timezone
         state["time"] = (
             f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         )
