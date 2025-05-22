@@ -80,10 +80,9 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         self._radio.node = self._radio_config.sender_id
         self._radio.destination = self._radio_config.receiver_id
 
-    def _send_internal(self, payload: bytes) -> bool:
+    def _send_internal(self, data: bytes) -> bool:
         """Send data using the RFM9x radio."""
-        # Assuming send returns bool or similar truthy/falsy
-        return bool(self._radio.send(payload))
+        return bool(self._radio.send(data))
 
     def modify_config(self, radio_config: RadioConfig) -> None:
         """Modify the radio configuration. This will apply any new configuration options during runtime."""
@@ -218,3 +217,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+
+    def get_max_packet_size(self) -> int:
+        return self._radio.max_packet_length

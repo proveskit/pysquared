@@ -6,6 +6,7 @@ try:
 except ImportError:
     from microcontroller import Processor
 
+from .hardware.radio.packetizer.packet_manager import PacketManager
 from .logger import Logger
 from .nvm.counter import Counter
 from .nvm.flag import Flag
@@ -25,7 +26,7 @@ class Beacon:
         self,
         logger: Logger,
         name: str,
-        radio: RadioProto,
+        packet_manager: PacketManager,
         boot_time: float,
         *args: PowerMonitorProto
         | RadioProto
@@ -37,7 +38,7 @@ class Beacon:
     ) -> None:
         self._log: Logger = logger
         self._name: str = name
-        self._radio: RadioProto = radio
+        self._packet_manager: PacketManager = packet_manager
         self._boot_time: float = boot_time
         self._sensors: tuple[
             PowerMonitorProto
@@ -90,7 +91,7 @@ class Beacon:
                 sensor_name = sensor.__class__.__name__
                 state[f"{sensor_name}_temperature"] = sensor.get_temperature()
 
-        return self._radio.send(state)
+        return self._packet_manager.send(str(state).encode("utf-8"))
 
     def avg_readings(
         self, func: Callable[..., float | None], num_readings: int = 50
