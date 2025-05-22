@@ -84,6 +84,28 @@ class PacketManager:
 
         return packets
 
+    # I don't think this will work because it doesn't gather packet, it only listens for a small time
+    # needs to expect a total number of packets and wait for them
+    # def receive(self) -> bytes | None:
+    #     """Receive data and reassemble it from packets"""
+    #     self.logger.info("Receiving data...")
+    #     packets: list[bytes] = []
+
+    #     attempts: int = 0
+    #     while attempts < 5:
+    #         packet: bytes | None = self.radio.receive()
+    #         if packet is None:
+    #             break
+    #         packets.append(packet)
+
+    #     data: bytes | None = self._unpack_data(packets)
+    #     if data is None:
+    #         self.logger.warning("Failed to unpack data from received packets")
+    #         return None
+
+    #     self.logger.info("Successfully unpacked data", data_length=len(data))
+    #     return data
+
     # def _unpack_data(self, packets: list[bytes]) -> bytes | None:
     #     """
     #     Takes a list of packets and reassembles the original data
@@ -113,47 +135,3 @@ class PacketManager:
     #     # Combine payloads
     #     data: bytes = b"".join(packet[self.header_size :] for packet in sorted_packets)
     #     return data
-
-    # def create_ack_packet(self, sequence_number: int) -> bytes:
-    #     """Creates an acknowledgment packet for a given sequence number"""
-    #     return b"ACK" + sequence_number.to_bytes(2, "big")
-
-    # def is_ack_packet(self, packet: bytes) -> bool:
-    #     """Checks if a packet is an acknowledgment packet"""
-    #     return packet.startswith(b"ACK")
-
-    # def get_ack_seq_num(self, ack_packet: bytes) -> int | None:
-    #     """Extracts sequence number from an acknowledgment packet"""
-    #     if self.is_ack_packet(ack_packet):
-    #         return int.from_bytes(ack_packet[3:5], "big")
-    #     return None
-
-    # def create_retransmit_request(self, missing_packets: list[int]) -> bytes:
-    #     """
-    #     Create a packet requesting retransmission
-    #     Format:
-    #     - 2 bytes: 0xFFFF (special sequence number indicating retransmit request)
-    #     - 2 bytes: Number of missing packets
-    #     - Remaining bytes: Missing packet sequence numbers
-    #     """
-    #     header: bytes = b"\xff\xff" + len(missing_packets).to_bytes(2, "big")
-    #     payload: bytes = b"".join(
-    #         sequence_number.to_bytes(2, "big") for sequence_number in missing_packets
-    #     )
-    #     return header + payload
-
-    # def is_retransmit_request(self, packet: bytes) -> bool:
-    #     """Check if packet is a retransmit request"""
-    #     return len(packet) >= 4 and packet[:2] == b"\xff\xff"
-
-    # def parse_retransmit_request(self, packet: bytes) -> list[int]:
-    #     """Extract missing packet numbers from retransmit request"""
-    #     num_missing: int = int.from_bytes(packet[2:4], "big")
-    #     missing: list[int] = []
-    #     for i in range(num_missing):
-    #         start_idx: int = 4 + (i * 2)
-    #         sequence_number: int = int.from_bytes(
-    #             packet[start_idx : start_idx + 2], "big"
-    #         )
-    #         missing.append(sequence_number)
-    #     return missing
