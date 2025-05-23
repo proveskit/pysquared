@@ -1,3 +1,4 @@
+import json
 import time
 from collections import OrderedDict
 
@@ -91,7 +92,8 @@ class Beacon:
                 sensor_name = sensor.__class__.__name__
                 state[f"{sensor_name}_temperature"] = sensor.get_temperature()
 
-        return self._packet_manager.send(str(state).encode("utf-8"))
+        b = json.dumps(state, separators=(",", ":")).encode("utf-8")
+        return self._packet_manager.send(b)
 
     def avg_readings(
         self, func: Callable[..., float | None], num_readings: int = 50

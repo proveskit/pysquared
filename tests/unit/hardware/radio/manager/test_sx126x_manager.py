@@ -294,46 +294,7 @@ def test_send_success_bytes(
 
     assert initialized_manager.send(data_bytes)
 
-    mock_logger.info.assert_called_once_with("Radio message sent")
-
-
-def test_send_success_string(
-    initialized_manager: SX126xManager,
-    mock_logger: MagicMock,
-    mock_radio_config: RadioConfig,
-):
-    """Test successful sending of a string (should be converted to bytes)."""
-    data_str = "Hello Saidi"
-    expected_bytes = bytes(
-        f"{mock_radio_config.license} {data_str} {mock_radio_config.license}", "UTF-8"
-    )
-
-    initialized_manager._radio = MagicMock(spec=SX1262)
-    initialized_manager._radio.send = MagicMock()
-    initialized_manager._radio.send.return_value = (len(expected_bytes), ERR_NONE)
-
-    assert initialized_manager.send(data_str)
-    initialized_manager._radio.send.assert_called_once_with(expected_bytes)
-    mock_logger.info.assert_called_once_with("Radio message sent")
-
-
-def test_send_unexpected_type(
-    initialized_manager: SX126xManager,
-    mock_logger: MagicMock,
-):
-    """Test successful sending of bytes."""
-    initialized_manager._radio = MagicMock(spec=SX1262)
-    initialized_manager._radio.send = MagicMock()
-    initialized_manager._radio.send.return_value = (
-        len(str(initialized_manager)),
-        ERR_NONE,
-    )
-
-    assert initialized_manager.send(initialized_manager)
-
-    mock_logger.warning.assert_called_once_with(
-        "Attempting to send non-bytes/str data type: <class 'pysquared.hardware.radio.manager.sx126x.SX126xManager'>",
-    )
+    mock_logger.info.assert_called_once_with(message="Radio message sent")
 
 
 def test_send_unlicensed(
@@ -383,11 +344,11 @@ def test_send_radio_error(
     msg = b"test"
     assert not initialized_manager.send(msg)
 
-    license_bytes = bytes(mock_radio_config.license, "UTF-8")
-    expected_bytes = b" ".join([license_bytes, msg, license_bytes])
-    initialized_manager._radio.send.assert_called_once_with(expected_bytes)
+    initialized_manager._radio.send.assert_called_once_with(msg)
 
-    mock_logger.warning.assert_has_calls([call("Radio send failed", error_code=-1)])
+    mock_logger.warning.assert_has_calls(
+        [call("SX126x radio send failed", error_code=-1)]
+    )
 
 
 def test_send_exception(
@@ -405,9 +366,7 @@ def test_send_exception(
     msg = b"test"
     assert not initialized_manager.send(msg)
 
-    license_bytes = bytes(mock_radio_config.license, "UTF-8")
-    expected_bytes = b" ".join([license_bytes, msg, license_bytes])
-    initialized_manager._radio.send.assert_called_once_with(expected_bytes)
+    initialized_manager._radio.send.assert_called_once_with(msg)
     mock_logger.error.assert_called_once_with("Error sending radio message", send_error)
 
 

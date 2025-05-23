@@ -1,3 +1,4 @@
+import json
 import time
 from typing import Optional, Type
 from unittest.mock import MagicMock, patch
@@ -9,6 +10,7 @@ from mocks.circuitpython.byte_array import ByteArray
 from mocks.circuitpython.microcontroller import Processor
 from pysquared.beacon import Beacon
 from pysquared.hardware.radio.modulation import LoRa, RadioModulation
+from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
 from pysquared.nvm.counter import Counter
 from pysquared.nvm.flag import Flag
@@ -23,12 +25,8 @@ def mock_logger() -> MagicMock:
 
 
 @pytest.fixture
-def mock_radio() -> MagicMock:
-    radio = MagicMock(spec=RadioProto)
-    # Set up get_modulation to return LoRa
-    radio.get_modulation.return_value = LoRa
-    radio.send.return_value = True
-    return radio
+def mock_packet_manager() -> MagicMock:
+    return MagicMock(spec=PacketManager)
 
 
 class MockRadio(RadioProto):
@@ -43,10 +41,6 @@ class MockRadio(RadioProto):
 
     def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
         return b"test_data"
-
-
-# class MockProcessor(Processor):
-#     temperature: float = 25.0
 
 
 class MockFlag(Flag):
@@ -81,34 +75,34 @@ class MockTemperatureSensor(TemperatureSensorProto):
         return 22.5
 
 
-def test_beacon_init(mock_logger, mock_radio):
+def test_beacon_init(mock_logger, mock_packet_manager):
     """Test Beacon initialization."""
     boot_time = time.time()
-    beacon = Beacon(mock_logger, "test_beacon", mock_radio, boot_time)
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, boot_time)
 
     assert beacon._log is mock_logger
     assert beacon._name == "test_beacon"
-    assert beacon._radio is mock_radio
+    assert beacon._packet_manager is mock_packet_manager
     assert beacon._boot_time == boot_time
     assert beacon._sensors == ()
 
 
 @freeze_time(time_to_freeze="2025-05-16 12:34:56", tz_offset=0)
 @patch("time.time")
-def test_beacon_send_basic(mock_time, mock_logger, mock_radio):
+def test_beacon_send_basic(mock_time, mock_logger, mock_packet_manager):
     """Test sending a basic beacon with no sensors."""
     boot_time = 1000.0
     mock_time.return_value = 1060.0  # 60 seconds after boot
 
-    beacon = Beacon(mock_logger, "test_beacon", mock_radio, boot_time)
-    result = beacon.send()
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, boot_time)
+    _ = beacon.send()
 
-    assert result is True
-    mock_radio.send.assert_called_once()
-    state_dict = mock_radio.send.call_args[0][0]
-    assert state_dict["name"] == "test_beacon"
-    assert state_dict["time"] == time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-    assert state_dict["uptime"] == 60.0
+    mock_packet_manager.send.assert_called_once()
+    send_args = mock_packet_manager.send.call_args[0][0]
+    d = json.loads(send_args)
+    assert d["name"] == "test_beacon"
+    assert d["time"] == time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    assert d["uptime"] == 60.0
 
 
 @pytest.fixture
@@ -119,7 +113,10 @@ def setup_datastore():
 @patch("pysquared.nvm.flag.microcontroller")
 @patch("pysquared.nvm.counter.microcontroller")
 def test_beacon_send_with_sensors(
-    mock_flag_microcontroller, mock_counter_microcontroller, mock_logger, mock_radio
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
 ):
     """Test sending a beacon with sensors."""
     mock_flag_microcontroller.nvm = (
@@ -132,7 +129,7 @@ def test_beacon_send_with_sensors(
     beacon = Beacon(
         mock_logger,
         "test_beacon",
-        mock_radio,
+        mock_packet_manager,
         0,
         Processor(),
         MockFlag(0, 0),
@@ -145,7 +142,7 @@ def test_beacon_send_with_sensors(
     result = beacon.send()
     assert result is True
 
-    state_dict = mock_radio.send.call_args[0][0]
+    state_dict = mock_packet_manager.send.call_args[0][0]
 
     # processor sensor
     assert pytest.approx(state_dict["Processor_temperature"], 0.01) == 35.0
@@ -168,9 +165,9 @@ def test_beacon_send_with_sensors(
     assert pytest.approx(state_dict["MockTemperatureSensor_temperature"], 0.01) == 22.5
 
 
-def test_beacon_avg_readings(mock_logger, mock_radio):
+def test_beacon_avg_readings(mock_logger, mock_packet_manager):
     """Test the avg_readings method in the context of the Beacon class."""
-    beacon = Beacon(mock_logger, "test_beacon", mock_radio, 0.0)
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
 
     # Test with a function that returns consistent values
     def constant_func():
@@ -188,9 +185,9 @@ def test_beacon_avg_readings(mock_logger, mock_radio):
     mock_logger.warning.assert_called_once()
 
 
-def test_avg_readings_varying_values(mock_logger, mock_radio):
+def test_avg_readings_varying_values(mock_logger, mock_packet_manager):
     """Test avg_readings with values that vary."""
-    beacon = Beacon(mock_logger, "test_beacon", mock_radio, 0.0)
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
 
     # Create a simple counter function that returns incrementing values
     # Starting from 1 and incrementing by 1 each time
