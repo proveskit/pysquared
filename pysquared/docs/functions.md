@@ -1,0 +1,3 @@
+# functions Module
+
+::: pysquared.functions

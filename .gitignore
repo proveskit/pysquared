@@ -17,3 +17,6 @@ lib/rv3028*
 lib/adafruit*
 lib/asyncio*
 lib/neopixel.py
+
+# documentation
+site/

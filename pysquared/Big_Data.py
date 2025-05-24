@@ -1,20 +1,47 @@
 import gc
-
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
-
 from .logger import Logger
 
 try:
     from typing import Union
-
 except Exception:
     pass
 
+'''
+Big_Data Module
+===============
+
+This module provides functionality for managing and interacting with satellite faces,
+including initializing sensors and performing tests on all faces.
+'''
 
 class Face:
+    '''
+    Represents a single satellite face with associated sensors.
+
+    Attributes:
+        tca (adafruit_tca9548a.TCA9548A): The I2C multiplexer instance.
+        address (int): The I2C address of the face.
+        position (str): The position of the face (e.g., "x+", "y-", etc.).
+        logger (Logger): Logger instance for logging errors and events.
+        senlist (tuple): A tuple of sensor types available on the face.
+        sensors (dict): A dictionary tracking the initialization state of sensors.
+        mcp (adafruit_mcp9808.MCP9808): Temperature sensor instance (if available).
+        veml (adafruit_veml7700.VEML7700): Light sensor instance (if available).
+        drv (adafruit_drv2605.DRV2605): Motor driver instance (if available).
+    '''
     def __init__(
         self, add: int, pos: str, tca: adafruit_tca9548a.TCA9548A, logger: Logger
     ) -> None:
+        '''
+        Initializes a Face instance.
+
+        Args:
+            add (int): The I2C address of the face.
+            pos (str): The position of the face (e.g., "x+", "y-", etc.).
+            tca (adafruit_tca9548a.TCA9548A): The I2C multiplexer instance.
+            logger (Logger): Logger instance for logging errors and events.
+        '''
         self.tca: adafruit_tca9548a.TCA9548A = tca
         self.address: int = add
         self.position: str = pos
@@ -41,6 +68,13 @@ class Face:
         self.drv = None
 
     def sensor_init(self, senlist, address) -> None:
+        '''
+        Initializes the sensors for the face.
+
+        Args:
+            senlist (tuple): A tuple of sensor types to initialize.
+            address (int): The I2C address of the face.
+        '''
         gc.collect()  # Force garbage collection before initializing sensors
 
         if "MCP" in senlist:
@@ -80,7 +114,22 @@ class Face:
 
 
 class AllFaces:
+    '''
+    Represents all satellite faces and provides functionality to test them.
+
+    Attributes:
+        tca (adafruit_tca9548a.TCA9548A): The I2C multiplexer instance.
+        faces (list[Face]): A list of Face instances.
+        logger (Logger): Logger instance for logging errors and events.
+    '''
     def __init__(self, tca: adafruit_tca9548a.TCA9548A, logger: Logger) -> None:
+        '''
+        Initializes an AllFaces instance.
+
+        Args:
+            tca (adafruit_tca9548a.TCA9548A): The I2C multiplexer instance.
+            logger (Logger): Logger instance for logging errors and events.
+        '''
         self.tca: adafruit_tca9548a.TCA9548A = tca
         self.faces: list[Face] = []
         self.logger: Logger = logger
@@ -100,6 +149,13 @@ class AllFaces:
             gc.collect()  # Clean up after each face initialization
 
     def face_test_all(self) -> list[list[float]]:
+        '''
+        Tests all faces and retrieves sensor data.
+
+        Returns:
+            list[list[float]]: A list of results for each face, where each result
+            contains temperature and light data (or None if unavailable).
+        '''
         results: list[list[float]] = []
         for face in self.faces:
             if face:
