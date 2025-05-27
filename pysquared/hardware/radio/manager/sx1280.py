@@ -2,9 +2,8 @@ from busio import SPI
 from digitalio import DigitalInOut
 from proves_sx1280.sx1280 import SX1280
 
-from ....config.radio import RadioConfig
+from ....config.config import Config
 from ....logger import Logger
-from ....nvm.flag import Flag
 from ..modulation import LoRa, RadioModulation
 from .base import BaseRadioManager
 
@@ -23,8 +22,7 @@ class SX1280Manager(BaseRadioManager):
     def __init__(
         self,
         logger: Logger,
-        radio_config: RadioConfig,
-        use_fsk: Flag,
+        config: Config,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
@@ -57,8 +55,7 @@ class SX1280Manager(BaseRadioManager):
 
         super().__init__(
             logger=logger,
-            radio_config=radio_config,
-            use_fsk=use_fsk,
+            config=config,
         )
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:

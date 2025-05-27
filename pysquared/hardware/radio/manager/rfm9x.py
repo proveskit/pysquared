@@ -3,11 +3,11 @@ from adafruit_rfm.rfm9xfsk import RFM9xFSK
 from busio import SPI
 from digitalio import DigitalInOut
 
+from ....config.config import Config
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
-from ....nvm.flag import Flag
 from ....protos.temperature_sensor import TemperatureSensorProto
-from ..modulation import FSK, LoRa, RadioModulation
+from ..modulation import FSK, RadioModulation
 from .base import BaseRadioManager
 
 # Type hinting only
@@ -31,8 +31,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     def __init__(
         self,
         logger: Logger,
-        radio_config: RadioConfig,
-        use_fsk: Flag,
+        config: Config,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
@@ -54,8 +53,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         super().__init__(
             logger=logger,
-            radio_config=radio_config,
-            use_fsk=use_fsk,
+            config=config,
         )
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
@@ -124,10 +122,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             if self._radio.spreading_factor > 9:  # type: ignore
                 self._radio.preamble_length = self._radio.spreading_factor  # type: ignore
                 self._radio.low_datarate_optimize = 1  # type: ignore
-
-    def get_modulation(self) -> Type[FSK] | Type[LoRa]:
-        """Get the modulation mode from the initialized RFM9x radio."""
-        return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
     def get_temperature(self) -> float:
         """Get the temperature reading from the radio sensor."""

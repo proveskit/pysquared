@@ -5,10 +5,10 @@ from digitalio import DigitalInOut
 from proves_sx126._sx126x import ERR_NONE
 from proves_sx126.sx1262 import SX1262
 
-from ....config.radio import FSKConfig, LORAConfig, RadioConfig
+from ....config.config import Config
+from ....config.radio import FSKConfig, LORAConfig
 from ....logger import Logger
-from ....nvm.flag import Flag
-from ..modulation import FSK, LoRa, RadioModulation
+from ..modulation import FSK, RadioModulation
 from .base import BaseRadioManager
 
 # Type hinting only
@@ -26,8 +26,7 @@ class SX126xManager(BaseRadioManager):
     def __init__(
         self,
         logger: Logger,
-        radio_config: RadioConfig,
-        use_fsk: Flag,
+        config: Config,
         spi: SPI,
         chip_select: DigitalInOut,
         irq: DigitalInOut,
@@ -55,8 +54,7 @@ class SX126xManager(BaseRadioManager):
 
         super().__init__(
             logger=logger,
-            radio_config=radio_config,
-            use_fsk=use_fsk,
+            config=config,
         )
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
@@ -77,10 +75,6 @@ class SX126xManager(BaseRadioManager):
             self._log.warning("Radio send failed", error_code=err)
             return False
         return True
-
-    def get_modulation(self) -> Type[RadioModulation]:
-        """Get the modulation mode from the initialized SX126x radio."""
-        return FSK if self._radio.radio_modulation == "FSK" else LoRa
 
     def _configure_fsk(self, radio: SX1262, fsk_config: FSKConfig) -> None:
         """Configure the radio for FSK mode."""

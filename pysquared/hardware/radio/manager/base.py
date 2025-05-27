@@ -1,6 +1,6 @@
+from ....config.config import Config
 from ....config.radio import RadioConfig
 from ....logger import Logger
-from ....nvm.flag import Flag
 from ....protos.radio import RadioProto
 from ...decorators import with_retries
 from ...exception import HardwareInitializationError
@@ -20,8 +20,7 @@ class BaseRadioManager(RadioProto):
     def __init__(
         self,
         logger: Logger,
-        radio_config: RadioConfig,
-        use_fsk: Flag,
+        config: Config,
         **kwargs: object,
     ) -> None:
         """Initialize the base manager class.
@@ -34,11 +33,11 @@ class BaseRadioManager(RadioProto):
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
         """
         self._log = logger
-        self._radio_config = radio_config
-        self._use_fsk = use_fsk
+        self._config = config
+        self._radio_config = self._config.radio
         self._receive_timeout: int = 10  # Default receive timeout in seconds
 
-        initial_modulation = FSK if self._use_fsk.get() else LoRa
+        initial_modulation = FSK if self._radio_config.modulation == "FSK" else LoRa
         self._log.debug(
             "Initializing radio",
             radio_type=self.__class__.__name__,
@@ -101,14 +100,23 @@ class BaseRadioManager(RadioProto):
 
     def set_modulation(self, modulation: Type[RadioModulation]) -> None:
         """Request a change in the radio modulation mode (takes effect on next init)."""
-        current_modulation = self.get_modulation()
+        current_modulation = self._radio_config.modulation
         if current_modulation != modulation:
-            self._use_fsk.toggle(modulation == FSK)
+            self._config.update_config(
+                "modulation", "FSK" if modulation == FSK else "LoRa", False
+            )
             self._log.info(
-                "Radio modulation change requested for next init",
+                "Radio modulation change saved to config, will apply on next init.",
                 requested=modulation,
                 current=current_modulation,
             )
+
+    def get_modulation(self) -> Type[RadioModulation]:
+        """Get the modulation mode from the initialized radio hardware.
+
+        :return: The current modulation mode of the hardware.
+        """
+        return FSK if self._radio_config == "FSK" else LoRa
 
     def modify_config(self, radio_config: RadioConfig) -> None:
         """Modify the radio configuration. This will apply the new configuration and reinitialize the radio.
@@ -143,16 +151,5 @@ class BaseRadioManager(RadioProto):
         :return: True if sending was successful, False otherwise.
         :raises NotImplementedError: If not implemented by subclass.
         :raises Exception: If sending fails unexpectedly.
-        """
-        raise NotImplementedError
-
-    def get_modulation(self) -> Type[RadioModulation]:
-        """Get the modulation mode from the initialized radio hardware.
-
-        Must be implemented by subclasses.
-
-        :return: The current modulation mode of the hardware.
-        :raises NotImplementedError: If not implemented by subclass.
-        :raises Exception: If querying the hardware fails.
         """
         raise NotImplementedError
