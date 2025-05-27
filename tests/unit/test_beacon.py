@@ -139,30 +139,31 @@ def test_beacon_send_with_sensors(
         MockTemperatureSensor(),
     )
 
-    result = beacon.send()
-    assert result is True
+    _ = beacon.send()
 
-    state_dict = mock_packet_manager.send.call_args[0][0]
+    mock_packet_manager.send.assert_called_once()
+    send_args = mock_packet_manager.send.call_args[0][0]
+    d = json.loads(send_args)
 
     # processor sensor
-    assert pytest.approx(state_dict["Processor_temperature"], 0.01) == 35.0
+    assert pytest.approx(d["Processor_temperature"], 0.01) == 35.0
 
     # flag
-    assert state_dict["test_flag"] is True
+    assert d["test_flag"] is True
 
     # counter
-    assert state_dict["test_counter"] == 42
+    assert d["test_counter"] == 42
 
     # radio
-    assert state_dict["MockRadio_modulation"] == "LoRa"
+    assert d["MockRadio_modulation"] == "LoRa"
 
     # power monitor sensor
-    assert pytest.approx(state_dict["MockPowerMonitor_current_avg"], 0.01) == 0.5
-    assert pytest.approx(state_dict["MockPowerMonitor_bus_voltage_avg"], 0.01) == 3.3
-    assert pytest.approx(state_dict["MockPowerMonitor_shunt_voltage_avg"], 0.01) == 0.1
+    assert pytest.approx(d["MockPowerMonitor_current_avg"], 0.01) == 0.5
+    assert pytest.approx(d["MockPowerMonitor_bus_voltage_avg"], 0.01) == 3.3
+    assert pytest.approx(d["MockPowerMonitor_shunt_voltage_avg"], 0.01) == 0.1
 
     # temperature sensor
-    assert pytest.approx(state_dict["MockTemperatureSensor_temperature"], 0.01) == 22.5
+    assert pytest.approx(d["MockTemperatureSensor_temperature"], 0.01) == 22.5
 
 
 def test_beacon_avg_readings(mock_logger, mock_packet_manager):
