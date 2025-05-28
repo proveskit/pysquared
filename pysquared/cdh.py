@@ -14,11 +14,27 @@ try:
 except Exception:
     pass
 
+'''
+cdh Module
+==========
+
+This module provides the CommandDataHandler class for managing and processing
+commands received by the satellite, including command parsing, execution,
+and radio communication handling.
+'''
 
 class CommandDataHandler:
-    """
-    Constructor
-    """
+    '''
+    Handles command parsing, validation, and execution for the satellite.
+
+    Attributes:
+        logger (Logger): Logger instance for logging events and errors.
+        _commands (dict[bytes, str]): Mapping of command codes to handler method names.
+        _joke_reply (list[str]): List of joke replies for the joke_reply command.
+        _super_secret_code (bytes): Passcode required for command execution.
+        _repeat_code (bytes): Passcode for repeating the last message.
+        radio_manager (RFM9xManager): Radio manager for communication.
+    '''
 
     def __init__(
         self,
@@ -26,6 +42,14 @@ class CommandDataHandler:
         logger: Logger,
         radio_manager: RFM9xManager,
     ) -> None:
+        '''
+        Initializes a CommandDataHandler instance.
+
+        Args:
+            config (Config): Configuration object with command settings.
+            logger (Logger): Logger instance for logging events and errors.
+            radio_manager (RFM9xManager): Radio manager for communication.
+        '''
         self.logger: Logger = logger
         self._commands: dict[bytes, str] = {
             b"\x8eb": "noop",
@@ -48,6 +72,13 @@ class CommandDataHandler:
 
     ############### hot start helper ###############
     def hotstart_handler(self, cubesat: Satellite, msg: Any) -> None:
+        '''
+        Handles hot start messages, sending ACK and processing the message if addressed to this node.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            msg (Any): The received message.
+        '''
         # check that message is for me
         if msg[0] == self.radio_manager.radio.node:
             # TODO check for optional radio config
@@ -66,6 +97,13 @@ class CommandDataHandler:
 
     ############### message handler ###############
     def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
+        '''
+        Parses and handles incoming messages, executing commands if valid.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            msg (bytearray): The received message.
+        '''
         multi_msg: bool = False
         if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
             if bytes(msg[4:8]) == self._super_secret_code:
@@ -131,9 +169,18 @@ class CommandDataHandler:
 
     ########### commands without arguments ###########
     def noop(self) -> None:
+        '''
+        No-operation command. Logs a no-op event.
+        '''
         self.logger.info("no-op")
 
     def hreset(self, cubesat: Satellite) -> None:
+        '''
+        Handles hardware reset command, sending a reset message and triggering a reset.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+        '''
         self.logger.info("Resetting")
         try:
             self.radio_manager.radio.send(data=b"resetting")
@@ -143,9 +190,18 @@ class CommandDataHandler:
             pass
 
     def fsk(self) -> None:
+        '''
+        Sets the radio modulation to FSK.
+        '''
         self.radio_manager.set_modulation(RFM9xModulation.FSK)
 
     def joke_reply(self, cubesat: Satellite) -> None:
+        '''
+        Sends a random joke reply over the radio.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+        '''
         joke: str = random.choice(self._joke_reply)
         self.logger.info("Sending joke reply", joke=joke)
         self.radio_manager.radio.send(joke)
@@ -153,6 +209,13 @@ class CommandDataHandler:
     ########### commands with arguments ###########
 
     def shutdown(self, cubesat: Satellite, args: bytes) -> None:
+        '''
+        Handles the shutdown command, requiring a secondary pass-code and entering deep sleep.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            args (bytes): Arguments for the shutdown command.
+        '''
         # make shutdown require yet another pass-code
         if args != b"\x0b\xfdI\xec":
             return
@@ -186,10 +249,24 @@ class CommandDataHandler:
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat: Satellite, args: str) -> None:
+        '''
+        Handles the query command, evaluating and sending the result.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            args (str): Arguments to be evaluated and sent.
+        '''
         self.logger.info("Sending query with args", args=args)
 
         self.radio_manager.radio.send(data=str(eval(args)))
 
     def exec_cmd(self, cubesat: Satellite, args: str) -> None:
+        '''
+        Executes a command provided in the arguments.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            args (str): Command to execute.
+        '''
         self.logger.info("Executing command", args=args)
         exec(args)

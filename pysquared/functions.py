@@ -1,7 +1,12 @@
 """
+functions Module
+================
+
 This is the class that contains all of the functions for our CubeSat.
 We pass the cubesat object to it for the definitions and then it executes
-our will.
+our will. It manages radio communication, state of health, face data,
+detumbling, and other satellite operations.
+
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
@@ -24,6 +29,26 @@ except Exception:
 
 
 class functions:
+    '''
+    Provides operational functions for the CubeSat, including radio communication,
+    state of health reporting, face data management, and detumbling.
+
+    Attributes:
+        cubesat (Satellite): The main satellite object.
+        logger (Logger): Logger instance for logging events and errors.
+        config (Config): Configuration object.
+        sleep_helper (SleepHelper): Helper for safe sleep operations.
+        radio_manager (RFM9xManager): Radio manager for communication.
+        packet_manager (PacketManager): Handles packet creation and management.
+        packet_sender (PacketSender): Handles sending packets with retries.
+        cubesat_name (str): Name of the CubeSat.
+        facestring (list): Stores face data results.
+        jokes (list[str]): List of jokes for transmission.
+        last_battery_temp (float): Last recorded battery temperature.
+        sleep_duration (int): Default sleep duration.
+        callsign (str): Radio callsign.
+        state_of_health_part1 (bool): Tracks which part of SOH to send.
+    '''
     def __init__(
         self,
         cubesat: Satellite,
@@ -32,6 +57,17 @@ class functions:
         sleep_helper: SleepHelper,
         radio_manager: RFM9xManager,
     ) -> None:
+        '''
+        Initializes the functions class with required subsystems.
+
+        Args:
+            cubesat (Satellite): The main satellite object.
+            logger (Logger): Logger instance for logging events and errors.
+            config (Config): Configuration object.
+            sleep_helper (SleepHelper): Helper for safe sleep operations.
+            radio_manager (RFM9xManager): Radio manager for communication.
+        '''
+        self
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.config: Config = config
@@ -59,6 +95,12 @@ class functions:
     """
 
     def listen_loiter(self) -> None:
+        '''
+        Listens for incoming messages for a set duration, then sleeps.
+
+        This function pets the watchdog, listens for 10 seconds, then sleeps for
+        the configured sleep duration, petting the watchdog before and after.
+        '''
         self.logger.debug("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
         self.radio_manager.radio.receive_timeout = 10
@@ -97,7 +139,7 @@ class functions:
         self.packet_sender.send_data(data)
 
     def beacon(self) -> None:
-        """Calls the RFM9x to send a beacon."""
+        """Calls the RFM9x to send a beacon message with CubeSat status and telemetry."""
 
         try:
             lora_beacon: str = (
@@ -120,9 +162,21 @@ class functions:
         self.radio_manager.beacon_radio_message(lora_beacon)
 
     def joke(self) -> None:
+        '''
+        Sends a random joke over the radio.
+        '''
         self.send(random.choice(self.jokes))
 
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
+        '''
+        Formats the hardware state dictionary into a string for transmission.
+
+        Args:
+            hardware (OrderedDict[str, bool]): Hardware state dictionary.
+
+        Returns:
+            str: Formatted state string.
+        '''
         to_return: str = ""
         for key, value in hardware.items():
             to_return = to_return + key + "="
@@ -137,6 +191,11 @@ class functions:
         return to_return
 
     def state_of_health(self) -> None:
+        '''
+        Collects and sends state of health (SOH) data over the radio.
+
+        Alternates between two parts: general telemetry and hardware state.
+        '''
         self.state_list: list = []
         # list of state information
         try:
@@ -186,6 +245,12 @@ class functions:
         )
 
     def listen(self) -> bool:
+        '''
+        Listens for incoming radio messages and passes them to the command handler.
+
+        Returns:
+            bool: True if a message was received and handled, False otherwise.
+        '''
         # need to instanciate cdh to feed it the config var
         # assigned from the Config object
         from pysquared.cdh import CommandDataHandler
@@ -216,6 +281,12 @@ class functions:
         return False
 
     def listen_joke(self) -> bool:
+        '''
+        Listens for a joke message and checks for a specific response.
+
+        Returns:
+            bool: True if the joke response was received, False otherwise.
+        '''
         try:
             self.logger.debug("Listening")
             self.radio_manager.radio.receive_timeout = 10
@@ -228,10 +299,17 @@ class functions:
 
     """
     Big_Data Face Functions
+
     change to remove fet values, move to pysquared
     """
 
     def all_face_data(self) -> list:
+        '''
+        Collects and returns data from all satellite faces.
+
+        Returns:
+            list: List of face data results.
+        '''
         # self.cubesat.all_faces_on()
         gc.collect()
         self.logger.debug(
@@ -272,6 +350,12 @@ class functions:
         tuple[float, float, float],
         tuple[float, float, float],
     ]:
+        '''
+        Retrieves IMU data (accelerometer, gyroscope, magnetometer).
+
+        Returns:
+            List[tuple]: List of IMU sensor data tuples.
+        '''
         try:
             data: List[
                 tuple[float, float, float],
@@ -287,6 +371,9 @@ class functions:
         return data
 
     def OTA(self) -> None:
+        '''
+        Placeholder for over-the-air update functionality.
+        '''
         # resets file system to whatever new file is received
         self.logger.debug("Implement an OTA Function Here")
         pass
@@ -298,6 +385,12 @@ class functions:
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
     def detumble(self, dur: int = 7) -> None:
+        '''
+        Performs detumbling using magnetorquers based on IMU data.
+
+        Args:
+            dur (int): Duration for actuation (default 7).
+        '''
         self.logger.debug("Detumbling")
         self.cubesat.rgb = (255, 255, 255)
 
@@ -314,6 +407,13 @@ class functions:
             self.logger.error("Error setting motor driver sequences", e)
 
         def actuate(dipole: list[float], duration) -> None:
+            '''
+            Actuates the magnetorquers based on the calculated dipole.
+
+            Args:
+                dipole (list[float]): Dipole moment vector.
+                duration (int): Duration for actuation.
+            '''
             # TODO figure out if there is a way to reverse direction of sequence
             if abs(dipole[0]) > 1:
                 a.Face2.drive = 52
@@ -326,6 +426,9 @@ class functions:
                 a.drvz_actuate(duration)
 
         def do_detumble() -> None:
+            '''
+            Runs the detumble control loop, actuating as needed.
+            '''
             try:
                 import pysquared.detumble as detumble
 
