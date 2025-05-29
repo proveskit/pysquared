@@ -120,7 +120,7 @@ class CommandDataHandler:
         self._radio.set_modulation(FSK)
 
     def joke_reply(self) -> None:
-        joke: str = random.choice(self._joke_reply)
+        joke: bytes = random.choice(self._joke_reply).encode("utf-8")
         self._log.info("Sending joke reply", joke=joke)
         self._radio.send(joke)
 
@@ -160,7 +160,7 @@ class CommandDataHandler:
     def query(self, args: str) -> None:
         self._log.info("Sending query with args", args=args)
 
-        self._radio.send(data=str(eval(args)))
+        self._radio.send(str(eval(args)).encode("utf-8"))
 
     def exec_cmd(self, args: str) -> None:
         self._log.info("Executing command", args=args)

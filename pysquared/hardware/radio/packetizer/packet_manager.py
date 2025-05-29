@@ -3,6 +3,11 @@ import time
 from ....logger import Logger
 from ....protos.radio import RadioProto
 
+try:
+    from typing import Optional
+except ImportError:
+    pass
+
 
 class PacketManager:
     def __init__(
@@ -13,32 +18,35 @@ class PacketManager:
         send_delay: float = 0.2,
     ) -> None:
         """Initialize the packet manager with maximum packet size"""
-        self.logger: Logger = logger
-        self.radio: RadioProto = radio
-        self.send_delay: float = send_delay
-        self.license: str = license
-        self.header_size: int = 4  # 2 bytes for sequence number, 2 for total packets
-        self.payload_size: int = radio.get_max_packet_size() - self.header_size
+        self._logger: Logger = logger
+        self._radio: RadioProto = radio
+        self._send_delay: float = send_delay
+        self._license: str = license
+        self._header_size: int = 4  # 2 bytes for sequence number, 2 for total packets
+        self._payload_size: int = radio.get_max_packet_size() - self._header_size
 
     def send(self, data: bytes) -> bool:
         """Send data"""
-        licensed_data: bytes = self.license.encode() + data
-        packets: list[bytes] = self._pack_data(licensed_data)
+        if self._license == "":
+            self._logger.warning("License is required to send data")
+            return False
+
+        packets: list[bytes] = self._pack_data(data)
         total_packets: int = len(packets)
-        self.logger.info("Sending packets...", num_packets=total_packets)
+        self._logger.info("Sending packets...", num_packets=total_packets)
 
         for i, packet in enumerate(packets):
             if i % 10 == 0:
-                self.logger.info(
+                self._logger.info(
                     "Making progress sending packets",
                     current_packet=i,
                     num_packets=total_packets,
                 )
 
-            self.radio.send(packet)
-            time.sleep(self.send_delay)
+            self._radio.send(packet)
+            time.sleep(self._send_delay)
 
-        self.logger.info(
+        self._logger.info(
             "Successfully sent all the packets!", num_packets=total_packets
         )
         return True
@@ -52,8 +60,8 @@ class PacketManager:
         - remaining bytes: payload
         """
         # Calculate number of packets needed
-        total_packets: int = (len(data) + self.payload_size - 1) // self.payload_size
-        self.logger.info(
+        total_packets: int = (len(data) + self._payload_size - 1) // self._payload_size
+        self._logger.info(
             "Packing data into packets",
             num_packets=total_packets,
             data_length=len(data),
@@ -65,16 +73,16 @@ class PacketManager:
             header: bytes = sequence_number.to_bytes(2, "big") + total_packets.to_bytes(
                 2, "big"
             )
-            self.logger.info("Created header", header=[hex(b) for b in header])
+            self._logger.info("Created header", header=[hex(b) for b in header])
 
             # Get payload slice for this packet
-            start: int = sequence_number * self.payload_size
-            end: int = start + self.payload_size
+            start: int = sequence_number * self._payload_size
+            end: int = start + self._payload_size
             payload: bytes = data[start:end]
 
             # Combine header and payload
             packet: bytes = header + payload
-            self.logger.info(
+            self._logger.info(
                 "Combining the header and payload to form a Packet",
                 packet=sequence_number,
                 packet_length=len(packet),
@@ -84,54 +92,78 @@ class PacketManager:
 
         return packets
 
-    # I don't think this will work because it doesn't gather packet, it only listens for a small time
-    # needs to expect a total number of packets and wait for them
-    # def receive(self) -> bytes | None:
-    #     """Receive data and reassemble it from packets"""
-    #     self.logger.info("Receiving data...")
-    #     packets: list[bytes] = []
+    def receive(self, timeout: Optional[int] = None) -> bytes | None:
+        """Receive data from the radio.
 
-    #     attempts: int = 0
-    #     while attempts < 5:
-    #         packet: bytes | None = self.radio.receive()
-    #         if packet is None:
-    #             break
-    #         packets.append(packet)
+        :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
+        :return: The received data as bytes, or None if no data was received.
+        """
+        _timeout = timeout if timeout is not None else 10
 
-    #     data: bytes | None = self._unpack_data(packets)
-    #     if data is None:
-    #         self.logger.warning("Failed to unpack data from received packets")
-    #         return None
+        self._logger.info("Listening for data...", timeout=_timeout)
 
-    #     self.logger.info("Successfully unpacked data", data_length=len(data))
-    #     return data
+        start_time = time.time()
+        received_packets = []
 
-    # def _unpack_data(self, packets: list[bytes]) -> bytes | None:
-    #     """
-    #     Takes a list of packets and reassembles the original data
-    #     Returns None if packets are missing or corrupted
-    #     """
-    #     if not packets:
-    #         return None
+        # Keep receiving until timeout or we have all packets
+        while True:
+            # Exit recieve() if timeout is reached
+            if time.time() - start_time < _timeout:
+                self._logger.warning(
+                    "Timeout: Receive operation took longer than expected",
+                    elapsed=time.time() - start_time,
+                )
+                return
 
-    #     # Sort packets by sequence number
-    #     try:
-    #         sorted_packets: list = sorted(
-    #             packets, key=lambda p: int.from_bytes(p[:2], "big")
-    #         )
-    #     except Exception:
-    #         return None
+            # Try to receive a packet
+            packet = self._radio.receive()
 
-    #     # Verify all packets are present
-    #     total_packets: int = int.from_bytes(sorted_packets[0][2:4], "big")
-    #     if len(sorted_packets) != total_packets:
-    #         return None
+            # If no packet received, continue waiting
+            if packet is None:
+                continue
 
-    #     # Verify sequence numbers are consecutive
-    #     for i, packet in enumerate(sorted_packets):
-    #         if int.from_bytes(packet[:2], "big") != i:
-    #             return None
+            # Log the first received packet
+            if not received_packets:
+                self._logger.info("Received first packet", packet_length=len(packet))
 
-    #     # Combine payloads
-    #     data: bytes = b"".join(packet[self.header_size :] for packet in sorted_packets)
-    #     return data
+            # Process received packet
+            received_packets.append(packet)
+
+            # Check if we have all packets
+            _, total_packets = self._get_header(packet)
+            if total_packets == len(received_packets):
+                self._logger.info("Received all expected packets", count=total_packets)
+                break
+
+            # Log progress periodically
+            if len(received_packets) % 10 == 0:
+                self._logger.info(
+                    "Receive progress",
+                    received=len(received_packets),
+                    expected=total_packets,
+                )
+
+        # Attempt to unpack the data
+        return self._unpack_data(received_packets)
+
+    def _unpack_data(self, packets: list[bytes]) -> bytes:
+        """
+        Takes a list of packets and reassembles the original data
+        Returns None if packets are missing or corrupted
+        """
+        sorted_packets: list = sorted(
+            packets, key=lambda p: int.from_bytes(p[:2], "big")
+        )
+
+        return b"".join(self._get_payload(packet) for packet in sorted_packets)
+
+    def _get_header(self, packet: bytes) -> tuple[int, int]:
+        """Returns the sequence number and total packets stored in the header."""
+        return (
+            int.from_bytes(packet[0:2], "big"),  # sequence number
+            int.from_bytes(packet[2:4], "big"),  # total packets
+        )
+
+    def _get_payload(self, packet: bytes) -> bytes:
+        """Returns the payload of the packet."""
+        return packet[self._header_size :]

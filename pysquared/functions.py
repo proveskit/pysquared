@@ -11,10 +11,8 @@ import microcontroller
 
 from .cdh import CommandDataHandler
 from .config.config import Config
+from .hardware.radio.packetizer.packet_manager import PacketManager
 from .logger import Logger
-from .packet_manager import PacketManager
-from .packet_sender import PacketSender
-from .protos.radio import RadioProto
 from .sleep_helper import SleepHelper
 from .watchdog import Watchdog
 
@@ -25,23 +23,17 @@ class functions:
         logger: Logger,
         config: Config,
         sleep_helper: SleepHelper,
-        radio: RadioProto,
+        packet_manager: PacketManager,
         watchdog: Watchdog,
         cdh: CommandDataHandler,
     ) -> None:
         self._log: Logger = logger
         self.sleep_helper = sleep_helper
-        self.radio: RadioProto = radio
+        self._packet_manager: PacketManager = packet_manager
         self.watchdog: Watchdog = watchdog
         self.cdh: CommandDataHandler = cdh
 
         self._log.info("Initializing Functionalities")
-        self.packet_manager: PacketManager = PacketManager(
-            logger=self._log, max_packet_size=128
-        )
-        self.packet_sender: PacketSender = PacketSender(
-            self._log, radio, self.packet_manager, max_retries=3
-        )
 
         self.jokes: list[str] = config.jokes
         self.sleep_duration: int = config.sleep_duration
@@ -69,22 +61,25 @@ class functions:
         self.watchdog.pet()
 
     def joke(self) -> None:
-        self.radio.send(random.choice(self.jokes))
+        self._packet_manager.send(random.choice(self.jokes).encode("utf-8"))
 
     def listen(self) -> bool:
         # This just passes the message through. Maybe add more functionality later.
         try:
             self._log.debug("Listening")
-            received: bytes | None = self.radio.receive()
+            message: bytes | None = self._packet_manager.receive()
         except Exception as e:
             self._log.error("An Error has occured while listening: ", e)
-            received = None
+            return False
+
+        if message is None:
+            self._log.debug("No message received")
+            return False
 
         try:
-            if received is not None:
-                self._log.debug("Received Packet", packet=received)
-                self.cdh.message_handler(received)
-                return True
+            self._log.debug("Received message", received=message)
+            self.cdh.message_handler(message)
+            return True
         except Exception as e:
             self._log.error("An Error has occured while handling a command: ", e)
 

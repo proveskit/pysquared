@@ -25,12 +25,12 @@ def test_packet_manager_init(mock_logger, mock_radio):
 
     packet_manager = PacketManager(mock_logger, mock_radio, license_str, send_delay=0.5)
 
-    assert packet_manager.logger is mock_logger
-    assert packet_manager.radio is mock_radio
-    assert packet_manager.license == license_str
-    assert packet_manager.send_delay == 0.5
-    assert packet_manager.header_size == 4
-    assert packet_manager.payload_size == 96  # 100 - 4 header bytes
+    assert packet_manager._logger is mock_logger
+    assert packet_manager._radio is mock_radio
+    assert packet_manager._license == license_str
+    assert packet_manager._send_delay == 0.5
+    assert packet_manager._header_size == 4
+    assert packet_manager._payload_size == 96  # 100 - 4 header bytes
 
 
 def test_pack_data_single_packet(mock_logger, mock_radio):
@@ -45,7 +45,7 @@ def test_pack_data_single_packet(mock_logger, mock_radio):
 
     # Check packet structure
     packet = packets[0]
-    assert len(packet) == len(test_data) + packet_manager.header_size
+    assert len(packet) == len(test_data) + packet_manager._header_size
 
     # Check header
     sequence_number = int.from_bytes(packet[0:2], "big")
@@ -85,7 +85,7 @@ def test_pack_data_multiple_packets(mock_logger, mock_radio):
 
 
 @patch("time.sleep")
-def test_send_method_success(mock_sleep, mock_logger, mock_radio):
+def test_send_success(mock_sleep, mock_logger, mock_radio):
     """Test successful execution of send method."""
     license_str = "TEST"
 
@@ -96,12 +96,11 @@ def test_send_method_success(mock_sleep, mock_logger, mock_radio):
     _ = packet_manager.send(test_data)
 
     # The send method should prepend the license to the data
-    expected_data = license_str.encode() + test_data
 
     # Calculate number of packets that would be created
     total_packets = (
-        len(expected_data) + packet_manager.payload_size - 1
-    ) // packet_manager.payload_size
+        len(test_data) + packet_manager._payload_size - 1
+    ) // packet_manager._payload_size
 
     # Verify radio.send was called for each packet
     assert mock_radio.send.call_count == total_packets
@@ -115,6 +114,20 @@ def test_send_method_success(mock_sleep, mock_logger, mock_radio):
     mock_logger.info.assert_any_call(
         "Successfully sent all the packets!", num_packets=total_packets
     )
+
+
+@patch("time.sleep")
+def test_send_unlicensed(mock_sleep, mock_logger, mock_radio):
+    """Test unlicensed execution of send method."""
+    license_str = ""
+
+    packet_manager = PacketManager(mock_logger, mock_radio, license_str, send_delay=0.1)
+
+    test_data = b"hello world"
+    _ = packet_manager.send(test_data)
+
+    # Verify log messages
+    mock_logger.warning.assert_any_call("License is required to send data")
 
 
 @patch("time.sleep")
@@ -132,10 +145,9 @@ def test_send_large_data_with_progress_logs(mock_sleep, mock_logger, mock_radio)
     _ = packet_manager.send(test_data)
 
     # Calculate expected number of packets
-    licensed_data = license_str.encode() + test_data
     total_packets = (
-        len(licensed_data) + packet_manager.payload_size - 1
-    ) // packet_manager.payload_size
+        len(test_data) + packet_manager._payload_size - 1
+    ) // packet_manager._payload_size
 
     # Check progress logs were called at the right intervals
     progress_log_calls = [
