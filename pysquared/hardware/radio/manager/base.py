@@ -1,4 +1,3 @@
-from ....config.config import Config
 from ....config.radio import RadioConfig
 from ....logger import Logger
 from ....protos.radio import RadioProto
@@ -20,7 +19,7 @@ class BaseRadioManager(RadioProto):
     def __init__(
         self,
         logger: Logger,
-        config: Config,
+        radio_config: RadioConfig,
         **kwargs: object,
     ) -> None:
         """Initialize the base manager class.
@@ -33,8 +32,7 @@ class BaseRadioManager(RadioProto):
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
         """
         self._log = logger
-        self._config = config
-        self._radio_config = self._config.radio
+        self._radio_config = radio_config
         self._receive_timeout: int = 10  # Default receive timeout in seconds
 
         initial_modulation = FSK if self._radio_config.modulation == "FSK" else LoRa
@@ -97,19 +95,6 @@ class BaseRadioManager(RadioProto):
         :raises Exception: If receiving fails unexpectedly.
         """
         raise NotImplementedError
-
-    def set_modulation(self, modulation: Type[RadioModulation]) -> None:
-        """Request a change in the radio modulation mode (takes effect on next init)."""
-        current_modulation = self._radio_config.modulation
-        if current_modulation != modulation:
-            self._config.update_config(
-                "modulation", "FSK" if modulation == FSK else "LoRa", False
-            )
-            self._log.info(
-                "Radio modulation change saved to config, will apply on next init.",
-                requested=modulation,
-                current=current_modulation,
-            )
 
     def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized radio hardware.

@@ -3,7 +3,6 @@ from adafruit_rfm.rfm9xfsk import RFM9xFSK
 from busio import SPI
 from digitalio import DigitalInOut
 
-from ....config.config import Config
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
 from ....protos.temperature_sensor import TemperatureSensorProto
@@ -31,7 +30,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     def __init__(
         self,
         logger: Logger,
-        config: Config,
+        radio_config: RadioConfig,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
@@ -53,7 +52,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         super().__init__(
             logger=logger,
-            config=config,
+            radio_config=radio_config,
         )
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:

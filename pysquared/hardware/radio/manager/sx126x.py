@@ -5,8 +5,7 @@ from digitalio import DigitalInOut
 from proves_sx126._sx126x import ERR_NONE
 from proves_sx126.sx1262 import SX1262
 
-from ....config.config import Config
-from ....config.radio import FSKConfig, LORAConfig
+from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
 from ..modulation import FSK, RadioModulation
 from .base import BaseRadioManager
@@ -26,7 +25,7 @@ class SX126xManager(BaseRadioManager):
     def __init__(
         self,
         logger: Logger,
-        config: Config,
+        radio_config: RadioConfig,
         spi: SPI,
         chip_select: DigitalInOut,
         irq: DigitalInOut,
@@ -52,10 +51,7 @@ class SX126xManager(BaseRadioManager):
         self._reset = reset
         self._gpio = gpio
 
-        super().__init__(
-            logger=logger,
-            config=config,
-        )
+        super().__init__(logger=logger, radio_config=radio_config)
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific SX126x radio hardware."""
