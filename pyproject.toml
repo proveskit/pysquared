@@ -42,6 +42,7 @@ packages = [
     "pysquared.hardware.magnetometer.manager",
     "pysquared.hardware.radio",
     "pysquared.hardware.radio.manager",
+    "pysquared.hardware.radio.packetizer",
     "pysquared.hardware.power_monitor",
     "pysquared.hardware.power_monitor.manager",
     "pysquared.nvm",
