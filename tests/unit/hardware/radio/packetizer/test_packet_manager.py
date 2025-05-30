@@ -216,37 +216,31 @@ def test_receive_success(mock_time, mock_logger, mock_radio):
     mock_logger.info.assert_any_call("Received all expected packets", received=2)
 
 
-# @patch("time.time")
-# def test_receive_timeout(mock_time, mock_logger, mock_radio):
-#     """Test timeout during reception."""
-#     packet_manager = PacketManager(mock_logger, mock_radio, "")
+@patch("time.time")
+def test_receive_timeout(mock_time, mock_logger, mock_radio):
+    """Test timeout during reception."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
 
-#     # Set up mock time to simulate timeout
-#     # First call is start_time, subsequent calls check timeout
-#     # mock_time.side_effect = [10.0, 19.0]  # Second time is beyond the 10s timeout
-#     mock_time.side_effect = [10.0, 21.0]  # Simulate a timeout after 11 seconds
-#     # mock_time.side_effect = [10.0, 10.1, 10.2, 10.3, 10.4]
+    # Set up mock time to simulate timeout
+    # We need at least 3 values:
+    # 1. Initial start_time
+    # 2. Time check for timeout condition
+    # 3. Time for calculating elapsed time in the log message
+    mock_time.side_effect = [10.0, 21.0, 21.0]  # Simulate a timeout after 11 seconds
 
-#     # Set up mock time to return values that won't trigger timeout
-#     # time_values = [10.0]  # Start time
-#     # time_values.extend([10.0 + i * 0.1 for i in range(1, 30)])  # Incremental times under timeout
-#     # mock_time.side_effect = time_values
+    # Configure radio to return a packet (this doesn't matter for timeout test)
+    mock_radio.receive.return_value = None
 
-#     # mock_time.return_value = 10.0
+    # Call the receive method with default timeout (10 seconds)
+    result = packet_manager.receive()
 
-#     mock_radio.receive.return_value = (0).to_bytes(2, "big") + (2).to_bytes(2, "big") + b"first"  # Simulate no packets received
+    # Check that we got None due to timeout
+    assert result is None
 
-#     # Call the receive method with default timeout (10 seconds)
-#     result = packet_manager.receive()
-
-#     # Check that we got None due to timeout
-#     assert result is None
-
-#     # Verify warning was logged
-#     mock_logger.warning.assert_called_with(
-#         "Timeout: Receive operation took longer than expected",
-#         elapsed=11.0
-#     )
+    # Verify warning was logged
+    mock_logger.warning.assert_called_with(
+        "Timeout: Receive operation took longer than expected", elapsed=11.0
+    )
 
 
 @patch("time.time")
