@@ -764,3 +764,50 @@ def test_modify_fsk_config(
     # Verify the radio was modified with the new config
     assert manager._radio.node == new_config.sender_id
     assert manager._radio.fsk_broadcast_address == new_config.fsk.broadcast_address
+
+
+def test_get_max_packet_size_lora(
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+):
+    """Test get_max_packet_size method with LoRa radio."""
+    # Create manager without initializing the radio
+    manager = RFM9xManager.__new__(RFM9xManager)
+    manager._log = mock_logger
+    manager._radio_config = mock_radio_config
+
+    # Initialize the radio manually
+    manager._radio = RFM9x(
+        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
+    )
+    manager._radio.max_packet_length = 252
+
+    # Check that get_max_packet_size returns the radio's max_packet_length
+    assert manager.get_max_packet_size() == 252
+
+
+def test_get_max_packet_size_fsk(
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+    mock_use_fsk: MagicMock,
+):
+    """Test get_max_packet_size method with FSK radio."""
+    # Create manager without initializing the radio
+    manager = RFM9xManager.__new__(RFM9xManager)
+    manager._log = mock_logger
+    manager._radio_config = mock_radio_config
+
+    # Initialize the radio manually
+    manager._radio = RFM9xFSK(
+        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
+    )
+    manager._radio.max_packet_length = 252
+
+    # Check that get_max_packet_size returns the radio's max_packet_length
+    assert manager.get_max_packet_size() == 252
