@@ -41,6 +41,6 @@ class Flag:
 
     def get_name(self) -> str:
         """
-        get_name returns the name of the counter
+        get_name returns the name of the flag
         """
         return f"{self.__class__.__name__}_index_{self._index}_bit_{self._bit}"
