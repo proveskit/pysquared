@@ -1,0 +1,6 @@
+markdown>=3.2
+mkdocs>=1.5.0
+mkdocs-material>=9.1
+mkdocs-material-extensions>=1.1
+mkdocs-pdf>=0.1.1
+mkdocsstrings>=0.29.1

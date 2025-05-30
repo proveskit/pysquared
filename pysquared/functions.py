@@ -1,7 +1,12 @@
 """
+functions Module
+================
+
 This is the class that contains all of the functions for our CubeSat.
 We pass the cubesat object to it for the definitions and then it executes
-our will.
+our will. It manages radio communication, state of health, face data,
+detumbling, and other satellite operations.
+
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
@@ -28,6 +33,27 @@ except Exception:
 
 
 class functions:
+    """
+    Provides operational functions for the CubeSat, including radio communication,
+    state of health reporting, face data management, and detumbling.
+
+    Attributes:
+        cubesat (Satellite): The main satellite object.
+        logger (Logger): Logger instance for logging events and errors.
+        config (Config): Configuration object.
+        sleep_helper (SleepHelper): Helper for safe sleep operations.
+        radio_manager (RFM9xManager): Radio manager for communication.
+        packet_manager (PacketManager): Handles packet creation and management.
+        packet_sender (PacketSender): Handles sending packets with retries.
+        cubesat_name (str): Name of the CubeSat.
+        facestring (list): Stores face data results.
+        jokes (list[str]): List of jokes for transmission.
+        last_battery_temp (float): Last recorded battery temperature.
+        sleep_duration (int): Default sleep duration.
+        callsign (str): Radio callsign.
+        state_of_health_part1 (bool): Tracks which part of SOH to send.
+    """
+
     def __init__(
         self,
         cubesat: Satellite,
@@ -40,6 +66,17 @@ class functions:
         watchdog: Watchdog,
         cdh: CommandDataHandler,
     ) -> None:
+        """
+        Initializes the functions class with required subsystems.
+
+        Args:
+            cubesat (Satellite): The main satellite object.
+            logger (Logger): Logger instance for logging events and errors.
+            config (Config): Configuration object.
+            sleep_helper (SleepHelper): Helper for safe sleep operations.
+            radio_manager (RFM9xManager): Radio manager for communication.
+        """
+        self
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.config: Config = config
@@ -68,6 +105,12 @@ class functions:
     """
 
     def listen_loiter(self) -> None:
+        """
+        Listens for incoming messages for a set duration, then sleeps.
+
+        This function pets the watchdog, listens for 10 seconds, then sleeps for
+        the configured sleep duration, petting the watchdog before and after.
+        """
         self.logger.debug("Listening for 10 seconds")
         self.watchdog.pet()
         self.listen()
@@ -83,7 +126,7 @@ class functions:
     """
 
     def beacon(self) -> None:
-        """Calls the radio to send a beacon."""
+        """Calls the RFM9x to send a beacon message with CubeSat status and telemetry."""
 
         try:
             lora_beacon: str = (
@@ -106,9 +149,21 @@ class functions:
         self.radio.send(lora_beacon)
 
     def joke(self) -> None:
+        """
+        Sends a random joke over the radio.
+        """
         self.radio.send(random.choice(self.jokes))
 
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
+        """
+        Formats the hardware state dictionary into a string for transmission.
+
+        Args:
+            hardware (OrderedDict[str, bool]): Hardware state dictionary.
+
+        Returns:
+            str: Formatted state string.
+        """
         to_return: str = ""
         for key, value in hardware.items():
             to_return = to_return + key + "="
@@ -123,6 +178,11 @@ class functions:
         return to_return
 
     def state_of_health(self) -> None:
+        """
+        Collects and sends state of health (SOH) data over the radio.
+
+        Alternates between two parts: general telemetry and hardware state.
+        """
         self.state_list: list = []
         # list of state information
         try:
@@ -148,6 +208,13 @@ class functions:
         self.radio.send("State of Health " + str(self.state_list))
 
     def listen(self) -> bool:
+        """
+        Listens for incoming radio messages and passes them to the command handler.
+
+        Returns:
+            bool: True if a message was received and handled, False otherwise.
+        """
+
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")

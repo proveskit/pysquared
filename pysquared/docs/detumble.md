@@ -1,0 +1,3 @@
+# detumble Module
+
+::: pysquared.detumble

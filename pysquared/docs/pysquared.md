@@ -1,0 +1,3 @@
+# pysquared Module
+
+::: pysquared.pysquared

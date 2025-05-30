@@ -11,10 +11,27 @@ from .logger import Logger
 from .protos.radio import RadioProto
 from .satellite import Satellite
 
+"""
+cdh Module
+==========
+
+This module provides the CommandDataHandler class for managing and processing
+commands received by the satellite, including command parsing, execution,
+and radio communication handling.
+"""
+
 
 class CommandDataHandler:
     """
-    Constructor
+    Handles command parsing, validation, and execution for the satellite.
+
+    Attributes:
+        logger (Logger): Logger instance for logging events and errors.
+        _commands (dict[bytes, str]): Mapping of command codes to handler method names.
+        _joke_reply (list[str]): List of joke replies for the joke_reply command.
+        _super_secret_code (bytes): Passcode required for command execution.
+        _repeat_code (bytes): Passcode for repeating the last message.
+        radio_manager (RFM9xManager): Radio manager for communication.
     """
 
     def __init__(
@@ -23,9 +40,16 @@ class CommandDataHandler:
         logger: Logger,
         radio: RadioProto,
     ) -> None:
+        """
+        Initializes a CommandDataHandler instance.
+
+        Args:
+            config (Config): Configuration object with command settings.
+            logger (Logger): Logger instance for logging events and errors.
+            radio_manager (RFM9xManager): Radio manager for communication.
+        """
         self._log: Logger = logger
         self._radio: RadioProto = radio
-
         self._commands: dict[bytes, str] = {
             b"\x8eb": "noop",
             b"\xd4\x9f": "hreset",
@@ -46,6 +70,13 @@ class CommandDataHandler:
 
     ############### message handler ###############
     def message_handler(self, cubesat: Satellite, msg: bytes) -> None:
+        """
+        Parses and handles incoming messages, executing commands if valid.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            msg (bytearray): The received message.
+        """
         cmd: bytes | None = None
         cmd_args: bytes | None = None
         multi_msg: bool = False
@@ -104,9 +135,18 @@ class CommandDataHandler:
 
     ########### commands without arguments ###########
     def noop(self) -> None:
+        """
+        No-operation command. Logs a no-op event.
+        """
         self._log.info("no-op")
 
     def hreset(self, cubesat: Satellite) -> None:
+        """
+        Handles hardware reset command, sending a reset message and triggering a reset.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+        """
         self._log.info("Resetting")
         try:
             self._radio.send(data=b"resetting")
@@ -116,9 +156,18 @@ class CommandDataHandler:
             pass
 
     def fsk(self) -> None:
+        """
+        Sets the radio modulation to FSK.
+        """
         self._radio.set_modulation(FSK)
 
     def joke_reply(self, cubesat: Satellite) -> None:
+        """
+        Sends a random joke reply over the radio.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+        """
         joke: str = random.choice(self._joke_reply)
         self._log.info("Sending joke reply", joke=joke)
         self._radio.send(joke)
@@ -126,6 +175,13 @@ class CommandDataHandler:
     ########### commands with arguments ###########
 
     def shutdown(self, cubesat: Satellite, args: bytes) -> None:
+        """
+        Handles the shutdown command, requiring a secondary pass-code and entering deep sleep.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            args (bytes): Arguments for the shutdown command.
+        """
         # make shutdown require yet another pass-code
         if args != b"\x0b\xfdI\xec":
             return
@@ -159,20 +215,29 @@ class CommandDataHandler:
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat: Satellite, args: str) -> None:
+        """
+        Handles the query command, evaluating and sending the result.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            args (str): Arguments to be evaluated and sent.
+        """
         self._log.info("Sending query with args", args=args)
 
         self._radio.send(data=str(eval(args)))
 
     def exec_cmd(self, cubesat: Satellite, args: str) -> None:
+        """
+        Executes a command provided in the arguments.
+
+        Args:
+            cubesat (Satellite): The satellite instance.
+            args (str): Command to execute.
+        """
         self._log.info("Executing command", args=args)
         exec(args)
 
     def update_config(self, cubesat: Satellite, args: str) -> None:
-        # update these values with args
-        temporary: bool = False
-        key: str = ""
-        value = ""
-
         """
         1. KeyError:
             Occurs when trying to access a dictionary element using a key that does not exist.
@@ -186,6 +251,11 @@ class CommandDataHandler:
             Signifies that a function received an argument of the correct type but an inappropriate value, like trying to convert "abc" to an integer.
             - Can use this for when a value is not in range in schema
         """
+        # update these values with args
+        temporary: bool = False
+        key: str = ""
+        value = ""
+
         try:
             self.config.update_config(key, value, temporary)
             self._log.info("Updated config value successfully")
