@@ -224,8 +224,7 @@ def test_init_with_retries_lora(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation is set to "LoRa"."""
-    mock_radio_config.modulation = "LoRa"
+    """Test successful initialization when radio_config.modulation is set to "FSK"."""
     mock_sx1280.side_effect = Exception("Simulated FSK failure")
 
     with pytest.raises(HardwareInitializationError):
