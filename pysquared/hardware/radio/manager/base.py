@@ -35,7 +35,9 @@ class BaseRadioManager(RadioProto):
         self._radio_config = radio_config
         self._receive_timeout: int = 10  # Default receive timeout in seconds
 
+        # Simply default to LoRa if "LoRa" or an invalid modulation is passed in
         initial_modulation = FSK if self._radio_config.modulation == "FSK" else LoRa
+
         self._log.debug(
             "Initializing radio",
             radio_type=self.__class__.__name__,
@@ -101,7 +103,7 @@ class BaseRadioManager(RadioProto):
 
         :return: The current modulation mode of the hardware.
         """
-        return FSK if self._radio_config == "FSK" else LoRa
+        return FSK if self._radio_config.modulation == "FSK" else LoRa
 
     def modify_config(self, radio_config: RadioConfig) -> None:
         """Modify the radio configuration. This will apply the new configuration and reinitialize the radio.
