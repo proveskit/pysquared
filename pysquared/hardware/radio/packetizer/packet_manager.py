@@ -107,8 +107,8 @@ class PacketManager:
 
         # Keep receiving until timeout or we have all packets
         while True:
-            # Exit recieve() if timeout is reached
-            if time.time() - start_time < _timeout:
+            # Stop listening if timeout is reached
+            if time.time() - start_time > _timeout:
                 self._logger.warning(
                     "Timeout: Receive operation took longer than expected",
                     elapsed=time.time() - start_time,
@@ -132,7 +132,9 @@ class PacketManager:
             # Check if we have all packets
             _, total_packets = self._get_header(packet)
             if total_packets == len(received_packets):
-                self._logger.info("Received all expected packets", count=total_packets)
+                self._logger.info(
+                    "Received all expected packets", received=total_packets
+                )
                 break
 
             # Log progress periodically

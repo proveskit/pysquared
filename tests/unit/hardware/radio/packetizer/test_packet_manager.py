@@ -1,3 +1,4 @@
+from unittest import mock
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -162,3 +163,148 @@ def test_send_large_data_with_progress_logs(mock_sleep, mock_logger, mock_radio)
     # Verify these calls exist in the mock_logger.info calls
     for log_call in progress_log_calls:
         assert log_call in mock_logger.info.call_args_list
+
+
+@patch("time.time")
+def test_unpack_data(mock_time, mock_logger, mock_radio):
+    """Test unpacking data from received packets."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Create test packets with proper headers
+    packet1 = (0).to_bytes(2, "big") + (3).to_bytes(2, "big") + b"first"
+    packet2 = (1).to_bytes(2, "big") + (3).to_bytes(2, "big") + b" second"
+    packet3 = (2).to_bytes(2, "big") + (3).to_bytes(2, "big") + b" third"
+
+    # Mix up the order to test sorting
+    packets = [packet2, packet3, packet1]
+
+    # Call _unpack_data directly
+    result = packet_manager._unpack_data(packets)
+
+    # Verify correct data reassembly
+    expected_data = b"first second third"
+    assert result == expected_data
+
+
+@patch("time.time")
+def test_receive_success(mock_time, mock_logger, mock_radio):
+    """Test successfully receiving all packets."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Set up mock time to control the flow
+    mock_time.side_effect = [10.0, 10.1, 10.2, 10.3, 10.4]
+
+    # Create test packets
+    packet1 = (0).to_bytes(2, "big") + (2).to_bytes(2, "big") + b"first"
+    packet2 = (1).to_bytes(2, "big") + (2).to_bytes(2, "big") + b" second"
+
+    # Configure mock_radio.receive to return packets then None
+    mock_radio.receive.side_effect = [packet1, packet2]
+
+    # Call the receive method
+    result = packet_manager.receive()
+
+    # Check the result
+    expected_data = b"first second"
+    assert result == expected_data
+
+    # Verify proper logging
+    mock_logger.info.assert_any_call("Listening for data...", timeout=10)
+    mock_logger.info.assert_any_call(
+        "Received first packet", packet_length=len(packet1)
+    )
+    mock_logger.info.assert_any_call("Received all expected packets", received=2)
+
+
+# @patch("time.time")
+# def test_receive_timeout(mock_time, mock_logger, mock_radio):
+#     """Test timeout during reception."""
+#     packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+#     # Set up mock time to simulate timeout
+#     # First call is start_time, subsequent calls check timeout
+#     # mock_time.side_effect = [10.0, 19.0]  # Second time is beyond the 10s timeout
+#     mock_time.side_effect = [10.0, 21.0]  # Simulate a timeout after 11 seconds
+#     # mock_time.side_effect = [10.0, 10.1, 10.2, 10.3, 10.4]
+
+#     # Set up mock time to return values that won't trigger timeout
+#     # time_values = [10.0]  # Start time
+#     # time_values.extend([10.0 + i * 0.1 for i in range(1, 30)])  # Incremental times under timeout
+#     # mock_time.side_effect = time_values
+
+#     # mock_time.return_value = 10.0
+
+#     mock_radio.receive.return_value = (0).to_bytes(2, "big") + (2).to_bytes(2, "big") + b"first"  # Simulate no packets received
+
+#     # Call the receive method with default timeout (10 seconds)
+#     result = packet_manager.receive()
+
+#     # Check that we got None due to timeout
+#     assert result is None
+
+#     # Verify warning was logged
+#     mock_logger.warning.assert_called_with(
+#         "Timeout: Receive operation took longer than expected",
+#         elapsed=11.0
+#     )
+
+
+@patch("time.time")
+def test_receive_progress_logging(mock_time, mock_logger, mock_radio):
+    """Test progress logging during packet reception."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Set up mock time to return values that won't trigger timeout
+    mock_time.return_value = 10.0
+
+    # Create 25 packets - enough to trigger multiple progress logs
+    packets = []
+    for i in range(25):
+        packets.append(
+            (i).to_bytes(2, "big") + (25).to_bytes(2, "big") + f"Packet {i}".encode()
+        )
+
+    # Configure mock_radio.receive to return the packets
+    mock_radio.receive.side_effect = packets
+
+    # Call the receive method
+    result = packet_manager.receive(timeout=30)
+
+    # Verify progress logging occurred at the right intervals
+    progress_log_calls = [
+        mock.call("Receive progress", received=10, expected=25),
+        mock.call("Receive progress", received=20, expected=25),
+        mock.call("Received all expected packets", received=25),
+    ]
+
+    # Check if these calls exist in the logger calls
+    for log_call in progress_log_calls:
+        assert log_call in mock_logger.info.call_args_list
+
+    # Verify we got the combined data from all packets
+    assert result is not None
+    # The expected length would be (payload of all packets combined)
+    expected_length = sum(len(f"Packet {i}".encode()) for i in range(25))
+    assert len(result) == expected_length
+
+
+def test_get_header_and_payload(mock_logger, mock_radio):
+    """Test _get_header and _get_payload helper methods."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Create a test packet
+    sequence_num = 42
+    total_packets = 100
+    payload = b"Test payload data"
+
+    header = sequence_num.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
+    test_packet = header + payload
+
+    # Test _get_header
+    seq, total = packet_manager._get_header(test_packet)
+    assert seq == sequence_num
+    assert total == total_packets
+
+    # Test _get_payload
+    extracted_payload = packet_manager._get_payload(test_packet)
+    assert extracted_payload == payload
