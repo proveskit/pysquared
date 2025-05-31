@@ -117,7 +117,7 @@ class Satellite:
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: float = self.BOOTTIME
 
-        # Clear softboot flag if set 
+        # Clear softboot flag if set
         if self.f_softboot.get():
             self.f_softboot.toggle(False)
 
@@ -159,8 +159,8 @@ class Satellite:
     def powermode(self, mode: str) -> None:
         """
         Configure the hardware for minimum, normal, critical, or maximum power consumption.
-        Add custom modes for mission-specific control. 
-        
+        Add custom modes for mission-specific control.
+
         Args:
             mode (str): Desired power mode ("critical", "minimum", "normal", "maximum").
         """

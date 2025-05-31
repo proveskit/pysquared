@@ -25,6 +25,7 @@ class Watchdog:
         _log (Logger): Logger instance for logging messages.
         _digital_in_out (DigitalInOut): Digital output for controlling the watchdog pin.
     """
+
     def __init__(self, logger: Logger, pin: Pin) -> None:
         """
         Initializes the Watchdog timer.
