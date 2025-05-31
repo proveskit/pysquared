@@ -73,7 +73,6 @@ class PacketManager:
             header: bytes = sequence_number.to_bytes(2, "big") + total_packets.to_bytes(
                 2, "big"
             )
-            self._logger.info("Created header", header=[hex(b) for b in header])
 
             # Get payload slice for this packet
             start: int = sequence_number * self._payload_size
@@ -82,18 +81,12 @@ class PacketManager:
 
             # Combine header and payload
             packet: bytes = header + payload
-            self._logger.info(
-                "Combining the header and payload to form a Packet",
-                packet=sequence_number,
-                packet_length=len(packet),
-                header=[hex(b) for b in header],
-            )
             packets.append(packet)
 
         return packets
 
-    def receive(self, timeout: Optional[int] = None) -> bytes | None:
-        """Receive data from the radio.
+    def listen(self, timeout: Optional[int] = None) -> bytes | None:
+        """Listen for data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
         :return: The received data as bytes, or None if no data was received.
@@ -110,7 +103,7 @@ class PacketManager:
             # Stop listening if timeout is reached
             if time.time() - start_time > _timeout:
                 self._logger.warning(
-                    "Timeout: Receive operation took longer than expected",
+                    "Listen timeout reached",
                     elapsed=time.time() - start_time,
                 )
                 return

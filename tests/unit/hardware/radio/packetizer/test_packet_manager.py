@@ -202,7 +202,7 @@ def test_receive_success(mock_time, mock_logger, mock_radio):
     mock_radio.receive.side_effect = [packet1, packet2]
 
     # Call the receive method
-    result = packet_manager.receive()
+    result = packet_manager.listen()
 
     # Check the result
     expected_data = b"first second"
@@ -232,15 +232,13 @@ def test_receive_timeout(mock_time, mock_logger, mock_radio):
     mock_radio.receive.return_value = None
 
     # Call the receive method with default timeout (10 seconds)
-    result = packet_manager.receive()
+    result = packet_manager.listen()
 
     # Check that we got None due to timeout
     assert result is None
 
     # Verify warning was logged
-    mock_logger.warning.assert_called_with(
-        "Timeout: Receive operation took longer than expected", elapsed=11.0
-    )
+    mock_logger.warning.assert_called_with("Listen timeout reached", elapsed=11.0)
 
 
 @patch("time.time")
@@ -262,7 +260,7 @@ def test_receive_progress_logging(mock_time, mock_logger, mock_radio):
     mock_radio.receive.side_effect = packets
 
     # Call the receive method
-    result = packet_manager.receive(timeout=30)
+    result = packet_manager.listen(timeout=30)
 
     # Verify progress logging occurred at the right intervals
     progress_log_calls = [

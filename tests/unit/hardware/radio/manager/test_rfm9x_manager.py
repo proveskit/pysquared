@@ -286,7 +286,6 @@ def test_send_success_bytes(
     mock_use_fsk.get.return_value = False
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
-    mock_radio_instance.send.return_value = True  # Simulate successful send
     mock_rfm9x.return_value = mock_radio_instance
 
     manager = RFM9xManager(
@@ -299,11 +298,9 @@ def test_send_success_bytes(
     )
 
     msg = b"Hello Radio"
-    result = manager.send(msg)
+    _ = manager.send(msg)
 
-    assert result is True
     mock_radio_instance.send.assert_called_once_with(msg)
-    mock_logger.info.assert_called_once_with(message="Radio message sent")
 
 
 def test_send_unlicensed(

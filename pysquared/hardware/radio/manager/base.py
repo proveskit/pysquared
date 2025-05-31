@@ -70,7 +70,6 @@ class BaseRadioManager(RadioProto):
                 self._log.warning("Radio send failed")
                 return False
 
-            self._log.info(message="Radio message sent")
             return True
         except Exception as e:
             self._log.error("Error sending radio message", e)

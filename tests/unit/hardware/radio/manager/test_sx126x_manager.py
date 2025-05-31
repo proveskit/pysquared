@@ -294,8 +294,6 @@ def test_send_success_bytes(
 
     assert initialized_manager.send(data_bytes)
 
-    mock_logger.info.assert_called_once_with(message="Radio message sent")
-
 
 def test_send_unlicensed(
     mock_sx1262: MagicMock,
