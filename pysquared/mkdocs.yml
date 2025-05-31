@@ -1,22 +1,32 @@
 site_name: ProvesKit CirucuitPySquared
 nav:
   - Home: index.md
-  - Satellite Interface: pysquared.md
-  - Hardware Utilization & Satellite Functionalities: 
+  - Hardware Initialization:
+      - Bus: busio.md
+      - Decorators: decorators.md
+      - Digitalio Pins: digitalio.md
+  - Satellite Configuration: config.md
+  - Satellite Hardware Management: satellite.md
+  - Satellite Operations: functions.md
+  - Satellite Functionalities:
       - Satellite Faces: Big_Data.md
-      - USB Functionality: usb_functions.md
+      - Logging Functionality: logger.md
       - Sleep Functionality: sleep_helper.md
       - Detumbling Functionality: detumble.md
-      - Real Time Clock (RTC) Functionality: 
-          - RTC: rp2040.md
-          - RTC Interface: rtc_common.md
-  - Communications: 
+      - Radio Functionality:
+          - Radio Configuration: radio.md
+          - Modulation: modulation.md
+      - Watchdog: watchdog.md
+      - Non Volatile Memory (NVM):
+          - Boot Counter: counter.md
+          - Bit Flags: flag.md
+  - Communications:
       - Message Handling: cdh.md
       - Packet Manager: packet_manager.md
       - Packet Sender: packet_sender.md
-  
 
-theme: 
+
+theme:
   name: material
   features:
     - navigation.tabs
@@ -39,7 +49,7 @@ theme:
 
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
-      scheme: default 
+      scheme: default
       primary: indigo
       accent: indigo
       toggle:
@@ -62,7 +72,7 @@ plugins:
 
 extra:
   social:
-    - icon: material/github 
+    - icon: material/github
       link: https://github.com/proveskit
 
 
@@ -81,7 +91,3 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.mark
   - attr_list
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  

@@ -7,7 +7,6 @@ import pytest
 # Schema definition using type hints for documentation
 CONFIG_SCHEMA = {
     "cubesat_name": str,
-    "callsign": str,
     "last_battery_temp": float,
     "sleep_duration": int,
     "detumble_enable_z": bool,
@@ -15,10 +14,7 @@ CONFIG_SCHEMA = {
     "detumble_enable_y": bool,
     "jokes": list,
     "debug": bool,
-    "legacy": bool,
     "heating": bool,
-    "orpheus": bool,
-    "is_licensed": bool,
     "normal_temp": int,
     "normal_battery_temp": int,
     "normal_micro_temp": int,
@@ -54,10 +50,6 @@ def validate_config(config: Dict[str, Any]) -> None:
         elif not isinstance(value, expected_type):
             raise TypeError(f"Field '{field}' must be of type {expected_type.__name__}")
 
-    # Validate callsign
-    if not config["callsign"]:
-        raise ValueError("Callsign cannot be empty")
-
     # Validate voltage ranges
     voltage_fields = [
         "battery_voltage",
@@ -89,6 +81,7 @@ def validate_config(config: Dict[str, Any]) -> None:
         "receiver_id": int,
         "transmit_frequency": float,
         "start_time": int,
+        "license": str,
     }
 
     for field, expected_type in radio_basic_fields.items():
@@ -129,7 +122,6 @@ def validate_config(config: Dict[str, Any]) -> None:
         "ack_delay": float,
         "coding_rate": int,
         "cyclic_redundancy_check": bool,
-        "max_output": bool,
         "spreading_factor": int,
         "transmit_power": int,
     }
@@ -223,10 +215,7 @@ def test_field_types(config_data):
         "detumble_enable_x",
         "detumble_enable_y",
         "debug",
-        "legacy",
         "heating",
-        "orpheus",
-        "is_licensed",
         "turbo_clock",
     ]
     for field in bool_fields:
@@ -277,7 +266,6 @@ def test_field_types(config_data):
         "ack_delay": float,
         "coding_rate": int,
         "cyclic_redundancy_check": bool,
-        "max_output": bool,
         "spreading_factor": int,
         "transmit_power": int,
     }

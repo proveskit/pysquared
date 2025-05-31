@@ -4,7 +4,7 @@
 This module provides functionality for managing and interacting with satellite faces,
 including initializing sensors and performing tests on all faces.
 
-#### Imports 
+#### Imports
 ```py title="Big_Data.py"
 import gc
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
@@ -31,7 +31,7 @@ Represents a single satellite face with associated sensors.
 
 ### Initialization of Face Instance
 
-#### Arguments 
+#### Arguments
 - **add** (int): The I2C address of the face.
 - **pos** (str): The position of the face (e.g., "x+", "y-", etc.).
 - **tca** (adafruit_tca9548a.TCA9548A): The I2C multiplexer instance.
