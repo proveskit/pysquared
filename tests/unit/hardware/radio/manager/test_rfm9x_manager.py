@@ -669,7 +669,6 @@ def test_modify_lora_config(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: MagicMock,
 ):
     """Test modifying the radio configuration."""
     # Create manager without initializing the radio
@@ -703,7 +702,6 @@ def test_modify_lora_config_high_sf_success(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,  # Use base config
-    mock_use_fsk: MagicMock,
 ):
     """Test LoRa initialization with high spreading factor."""
     # Create manager without initializing the radio
@@ -739,7 +737,6 @@ def test_modify_fsk_config(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: MagicMock,
 ):
     """Test modifying the radio configuration."""
     # Create manager without initializing the radio
@@ -795,7 +792,6 @@ def test_get_max_packet_size_fsk(
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
-    mock_use_fsk: MagicMock,
 ):
     """Test get_max_packet_size method with FSK radio."""
     # Create manager without initializing the radio
