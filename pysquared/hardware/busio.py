@@ -1,3 +1,13 @@
+"""
+busio Module
+============
+
+This module provides functions for initializing and configuring SPI and I2C buses
+on the PySquared satellite hardware. Includes retry logic for robust hardware
+initialization and error handling.
+
+"""
+
 import time
 
 from busio import I2C, SPI
@@ -23,20 +33,24 @@ def initialize_spi_bus(
     polarity: Optional[int] = 0,
     bits: Optional[int] = 8,
 ) -> SPI:
-    """Initializes a SPI bus
+    """
+    Initializes and configures an SPI bus with the specified parameters.
 
-    :param Logger logger: The logger instance to log messages.
-    :param Pin clock: The pin to use for the clock signal.
-    :param Pin mosi: The pin to use for the MOSI signal.
-    :param Pin miso: The pin to use for the MISO signal.
-    :param int baudrate: The baudrate of the SPI bus (default is 100000).
-    :param int phase: The phase of the SPI bus (default is 0).
-    :param int polarity: The polarity of the SPI bus (default is 0).
-    :param int bits: The number of bits per transfer (default is 8).
+    Args:
+        logger (Logger): Logger instance to log messages.
+        clock (Pin): The pin to use for the clock signal.
+        mosi (Optional[Pin]): The pin to use for the MOSI signal.
+        miso (Optional[Pin]): The pin to use for the MISO signal.
+        baudrate (Optional[int]): The baudrate of the SPI bus (default 100000).
+        phase (Optional[int]): The phase of the SPI bus (default 0).
+        polarity (Optional[int]): The polarity of the SPI bus (default 0).
+        bits (Optional[int]): The number of bits per transfer (default 8).
 
-    :raises HardwareInitializationError: If the SPI bus fails to initialize.
+    Raises:
+        HardwareInitializationError: If the SPI bus fails to initialize.
 
-    :return ~busio.SPI: The initialized SPI object.
+    Returns:
+        SPI: The initialized SPI object.
     """
     try:
         return _spi_configure(
@@ -60,16 +74,20 @@ def _spi_init(
     mosi: Optional[Pin] = None,
     miso: Optional[Pin] = None,
 ) -> SPI:
-    """Initializes a SPI bus, does not configure
+    """
+    Initializes an SPI bus (without configuration). Includes retry logic.
 
-    :param Logger logger: The logger instance to log messages.
-    :param Pin clock: The pin to use for the clock signal.
-    :param Pin mosi: The pin to use for the MOSI signal.
-    :param Pin miso: The pin to use for the MISO signal.
+    Args:
+        logger (Logger): Logger instance.
+        clock (Pin): Clock pin.
+        mosi (Optional[Pin]): MOSI pin.
+        miso (Optional[Pin]): MISO pin.
 
-    :raises HardwareInitializationError: If the SPI bus fails to initialize.
+    Raises:
+        HardwareInitializationError: If the SPI bus fails to initialize.
 
-    :return ~busio.SPI: The initialized SPI object.
+    Returns:
+        SPI: The initialized SPI object.
     """
     logger.debug("Initializing spi bus")
 
@@ -87,18 +105,22 @@ def _spi_configure(
     polarity: Optional[int],
     bits: Optional[int],
 ) -> SPI:
-    """Configure SPI bus
+    """
+    Configures an SPI bus with the specified parameters.
 
-    :param Logger logger: The logger instance to log messages.
-    :param ~busio.SPI spi: SPI bus to configure
-    :param int baudrate: The baudrate of the SPI bus (default is 100000).
-    :param int phase: The phase of the SPI bus (default is 0).
-    :param int polarity: The polarity of the SPI bus (default is 0).
-    :param int bits: The number of bits per transfer (default is 8).
+    Args:
+        logger (Logger): Logger instance.
+        spi (SPI): SPI bus to configure.
+        baudrate (Optional[int]): Baudrate.
+        phase (Optional[int]): Phase.
+        polarity (Optional[int]): Polarity.
+        bits (Optional[int]): Bits per transfer.
 
-    :raises HardwareInitializationError: If the SPI bus cannot be configured.
+    Raises:
+        HardwareInitializationError: If the SPI bus cannot be configured.
 
-    :return ~busio.SPI: The initialized SPI object.
+    Returns:
+        SPI: The configured SPI object.
     """
     logger.debug("Configuring spi bus")
 
@@ -132,16 +154,20 @@ def initialize_i2c_bus(
     sda: Pin,
     frequency: Optional[int],
 ) -> I2C:
-    """Initializes a I2C bus"
+    """
+    Initializes an I2C bus with the specified parameters. Includes retry logic.
 
-    :param Logger logger: The logger instance to log messages.
-    :param Pin scl: The pin to use for the scl signal.
-    :param Pin sda: The pin to use for the sda signal.
-    :param int frequency: The baudrate of the I2C bus (default is 100000).
+    Args:
+        logger (Logger): Logger instance to log messages.
+        scl (Pin): The pin to use for the SCL signal.
+        sda (Pin): The pin to use for the SDA signal.
+        frequency (Optional[int]): The baudrate of the I2C bus (default 100000).
 
-    :raises HardwareInitializationError: If the I2C bus fails to initialize.
+    Raises:
+        HardwareInitializationError: If the I2C bus fails to initialize.
 
-    :return ~busio.I2C: The initialized I2C object.
+    Returns:
+        I2C: The initialized I2C object.
     """
     logger.debug("Initializing i2c")
 

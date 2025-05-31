@@ -10,6 +10,11 @@ We welcome contributions, so please feel free to join us. If you have any questi
 
 You can find our Getting Started Guide [here](docs/dev-guide.md).
 
+# Pysquared MkDocs Documentation
+1. `mkdocs build` - Build the documentation site.
+2. `mkdocs serve` - Start the live-reloading docs server.
+* `mkdocs -h` - Print help message and exit.
+
 ## Supported Boards
 
 | Board Version | Proves Repo                          | Firmware                     |

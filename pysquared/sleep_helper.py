@@ -1,3 +1,13 @@
+"""
+sleep_helper Module
+==================
+
+This module provides the SleepHelper class for managing safe sleep and hibernation
+modes for the PySquared satellite. It ensures the satellite sleeps for specified
+durations while maintaining system safety and watchdog activity.
+
+"""
+
 import gc
 import time
 
@@ -18,7 +28,13 @@ except Exception:
 
 class SleepHelper:
     """
-    Class responsible for sleeping the Satellite to conserve power
+    Class responsible for sleeping the Satellite to conserve power.
+
+    Attributes:
+        cubesat (Satellite): The Satellite object.
+        logger (Logger): Logger instance for logging events and errors.
+        watchdog (Watchdog): Watchdog instance for system safety.
+        config (Config): Configuration object.
     """
 
     def __init__(
@@ -27,9 +43,11 @@ class SleepHelper:
         """
         Creates a SleepHelper object.
 
-        :param cubesat: The Satellite object
-        :param logger: The Logger object allowing for log output
-
+        Args:
+            cubesat (Satellite): The Satellite object.
+            logger (Logger): Logger instance for logging events and errors.
+            watchdog (Watchdog): Watchdog instance for system safety.
+            config (Config): Configuration object.
         """
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
@@ -38,13 +56,13 @@ class SleepHelper:
 
     def safe_sleep(self, duration: int = 15) -> None:
         """
-        Puts the Satellite to sleep for specified duration, in seconds.
+        Puts the Satellite to sleep for a specified duration, in seconds.
 
-        Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config
+        Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config.
 
-        :param duration: Specified time, in seconds, to sleep the Satellite for
+        Args:
+            duration (int): Specified time, in seconds, to sleep the Satellite for.
         """
-
         self.watchdog.pet()
 
         time_remaining = min(duration, self.config.longest_allowable_sleep_time)
@@ -63,8 +81,12 @@ class SleepHelper:
             self.watchdog.pet()
 
     def short_hibernate(self) -> Literal[True]:
-        """Puts the Satellite to sleep for 120 seconds"""
+        """
+        Puts the Satellite to sleep for 120 seconds.
 
+        Returns:
+            True: Always returns True after hibernation.
+        """
         self.watchdog.pet()
         self.logger.debug("Short Hibernation Coming UP")
         gc.collect()
@@ -76,7 +98,12 @@ class SleepHelper:
         return True
 
     def long_hibernate(self) -> Literal[True]:
-        """Puts the Satellite to sleep for 180 seconds"""
+        """
+        Puts the Satellite to sleep for 180 seconds.
+
+        Returns:
+            True: Always returns True after hibernation.
+        """
 
         self.watchdog.pet()
         self.logger.debug("LONG Hibernation Coming UP")

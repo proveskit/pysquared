@@ -1,3 +1,12 @@
+"""
+cdh Module
+==========
+
+This module provides the CommandDataHandler class for managing and processing
+commands received by the satellite, including command parsing, execution,
+and radio communication handling.
+"""
+
 import random
 import time
 
@@ -9,24 +18,6 @@ from .config.config import Config
 from .logger import Logger
 from .protos.radio import RadioProto
 from .satellite import Satellite
-
-"""
-cdh Module
-==========
-
-This module provides the CommandDataHandler class for managing and processing
-commands received by the satellite, including command parsing, execution,
-and radio communication handling.
-"""
-
-"""
-cdh Module
-==========
-
-This module provides the CommandDataHandler class for managing and processing
-commands received by the satellite, including command parsing, execution,
-and radio communication handling.
-"""
 
 
 class CommandDataHandler:

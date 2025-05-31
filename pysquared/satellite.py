@@ -1,8 +1,13 @@
 """
+satellite Module
+================
+
 CircuitPython driver for PySquared satellite board.
 PySquared Hardware Version: Flight Controller V4c
 CircuitPython Version: 9.0.0
-Library Repo:
+
+This module defines the Satellite class, which manages hardware configuration,
+non-volatile memory (NVM) flags and counters, power modes, and system uptime.
 
 * Author(s): Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
@@ -28,7 +33,30 @@ from .logger import Logger
 
 class Satellite:
     """
-    NVM (Non-Volatile Memory) Register Definitions
+    Satellite class for managing hardware configuration, NVM, and power modes.
+
+    Attributes:
+        boot_count (Counter): NVM counter for boot count.
+        f_softboot (Flag): NVM flag for soft boot.
+        f_brownout (Flag): NVM flag for brownout detection.
+        f_shtdwn (Flag): NVM flag for shutdown state.
+        f_burned (Flag): NVM flag for burn wire status.
+        logger (Logger): Logger instance for logging events and errors.
+        config (Config): Configuration object.
+        normal_temp (int): Normal operating temperature.
+        normal_battery_temp (int): Normal battery temperature.
+        normal_micro_temp (int): Normal microcontroller temperature.
+        normal_charge_current (float): Normal charge current.
+        normal_battery_voltage (float): Normal battery voltage.
+        critical_battery_voltage (float): Critical battery voltage threshold.
+        reboot_time (int): Time before automatic reboot.
+        turbo_clock (bool): Whether to use turbo clock speed.
+        cubesat_name (str): Name of the CubeSat.
+        heating (bool): Heating status.
+        charge_current (Optional[float]): Current charge current.
+        power_mode (str): Current power mode.
+        BOOTTIME (float): System boot time.
+        CURRENTTIME (float): Current system time.
     """
 
     # General NVM counters
@@ -45,6 +73,13 @@ class Satellite:
         logger: Logger,
         config: Config,
     ) -> None:
+        """
+        Initializes the Satellite instance with configuration and logger.
+
+        Args:
+            logger (Logger): Logger instance for logging events and errors.
+            config (Config): Configuration object.
+        """
         self.logger: Logger = logger
         self.config: Config = config
 
@@ -82,6 +117,7 @@ class Satellite:
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: float = self.BOOTTIME
 
+        # Clear softboot flag if set 
         if self.f_softboot.get():
             self.f_softboot.toggle(False)
 
@@ -98,6 +134,12 @@ class Satellite:
 
     @property
     def get_system_uptime(self) -> float:
+        """
+        Returns the system uptime since boot.
+
+        Returns:
+            float: System uptime in seconds.
+        """
         self.CURRENTTIME: float = const(time.time())
         return self.CURRENTTIME - self.BOOTTIME
 
@@ -106,6 +148,9 @@ class Satellite:
     """
 
     def check_reboot(self) -> None:
+        """
+        Checks if the system uptime exceeds the reboot time and resets if needed.
+        """
         self.UPTIME: float = self.get_system_uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.reboot_time:
@@ -113,8 +158,11 @@ class Satellite:
 
     def powermode(self, mode: str) -> None:
         """
-        Configure the hardware for minimum or normal power consumption
-        Add custom modes for mission-specific control
+        Configure the hardware for minimum, normal, critical, or maximum power consumption.
+        Add custom modes for mission-specific control. 
+        
+        Args:
+            mode (str): Desired power mode ("critical", "minimum", "normal", "maximum").
         """
         try:
             if "crit" in mode:

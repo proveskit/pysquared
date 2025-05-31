@@ -1,3 +1,13 @@
+"""
+watchdog Module
+===============
+
+This module provides the Watchdog class for managing the hardware watchdog timer
+on the PySquared satellite. The watchdog helps ensure system reliability by
+requiring periodic "petting" to prevent system resets.
+
+"""
+
 import time
 
 from digitalio import DigitalInOut, Direction
@@ -8,14 +18,23 @@ from .logger import Logger
 
 
 class Watchdog:
+    """
+    Watchdog class for managing the hardware watchdog timer.
+
+    Attributes:
+        _log (Logger): Logger instance for logging messages.
+        _digital_in_out (DigitalInOut): Digital output for controlling the watchdog pin.
+    """
     def __init__(self, logger: Logger, pin: Pin) -> None:
-        """Initialize the watchdog timer.
-        :param Logger logger: Logger instance for logging messages.
-        :param Pin pin: Pin to use for the watchdog timer.
+        """
+        Initializes the Watchdog timer.
 
-        :raises HardwareInitializationError: If the pin fails to initialize.
+        Args:
+            logger (Logger): Logger instance for logging messages.
+            pin (Pin): Pin to use for the watchdog timer.
 
-        :return: None
+        Raises:
+            HardwareInitializationError: If the pin fails to initialize.
         """
         self._log = logger
 
@@ -29,7 +48,9 @@ class Watchdog:
         )
 
     def pet(self) -> None:
-        """Pet the watchdog to reset the timer."""
+        """
+        Pets (resets) the watchdog timer to prevent system reset.
+        """
         self._log.debug("Petting watchdog")
         self._digital_in_out.value = True
         time.sleep(0.01)
