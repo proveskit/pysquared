@@ -5,7 +5,7 @@ Protocol defining the interface for a burnwire port.
 
 class BurnwireProto:
     def burn(self, duration: float) -> bool:
-        """Fires the firewire for a specified ammount of time
+        """Fires the burnwire for a specified ammount of time
 
         :param float duration: The ammount of time to keep the burnwire on for.
 
@@ -19,6 +19,7 @@ class BurnwireProto:
     def smart_burn(self, max_retries: int, timeout_duration: float) -> bool:
         """Fires the burnwire and uses a deployment sensor
 
+        :param int max_retries: The maximum number of times the burnwire is allowed to retry before exitng.
         :param float timeout_duration: The max time to keep the burnwire on for if the deployment sensor doesn't detect deployment.
 
         :return: A Boolean indicating whether the burn occured sucessfully
