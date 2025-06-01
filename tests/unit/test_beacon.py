@@ -14,6 +14,7 @@ from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
 from pysquared.nvm.counter import Counter
 from pysquared.nvm.flag import Flag
+from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
 from pysquared.protos.temperature_sensor import TemperatureSensorProto
@@ -73,6 +74,14 @@ class MockPowerMonitor(PowerMonitorProto):
 class MockTemperatureSensor(TemperatureSensorProto):
     def get_temperature(self) -> float:
         return 22.5
+
+
+class MockIMU(IMUProto):
+    def get_gyro_data(self) -> tuple[float, float, float]:
+        return (0.1, 2.3, 4.5)
+
+    def get_acceleration(self) -> tuple[float, float, float]:
+        return (5.4, 3.2, 1.0)
 
 
 def test_beacon_init(mock_logger, mock_packet_manager):
@@ -137,6 +146,7 @@ def test_beacon_send_with_sensors(
         MockRadio(),
         MockPowerMonitor(),
         MockTemperatureSensor(),
+        MockIMU(),
     )
 
     _ = beacon.send()
@@ -164,6 +174,14 @@ def test_beacon_send_with_sensors(
 
     # temperature sensor
     assert pytest.approx(d["MockTemperatureSensor_temperature"], 0.01) == 22.5
+
+    # IMU sensor
+    assert pytest.approx(d["MockIMU_gyroscope"][0], 0.1) == 0.1
+    assert pytest.approx(d["MockIMU_gyroscope"][1], 0.1) == 2.3
+    assert pytest.approx(d["MockIMU_gyroscope"][2], 0.1) == 4.5
+    assert pytest.approx(d["MockIMU_acceleration"][0], 0.1) == 5.4
+    assert pytest.approx(d["MockIMU_acceleration"][1], 0.1) == 3.2
+    assert pytest.approx(d["MockIMU_acceleration"][2], 0.1) == 1.0
 
 
 def test_beacon_avg_readings(mock_logger, mock_packet_manager):

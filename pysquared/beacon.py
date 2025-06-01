@@ -77,6 +77,10 @@ class Beacon:
             if isinstance(sensor, RadioProto):
                 sensor_name = sensor.__class__.__name__
                 state[f"{sensor_name}_modulation"] = sensor.get_modulation().__name__
+            if isinstance(sensor, IMUProto):
+                sensor_name: str = sensor.__class__.__name__
+                state[f"{sensor_name}_acceleration"] = sensor.get_acceleration()
+                state[f"{sensor_name}_gyroscope"] = sensor.get_gyro_data()
             if isinstance(sensor, PowerMonitorProto):
                 sensor_name: str = sensor.__class__.__name__
                 state[f"{sensor_name}_current_avg"] = self.avg_readings(
