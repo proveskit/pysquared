@@ -115,20 +115,3 @@ class BurnwireManager(BurnwireProto):
             self._fire_burn.value = self._disable
             self._enable_burn.value = self._disable
             self._log.info("Burnwire Safed")
-
-    def smart_burn(self, max_retries: int = 3, timeout_duration: float = 5.0):
-        """Fires the burnwire and uses a deployment sensor
-
-        :param int max_retries: The maximum number of times the burnwire is allowed to retry before exitng.
-        :param float timeout_duration: The max time to keep the burnwire on for if the deployment sensor doesn't detect deployment.
-
-        :return: A Boolean indicating whether the burn occured sucessfully
-        :rtype: bool
-
-        :raises Exception: If there is an error toggling the burnwire pins.
-        """
-
-        self._log.debug(
-            "smart_burn() has not been implemented yet. Use burn() for now..."
-        )
-        raise NotImplementedError
