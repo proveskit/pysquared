@@ -70,11 +70,11 @@ class SX126xManager(BaseRadioManager):
         else:
             self._configure_lora(self._radio, self._radio_config.lora)
 
-    def _send_internal(self, payload: bytes) -> bool:
+    def _send_internal(self, data: bytes) -> bool:
         """Send data using the SX126x radio."""
-        _, err = self._radio.send(payload)
+        _, err = self._radio.send(data)
         if err != ERR_NONE:
-            self._log.warning("Radio send failed", error_code=err)
+            self._log.warning("SX126x radio send failed", error_code=err)
             return False
         return True
 
