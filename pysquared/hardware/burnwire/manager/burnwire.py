@@ -26,7 +26,6 @@ class BurnwireManager(BurnwireProto):
         enable_burn: DigitalInOut,
         fire_burn: DigitalInOut,
         enable_logic: bool = True,
-        deployment_sensor=None,
     ) -> None:
         """
         Initializes the burnwire manager class.
