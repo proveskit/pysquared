@@ -1,16 +1,18 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from digitalio import DigitalInOut, Direction
-from microcontroller import Pin
+from digitalio import Direction
 
 from pysquared.logger import Logger
 from pysquared.watchdog import Watchdog
 
 
+# Mock CircuitPython modules before any imports that might use them
+# Mocking is now centralized in conftest.py
 @pytest.fixture
-def mock_pin() -> MagicMock:
-    return MagicMock(spec=Pin)
+@patch("microcontroller.Pin")
+def mock_pin(mock_pin_class):
+    return mock_pin_class()
 
 
 @pytest.fixture
@@ -18,12 +20,16 @@ def mock_logger() -> MagicMock:
     return MagicMock(spec=Logger)
 
 
+@patch("digitalio.DigitalInOut")
 @patch("pysquared.watchdog.initialize_pin")
 def test_watchdog_init(
-    mock_initialize_pin: MagicMock, mock_logger: MagicMock, mock_pin: MagicMock
+    mock_initialize_pin: MagicMock,
+    mock_digitalinout_class,
+    mock_logger: MagicMock,
+    mock_pin: MagicMock,
 ) -> None:
     """Test Watchdog initialization."""
-    mock_digital_in_out = MagicMock(spec=DigitalInOut)
+    mock_digital_in_out = mock_digitalinout_class()
     mock_initialize_pin.return_value = mock_digital_in_out
 
     watchdog = Watchdog(mock_logger, mock_pin)
@@ -37,16 +43,18 @@ def test_watchdog_init(
     assert watchdog._digital_in_out is mock_digital_in_out
 
 
+@patch("digitalio.DigitalInOut")
 @patch("pysquared.watchdog.time.sleep")
 @patch("pysquared.watchdog.initialize_pin")
 def test_watchdog_pet(
     mock_initialize_pin: MagicMock,
     mock_sleep: MagicMock,
+    mock_digitalinout_class,
     mock_logger: MagicMock,
     mock_pin: MagicMock,
 ) -> None:
     """Test Watchdog pet method using side_effect on sleep."""
-    mock_digital_in_out = MagicMock(spec=DigitalInOut)
+    mock_digital_in_out = mock_digitalinout_class()
     mock_initialize_pin.return_value = mock_digital_in_out
 
     # Inject a side effect to the sleep function

@@ -231,7 +231,7 @@ class CommandDataHandler:
         self._log.info("Executing command", args=args)
         exec(args)
 
-    def update_config(self, cubesat: Satellite, args: str) -> None:
+    def update_config(self, key: str, value, temporary: bool) -> None:
         """
         1. KeyError:
             Occurs when trying to access a dictionary element using a key that does not exist.
@@ -245,11 +245,6 @@ class CommandDataHandler:
             Signifies that a function received an argument of the correct type but an inappropriate value, like trying to convert "abc" to an integer.
             - Can use this for when a value is not in range in schema
         """
-        # update these values with args
-        temporary: bool = False
-        key: str = ""
-        value = ""
-
         try:
             self.config.update_config(key, value, temporary)
             self._log.info("Updated config value successfully")
