@@ -14,6 +14,13 @@ jobs:
       - name: Lint
         run: |
           make fmt
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Typecheck
+        run: |
+          make typecheck
   test:
     runs-on: ubuntu-latest
     steps:

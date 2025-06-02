@@ -1,5 +1,9 @@
+from time import struct_time
+
+
 class RTC:
     _instance = None
+    datetime: struct_time | None = None
 
     def __new__(cls):
         if cls._instance is None:

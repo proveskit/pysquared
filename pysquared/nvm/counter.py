@@ -1,27 +1,56 @@
-try:
-    from stubs.circuitpython.byte_array import ByteArray
-except ImportError:
-    pass
+"""
+counter Module
+==============
+
+This module provides the Counter class for managing 8-bit counters stored in
+non-volatile memory (NVM) on CircuitPython devices.
+
+"""
+
+import microcontroller
 
 
 class Counter:
+    """
+    Counter class for managing 8-bit counters stored in non-volatile memory.
+
+    Attributes:
+        _index (int): The index of the counter in the NVM datastore.
+        _datastore (microcontroller.nvm.ByteArray): The NVM datastore.
+    """
+
     def __init__(
         self,
         index: int,
-        datastore: ByteArray,
     ) -> None:
+        """
+        Initializes a Counter instance.
+
+        Args:
+            index (int): The index of the counter in the datastore.
+
+        Raises:
+            ValueError: If NVM is not available.
+        """
         self._index = index
-        self._datastore = datastore
+
+        if microcontroller.nvm is None:
+            raise ValueError("nvm is not available")
+
+        self._datastore = microcontroller.nvm
 
     def get(self) -> int:
         """
-        get returns the value of the counter
+        Returns the value of the counter.
+
+        Returns:
+            int: The current value of the counter.
         """
         return self._datastore[self._index]
 
     def increment(self) -> None:
         """
-        increment increases the counter by one
+        Increases the counter by one, with 8-bit rollover.
         """
         value: int = (self.get() + 1) & 0xFF  # 8-bit counter with rollover
         self._datastore[self._index] = value

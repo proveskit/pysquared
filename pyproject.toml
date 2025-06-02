@@ -6,10 +6,29 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "adafruit-circuitpython-typing==1.11.2",
+    "adafruit-circuitpython-register==1.10.2",
     "circuitpython-stubs==9.2.5",
     "coverage==7.6.10",
     "pre-commit==4.0.1",
+    "pyright[nodejs]==1.1.399",
     "pytest==8.3.2",
+
+    # CircuitPython Libraries
+    "adafruit-circuitpython-ina219==3.4.26",
+    "adafruit-circuitpython-asyncio @ git+https://github.com/adafruit/adafruit_circuitpython_asyncio@1.3.3",
+    "adafruit-circuitpython-drv2605==1.3.4",
+    "adafruit-circuitpython-lis2mdl==2.1.23",
+    "adafruit-circuitpython-lsm6ds==4.5.13",
+    "adafruit-circuitpython-mcp9808==3.3.24",
+    "adafruit-circuitpython-neopixel==6.3.12",
+    "adafruit-circuitpython-register==1.10.2",
+    "adafruit-circuitpython-rfm==1.0.3",
+    "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A@1.0.0",
+    "adafruit-circuitpython-ticks==1.1.1",
+    "adafruit-circuitpython-veml7700==2.0.2",
+    "proves-circuitpython-rv3028 @ git+https://github.com/proveskit/PROVES_CircuitPython_RV3028@1.0.0",
+    "proves-circuitpython-sx126 @ git+https://github.com/proveskit/micropySX126X@1.0.0",
+    "proves-circuitpython-sx1280 @ git+https://github.com/proveskit/CircuitPython_SX1280@1.0.3",
 ]
 
 [tool.setuptools]
@@ -17,11 +36,20 @@ packages = [
     "pysquared",
     "pysquared.config",
     "pysquared.hardware",
-    "pysquared.hardware.rfm9x",
+    "pysquared.hardware.imu",
+    "pysquared.hardware.imu.manager",
+    "pysquared.hardware.magnetometer",
+    "pysquared.hardware.magnetometer.manager",
+    "pysquared.hardware.radio",
+    "pysquared.hardware.radio.manager",
+    "pysquared.hardware.power_monitor",
+    "pysquared.hardware.power_monitor.manager",
     "pysquared.nvm",
+    "pysquared.protos",
     "pysquared.rtc",
-    "pysquared.usb"
+    "pysquared.rtc.manager"
 ]
+
 [tool.ruff.format]
 # Use `\n` line endings for all files
 line-ending = "lf"
@@ -42,12 +70,24 @@ skip_covered = false
 include = [
     "pysquared/**/*.py",
 ]
-omit = [
-    "lib/**/*.py",
-]
 
 [tool.coverage.html]
 directory = ".coverage-reports/html"
 
 [tool.coverage.xml]
 output = ".coverage-reports/coverage.xml"
+
+[tool.pyright]
+include = ["pysquared"]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    ".git",
+    "typings",
+
+    # Remove these lines as these files are fixed or deleted
+    # Try after new state of health is merged
+    "pysquared/functions.py", # 3 errors
+]
+stubPath = "./typings"
+reportMissingModuleSource = false
