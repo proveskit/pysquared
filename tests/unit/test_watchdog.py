@@ -8,16 +8,7 @@ from pysquared.logger import Logger
 from pysquared.watchdog import Watchdog
 
 # Mock CircuitPython modules before any imports that might use them
-sys.modules["alarm"] = Mock()
-sys.modules["alarm.time"] = Mock()
-
-# Mock modules after all imports
-sys.modules["digitalio"] = Mock()
-sys.modules["digitalio"].DigitalInOut = Mock()
-sys.modules["busio"] = Mock()
-sys.modules["busio"].SPI = Mock()
-
-
+# Mocking is now centralized in conftest.py
 @pytest.fixture
 @patch("microcontroller.Pin")
 def mock_pin(mock_pin_class):

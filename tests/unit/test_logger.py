@@ -7,10 +7,6 @@ import pysquared.nvm.counter as counter
 from pysquared.logger import Logger, _color
 
 # Mock modules after all imports
-sys.modules["digitalio"] = Mock()
-sys.modules["digitalio"].DigitalInOut = Mock()
-sys.modules["busio"] = Mock()
-sys.modules["busio"].SPI = Mock()
 
 
 @pytest.fixture

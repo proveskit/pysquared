@@ -13,11 +13,6 @@ from pysquared.logger import Logger
 from pysquared.protos.radio import RadioProto
 
 # Mock CircuitPython modules before any imports that might use them
-sys.modules["alarm"] = Mock()
-sys.modules["alarm.time"] = Mock()
-sys.modules["alarm.time.TimeAlarm"] = Mock()
-sys.modules["microcontroller"] = Mock()
-sys.modules["pysquared.satellite"] = Mock()
 
 
 @pytest.fixture
