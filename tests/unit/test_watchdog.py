@@ -7,6 +7,10 @@ from digitalio import Direction
 from pysquared.logger import Logger
 from pysquared.watchdog import Watchdog
 
+# Mock CircuitPython modules before any imports that might use them
+sys.modules["alarm"] = Mock()
+sys.modules["alarm.time"] = Mock()
+
 # Mock modules after all imports
 sys.modules["digitalio"] = Mock()
 sys.modules["digitalio"].DigitalInOut = Mock()

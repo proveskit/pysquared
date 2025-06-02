@@ -12,17 +12,11 @@ from pysquared.config.config import Config
 from pysquared.logger import Logger
 from pysquared.protos.radio import RadioProto
 
-# Mock CircuitPython modules and pysquared.satellite before importing pysquared modules
-alarm_mock = Mock()
-microcontroller_mock = Mock()
-microcontroller_mock.nvm = Mock()
-microcontroller_mock.on_next_reset = Mock()
-microcontroller_mock.reset = Mock()
-microcontroller_mock.RunMode = Mock()
-sys.modules["alarm"] = alarm_mock
+# Mock CircuitPython modules before any imports that might use them
+sys.modules["alarm"] = Mock()
 sys.modules["alarm.time"] = Mock()
 sys.modules["alarm.time.TimeAlarm"] = Mock()
-sys.modules["microcontroller"] = microcontroller_mock
+sys.modules["microcontroller"] = Mock()
 sys.modules["pysquared.satellite"] = Mock()
 
 
