@@ -2,7 +2,6 @@
 Unit tests for the CommandDataHandler class, specifically focusing on the update_config functionality.
 """
 
-import sys
 from unittest.mock import Mock
 
 import pytest

@@ -1,11 +1,11 @@
-import sys
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from digitalio import Direction
 
 from pysquared.logger import Logger
 from pysquared.watchdog import Watchdog
+
 
 # Mock CircuitPython modules before any imports that might use them
 # Mocking is now centralized in conftest.py
