@@ -1,10 +1,16 @@
-from unittest.mock import MagicMock
+import sys
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from microcontroller import Pin
 
 import pysquared.nvm.counter as counter
 from pysquared.logger import Logger, _color
+
+# Mock modules after all imports
+sys.modules["digitalio"] = Mock()
+sys.modules["digitalio"].DigitalInOut = Mock()
+sys.modules["busio"] = Mock()
+sys.modules["busio"].SPI = Mock()
 
 
 @pytest.fixture
@@ -17,6 +23,12 @@ def logger():
 def logger_color():
     count = MagicMock(spec=counter.Counter)
     return Logger(error_counter=count, colorized=True)
+
+
+@pytest.fixture
+@patch("microcontroller.Pin")
+def mock_pin(mock_pin_class):
+    return mock_pin_class()
 
 
 def test_debug_log(capsys, logger):
@@ -189,8 +201,7 @@ def test_invalid_json_type_bytes(capsys, logger):
 
 
 # testing a kwarg of value type Pin, which previously caused a TypeError exception
-def test_invalid_json_type_pin(capsys, logger):
-    mock_pin = MagicMock(spec=Pin)
+def test_invalid_json_type_pin(capsys, logger, mock_pin):
     logger.debug("Initializing watchdog", pin=mock_pin)
     captured = capsys.readouterr()
     assert "TypeError" not in captured.out
