@@ -68,7 +68,7 @@ class CommandDataHandler:
         )
 
     ############### message handler ###############
-    def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
+    def message_handler(self, cubesat: Satellite, msg: bytes) -> None:
         """
         Parses and handles incoming messages, executing commands if valid.
 
@@ -76,6 +76,8 @@ class CommandDataHandler:
             cubesat (Satellite): The satellite instance.
             msg (bytearray): The received message.
         """
+        cmd: bytes | None = None
+        cmd_args: bytes | None = None
         multi_msg: bool = False
         if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
             if bytes(msg[4:8]) == self._super_secret_code:
@@ -135,7 +137,7 @@ class CommandDataHandler:
         """
         No-operation command. Logs a no-op event.
         """
-        self.logger.info("no-op")
+        self._log.info("no-op")
 
     def hreset(self, cubesat: Satellite) -> None:
         """
@@ -144,7 +146,7 @@ class CommandDataHandler:
         Args:
             cubesat (Satellite): The satellite instance.
         """
-        self.logger.info("Resetting")
+        self._log.info("Resetting")
         try:
             self._radio.send(data=b"resetting")
             microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
@@ -226,7 +228,7 @@ class CommandDataHandler:
             cubesat (Satellite): The satellite instance.
             args (str): Command to execute.
         """
-        self.logger.info("Executing command", args=args)
+        self._log.info("Executing command", args=args)
         exec(args)
 
     def update_config(self, cubesat: Satellite, args: str) -> None:
