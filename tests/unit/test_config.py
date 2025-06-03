@@ -297,3 +297,14 @@ def test_update_config(cleanup) -> None:
         config.update_config("broadcast_address", 1, True)
     except ValueError as e:
         print(e)
+
+
+def test_allowed_values(cleanup) -> None:
+    file = cleanup
+    config = Config(file)
+
+    with pytest.raises(TypeError):
+        config.validate("modulation", "DefinitelyRealModulation")
+
+    config.validate("modulation", "LoRa")
+    config.validate("modulation", "FSK")
