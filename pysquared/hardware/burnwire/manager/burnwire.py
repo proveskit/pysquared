@@ -49,7 +49,7 @@ class BurnwireManager(BurnwireProto):
 
         self.number_of_attempts: int = 0
 
-    def burn(self, timeout_duration: float = 5.0, max_retries: int = 1):
+    def burn(self, timeout_duration: float = 5.0, max_retries: int = 1) -> bool:
         """Fires the burnwire for a specified ammount of time
 
         :param float timeout_duration: The max ammount of time to keep the burnwire on for.
@@ -64,30 +64,41 @@ class BurnwireManager(BurnwireProto):
             f"BURN Attempt {self.number_of_attempts} Started with Duration {timeout_duration}s"
         )
         try:
-            if max_retries > 1:
-                self._log.warning(
-                    "Multiple Retries with base burnwire not recommended! Consider using smart_burnwire..."
-                )
+            if max_retries == 1:
+                try:
+                    self._attempt_burn(timeout_duration)
+                    return True
+                except RuntimeError as e:
+                    self._log.critical(
+                        f"BURN Attempt {self.number_of_attempts} Failed! Not Retrying",
+                        e,
+                    )
+                    return False
 
             elif max_retries < 1:
                 self._log.warning("burnwire max_retries cannot be 0 or negative!")
                 raise ValueError
 
-            for _ in range(max_retries):
-                self._attempt_burn(timeout_duration)
+            else:
+                self._log.warning(
+                    "Multiple Retries with base burnwire not recommended! Consider using smart_burnwire..."
+                )
 
-        except RuntimeError as e:
-            self._log.critical(
-                f"BURN Attempt {self.number_of_attempts} Failed! Not Retrying", e
-            )
-            return False
+                for _ in range(max_retries):
+                    try:
+                        self._attempt_burn(timeout_duration)
+                        self._log.info(
+                            f"BURN Attempt {self.number_of_attempts} Completed"
+                        )
+                        time.sleep(1)
+                    except RuntimeError:
+                        return False
+
+                return True
 
         except ValueError as e:
             self._log.critical("Burnwire configuration incorrect!", e)
             return False
-
-        self._log.info(f"BURN Attempt {self.number_of_attempts} Completed")
-        return True
 
     def _attempt_burn(self, duration: float = 5.0) -> None:
         """Private function for actuating the burnwire ports for a set period of time.
@@ -96,21 +107,42 @@ class BurnwireManager(BurnwireProto):
 
         :return: None
         :rtype: None
+
+        :raises RuntimeError: If there is an error toggling the burnwire pins.
         """
+        error = None
         try:
             self.number_of_attempts += 1
-            self._enable_burn.value = self._enable
+
+            # Attempt to set enable_burn, this may raise an exception
+            try:
+                self._enable_burn.value = self._enable
+            except Exception as e:
+                error = RuntimeError("Failed to set enable_burn pin")
+                raise error from e
+
             time.sleep(0.1)  # Short pause to stabilize load switches
 
             # Burnwire becomes active
-            self._fire_burn.value = self._enable
-            time.sleep(duration)
+            try:
+                self._fire_burn.value = self._enable
+            except Exception as e:
+                error = RuntimeError("Failed to set fire_burn pin")
+                raise error from e
 
-        except Exception as e:
-            raise RuntimeError from e
+            time.sleep(duration)
 
         finally:
             # Burnwire cleanup in the finally block to ensure it always happens
-            self._fire_burn.value = self._disable
-            self._enable_burn.value = self._disable
-            self._log.info("Burnwire Safed")
+            try:
+                self._fire_burn.value = self._disable
+                self._enable_burn.value = self._disable
+                self._log.info("Burnwire Safed")
+            except Exception as e:
+                # Only log critical if this wasn't caused by the original error
+                if error is None:
+                    self._log.critical("Failed to safe burnwire pins!", e)
+
+            # Re-raise the original error if there was one
+            if error is not None:
+                raise error
