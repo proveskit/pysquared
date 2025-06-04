@@ -84,13 +84,29 @@ def test_burn_with_retries(burnwire_manager):
 
 
 def test_burn_with_invalid_retries(burnwire_manager):
-    """Test burnwire activation with invalid retry count."""
+    """Test burnwire activation with invalid retry count.
+
+    This test verifies that:
+    1. When max_retries < 1, a warning is logged
+    2. A ValueError is raised internally
+    3. The ValueError is caught and logged as a critical error
+    4. The method returns False
+    """
     result = burnwire_manager.burn(max_retries=0)
 
     assert result is False
     assert burnwire_manager.number_of_attempts == 0
-    burnwire_manager._log.warning.assert_called_once()
+
+    # Verify the warning about invalid retries
+    burnwire_manager._log.warning.assert_called_once_with(
+        "burnwire max_retries cannot be 0 or negative!"
+    )
+
+    # Verify the critical log about configuration error
     burnwire_manager._log.critical.assert_called_once()
+    critical_args = burnwire_manager._log.critical.call_args[0]
+    assert critical_args[0] == "Burnwire configuration incorrect!"
+    assert isinstance(critical_args[1], ValueError)
 
 
 def test_burn_error_handling(burnwire_manager):
