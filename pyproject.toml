@@ -44,6 +44,8 @@ packages = [
     "pysquared.hardware.radio.manager",
     "pysquared.hardware.power_monitor",
     "pysquared.hardware.power_monitor.manager",
+    "pysquared.hardware.burnwire",
+    "pysquared.hardware.burnwire.manager",
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.rtc",
