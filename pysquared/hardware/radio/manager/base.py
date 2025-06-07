@@ -110,13 +110,13 @@ class BaseRadioManager(RadioProto):
                 current=current_modulation,
             )
 
-    def modify_config(self, key: str, value: object) -> None:
+    def modify_config(self, key: str, value) -> None:
         """Modify a specific radio configuration parameter.
 
         Must be implemented by subclasses.
 
         :param str key: The configuration parameter key to modify.
-        :param object value: The new value to set for the parameter.
+        :param value: The new value to set for the parameter.
         :raises NotImplementedError: If not implemented by subclass.
         """
         raise NotImplementedError

@@ -103,10 +103,10 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         # Handle FSK-specific parameters
         elif self._radio.__class__.__name__ == "RFM9xFSK":
-            if key == "broadcast_address":
+            if key == "fsk_broadcast_address":
                 self._radio_config.validate("broadcast_address", value)
                 self._radio.fsk_broadcast_address = value  # type: ignore
-            elif key == "node_address":
+            elif key == "fsk_node_address":
                 self._radio_config.validate("node_address", value)
                 self._radio.fsk_node_address = value  # type: ignore
             elif key == "modulation_type":

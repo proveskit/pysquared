@@ -77,8 +77,9 @@ class RadioTest:
                 heard_something = self._radio.receive(timeout=10)
 
                 if heard_something:
-                    self._log.debug(heard_something)
                     heard_something = heard_something.decode("utf-8")
+                    self._log.debug(heard_something)
+
                     split_message = heard_something.split("|")
 
                     if split_message[1][0:4] == "PING":
@@ -170,7 +171,7 @@ class RadioTest:
                         "We tried 5 times! And there was no response. Quitting."
                     )
                     break
-                success = self._radio.send_with_ack(packet)
+                success = self._radio.send(packet)
                 self._log.debug("Success " + str(success))
                 if success is True:
                     self._log.debug("Sending response")
