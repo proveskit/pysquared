@@ -1,8 +1,9 @@
 import random
 import time
 
+from ..config.radio import RadioConfig
 from ..logger import Logger
-from ..protos.radio import RadioConfig, RadioProto
+from ..protos.radio import RadioProto
 
 
 class RadioTest:
