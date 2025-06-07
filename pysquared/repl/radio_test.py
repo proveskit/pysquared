@@ -37,9 +37,9 @@ class RadioTest:
 
                 response = self._radio.receive(timeout=5)
                 if response:
+                    response = response.decode("utf-8")
                     self._log.debug(response)
 
-                    response = response.decode("utf-8")
                     header = response.split(" ", 1)[0]
 
                     if (
