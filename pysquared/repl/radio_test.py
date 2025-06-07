@@ -2,7 +2,7 @@ import random
 import time
 
 from ..logger import Logger
-from ..protos.radio import RadioProto
+from ..protos.radio import RadioConfig, RadioProto
 
 
 class RadioTest:
@@ -12,72 +12,90 @@ class RadioTest:
         self,
         logger: Logger,
         radio: RadioProto,
+        radio_config: RadioConfig,
     ):
         self._log = logger
         self._log.colorized = True
         self._radio = radio
+        self._radio_config = radio_config
 
     def device_under_test(self):
-        self._log.debug("Device Under Test Selected")
-        self._log.debug("Sending Ping...")
+        try:
+            self._log.debug("Device Under Test Selected")
+            self._log.debug("Sending Ping...")
 
-        MAX_ATTEMPTS = 5
-        attempts = 0
-        success = False
+            MAX_ATTEMPTS = 5
+            attempts = 0
+            success = False
 
-        while attempts < MAX_ATTEMPTS:
-            random_number = random.randint(1, 500)
-            self._radio.send(
-                f"|PING: {random_number} {
-                    self.test_message}|"
-            )
+            while attempts < MAX_ATTEMPTS:
+                random_number = random.randint(1, 500)
+                self._radio.send(
+                    f"|PING: {random_number} {
+                        self.test_message}|"
+                )
 
-            response = self._radio.receive(timeout=5)
-            if response:
-                self._log.debug(response)
+                response = self._radio.receive(timeout=5)
+                if response:
+                    self._log.debug(response)
 
-                response = response.decode("utf-8")
-                header = response.split(" ", 1)[0]
+                    response = response.decode("utf-8")
+                    header = response.split(" ", 1)[0]
 
-                if (
-                    response
-                    == f"{header} PONG: {random_number} {self.test_message} {header}"
-                ):
-                    break
+                    if (
+                        response
+                        == f"{header} PONG: {random_number} {self.test_message} {header}"
+                    ):
+                        success = True
+                        break
+                else:
+                    attempts += 1
+                    self._log.debug(
+                        "Didn't receive ping, trying again.", attempts=attempts
+                    )
+
+                time.sleep(1)
+
+            if success:
+                self._log.debug("Radio test passed")
             else:
-                attempts += 1
-                self._log.debug("Didn't receive ping, trying again.", attempts=attempts)
-
-            time.sleep(1)
-
-        if success:
-            self._log.debug("Radio test passed")
-        else:
-            self._log.debug("Radio test failed: maximum attempts reached.")
+                self._log.debug("Radio test failed: maximum attempts reached.")
+        except KeyboardInterrupt:
+            self._log.debug("Keyboard interrupt received, exiting device test.")
 
     def receiver(self):
         # Run receiver test forever to make it easier to test other boards.
-        while True:
-            self._log.debug("Receiver Selected")
-            self._log.debug("Awaiting Ping...")
+        try:
+            # Swap sender and receiver IDs to test receiver functionality
+            self._radio.modify_config("receiver_id", self._radio_config.sender_id)
+            self._radio.modify_config("sender_id", self._radio_config.receiver_id)
 
-            heard_something = self._radio.receive(timeout=10)
+            while True:
+                self._log.debug("Receiver Selected")
+                self._log.debug("Awaiting Ping...")
 
-            if heard_something:
-                self._log.debug(heard_something)
-                heard_something = heard_something.decode("utf-8")
-                split_message = heard_something.split("|")
+                heard_something = self._radio.receive(timeout=10)
 
-                if split_message[1][0:4] == "PING":
-                    self._log.info("Received Ping!", ping=heard_something)
-                    self._radio.send(f"PONG{split_message[1][4:]}")
+                if heard_something:
+                    self._log.debug(heard_something)
+                    heard_something = heard_something.decode("utf-8")
+                    split_message = heard_something.split("|")
+
+                    if split_message[1][0:4] == "PING":
+                        self._log.info("Received Ping!", ping=heard_something)
+                        self._radio.send(f"PONG{split_message[1][4:]}")
+                    else:
+                        self._log.info(
+                            "Received unknown message, discarding", ping=heard_something
+                        )
+
                 else:
-                    self._log.info(
-                        "Received unknown message, discarding", ping=heard_something
-                    )
-
-            else:
-                self._log.debug("No Response Received")
+                    self._log.debug("No Response Received")
+        except KeyboardInterrupt:
+            self._log.debug("Keyboard interrupt received, exiting receiver test.")
+        finally:
+            self._radio.modify_config("receiver_id", self._radio_config.receiver_id)
+            self._radio.modify_config("sender_id", self._radio_config.sender_id)
 
     def client(self, passcode):
         self._log.debug("Client Selected")
