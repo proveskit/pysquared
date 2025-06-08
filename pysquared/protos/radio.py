@@ -53,3 +53,13 @@ class RadioProto:
         :param value: The new value to set for the parameter.
         :raises NotImplementedError: If not implemented by subclass.
         """
+
+        ...
+
+    def get_rssi(self) -> float:
+        """Get the RSSI of the last received packet.
+
+        :raises NotImplementedError: If not implemented by subclass.
+        """
+
+        ...

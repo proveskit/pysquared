@@ -1,4 +1,3 @@
-import random
 import time
 
 from ..config.radio import RadioConfig
@@ -25,16 +24,12 @@ class RadioTest:
             self._log.debug("Device Under Test Selected")
             self._log.debug("Sending Ping...")
 
-            MAX_ATTEMPTS = 5
-            attempts = 0
-            success = False
+            ATTEMPTS = 5
+            results = {}
 
-            while attempts < MAX_ATTEMPTS:
-                random_number = random.randint(1, 500)
-                self._radio.send(
-                    f"|PING: {random_number} {
-                        self.test_message}|"
-                )
+            for i in range(ATTEMPTS):
+                i += 1
+                self._radio.send(f"|PING: {i} {self.test_message}|")
 
                 response = self._radio.receive(timeout=5)
                 if response:
@@ -43,24 +38,23 @@ class RadioTest:
 
                     header = response.split(" ", 1)[0]
 
-                    if (
-                        response
-                        == f"{header} PONG: {random_number} {self.test_message} {header}"
-                    ):
-                        success = True
-                        break
+                    if response == f"{header} PONG: {i} {self.test_message} {header}":
+                        rssi = self._radio.get_rssi()
+                        self._log.debug("Received pong.", attempts=i, rssi=rssi)
+                        results[str(i)] = {
+                            "received": True,
+                            "rssi": rssi,
+                        }
                 else:
-                    attempts += 1
-                    self._log.debug(
-                        "Didn't receive ping, trying again.", attempts=attempts
-                    )
+                    self._log.debug("Didn't receive pong.", attempts=i, rssi=0.0)
+                    results[str(i)] = {
+                        "received": False,
+                        "rssi": 0.0,
+                    }
 
                 time.sleep(1)
 
-            if success:
-                self._log.debug("Radio test passed")
-            else:
-                self._log.debug("Radio test failed: maximum attempts reached.")
+            self._log.debug("Radio test results: ", results=results)
         except KeyboardInterrupt:
             self._log.debug("Keyboard interrupt received, exiting device test.")
 
@@ -99,6 +93,7 @@ class RadioTest:
             self._radio.modify_config("receiver_id", self._radio_config.receiver_id)
             self._radio.modify_config("sender_id", self._radio_config.sender_id)
 
+    # This mode is for interacting with an active board to send packets to cdh.py
     def client(self, passcode):
         self._log.debug("Client Selected")
         self._log.debug("Setting up radio")

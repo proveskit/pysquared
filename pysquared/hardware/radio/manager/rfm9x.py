@@ -234,3 +234,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+
+    def get_rssi(self) -> float:
+        """Get the RSSI of the last received packet."""
+        return self._radio.last_rssi
