@@ -22,14 +22,13 @@ class RadioTest:
     def device_under_test(self):
         try:
             self._log.debug("Device Under Test Selected")
-            self._log.debug("Sending Ping...")
 
-            ATTEMPTS = 5
             results = {}
 
-            for i in range(ATTEMPTS):
+            for i in range(5):
                 i += 1
                 self._radio.send(f"|PING: {i} {self.test_message}|")
+                self._log.debug("Sending Ping...")
 
                 response = self._radio.receive(timeout=5)
                 if response:
@@ -46,10 +45,10 @@ class RadioTest:
                             "rssi": rssi,
                         }
                 else:
-                    self._log.debug("Didn't receive pong.", attempts=i, rssi=0.0)
+                    self._log.debug("Didn't receive pong.", attempts=i, rssi=None)
                     results[str(i)] = {
                         "received": False,
-                        "rssi": 0.0,
+                        "rssi": None,
                     }
 
                 time.sleep(1)
