@@ -102,8 +102,10 @@ class BaseRadioManager(RadioProto):
         """Get the modulation mode from the initialized radio hardware.
 
         :return: The current modulation mode of the hardware.
+
+        :raises NotImplementedError: If not implemented by subclass.
         """
-        return FSK if self._radio_config.modulation == "FSK" else LoRa
+        raise NotImplementedError
 
     def modify_config(self, radio_config: RadioConfig) -> None:
         """Modify the radio configuration. This will apply the new configuration and reinitialize the radio.

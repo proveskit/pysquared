@@ -6,7 +6,7 @@ from digitalio import DigitalInOut
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
 from ....protos.temperature_sensor import TemperatureSensorProto
-from ..modulation import FSK, RadioModulation
+from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
 
 # Type hinting only
@@ -121,6 +121,10 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             if self._radio.spreading_factor > 9:  # type: ignore
                 self._radio.preamble_length = self._radio.spreading_factor  # type: ignore
                 self._radio.low_datarate_optimize = 1  # type: ignore
+
+    def get_modulation(self) -> Type[RadioModulation]:
+        """Get the modulation mode from the initialized RFM9x radio."""
+        return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
     def get_temperature(self) -> float:
         """Get the temperature reading from the radio sensor."""

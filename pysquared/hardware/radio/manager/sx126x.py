@@ -7,7 +7,7 @@ from proves_sx126.sx1262 import SX1262
 
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
-from ..modulation import FSK, RadioModulation
+from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
 
 # Type hinting only
@@ -124,3 +124,7 @@ class SX126xManager(BaseRadioManager):
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+
+    def get_modulation(self) -> Type[RadioModulation]:
+        """Get the modulation mode from the initialized SX126x radio."""
+        return FSK if self._radio.radio_modulation == "FSK" else LoRa
