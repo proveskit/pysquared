@@ -9,6 +9,7 @@ except ImportError:
     pass
 
 
+# TODO(nateinaction): Add retransmission support.
 class PacketManager:
     def __init__(
         self,
