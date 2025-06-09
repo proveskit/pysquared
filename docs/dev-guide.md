@@ -1,6 +1,9 @@
 # Development Guide
 Welcome to the development guide for our project! This guide will help you set up your development environment and get you started with contributing to the repository.
 
+#### CircuitPython
+If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview) to help you get started!
+
 ## OS Specific Guides
 We suggest you get started with the development guide for your operating system:
 
@@ -13,10 +16,24 @@ Once you have your development environment set up, you should be able to run the
 make
 ```
 
-## Manually testing code on the board
-We are working on improving our automated testing but right now the best way to test your code is to run it on the board. We have provided the following command to make it easy to install code on the board:
+## Manually testing code on a board
+We are working on improving our automated testing but right now the best way to test your code is to run it on the board.
+
+Your board must be connected to your computer, the correct board repository cloned, and you must have installed the latest CircuitPython Firmware.
+
+Firmware can be installed by placing the board in Bootloader mode (by pressing both of the buttons simultaneously) and running the following command:
+```sh
+make install-firmware
+```
+
+In the board repository, you can run the following command to install code on the board:
 ```sh
 make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
+```
+
+If you need to install a specific version of the `pysquared` library, you can do so by running:
+```sh
+PYSQUARED_VERSION=VERSION/BRANCH make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
 ```
 
 There is more information in the OS specific guides on how to find your board's mount point.

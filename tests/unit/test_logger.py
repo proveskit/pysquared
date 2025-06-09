@@ -1,24 +1,29 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 import pysquared.nvm.counter as counter
-from mocks.circuitpython.byte_array import ByteArray
 from pysquared.logger import Logger, _color
+
+# Mock modules after all imports
 
 
 @pytest.fixture
 def logger():
-    datastore = ByteArray(size=8)
-    index = 0
-    count = counter.Counter(index, datastore)
+    count = MagicMock(spec=counter.Counter)
     return Logger(count)
 
 
 @pytest.fixture
 def logger_color():
-    datastore = ByteArray(size=8)
-    index = 0
-    count = counter.Counter(index, datastore)
+    count = MagicMock(spec=counter.Counter)
     return Logger(error_counter=count, colorized=True)
+
+
+@pytest.fixture
+@patch("microcontroller.Pin")
+def mock_pin(mock_pin_class):
+    return mock_pin_class()
 
 
 def test_debug_log(capsys, logger):
@@ -117,14 +122,6 @@ def test_critical_log(capsys, logger):
     assert '"config": "king"' in captured.out
 
 
-def test_type_error_log(capsys, logger):
-    logger.info("Testing type error", bad_arg=lambda x: x + 1)
-    captured = capsys.readouterr()
-    assert '"level": "ERROR"' in captured.out
-    assert "Failed to serialize log message:" in captured.out
-    assert "Object of type function is not JSON serializable" in captured.out
-
-
 def test_debug_log_color(capsys, logger_color):
     logger_color.debug("This is a debug message", blake="jameson")
     captured = capsys.readouterr()
@@ -187,3 +184,19 @@ def test_critical_log_color(capsys, logger_color):
     assert '"soft": "ware"' in captured.out
     assert '"j": "20"' in captured.out
     assert '"config": "king"' in captured.out
+
+
+# testing a kwarg of value type bytes, which previously caused a TypeError exception
+def test_invalid_json_type_bytes(capsys, logger):
+    byte_message = b"forming a bytes message"
+    logger.debug("This is a random message", attempt=byte_message)
+    captured = capsys.readouterr()
+    assert "b'forming a bytes message'" in captured.out
+    assert "TypeError" not in captured.out
+
+
+# testing a kwarg of value type Pin, which previously caused a TypeError exception
+def test_invalid_json_type_pin(capsys, logger, mock_pin):
+    logger.debug("Initializing watchdog", pin=mock_pin)
+    captured = capsys.readouterr()
+    assert "TypeError" not in captured.out

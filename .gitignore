@@ -11,12 +11,4 @@ venv
 build/
 pysquared.egg-info/
 **/*.mpy
-
-# libs
-lib/rv3028*
-lib/adafruit*
-lib/asyncio*
-lib/neopixel.py
-
-# documentation
 site/

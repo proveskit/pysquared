@@ -16,7 +16,7 @@ from .nvm.counter import Counter
 
 
 def _color(msg, color="gray", fmt="normal") -> str:
-    '''
+    """
     Returns a colorized string for terminal output.
 
     Args:
@@ -26,7 +26,7 @@ def _color(msg, color="gray", fmt="normal") -> str:
 
     Returns:
         str: The colorized message.
-    '''
+    """
     _h = "\033["
     _e = "\033[0;39;49m"
 
@@ -56,9 +56,10 @@ LogColors = {
 
 
 class LogLevel:
-    '''
+    """
     Defines log level constants for Logger.
-    '''
+    """
+
     NOTSET = 0
     DEBUG = 1
     INFO = 2
@@ -68,34 +69,35 @@ class LogLevel:
 
 
 class Logger:
-    '''
+    """
     Logger class for handling logging messages with different severity levels.
 
     Attributes:
         _error_counter (Counter): Counter for error occurrences.
         _log_level (int): Current log level.
         colorized (bool): Whether to colorize output.
-    '''
+    """
+
     def __init__(
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
     ) -> None:
-        '''
+        """
         Initializes the Logger instance.
 
         Args:
             error_counter (Counter): Counter for error occurrences.
             log_level (int): Initial log level.
             colorized (bool): Whether to colorize output.
-        '''
+        """
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
         self.colorized: bool = colorized
 
     def _can_print_this_level(self, level_value: int) -> bool:
-        '''
+        """
         Checks if the message should be printed based on the log level.
 
         Args:
@@ -103,8 +105,13 @@ class Logger:
 
         Returns:
             bool: True if the message should be printed, False otherwise.
-        '''
+        """
         return level_value >= self._log_level
+
+    def _is_valid_json_type(self, object) -> bool:
+        valid_types = {dict, list, tuple, str, int, float, bool, None}
+
+        return type(object) in valid_types
 
     def _log(self, level: str, level_value: int, message: str, **kwargs) -> None:
         """
@@ -130,6 +137,12 @@ class Logger:
         json_order: OrderedDict[str, str] = OrderedDict(
             [("time", asctime), ("level", level), ("msg", message)]
         )
+
+        # detect if there are kwargs with invalid types (would cause TypeError) and converting object to string type, making it loggable
+        for key, value in kwargs.items():
+            if not self._is_valid_json_type(value):
+                kwargs[key] = str(value)
+
         json_order.update(kwargs)
 
         try:
@@ -209,10 +222,10 @@ class Logger:
         self._log("CRITICAL", 5, message, **kwargs)
 
     def get_error_count(self) -> int:
-        '''
+        """
         Returns the current error count.
 
         Returns:
             int: The number of errors logged.
-        '''
+        """
         return self._error_counter.get()

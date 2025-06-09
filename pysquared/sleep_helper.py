@@ -1,107 +1,116 @@
+"""
+sleep_helper Module
+==================
+
+This module provides the SleepHelper class for managing safe sleep and hibernation
+modes for the PySquared satellite. It ensures the satellite sleeps for specified
+durations while maintaining system safety and watchdog activity.
+
+"""
+
 import gc
 import time
 
 import alarm
-import digitalio
+from alarm import time as alarmTime
+from alarm.time import TimeAlarm
 
+from .config.config import Config
 from .logger import Logger
-from .pysquared import Satellite
+from .satellite import Satellite
+from .watchdog import Watchdog
 
 try:
     from typing import Literal
-
-    import circuitpython_typing
 except Exception:
     pass
 
 
 class SleepHelper:
     """
-    Class responsible for sleeping the Satellite to conserve power
+    Class responsible for sleeping the Satellite to conserve power.
+
+    Attributes:
+        cubesat (Satellite): The Satellite object.
+        logger (Logger): Logger instance for logging events and errors.
+        watchdog (Watchdog): Watchdog instance for system safety.
+        config (Config): Configuration object.
     """
 
-    def __init__(self, cubesat: Satellite, logger: Logger):
+    def __init__(
+        self, cubesat: Satellite, logger: Logger, watchdog: Watchdog, config: Config
+    ) -> None:
         """
         Creates a SleepHelper object.
 
-        :param cubesat: The Satellite object
-        :param logger: The Logger object allowing for log output
-
+        Args:
+            cubesat (Satellite): The Satellite object.
+            logger (Logger): Logger instance for logging events and errors.
+            watchdog (Watchdog): Watchdog instance for system safety.
+            config (Config): Configuration object.
         """
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
+        self.watchdog: Watchdog = watchdog
+        self.config = config
 
     def safe_sleep(self, duration: int = 15) -> None:
         """
-        Puts the Satellite to sleep for specified duration, in seconds.
+        Puts the Satellite to sleep for a specified duration, in seconds.
 
-        Current implementation results in an actual sleep duration that is a multiple of 15.
-        Current implementation only allows for a maximum sleep duration of 180 seconds.
+        Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config.
 
-        :param duration: Specified time, in seconds, to sleep the Satellite for
+        Args:
+            duration (int): Specified time, in seconds, to sleep the Satellite for.
         """
+        self.watchdog.pet()
 
-        self.logger.info("Setting Safe Sleep Mode")
+        time_remaining = min(duration, self.config.longest_allowable_sleep_time)
 
-        iterations: int = 0
+        self.logger.debug("Setting Safe Sleep Mode", duration=time_remaining)
 
-        while duration >= 15 and iterations < 12:
-            time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
-                monotonic_time=time.monotonic() + 15
+        while time_remaining > 0:
+            time_increment = time_remaining if time_remaining < 15 else 15
+
+            time_alarm: TimeAlarm = alarmTime.TimeAlarm(
+                monotonic_time=time.monotonic() + time_increment
             )
-
             alarm.light_sleep_until_alarms(time_alarm)
-            duration -= 15
-            iterations += 1
+            time_remaining -= time_increment
 
-            self.cubesat.watchdog_pet()
+            self.watchdog.pet()
 
     def short_hibernate(self) -> Literal[True]:
-        """Puts the Satellite to sleep for 120 seconds"""
+        """
+        Puts the Satellite to sleep for 120 seconds.
 
+        Returns:
+            True: Always returns True after hibernation.
+        """
+        self.watchdog.pet()
         self.logger.debug("Short Hibernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
-        # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
-        if isinstance(self.cubesat.enable_rf, digitalio.DigitalInOut):
-            self.cubesat.enable_rf.value = False
-        else:
-            self.cubesat.enable_rf = False
-
         self.cubesat.f_softboot.toggle(True)
-        self.cubesat.watchdog_pet()
         self.safe_sleep(120)
-
-        # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
-        if isinstance(self.cubesat.enable_rf, digitalio.DigitalInOut):
-            self.cubesat.enable_rf.value = True
-        else:
-            self.cubesat.enable_rf = True
 
         return True
 
     def long_hibernate(self) -> Literal[True]:
-        """Puts the Satellite to sleep for 180 seconds"""
+        """
+        Puts the Satellite to sleep for 180 seconds.
 
+        Returns:
+            True: Always returns True after hibernation.
+        """
+
+        self.watchdog.pet()
         self.logger.debug("LONG Hibernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
-        # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
-        if isinstance(self.cubesat.enable_rf, digitalio.DigitalInOut):
-            self.cubesat.enable_rf.value = False
-        else:
-            self.cubesat.enable_rf = False
-
         self.cubesat.f_softboot.toggle(True)
-        self.cubesat.watchdog_pet()
         self.safe_sleep(600)
-
-        # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
-        if isinstance(self.cubesat.enable_rf, digitalio.DigitalInOut):
-            self.cubesat.enable_rf.value = True
-        else:
-            self.cubesat.enable_rf = True
 
         return True
