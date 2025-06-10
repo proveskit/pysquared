@@ -34,7 +34,6 @@ class BurnwireManager(BurnwireProto):
         :param Digitalio enable_burn: A pin used for enabling the initial stage of a burnwire circuit.
         :param Digitalio fire_burn: A pin used for enabling a specific burnwire port.
         :param bool enable_logic: Boolean defining whether the burnwire load switches are enabled when True or False. Defaults to `True`.
-        :param deployment_sensor: Generic input for a sensor object that will act as the deployment sensor for smart_burn(). Defaults to 'False'.
         """
         self._log: Logger = logger
         self._enable: bool = enable_logic
