@@ -53,7 +53,7 @@ class functions:
 
         self.cubesat_name: str = config.cubesat_name
         self.jokes: list[str] = config.jokes
-        self.last_battery_temp: float = config.last_battery_temp
+        # self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
 
     """
@@ -66,7 +66,7 @@ class functions:
         self.listen()
         self.watchdog.pet()
 
-        self.logger.debug("Sleeping for 20 seconds")
+        self.logger.debug("Sleeping!", duration=self.sleep_duration)
         self.watchdog.pet()
         self.sleep_helper.safe_sleep(self.sleep_duration)
         self.watchdog.pet()

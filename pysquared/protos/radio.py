@@ -45,3 +45,21 @@ class RadioProto:
         :rtype: Optional[bytes]
         """
         ...
+
+    def modify_config(self, key: str, value) -> None:
+        """Modify a specific radio configuration parameter.
+
+        :param str key: The configuration parameter key to modify.
+        :param value: The new value to set for the parameter.
+        :raises NotImplementedError: If not implemented by subclass.
+        """
+
+        ...
+
+    def get_rssi(self) -> float:
+        """Get the RSSI of the last received packet.
+
+        :raises NotImplementedError: If not implemented by subclass.
+        """
+
+        ...

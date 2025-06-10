@@ -5,7 +5,6 @@ from digitalio import DigitalInOut
 
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
-from ....nvm.flag import Flag
 from ....protos.temperature_sensor import TemperatureSensorProto
 from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
@@ -15,6 +14,12 @@ try:
     from typing import Optional, Type
 except ImportError:
     pass
+
+# try:
+#     from mocks.adafruit_rfm.rfm9x import RFM9x
+#     from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
+# except ImportError:
+#     pass
 
 
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
@@ -26,7 +31,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         self,
         logger: Logger,
         radio_config: RadioConfig,
-        use_fsk: Flag,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
@@ -49,7 +53,6 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         super().__init__(
             logger=logger,
             radio_config=radio_config,
-            use_fsk=use_fsk,
         )
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
@@ -80,7 +83,61 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         # Assuming send returns bool or similar truthy/falsy
         return bool(self._radio.send(payload))
 
-    def get_modulation(self) -> Type[FSK] | Type[LoRa]:
+    def modify_config(self, key: str, value) -> None:
+        """Modify a specific radio configuration parameter.
+
+        :param str key: The configuration parameter key to modify.
+        :param object value: The new value to set for the parameter.
+        :raises ValueError: If the key is not recognized or invalid for the current radio type.
+        """
+        # Handle base radio parameters
+        if key == "sender_id":
+            self._radio_config.validate("sender_id", value)
+            self._radio.node = value
+        elif key == "receiver_id":
+            self._radio_config.validate("receiver_id", value)
+            self._radio.destination = value
+
+        # Handle FSK-specific parameters
+        elif self._radio.__class__.__name__ == "RFM9xFSK":
+            if key == "fsk_broadcast_address":
+                self._radio_config.validate("broadcast_address", value)
+                self._radio.fsk_broadcast_address = value  # type: ignore
+            elif key == "fsk_node_address":
+                self._radio_config.validate("node_address", value)
+                self._radio.fsk_node_address = value  # type: ignore
+            elif key == "modulation_type":
+                self._radio_config.validate("modulation_type", value)
+                self._radio.modulation_type = value  # type: ignore
+            else:
+                raise ValueError(f"Unknown FSK parameter key: {key}")
+
+        # Handle LoRa-specific parameters
+        elif self._radio.__class__.__name__ == "RFM9x":
+            if key == "ack_delay":
+                self._radio_config.validate("ack_delay", value)
+                self._radio.ack_delay = value  # type: ignore
+            elif key == "cyclic_redundancy_check":
+                self._radio.enable_crc = value  # type: ignore
+            elif key == "spreading_factor":
+                self._radio_config.validate("spreading_factor", value)
+                self._radio.spreading_factor = value  # type: ignore
+                # Update related parameters when spreading factor changes
+                if self._radio.spreading_factor > 9:  # type: ignore
+                    self._radio.preamble_length = self._radio.spreading_factor  # type: ignore
+                    self._radio.low_datarate_optimize = 1  # type: ignore
+            elif key == "transmit_power":
+                self._radio.tx_power = value
+            elif key == "preamble_length":
+                self._radio.preamble_length = value  # type: ignore
+            elif key == "low_datarate_optimize":
+                self._radio.low_datarate_optimize = value  # type: ignore
+            else:
+                raise ValueError(f"Unknown LoRa parameter key: {key}")
+        else:
+            raise ValueError(f"Unknown parameter key: {key}")
+
+    def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized RFM9x radio."""
         return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
@@ -141,7 +198,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             transmit_frequency,
         )
 
-        radio.ack_delay = lora_config.ack_delay  # type: ignore
+        radio.ack_delay = lora_config.ack_delay  # type: ignore # https://github.com/adafruit/Adafruit_CircuitPython_RFM/pull/13
         radio.enable_crc = lora_config.cyclic_redundancy_check
         radio.spreading_factor = lora_config.spreading_factor
         radio.tx_power = lora_config.transmit_power
@@ -174,3 +231,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+
+    def get_rssi(self) -> float:
+        """Get the RSSI of the last received packet."""
+        return self._radio.last_rssi
