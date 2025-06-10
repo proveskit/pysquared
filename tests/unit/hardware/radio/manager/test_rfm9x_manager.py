@@ -660,7 +660,7 @@ def test_modify_lora_config(
     new_config.sender_id = 255
 
     # Modify the config
-    manager.modify_config(new_config)
+    manager.modify_config("sender_id", new_config.sender_id)
 
     # Verify the radio was modified with the new config
     assert manager._radio.node == new_config.sender_id
@@ -695,16 +695,12 @@ def test_modify_fsk_config(
         manager._radio.fsk_broadcast_address == mock_radio_config.fsk.broadcast_address  # type: ignore
     )
 
-    # Create a new config with modified node address
-    new_config = mock_radio_config
-    new_config.fsk.broadcast_address = 123
-
     # Modify the config
-    manager.modify_config(new_config)
+    manager.modify_config("fsk_broadcast_address", 123)
 
     # Verify the radio was modified with the new config
-    assert manager._radio.node == new_config.sender_id
-    assert manager._radio.fsk_broadcast_address == new_config.fsk.broadcast_address  # type: ignore
+    assert manager._radio.node == mock_radio_config.sender_id
+    assert manager._radio.fsk_broadcast_address == 123  # type: ignore
 
     mock_logger.debug.assert_any_call(
         "Initializing radio", radio_type="RFM9xManager", modulation=FSK

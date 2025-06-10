@@ -142,3 +142,12 @@ class BaseRadioManager(RadioProto):
         :raises Exception: If sending fails unexpectedly.
         """
         raise NotImplementedError
+
+    def get_rssi(self) -> float:
+        """Get the RSSI of the last received packet.
+
+        :return: The RSSI of the last received packet.
+        :raises NotImplementedError: If not implemented by subclass.
+        :raises Exception: If querying the hardware fails.
+        """
+        raise NotImplementedError
