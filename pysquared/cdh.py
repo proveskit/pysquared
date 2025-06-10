@@ -35,25 +35,19 @@ class CommandDataHandler:
             return
 
         try:
-            # unmarshal json message that looks like this:
-            # msg: dict[str, str] = {
-            #     "password": "super_secret_code",
-            #     "command": "joke_reply",
-            #     "args": "",
-            # }
             json_str = json_bytes.decode("utf-8")
 
             msg: dict[str, str] = json.loads(json_str)
 
             # If message has password field, check it
             if msg.get("password") != self._config.super_secret_code:
-                self._log.warning("Invalid password in command message", cmd=msg)
+                self._log.warning("Invalid password in message", msg=msg)
                 return
 
             # If message has command field, execute the command
             cmd = msg.get("command")
             if cmd is None:
-                self._log.warning("No command found in message")
+                self._log.warning("No command found in message", msg=msg)
                 return
 
             args: list[str] = []
