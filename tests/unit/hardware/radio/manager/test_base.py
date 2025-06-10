@@ -32,3 +32,13 @@ def test_send_internal_not_implemented():
     # Check that calling _initialize_radio raises NotImplementedError
     with pytest.raises(NotImplementedError):
         mock_manager._send_internal(b"blah")
+
+
+def test_get_modulation_not_implemented():
+    """Test that the get_modulation method raises NotImplementedError."""
+    # Create a mock instance of the BaseRadioManager
+    mock_manager = BaseRadioManager.__new__(BaseRadioManager)
+
+    # Check that calling get_modulation raises NotImplementedError
+    with pytest.raises(NotImplementedError):
+        mock_manager.get_modulation()

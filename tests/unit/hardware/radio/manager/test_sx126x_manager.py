@@ -483,3 +483,27 @@ def test_receive_exception(
     assert received_data is None
     initialized_manager._radio.recv.assert_called_once()
     mock_logger.error.assert_called_once_with("Error receiving data", receive_error)
+
+
+def test_get_modulation_initialized(
+    mock_sx1262: MagicMock,
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_irq: MagicMock,
+    mock_gpio: MagicMock,
+    mock_radio_config: RadioConfig,
+):
+    """Test get_modulation when radio is initialized."""
+
+    manager = SX126xManager(
+        mock_logger,
+        mock_radio_config,
+        mock_spi,
+        mock_chip_select,
+        mock_irq,
+        mock_reset,
+        mock_gpio,
+    )
+    assert manager.get_modulation() == FSK
