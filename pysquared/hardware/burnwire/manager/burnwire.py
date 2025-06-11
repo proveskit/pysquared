@@ -11,7 +11,7 @@ Usage Example:
 from lib.pysquared.hardware.burnwire.manager.burnwire import BurnwireManager
 ...
 
-antenna_deployment = BurnwireManger(logger, board.FIRE_DEPLOY1A, board.FIRE_DEPLOY1B, enable_logic = False)
+antenna_deployment = BurnwireManager(logger, board.FIRE_DEPLOY1A, board.FIRE_DEPLOY1B, enable_logic = False)
 
 antenna_deployment.burn()
 """
