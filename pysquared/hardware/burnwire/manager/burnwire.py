@@ -43,55 +43,36 @@ class BurnwireManager(BurnwireProto):
 
         self.number_of_attempts: int = 0
 
-    def burn(self, timeout_duration: float = 5.0, max_retries: int = 1) -> bool:
+    def burn(self, timeout_duration: float = 5.0) -> bool:
         """Fires the burnwire for a specified amount of time
 
         :param float timeout_duration: The max amount of time to keep the burnwire on for.
-        :param int max_retries: The maximum number of times the burnwire is allowed to retry before exiting.
 
         :return: A Boolean indicating whether the burn occurred successfully
         :rtype: bool
 
         :raises Exception: If there is an error toggling the burnwire pins.
         """
+        _start_time = time.monotonic()
+
         self._log.info(
             f"BURN Attempt {self.number_of_attempts} Started with Duration {timeout_duration}s"
         )
         try:
-            if max_retries == 1:
-                try:
-                    self._attempt_burn(timeout_duration)
-                    return True
-                except RuntimeError as e:
-                    self._log.critical(
-                        f"BURN Attempt {self.number_of_attempts} Failed! Not Retrying",
-                        e,
-                    )
-                    return False
+            self._attempt_burn(timeout_duration)
+            return True
 
-            elif max_retries < 1:
-                self._log.warning("burnwire max_retries cannot be 0 or negative!")
-                raise ValueError
+        except KeyboardInterrupt:
+            self._log.info(
+                f"Burn Attempt Interupted after {time.monotonic() - _start_time:.2f} seconds"
+            )
+            return False
 
-            else:
-                self._log.warning(
-                    "Multiple Retries with base burnwire not recommended! Consider using smart_burnwire..."
-                )
-
-                for _ in range(max_retries):
-                    try:
-                        self._attempt_burn(timeout_duration)
-                        self._log.info(
-                            f"BURN Attempt {self.number_of_attempts} Completed"
-                        )
-                        time.sleep(1)
-                    except RuntimeError:
-                        return False
-
-                return True
-
-        except ValueError as e:
-            self._log.critical("Burnwire configuration incorrect!", e)
+        except RuntimeError as e:
+            self._log.critical(
+                f"BURN Attempt {self.number_of_attempts} Failed!",
+                e,
+            )
             return False
 
     def _enable(self):
@@ -165,6 +146,10 @@ class BurnwireManager(BurnwireProto):
                 f"Burnwire failed on attempt {self.number_of_attempts}!", e
             )
             raise e
+
+        except KeyboardInterrupt as exc:
+            self._log.warning(f"BURN Attempt {self.number_of_attempts} Interrupted!")
+            raise KeyboardInterrupt("Burnwire operation interrupted by user") from exc
 
         finally:
             # Burnwire cleanup in the finally block to ensure it always happens
