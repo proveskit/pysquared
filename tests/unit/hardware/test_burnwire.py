@@ -37,8 +37,7 @@ def test_burnwire_initialization_default_logic(
 ):
     """Test burnwire initialization with default enable_logic=True."""
     manager = BurnwireManager(mock_logger, mock_enable_burn, mock_fire_burn)
-    assert manager._enable is True
-    assert manager._disable is False
+    assert manager._enable_logic is True
     assert manager.number_of_attempts == 0
 
 
@@ -49,8 +48,7 @@ def test_burnwire_initialization_inverted_logic(
     manager = BurnwireManager(
         mock_logger, mock_enable_burn, mock_fire_burn, enable_logic=False
     )
-    assert manager._enable is False
-    assert manager._disable is True
+    assert manager._enable_logic is False
     assert manager.number_of_attempts == 0
 
 
@@ -59,15 +57,14 @@ def test_successful_burn(burnwire_manager):
     with patch("time.sleep") as mock_sleep:
         result = burnwire_manager.burn(timeout_duration=1.0)
 
-        # Verify pin states during burn sequence
-        # burnwire_manager._enable_burn.value = True
         mock_sleep.assert_any_call(0.1)  # Verify stabilization delay
-        # burnwire_manager._fire_burn.value = True
         mock_sleep.assert_any_call(1.0)  # Verify burn duration
 
         # Verify final safe state
-        assert burnwire_manager._fire_burn.value is False
-        assert burnwire_manager._enable_burn.value is False
+        assert burnwire_manager._fire_burn.value == (not burnwire_manager._enable_logic)
+        assert burnwire_manager._enable_burn.value == (
+            not burnwire_manager._enable_logic
+        )
 
         assert result is True
         assert burnwire_manager.number_of_attempts == 1
@@ -112,7 +109,6 @@ def test_burn_with_invalid_retries(burnwire_manager):
 def test_burn_error_handling(burnwire_manager):
     """Test error handling during burnwire activation."""
     # Mock the enable_burn pin to raise an exception when setting value
-    burnwire_manager._enable_burn.value = MagicMock()
     type(burnwire_manager._enable_burn).value = property(
         fset=MagicMock(side_effect=RuntimeError("Hardware failure"))
     )
@@ -123,8 +119,9 @@ def test_burn_error_handling(burnwire_manager):
     assert burnwire_manager.number_of_attempts == 1
 
     # Verify critical log call about burn failure
-    burnwire_manager._log.critical.assert_called_once()
-    assert "Failed! Not Retrying" in burnwire_manager._log.critical.call_args[0][0]
+    assert burnwire_manager._log.critical.call_count == 2
+    calls = [call[0][0] for call in burnwire_manager._log.critical.call_args_list]
+    assert any("Failed! Not Retrying" in msg for msg in calls)
 
 
 def test_cleanup_on_error(burnwire_manager):
@@ -136,15 +133,16 @@ def test_cleanup_on_error(burnwire_manager):
 
         assert result is False
         # Verify pins are set to safe state even after error
-        assert burnwire_manager._fire_burn.value is False
-        assert burnwire_manager._enable_burn.value is False
+        assert burnwire_manager._fire_burn.value == (not burnwire_manager._enable_logic)
+        assert burnwire_manager._enable_burn.value == (
+            not burnwire_manager._enable_logic
+        )
         burnwire_manager._log.info.assert_any_call("Burnwire Safed")
 
 
 def test_attempt_burn_exception_handling(burnwire_manager):
     """Test that _attempt_burn properly handles and propagates exceptions."""
     # Mock the enable_burn pin to raise an exception when setting value
-    burnwire_manager._enable_burn.value = MagicMock()
     type(burnwire_manager._enable_burn).value = property(
         fset=MagicMock(side_effect=RuntimeError("Hardware failure"))
     )
@@ -152,5 +150,4 @@ def test_attempt_burn_exception_handling(burnwire_manager):
     with pytest.raises(RuntimeError) as exc_info:
         burnwire_manager._attempt_burn()
 
-    assert "Failed to set enable_burn pin" in str(exc_info.value)
-    # We don't expect the cleanup message in this case since we're testing the error path
+    assert "Failed to set fire_burn pin" in str(exc_info.value)
