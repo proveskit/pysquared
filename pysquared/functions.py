@@ -7,8 +7,6 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 
 import random
 
-import microcontroller
-
 from .cdh import CommandDataHandler
 from .config.config import Config
 from .logger import Logger
@@ -20,11 +18,6 @@ from .protos.radio import RadioProto
 from .satellite import Satellite
 from .sleep_helper import SleepHelper
 from .watchdog import Watchdog
-
-try:
-    from typing import OrderedDict
-except Exception:
-    pass
 
 
 class functions:
@@ -107,45 +100,6 @@ class functions:
 
     def joke(self) -> None:
         self.radio.send(random.choice(self.jokes))
-
-    def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
-        to_return: str = ""
-        for key, value in hardware.items():
-            to_return = to_return + key + "="
-            if value:
-                to_return += "1"
-            else:
-                to_return += "0"
-
-            if len(to_return) > 245:
-                return to_return
-
-        return to_return
-
-    def state_of_health(self) -> None:
-        self.state_list: list = []
-        # list of state information
-        try:
-            self.state_list: list[str] = [
-                f"PM:{self.cubesat.power_mode}",
-                # f"VB:{self.cubesat.battery_voltage}",
-                # f"ID:{self.cubesat.current_draw}",
-                f"IC:{self.cubesat.charge_current}",
-                f"UT:{self.cubesat.get_system_uptime}",
-                f"BN:{self.cubesat.boot_count.get()}",
-                f"MT:{microcontroller.cpu.temperature}",
-                f"RT:{self.radio.get_temperature()}",
-                f"AT:{self.imu.get_temperature()}",
-                # f"BT:{self.last_battery_temp}",
-                f"EC:{self.logger.get_error_count()}",
-                f"AB:{int(self.cubesat.f_burned.get())}",
-                f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{self.radio.get_modulation()}",
-            ]
-        except Exception as e:
-            self.logger.error("Couldn't aquire data for the state of health: ", e)
-
-        self.radio.send("State of Health " + str(self.state_list))
 
     def listen(self) -> bool:
         # This just passes the message through. Maybe add more functionality later.
