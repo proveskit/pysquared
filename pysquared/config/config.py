@@ -59,12 +59,12 @@ class Config:
             "normal_battery_temp": {"type": int, "min": 1, "max": 35},
             "normal_micro_temp": {"type": int, "min": 1, "max": 50},
             "reboot_time": {"type": int, "min": 3600, "max": 604800},
-            "detumble_enable_z": {"type": bool, "allowed_values": [True, False]},
-            "detumble_enable_x": {"type": bool, "allowed_values": [True, False]},
-            "detumble_enable_y": {"type": bool, "allowed_values": [True, False]},
-            "debug": {"type": bool, "allowed_values": [True, False]},
-            "heating": {"type": bool, "allowed_values": [True, False]},
-            "turbo_clock": {"type": bool, "allowed_values": [True, False]},
+            "detumble_enable_z": {"type": bool},
+            "detumble_enable_x": {"type": bool},
+            "detumble_enable_y": {"type": bool},
+            "debug": {"type": bool},
+            "heating": {"type": bool},
+            "turbo_clock": {"type": bool},
         }
 
     # validates values from input

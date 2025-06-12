@@ -50,6 +50,7 @@ packages = [
     "pysquared.hardware.power_monitor.manager",
     "pysquared.nvm",
     "pysquared.protos",
+    "pysquared.repl",
     "pysquared.rtc",
     "pysquared.rtc.manager"
 ]

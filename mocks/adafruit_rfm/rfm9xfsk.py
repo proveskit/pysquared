@@ -11,5 +11,7 @@ class RFM9xFSK(RFMSPI):
     fsk_broadcast_address: int
     fsk_node_address: int
     max_packet_length: int
+    last_rssi: float
+    tx_power: int
 
     def __init__(self, spi, cs, reset, frequency) -> None: ...

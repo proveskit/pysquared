@@ -20,5 +20,7 @@ class RFM9x(RFMSPI):
     preamble_length: int
     low_datarate_optimize: int
     max_packet_length: int
+    last_rssi: float
+    tx_power: int
 
     def __init__(self, spi, cs, reset, frequency) -> None: ...
