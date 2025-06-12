@@ -86,6 +86,24 @@ def test_listen_for_commands_missing_command(cdh, mock_packet_manager, mock_logg
     )
 
 
+def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger):
+    """Test listen_for_commands with missing command field."""
+    # Create a message with valid password but no command
+    message = {
+        "password": "test_password",
+        "command": "send_joke",
+        "args": "not_a_list",
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    mock_packet_manager.listen.assert_called_once_with(30)
+    mock_logger.info.assert_any_call(
+        "Received command message", cmd="send_joke", args=[]
+    )
+
+
 def test_listen_for_commands_invalid_json(cdh, mock_packet_manager, mock_logger):
     """Test listen_for_commands with invalid JSON."""
     message = b"this is not valid json"

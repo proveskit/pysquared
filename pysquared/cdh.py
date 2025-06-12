@@ -55,7 +55,7 @@ class CommandDataHandler:
             if isinstance(raw_args, list):
                 args: list[str] = raw_args
 
-            self._log.info("Received command message", cmd=msg, args=args)
+            self._log.info("Received command message", cmd=cmd, args=args)
 
             match cmd:
                 case "reset":

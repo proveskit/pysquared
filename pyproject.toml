@@ -75,6 +75,9 @@ skip_covered = false
 include = [
     "pysquared/**/*.py",
 ]
+exclude = [
+    "pysquared/repl/**",
+]
 
 [tool.coverage.html]
 directory = ".coverage-reports/html"
