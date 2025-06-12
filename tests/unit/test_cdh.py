@@ -136,36 +136,39 @@ def test_change_radio_modulation_failure(
     mock_packet_manager.send.assert_called_once_with("".encode("utf-8"))
 
 
-# @patch("microcontroller")
-# def test_reset(mock_microcontroller, cdh, mock_logger):
-#     """Test the reset method."""
-#     mock_microcontroller.reset = MagicMock()
-#     mock_microcontroller.on_next_reset = MagicMock()
-#     mock_microcontroller.RunMode = MagicMock()
-#     mock_microcontroller.RunMode.NORMAL = MagicMock()
+@patch("pysquared.cdh.microcontroller")
+def test_reset(mock_microcontroller, cdh, mock_logger):
+    """Test the reset method."""
+    mock_microcontroller.reset = MagicMock()
+    mock_microcontroller.on_next_reset = MagicMock()
+    mock_microcontroller.RunMode = MagicMock()
+    mock_microcontroller.RunMode.NORMAL = MagicMock()
 
-#     cdh.reset()
+    cdh.reset()
 
-#     mock_microcontroller.on_next_reset.assert_called_once_with(mock_microcontroller.RunMode.NORMAL)
-#     mock_microcontroller.reset.assert_called_once()
-#     mock_logger.info.assert_called_once()
+    mock_microcontroller.on_next_reset.assert_called_once_with(
+        mock_microcontroller.RunMode.NORMAL
+    )
+    mock_microcontroller.reset.assert_called_once()
+    mock_logger.info.assert_called_once()
 
 
-# @patch("microcontroller.reset")
-# def test_listen_for_commands_reset(mock_reset, cdh, mock_packet_manager, mock_config):
-#     """Test listen_for_commands with reset command."""
-#     message = {
-#         "password": "test_password",
-#         "command": "reset",
-#         "args": []
-#     }
-#     mock_packet_manager.listen.return_value = json.dumps(message).encode('utf-8')
+@patch("pysquared.cdh.microcontroller")
+def test_listen_for_commands_reset(mock_microcontroller, cdh, mock_packet_manager):
+    """Test listen_for_commands with reset command."""
+    # Set up mocked attributes
+    mock_microcontroller.reset = MagicMock()
+    mock_microcontroller.on_next_reset = MagicMock()
 
-#     with patch("microcontroller.on_next_reset") as mock_on_next_reset:
-#         cdh.listen_for_commands(30)
+    message = {"password": "test_password", "command": "reset", "args": []}
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
-#         mock_on_next_reset.assert_called_once()
-#         mock_reset.assert_called_once()
+    cdh.listen_for_commands(30)
+
+    mock_microcontroller.on_next_reset.assert_called_once_with(
+        mock_microcontroller.RunMode.NORMAL
+    )
+    mock_microcontroller.reset.assert_called_once()
 
 
 @patch("random.choice")
