@@ -98,33 +98,27 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         # Handle FSK-specific parameters
         elif isinstance(self._radio, RFM9xFSK):
-            match key:
-                case "broadcast_address":
-                    self._radio.fsk_broadcast_address = value
-                case "node_address":
-                    self._radio.fsk_node_address = value
-                case "modulation_type":
-                    self._radio.modulation_type = value
-                case _:
-                    raise KeyError(f"Unknown FSK parameter key: {key}")
+            if key == "broadcast_address":
+                self._radio.fsk_broadcast_address = value
+            elif key == "node_address":
+                self._radio.fsk_node_address = value
+            elif key == "modulation_type":
+                self._radio.modulation_type = value
 
         # Handle LoRa-specific parameters
         elif isinstance(self._radio, RFM9x):
-            match key:
-                case "ack_delay":
-                    self._radio.ack_delay = value
-                case "cyclic_redundancy_check":
-                    self._radio.enable_crc = value
-                case "spreading_factor":
-                    self._radio.spreading_factor = value
-                    if value > 9:
-                        self._radio.preamble_length = value
-                    else:
-                        self._radio.preamble_length = 8  # Default preamble length
-                case "transmit_power":
-                    self._radio.tx_power = value
-                case _:
-                    raise KeyError(f"Unknown LoRa parameter key: {key}")
+            if key == "ack_delay":
+                self._radio.ack_delay = value
+            elif key == "cyclic_redundancy_check":
+                self._radio.enable_crc = value
+            elif key == "spreading_factor":
+                self._radio.spreading_factor = value
+                if value > 9:
+                    self._radio.preamble_length = value
+                else:
+                    self._radio.preamble_length = 8  # Default preamble length
+            elif key == "transmit_power":
+                self._radio.tx_power = value
 
     def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized RFM9x radio."""

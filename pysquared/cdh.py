@@ -57,15 +57,14 @@ class CommandDataHandler:
 
             self._log.info("Received command message", cmd=cmd, args=args)
 
-            match cmd:
-                case "reset":
-                    self.reset()
-                case "change_radio_modulation":
-                    self.change_radio_modulation(args[0])
-                case "send_joke":
-                    self.send_joke()
-                case _:
-                    self._log.warning("Unknown command received", cmd=cmd)
+            if cmd == "reset":
+                self.reset()
+            elif cmd == "change_radio_modulation":
+                self.change_radio_modulation(args[0])
+            elif cmd == "send_joke":
+                self.send_joke()
+            else:
+                self._log.warning("Unknown command received", cmd=cmd)
 
         except Exception as e:
             self._log.error("Failed to process command message", err=e)
