@@ -106,7 +106,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
                 case "modulation_type":
                     self._radio.modulation_type = value
                 case _:
-                    raise ValueError(f"Unknown FSK parameter key: {key}")
+                    raise KeyError(f"Unknown FSK parameter key: {key}")
 
         # Handle LoRa-specific parameters
         elif isinstance(self._radio, RFM9x):
@@ -123,14 +123,8 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
                         self._radio.preamble_length = 8  # Default preamble length
                 case "transmit_power":
                     self._radio.tx_power = value
-                case "preamble_length":
-                    self._radio.preamble_length = value
-                case "low_datarate_optimize":
-                    self._radio.low_datarate_optimize = value
                 case _:
-                    raise ValueError(f"Unknown LoRa parameter key: {key}")
-        else:
-            raise ValueError(f"Unknown parameter key: {key}")
+                    raise KeyError(f"Unknown LoRa parameter key: {key}")
 
     def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized RFM9x radio."""

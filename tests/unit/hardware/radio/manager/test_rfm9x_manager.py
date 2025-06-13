@@ -570,15 +570,25 @@ def test_modify_lora_config(
 
     # Modify the config
     manager.modify_config("sender_id", 255)
+    manager.modify_config("receiver_id", 123)
     manager.modify_config("spreading_factor", 7)
+    manager.modify_config("ack_delay", 0.5)
+    manager.modify_config("cyclic_redundancy_check", False)
+    manager.modify_config("transmit_power", 20)
 
     # Verify the radio was modified with the new config
     assert manager._radio.node == 255
-    assert manager._radio.ack_delay == pytest.approx(
-        mock_radio_config.lora.ack_delay, rel=1e-9
-    )
+    assert manager._radio.destination == 123
+    assert manager._radio.spreading_factor == 7
+    assert manager._radio.ack_delay == pytest.approx(0.5, rel=1e-9)
     # Check that preamble_length is set to 8 (default for LoRa)
     assert manager._radio.preamble_length == 8
+    assert manager._radio.enable_crc is False
+    assert manager._radio.tx_power == 20
+
+    # modify an unknown config key
+    with pytest.raises(KeyError):
+        manager.modify_config("unknown_key", "value")
 
 
 def test_modify_lora_config_high_sf_success(
@@ -611,6 +621,7 @@ def test_modify_lora_config_high_sf_success(
     assert manager._radio.ack_delay == pytest.approx(
         mock_radio_config.lora.ack_delay, rel=1e-9
     )
+    assert manager._radio.spreading_factor == 10
     assert manager._radio.preamble_length == 10
 
 
@@ -637,10 +648,18 @@ def test_modify_fsk_config(
     # Modify the config
     manager.modify_config("sender_id", 111)
     manager.modify_config("broadcast_address", 123)
+    manager.modify_config("node_address", 222)
+    manager.modify_config("modulation_type", 1)  # Uncomment if needed
 
     # Verify the radio was modified with the new config
     assert manager._radio.node == 111
     assert manager._radio.fsk_broadcast_address == 123
+    assert manager._radio.fsk_node_address == 222
+    assert manager._radio.modulation_type == 1
+
+    # modify an unknown config key
+    with pytest.raises(KeyError):
+        manager.modify_config("unknown_key", "value")
 
 
 def test_get_max_packet_size_lora(
