@@ -75,7 +75,7 @@ skip_covered = false
 include = [
     "pysquared/**/*.py",
 ]
-exclude = [
+omit = [
     "pysquared/repl/**",
 ]
 

@@ -662,6 +662,27 @@ def test_modify_fsk_config(
         manager.modify_config("unknown_key", "value")
 
 
+def test_modify_none_config(
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+):
+    """Test modifying the radio configuration."""
+    # Create manager without initializing the radio
+    manager = RFM9xManager.__new__(RFM9xManager)
+    manager._log = mock_logger
+    manager._radio_config = mock_radio_config
+
+    # Initialize the radio to None, this can't happen doing it for coverage
+    manager._radio = None  # type: ignore
+
+    # modify an unknown config key
+    with pytest.raises(KeyError):
+        manager.modify_config("unknown_key", "value")
+
+
 def test_get_max_packet_size_lora(
     mock_logger: MagicMock,
     mock_spi: MagicMock,
