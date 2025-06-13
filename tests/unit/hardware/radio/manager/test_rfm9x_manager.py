@@ -706,3 +706,31 @@ def test_get_max_packet_size_fsk(
 
     # Check that get_max_packet_size returns the radio's max_packet_length
     assert manager.get_max_packet_size() == 252
+
+
+def test_get_rssi(
+    mock_rfm9x: MagicMock,
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+):
+    """Test getting the RSSI value from the radio."""
+    mock_radio_config.modulation = "LoRa"
+    mock_radio_instance = MagicMock(spec=RFM9x)
+    expected_rssi = -70.0
+    mock_radio_instance.last_rssi = expected_rssi
+    mock_rfm9x.return_value = mock_radio_instance
+
+    manager = RFM9xManager(
+        mock_logger,
+        mock_radio_config,
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+    )
+
+    rssi_value = manager.get_rssi()
+
+    assert rssi_value == expected_rssi
