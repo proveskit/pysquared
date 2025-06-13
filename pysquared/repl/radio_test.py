@@ -27,7 +27,7 @@ class RadioTest:
 
             for i in range(5):
                 i += 1
-                self._radio.send(f"|PING: {i} {self.test_message}|")
+                self._radio.send(f"|PING: {i} {self.test_message}|".encode("utf-8"))
                 self._log.debug("Sending Ping...")
 
                 response = self._radio.receive(timeout=5)
@@ -78,7 +78,7 @@ class RadioTest:
 
                     if split_message[1][0:4] == "PING":
                         self._log.info("Received Ping!", ping=heard_something)
-                        self._radio.send(f"PONG{split_message[1][4:]}")
+                        self._radio.send(f"PONG{split_message[1][4:]}".encode("utf-8"))
                     else:
                         self._log.info(
                             "Received unknown message, discarding", ping=heard_something
@@ -187,12 +187,12 @@ class RadioTest:
         if response is not None:
             self._log.debug("Ping Received", msg=response)
 
-            self._radio.send("Ping Received!")
+            self._radio.send("Ping Received!".encode("utf-8"))
             self._log.debug("Echo Sent")
         else:
             self._log.debug("No Ping Received")
 
-            self._radio.send("Nothing Received")
+            self._radio.send("Nothing Received".encode("utf-8"))
             self._log.debug("Echo Sent")
 
     def run(self):

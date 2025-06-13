@@ -1,0 +1,302 @@
+from unittest import mock
+from unittest.mock import MagicMock, call, patch
+
+import pytest
+
+from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
+from pysquared.logger import Logger
+from pysquared.protos.radio import RadioProto
+
+
+@pytest.fixture
+def mock_logger() -> MagicMock:
+    return MagicMock(spec=Logger)
+
+
+@pytest.fixture
+def mock_radio() -> MagicMock:
+    radio = MagicMock(spec=RadioProto)
+    radio.get_max_packet_size.return_value = 100  # Default packet size for tests
+    return radio
+
+
+def test_packet_manager_init(mock_logger, mock_radio):
+    """Test PacketManager initialization."""
+    license_str = "TEST_LICENSE"
+
+    packet_manager = PacketManager(mock_logger, mock_radio, license_str, send_delay=0.5)
+
+    assert packet_manager._logger is mock_logger
+    assert packet_manager._radio is mock_radio
+    assert packet_manager._license == license_str
+    assert packet_manager._send_delay == 0.5
+    assert packet_manager._header_size == 4
+    assert packet_manager._payload_size == 96  # 100 - 4 header bytes
+
+
+def test_pack_data_single_packet(mock_logger, mock_radio):
+    """Test packing data that fits in a single packet."""
+    license_str = "TEST"
+    packet_manager = PacketManager(mock_logger, mock_radio, license_str)
+
+    # Create test data that fits in a single packet
+    test_data = b"Small test data"
+    packets = packet_manager._pack_data(test_data)
+    assert len(packets) == 1
+
+    # Check packet structure
+    packet = packets[0]
+    assert len(packet) == len(test_data) + packet_manager._header_size
+
+    # Check header
+    sequence_number = int.from_bytes(packet[0:2], "big")
+    total_packets = int.from_bytes(packet[2:4], "big")
+    payload = packet[4:]
+
+    assert sequence_number == 0
+    assert total_packets == 1
+    assert payload == test_data
+
+
+def test_pack_data_multiple_packets(mock_logger, mock_radio):
+    """Test packing data that requires multiple packets."""
+    license_str = "TEST"
+    packet_manager = PacketManager(mock_logger, mock_radio, license_str)
+
+    # Create test data that requires multiple packets
+    # With a payload size of 96, this will require 3 packets
+    test_data = b"X" * 250
+    packets = packet_manager._pack_data(test_data)
+    assert len(packets) == 3
+
+    # Check each packet
+    reconstructed_data = b""
+
+    for i, packet in enumerate(packets):
+        sequence_number = int.from_bytes(packet[0:2], "big")
+        total_packets = int.from_bytes(packet[2:4], "big")
+        payload = packet[4:]
+
+        assert sequence_number == i
+        assert total_packets == 3
+        reconstructed_data += payload
+
+    # Verify the reconstructed data matches the original
+    assert reconstructed_data == test_data
+
+
+@patch("time.sleep")
+def test_send_success(mock_sleep, mock_logger, mock_radio):
+    """Test successful execution of send method."""
+    license_str = "TEST"
+
+    packet_manager = PacketManager(mock_logger, mock_radio, license_str, send_delay=0.1)
+
+    # Create small test data
+    test_data = b'{"message": "test beacon"}'
+    _ = packet_manager.send(test_data)
+
+    # The send method should prepend the license to the data
+
+    # Calculate number of packets that would be created
+    total_packets = (
+        len(test_data) + packet_manager._payload_size - 1
+    ) // packet_manager._payload_size
+
+    # Verify radio.send was called for each packet
+    assert mock_radio.send.call_count == total_packets
+
+    # Verify sleep was called between sends with correct delay
+    assert mock_sleep.call_count == total_packets
+    mock_sleep.assert_called_with(0.1)
+
+    # Verify log messages
+    mock_logger.info.assert_any_call("Sending packets...", num_packets=total_packets)
+    mock_logger.info.assert_any_call(
+        "Successfully sent all the packets!", num_packets=total_packets
+    )
+
+
+@patch("time.sleep")
+def test_send_unlicensed(mock_sleep, mock_logger, mock_radio):
+    """Test unlicensed execution of send method."""
+    license_str = ""
+
+    packet_manager = PacketManager(mock_logger, mock_radio, license_str, send_delay=0.1)
+
+    test_data = b"hello world"
+    _ = packet_manager.send(test_data)
+
+    # Verify log messages
+    mock_logger.warning.assert_any_call("License is required to send data")
+
+
+@patch("time.sleep")
+def test_send_large_data_with_progress_logs(mock_sleep, mock_logger, mock_radio):
+    """Test sending large data that triggers progress log messages."""
+    license_str = "TEST"
+    packet_manager = PacketManager(
+        mock_logger, mock_radio, license_str, send_delay=0.01
+    )
+
+    # Create data large enough to generate multiple packets
+    test_data = b"X" * 1000  # This will create multiple packets
+
+    # Call the method
+    _ = packet_manager.send(test_data)
+
+    # Calculate expected number of packets
+    total_packets = (
+        len(test_data) + packet_manager._payload_size - 1
+    ) // packet_manager._payload_size
+
+    # Check progress logs were called at the right intervals
+    progress_log_calls = [
+        call(
+            "Making progress sending packets",
+            current_packet=i,
+            num_packets=total_packets,
+        )
+        for i in range(0, total_packets, 10)
+    ]
+
+    # Verify these calls exist in the mock_logger.info calls
+    for log_call in progress_log_calls:
+        assert log_call in mock_logger.info.call_args_list
+
+
+@patch("time.time")
+def test_unpack_data(mock_time, mock_logger, mock_radio):
+    """Test unpacking data from received packets."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Create test packets with proper headers
+    packet1 = (0).to_bytes(2, "big") + (3).to_bytes(2, "big") + b"first"
+    packet2 = (1).to_bytes(2, "big") + (3).to_bytes(2, "big") + b" second"
+    packet3 = (2).to_bytes(2, "big") + (3).to_bytes(2, "big") + b" third"
+
+    # Mix up the order to test sorting
+    packets = [packet2, packet3, packet1]
+
+    # Call _unpack_data directly
+    result = packet_manager._unpack_data(packets)
+
+    # Verify correct data reassembly
+    expected_data = b"first second third"
+    assert result == expected_data
+
+
+@patch("time.time")
+def test_receive_success(mock_time, mock_logger, mock_radio):
+    """Test successfully receiving all packets."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Set up mock time to control the flow
+    mock_time.side_effect = [10.0, 10.1, 10.2, 10.3, 10.4]
+
+    # Create test packets
+    packet1 = (0).to_bytes(2, "big") + (2).to_bytes(2, "big") + b"first"
+    packet2 = (1).to_bytes(2, "big") + (2).to_bytes(2, "big") + b" second"
+
+    # Configure mock_radio.receive to return packets then None
+    mock_radio.receive.side_effect = [packet1, packet2]
+
+    # Call the receive method
+    result = packet_manager.listen()
+
+    # Check the result
+    expected_data = b"first second"
+    assert result == expected_data
+
+    # Verify proper logging
+    mock_logger.info.assert_any_call("Listening for data...", timeout=10)
+    mock_logger.info.assert_any_call(
+        "Received first packet", packet_length=len(packet1)
+    )
+    mock_logger.info.assert_any_call("Received all expected packets", received=2)
+
+
+@patch("time.time")
+def test_receive_timeout(mock_time, mock_logger, mock_radio):
+    """Test timeout during reception."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Set up mock time to simulate timeout
+    # We need at least 3 values:
+    # 1. Initial start_time
+    # 2. Time check for timeout condition
+    # 3. Time for calculating elapsed time in the log message
+    mock_time.side_effect = [10.0, 21.0, 21.0]  # Simulate a timeout after 11 seconds
+
+    # Configure radio to return a packet (this doesn't matter for timeout test)
+    mock_radio.receive.return_value = None
+
+    # Call the receive method with default timeout (10 seconds)
+    result = packet_manager.listen()
+
+    # Check that we got None due to timeout
+    assert result is None
+
+    # Verify warning was logged
+    mock_logger.warning.assert_called_with("Listen timeout reached", elapsed=11.0)
+
+
+@patch("time.time")
+def test_receive_progress_logging(mock_time, mock_logger, mock_radio):
+    """Test progress logging during packet reception."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Set up mock time to return values that won't trigger timeout
+    mock_time.return_value = 10.0
+
+    # Create 25 packets - enough to trigger multiple progress logs
+    packets = []
+    for i in range(25):
+        packets.append(
+            (i).to_bytes(2, "big") + (25).to_bytes(2, "big") + f"Packet {i}".encode()
+        )
+
+    # Configure mock_radio.receive to return the packets
+    mock_radio.receive.side_effect = packets
+
+    # Call the receive method
+    result = packet_manager.listen(timeout=30)
+
+    # Verify progress logging occurred at the right intervals
+    progress_log_calls = [
+        mock.call("Receive progress", received=10, expected=25),
+        mock.call("Receive progress", received=20, expected=25),
+        mock.call("Received all expected packets", received=25),
+    ]
+
+    # Check if these calls exist in the logger calls
+    for log_call in progress_log_calls:
+        assert log_call in mock_logger.info.call_args_list
+
+    # Verify we got the combined data from all packets
+    assert result is not None
+    # The expected length would be (payload of all packets combined)
+    expected_length = sum(len(f"Packet {i}".encode()) for i in range(25))
+    assert len(result) == expected_length
+
+
+def test_get_header_and_payload(mock_logger, mock_radio):
+    """Test _get_header and _get_payload helper methods."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "")
+
+    # Create a test packet
+    sequence_num = 42
+    total_packets = 100
+    payload = b"Test payload data"
+
+    header = sequence_num.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
+    test_packet = header + payload
+
+    # Test _get_header
+    seq, total = packet_manager._get_header(test_packet)
+    assert seq == sequence_num
+    assert total == total_packets
+
+    # Test _get_payload
+    extracted_payload = packet_manager._get_payload(test_packet)
+    assert extracted_payload == payload
