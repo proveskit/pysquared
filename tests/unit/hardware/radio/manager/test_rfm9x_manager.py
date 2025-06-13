@@ -649,7 +649,7 @@ def test_modify_fsk_config(
     manager.modify_config("sender_id", 111)
     manager.modify_config("broadcast_address", 123)
     manager.modify_config("node_address", 222)
-    manager.modify_config("modulation_type", 1)  # Uncomment if needed
+    manager.modify_config("modulation_type", 1)
 
     # Verify the radio was modified with the new config
     assert manager._radio.node == 111
@@ -660,54 +660,6 @@ def test_modify_fsk_config(
     # modify an unknown config key
     with pytest.raises(KeyError):
         manager.modify_config("unknown_key", "value")
-
-
-def test_modify_none_config(
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_radio_config: RadioConfig,
-):
-    """Test modifying the radio configuration."""
-    # Create manager without initializing the radio
-    manager = RFM9xManager.__new__(RFM9xManager)
-    manager._log = mock_logger
-    manager._radio_config = mock_radio_config
-
-    # Initialize the radio to None, this can't happen doing it for coverage
-    manager._radio = None  # type: ignore
-
-    # modify an unknown config key
-    def test_modify_none_config(
-        mock_logger: MagicMock,
-        mock_spi: MagicMock,
-        mock_chip_select: MagicMock,
-        mock_reset: MagicMock,
-        mock_radio_config: RadioConfig,
-    ):
-        """Test modifying the radio configuration when radio is None."""
-        # Create manager without initializing the radio
-        manager = RFM9xManager.__new__(RFM9xManager)
-        manager._log = mock_logger
-        manager._radio_config = mock_radio_config
-
-        # Set radio to None
-        manager._radio = None  # type: ignore
-
-        # Try to modify a legitimate config value
-        # This should either handle the None case gracefully or raise a specific exception
-        try:
-            manager.modify_config("sender_id", 123)
-            # If we get here, the method should have handled None gracefully
-            mock_logger.warning.assert_called_once()  # Verify it logged a warning
-        except AttributeError:
-            # If modify_config raises AttributeError for None radio, that's also acceptable behavior
-            pass
-
-        # Also test the unknown key case to ensure complete coverage
-        with pytest.raises(KeyError):
-            manager.modify_config("unknown_key", "value")
 
 
 def test_get_max_packet_size_lora(
