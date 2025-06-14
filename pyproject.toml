@@ -46,6 +46,8 @@ packages = [
     "pysquared.hardware.power_monitor.manager",
     "pysquared.hardware.burnwire",
     "pysquared.hardware.burnwire.manager",
+    "pysquared.hardware.load_switch_manager",
+    "pysquared.hardware.load_switch_manager.manager",
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.repl",
