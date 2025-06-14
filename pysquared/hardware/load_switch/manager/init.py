@@ -1,0 +1,1 @@
+''' init.py file for the load switch manager module. '''
