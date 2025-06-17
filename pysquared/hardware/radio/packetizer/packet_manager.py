@@ -110,7 +110,7 @@ class PacketManager:
                 return
 
             # Try to receive a packet
-            packet = self._radio.receive()
+            packet = self._radio.receive(_timeout)
 
             # If no packet received, continue waiting
             if packet is None:
@@ -118,7 +118,11 @@ class PacketManager:
 
             # Log the first received packet
             if not received_packets:
-                self._logger.info("Received first packet", packet_length=len(packet))
+                self._logger.info(
+                    "Received first packet",
+                    packet_length=len(packet),
+                    content=self._get_payload(packet),
+                )
 
             # Process received packet
             received_packets.append(packet)
