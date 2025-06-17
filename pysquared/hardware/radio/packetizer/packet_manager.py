@@ -116,13 +116,14 @@ class PacketManager:
             if packet is None:
                 continue
 
-            # Log the first received packet
-            if not received_packets:
-                self._logger.info(
-                    "Received first packet",
-                    packet_length=len(packet),
-                    content=self._get_payload(packet),
-                )
+            # # Log the first received packet
+            # if not received_packets:
+            self._logger.info(
+                "Received packet",
+                packet_length=len(packet),
+                header=self._get_header(packet),
+                payload=self._get_payload(packet),
+            )
 
             # Process received packet
             received_packets.append(packet)
