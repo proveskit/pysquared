@@ -66,18 +66,20 @@ class RadioTest:
 
             while True:
                 # Turn on the radio so that it captures any received packets to buffer
-                self._packet_manager.listen(0)
+                self._packet_manager.listen(1)
 
                 # Send the message
                 self._packet_manager.send(json.dumps(message).encode("utf-8"))
 
                 # Listen for ACK response
-                response = self._packet_manager.listen(1)
+                response = self._packet_manager.listen(3)
                 if response is not None and response.startswith(b"ACK"):
                     self._log.info("Received ACK")
                     break
                 else:
-                    self._log.warning("No ACK response received, retrying...")
+                    self._log.warning(
+                        "No ACK response received, retrying...", response=response
+                    )
 
             self.listen()
         except KeyboardInterrupt:
