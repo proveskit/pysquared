@@ -142,7 +142,7 @@ class PacketManager:
 
     def send_acknowledgement(self) -> None:
         """Send an acknowledgment to the radio."""
-        self._radio.send(b"ACK")
+        self.send(b"ACK")
         self._logger.info("Sent acknowledgment packet")
 
     def _unpack_data(self, packets: list[bytes]) -> bytes:
