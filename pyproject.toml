@@ -48,6 +48,8 @@ packages = [
     "pysquared.hardware.radio.packetizer",
     "pysquared.hardware.power_monitor",
     "pysquared.hardware.power_monitor.manager",
+    "pysquared.hardware.burnwire",
+    "pysquared.hardware.burnwire.manager",
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.repl",
