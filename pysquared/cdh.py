@@ -13,6 +13,10 @@ class CommandDataHandler:
     Constructor
     """
 
+    command_reset: str = "reset"
+    command_change_radio_modulation: str = "change_radio_modulation"
+    command_send_joke: str = "send_joke"
+
     def __init__(
         self,
         logger: Logger,
@@ -56,12 +60,13 @@ class CommandDataHandler:
                 args: list[str] = raw_args
 
             self._log.info("Received command message", cmd=cmd, args=args)
+            self._packet_manager.send("ACK".encode("utf-8"))
 
-            if cmd == "reset":
+            if cmd == self.command_reset:
                 self.reset()
-            elif cmd == "change_radio_modulation":
+            elif cmd == self.command_change_radio_modulation:
                 self.change_radio_modulation(args[0])
-            elif cmd == "send_joke":
+            elif cmd == self.command_send_joke:
                 self.send_joke()
             else:
                 self._log.warning("Unknown command received", cmd=cmd)
@@ -86,14 +91,20 @@ class CommandDataHandler:
         try:
             self._config.update_config("radio_modulation", modulation, temporary=False)
             self._log.info("Radio modulation changed", modulation=modulation)
+            self._packet_manager.send(
+                f"Radio modulation changed: {modulation}".encode("utf-8")
+            )
         except ValueError as e:
             self._log.error("Failed to change radio modulation", err=e)
-            self._packet_manager.send("".encode("utf-8"))
+            self._packet_manager.send(
+                f"Failed to change radio modulation: {e}".encode("utf-8")
+            )
 
     def reset(self) -> None:
         """
         Reset the hardware.
         """
         self._log.info("Resetting satellite")
+        self._packet_manager.send(data="Resetting satellite".encode("utf-8"))
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
