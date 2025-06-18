@@ -60,7 +60,7 @@ class CommandDataHandler:
                 args: list[str] = raw_args
 
             self._log.info("Received command message", cmd=cmd, args=args)
-            self._packet_manager.send("ACK".encode("utf-8"))
+            self._packet_manager.send_acknowledgement()
 
             if cmd == self.command_reset:
                 self.reset()

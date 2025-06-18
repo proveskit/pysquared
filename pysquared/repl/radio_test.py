@@ -73,7 +73,7 @@ class RadioTest:
 
                 # Listen for ACK response
                 response = self._packet_manager.listen(3)
-                if response is not None and response.startswith(b"ACK"):
+                if response is not None and response == b"ACK":
                     self._log.info("Received ACK")
                     break
                 else:
