@@ -1,3 +1,4 @@
+import math
 import time
 
 from ....logger import Logger
@@ -37,13 +38,6 @@ class PacketManager:
         self._logger.info("Sending packets...", num_packets=total_packets)
 
         for i, packet in enumerate(packets):
-            if i % 10 == 0:
-                self._logger.info(
-                    "Making progress sending packets",
-                    current_packet=i,
-                    num_packets=total_packets,
-                )
-
             self._radio.send(packet)
             time.sleep(self._send_delay)
 
@@ -61,7 +55,7 @@ class PacketManager:
         - remaining bytes: payload
         """
         # Calculate number of packets needed
-        total_packets: int = (len(data) + self._payload_size - 1) // self._payload_size
+        total_packets: int = math.ceil(len(data) / self._payload_size)
         self._logger.info(
             "Packing data into packets",
             num_packets=total_packets,
@@ -117,7 +111,6 @@ class PacketManager:
                 continue
 
             # # Log the first received packet
-            # if not received_packets:
             self._logger.info(
                 "Received packet",
                 packet_length=len(packet),

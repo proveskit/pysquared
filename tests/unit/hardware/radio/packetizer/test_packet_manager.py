@@ -1,5 +1,5 @@
 from unittest import mock
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -131,40 +131,6 @@ def test_send_unlicensed(mock_sleep, mock_logger, mock_radio):
     mock_logger.warning.assert_any_call("License is required to send data")
 
 
-@patch("time.sleep")
-def test_send_large_data_with_progress_logs(mock_sleep, mock_logger, mock_radio):
-    """Test sending large data that triggers progress log messages."""
-    license_str = "TEST"
-    packet_manager = PacketManager(
-        mock_logger, mock_radio, license_str, send_delay=0.01
-    )
-
-    # Create data large enough to generate multiple packets
-    test_data = b"X" * 1000  # This will create multiple packets
-
-    # Call the method
-    _ = packet_manager.send(test_data)
-
-    # Calculate expected number of packets
-    total_packets = (
-        len(test_data) + packet_manager._payload_size - 1
-    ) // packet_manager._payload_size
-
-    # Check progress logs were called at the right intervals
-    progress_log_calls = [
-        call(
-            "Making progress sending packets",
-            current_packet=i,
-            num_packets=total_packets,
-        )
-        for i in range(0, total_packets, 10)
-    ]
-
-    # Verify these calls exist in the mock_logger.info calls
-    for log_call in progress_log_calls:
-        assert log_call in mock_logger.info.call_args_list
-
-
 @patch("time.time")
 def test_unpack_data(mock_time, mock_logger, mock_radio):
     """Test unpacking data from received packets."""
@@ -211,7 +177,7 @@ def test_receive_success(mock_time, mock_logger, mock_radio):
     # Verify proper logging
     mock_logger.info.assert_any_call("Listening for data...", timeout=10)
     mock_logger.info.assert_any_call(
-        "Received first packet", packet_length=len(packet1)
+        "Received packet", packet_length=len(packet1), header=(0, 2), payload=b"first"
     )
     mock_logger.info.assert_any_call("Received all expected packets", received=2)
 

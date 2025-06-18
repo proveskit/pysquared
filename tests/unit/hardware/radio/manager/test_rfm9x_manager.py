@@ -682,7 +682,7 @@ def test_get_max_packet_size_lora(
     manager._radio.max_packet_length = 252
 
     # Check that get_max_packet_size returns the radio's max_packet_length
-    assert manager.get_max_packet_size() == 252
+    assert manager.get_max_packet_size() == 248
 
 
 def test_get_max_packet_size_fsk(
@@ -705,7 +705,7 @@ def test_get_max_packet_size_fsk(
     manager._radio.max_packet_length = 252
 
     # Check that get_max_packet_size returns the radio's max_packet_length
-    assert manager.get_max_packet_size() == 252
+    assert manager.get_max_packet_size() == 248
 
 
 def test_get_rssi(
