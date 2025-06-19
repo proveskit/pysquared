@@ -85,7 +85,7 @@ class CommandDataHandler:
         """
         Send a random joke from the config.
         """
-        joke = random.choice(self._config.joke_reply)
+        joke = random.choice(self._config.jokes)
         self._log.info("Sending joke", joke=joke)
         self._packet_manager.send(joke.encode("utf-8"))
 
