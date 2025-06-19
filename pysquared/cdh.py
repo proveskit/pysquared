@@ -23,10 +23,12 @@ class CommandDataHandler:
         logger: Logger,
         config: Config,
         packet_manager: PacketManager,
+        send_delay: float = 0.2,
     ) -> None:
         self._log: Logger = logger
         self._config: Config = config
         self._packet_manager: PacketManager = packet_manager
+        self._send_delay: float = send_delay
 
     def listen_for_commands(self, timeout: int) -> None:
         """
@@ -63,7 +65,7 @@ class CommandDataHandler:
             self._log.debug("Received command message", cmd=cmd, args=args)
 
             # Delay to give the ground station time to switch to listening mode
-            time.sleep(0.5)
+            time.sleep(self._send_delay)
             self._packet_manager.send_acknowledgement()
 
             if cmd == self.command_reset:
