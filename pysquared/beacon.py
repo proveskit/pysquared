@@ -76,7 +76,9 @@ class Beacon:
                 state[f"{sensor.get_name()}_{index}"] = sensor.get()
             if isinstance(sensor, RadioProto):
                 sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_modulation"] = sensor.get_modulation().__name__
+                state[f"{sensor_name}_{index}_modulation"] = (
+                    sensor.get_modulation().__name__
+                )
             if isinstance(sensor, IMUProto):
                 sensor_name: str = sensor.__class__.__name__
                 state[f"{sensor_name}_{index}_acceleration"] = sensor.get_acceleration()
