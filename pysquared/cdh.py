@@ -86,7 +86,7 @@ class CommandDataHandler:
         except Exception as e:
             self._log.error("Failed to process command message", err=e)
             self._packet_manager.send(
-                f"Failed to process command message: {e}".encode("utf-8")
+                f"Failed to process command message: {str(e)}".encode("utf-8")
             )
             return
 
