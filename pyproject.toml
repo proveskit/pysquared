@@ -51,7 +51,6 @@ packages = [
     "pysquared.hardware.burnwire.manager",
     "pysquared.nvm",
     "pysquared.protos",
-    "pysquared.repl",
     "pysquared.rtc",
     "pysquared.rtc.manager"
 ]
