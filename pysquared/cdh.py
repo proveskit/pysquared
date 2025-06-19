@@ -1,5 +1,6 @@
 import json
 import random
+import time
 
 import microcontroller
 
@@ -60,7 +61,10 @@ class CommandDataHandler:
                 args: list[str] = raw_args
 
             self._log.info("Received command message", cmd=cmd, args=args)
-            # self._packet_manager.send_acknowledgement()
+
+            # Delay to give the ground station time to switch to listening mode
+            time.sleep(0.5)
+            self._packet_manager.send_acknowledgement()
 
             if cmd == self.command_reset:
                 self.reset()
