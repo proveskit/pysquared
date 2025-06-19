@@ -66,35 +66,35 @@ class Beacon:
 
         state["uptime"] = time.time() - self._boot_time
 
-        for sensor in self._sensors:
+        for index, sensor in enumerate(self._sensors):
             if isinstance(sensor, Processor):
                 sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_temperature"] = sensor.temperature
+                state[f"{sensor_name}_{index}_temperature"] = sensor.temperature
             if isinstance(sensor, Flag):
-                state[sensor.get_name()] = sensor.get()
+                state[f"{sensor.get_name()}_{index}"] = sensor.get()
             if isinstance(sensor, Counter):
-                state[sensor.get_name()] = sensor.get()
+                state[f"{sensor.get_name()}_{index}"] = sensor.get()
             if isinstance(sensor, RadioProto):
                 sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_modulation"] = sensor.get_modulation().__name__
+                state[f"{sensor_name}_{index}_modulation"] = sensor.get_modulation().__name__
             if isinstance(sensor, IMUProto):
                 sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_acceleration"] = sensor.get_acceleration()
-                state[f"{sensor_name}_gyroscope"] = sensor.get_gyro_data()
+                state[f"{sensor_name}_{index}_acceleration"] = sensor.get_acceleration()
+                state[f"{sensor_name}_{index}_gyroscope"] = sensor.get_gyro_data()
             if isinstance(sensor, PowerMonitorProto):
                 sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_current_avg"] = self.avg_readings(
+                state[f"{sensor_name}_{index}_current_avg"] = self.avg_readings(
                     sensor.get_current
                 )
-                state[f"{sensor_name}_bus_voltage_avg"] = self.avg_readings(
+                state[f"{sensor_name}_{index}_bus_voltage_avg"] = self.avg_readings(
                     sensor.get_bus_voltage
                 )
-                state[f"{sensor_name}_shunt_voltage_avg"] = self.avg_readings(
+                state[f"{sensor_name}_{index}_shunt_voltage_avg"] = self.avg_readings(
                     sensor.get_shunt_voltage
                 )
             if isinstance(sensor, TemperatureSensorProto):
                 sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_temperature"] = sensor.get_temperature()
+                state[f"{sensor_name}_{index}_temperature"] = sensor.get_temperature()
 
         b = json.dumps(state, separators=(",", ":")).encode("utf-8")
         return self._packet_manager.send(b)
