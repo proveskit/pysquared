@@ -75,23 +75,32 @@ class RadioTest:
                 self._packet_manager.send(json.dumps(message).encode("utf-8"))
 
                 # Listen for ACK response
+                ack_received = False
                 for _ in range(2):  # Retry up to 3 times
                     b = self._packet_manager.listen(5)
-                    if b is not None:
-                        self._log.info(
-                            message="Received response", response=b.decode("utf-8")
-                        )
-                # else:
-                #     self._log.warning("No response received, retrying...")
-                # if response is not None and response == b"ACK":
-                #     self._log.info("Received ACK")
-                #     break
-                # else:
-                #     self._log.warning(
-                #         "No ACK response received, retrying...", response=response
-                #     )
 
-            # self.listen()
+                    response = None
+                    if b is None:
+                        self._log.info("No response received, retrying...")
+                        continue
+
+                    response = b.decode("utf-8")
+                    if response != b"ACK":
+                        self._log.info(
+                            "No ACK response received, retrying...", response=response
+                        )
+                        continue
+
+                    self._log.info("Received ACK")
+                    b = self._packet_manager.listen(5)
+                    if b is not None:
+                        self._log.info("Received response", response=b.decode("utf-8"))
+
+                    break
+
+                if ack_received:
+                    break
+
         except KeyboardInterrupt:
             self._log.debug("Keyboard interrupt received, exiting send mode.")
 
