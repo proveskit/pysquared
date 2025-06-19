@@ -55,6 +55,9 @@ class CommandDataHandler:
             cmd = msg.get("command")
             if cmd is None:
                 self._log.warning("No command found in message", msg=msg)
+                self._packet_manager.send(
+                    f"No command found in message: {msg}".encode("utf-8")
+                )
                 return
 
             args: list[str] = []
@@ -76,9 +79,15 @@ class CommandDataHandler:
                 self.send_joke()
             else:
                 self._log.warning("Unknown command received", cmd=cmd)
+                self._packet_manager.send(
+                    f"Unknown command received: {cmd}".encode("utf-8")
+                )
 
         except Exception as e:
             self._log.error("Failed to process command message", err=e)
+            self._packet_manager.send(
+                f"Failed to process command message: {e}".encode("utf-8")
+            )
             return
 
     def send_joke(self) -> None:
