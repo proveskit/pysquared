@@ -129,12 +129,12 @@ def test_send_joke(mock_random_choice, cdh, mock_packet_manager, mock_config):
 
 def test_change_radio_modulation_success(cdh, mock_config, mock_logger):
     """Test change_radio_modulation with valid modulation value."""
-    modulation = "FSK"
+    modulation = ["FSK"]
 
     cdh.change_radio_modulation(modulation)
 
     mock_config.update_config.assert_called_once_with(
-        "radio_modulation", modulation, temporary=False
+        "modulation", modulation[0], temporary=False
     )
     mock_logger.info.assert_called_once()
 
@@ -143,7 +143,7 @@ def test_change_radio_modulation_failure(
     cdh, mock_config, mock_logger, mock_packet_manager
 ):
     """Test change_radio_modulation with an error case."""
-    modulation = "INVALID"
+    modulation = ["INVALID"]
     mock_config.update_config.side_effect = ValueError("Invalid modulation")
 
     cdh.change_radio_modulation(modulation)
@@ -219,7 +219,7 @@ def test_listen_for_commands_change_radio_modulation(
     cdh.listen_for_commands(30)
 
     mock_config.update_config.assert_called_once_with(
-        "radio_modulation", "FSK", temporary=False
+        "modulation", "FSK", temporary=False
     )
 
 
