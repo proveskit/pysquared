@@ -156,32 +156,32 @@ def test_beacon_send_with_sensors(
     d = json.loads(send_args)
 
     # processor sensor
-    assert pytest.approx(d["Processor_temperature"], 0.01) == 35.0
+    assert pytest.approx(d["Processor_0_temperature"], 0.01) == 35.0
 
     # flag
-    assert d["test_flag"] is True
+    assert d["test_flag_1"] is True
 
     # counter
-    assert d["test_counter"] == 42
+    assert d["test_counter_2"] == 42
 
     # radio
-    assert d["MockRadio_modulation"] == "LoRa"
+    assert d["MockRadio_3_modulation"] == "LoRa"
 
     # power monitor sensor
-    assert pytest.approx(d["MockPowerMonitor_current_avg"], 0.01) == 0.5
-    assert pytest.approx(d["MockPowerMonitor_bus_voltage_avg"], 0.01) == 3.3
-    assert pytest.approx(d["MockPowerMonitor_shunt_voltage_avg"], 0.01) == 0.1
+    assert pytest.approx(d["MockPowerMonitor_4_current_avg"], 0.01) == 0.5
+    assert pytest.approx(d["MockPowerMonitor_4_bus_voltage_avg"], 0.01) == 3.3
+    assert pytest.approx(d["MockPowerMonitor_4_shunt_voltage_avg"], 0.01) == 0.1
 
     # temperature sensor
-    assert pytest.approx(d["MockTemperatureSensor_temperature"], 0.01) == 22.5
+    assert pytest.approx(d["MockTemperatureSensor_5_temperature"], 0.01) == 22.5
 
     # IMU sensor
-    assert pytest.approx(d["MockIMU_gyroscope"][0], 0.1) == 0.1
-    assert pytest.approx(d["MockIMU_gyroscope"][1], 0.1) == 2.3
-    assert pytest.approx(d["MockIMU_gyroscope"][2], 0.1) == 4.5
-    assert pytest.approx(d["MockIMU_acceleration"][0], 0.1) == 5.4
-    assert pytest.approx(d["MockIMU_acceleration"][1], 0.1) == 3.2
-    assert pytest.approx(d["MockIMU_acceleration"][2], 0.1) == 1.0
+    assert pytest.approx(d["MockIMU_6_gyroscope"][0], 0.1) == 0.1
+    assert pytest.approx(d["MockIMU_6_gyroscope"][1], 0.1) == 2.3
+    assert pytest.approx(d["MockIMU_6_gyroscope"][2], 0.1) == 4.5
+    assert pytest.approx(d["MockIMU_6_acceleration"][0], 0.1) == 5.4
+    assert pytest.approx(d["MockIMU_6_acceleration"][1], 0.1) == 3.2
+    assert pytest.approx(d["MockIMU_6_acceleration"][2], 0.1) == 1.0
 
 
 def test_beacon_avg_readings(mock_logger, mock_packet_manager):

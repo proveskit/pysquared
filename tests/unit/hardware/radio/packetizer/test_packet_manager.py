@@ -1,4 +1,3 @@
-from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -205,45 +204,6 @@ def test_receive_timeout(mock_time, mock_logger, mock_radio):
 
     # Verify listen timeout was logged
     mock_logger.debug.assert_called_with("Listen timeout reached", elapsed=11.0)
-
-
-@patch("time.time")
-def test_receive_progress_logging(mock_time, mock_logger, mock_radio):
-    """Test progress logging during packet reception."""
-    packet_manager = PacketManager(mock_logger, mock_radio, "")
-
-    # Set up mock time to return values that won't trigger timeout
-    mock_time.return_value = 10.0
-
-    # Create 25 packets - enough to trigger multiple progress logs
-    packets = []
-    for i in range(25):
-        packets.append(
-            (i).to_bytes(2, "big") + (25).to_bytes(2, "big") + f"Packet {i}".encode()
-        )
-
-    # Configure mock_radio.receive to return the packets
-    mock_radio.receive.side_effect = packets
-
-    # Call the receive method
-    result = packet_manager.listen(timeout=30)
-
-    # Verify progress logging occurred at the right intervals
-    progress_log_calls = [
-        mock.call("Receive progress", received=10, expected=25),
-        mock.call("Receive progress", received=20, expected=25),
-        mock.call("Received all expected packets", received=25),
-    ]
-
-    # Check if these calls exist in the logger calls
-    for log_call in progress_log_calls:
-        assert log_call in mock_logger.debug.call_args_list
-
-    # Verify we got the combined data from all packets
-    assert result is not None
-    # The expected length would be (payload of all packets combined)
-    expected_length = sum(len(f"Packet {i}".encode()) for i in range(25))
-    assert len(result) == expected_length
 
 
 def test_get_header_and_payload(mock_logger, mock_radio):

@@ -23,9 +23,7 @@ def mock_packet_manager() -> MagicMock:
 def mock_config() -> MagicMock:
     config = MagicMock(spec=Config)
     config.super_secret_code = "test_password"
-    config.joke_reply = [
-        "Why did the satellite cross the orbit? To get to the other side!"
-    ]
+    config.jokes = ["Why did the satellite cross the orbit? To get to the other side!"]
     return config
 
 
@@ -119,13 +117,13 @@ def test_listen_for_commands_invalid_json(cdh, mock_packet_manager, mock_logger)
 @patch("random.choice")
 def test_send_joke(mock_random_choice, cdh, mock_packet_manager, mock_config):
     """Test the send_joke method."""
-    mock_random_choice.return_value = mock_config.joke_reply[0]
+    mock_random_choice.return_value = mock_config.jokes[0]
 
     cdh.send_joke()
 
-    mock_random_choice.assert_called_once_with(mock_config.joke_reply)
+    mock_random_choice.assert_called_once_with(mock_config.jokes)
     mock_packet_manager.send.assert_called_once_with(
-        mock_config.joke_reply[0].encode("utf-8")
+        mock_config.jokes[0].encode("utf-8")
     )
 
 
@@ -151,7 +149,9 @@ def test_change_radio_modulation_failure(
     cdh.change_radio_modulation(modulation)
 
     mock_logger.error.assert_called_once()
-    mock_packet_manager.send.assert_called_once_with("".encode("utf-8"))
+    mock_packet_manager.send.assert_called_once_with(
+        "Failed to change radio modulation: Invalid modulation".encode("utf-8")
+    )
 
 
 @patch("pysquared.cdh.microcontroller")
@@ -196,12 +196,12 @@ def test_listen_for_commands_send_joke(
     """Test listen_for_commands with send_joke command."""
     message = {"password": "test_password", "command": "send_joke", "args": []}
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
-    mock_random_choice.return_value = mock_config.joke_reply[0]
+    mock_random_choice.return_value = mock_config.jokes[0]
 
     cdh.listen_for_commands(30)
 
     mock_packet_manager.send.assert_called_once_with(
-        mock_config.joke_reply[0].encode("utf-8")
+        mock_config.jokes[0].encode("utf-8")
     )
 
 
