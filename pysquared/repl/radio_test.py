@@ -28,10 +28,7 @@ class RadioTest:
                 b = self._packet_manager.listen(3)
                 if b is not None:
                     self._log.info(
-                        "Received message",
-                        header=self._packet_manager._get_header(b),
-                        payload=self._packet_manager._get_payload(b),
-                        length=len(b),
+                        message="Received response", response=b.decode("utf-8")
                     )
         except KeyboardInterrupt:
             self._log.debug("Keyboard interrupt received, exiting listen mode.")
@@ -79,13 +76,10 @@ class RadioTest:
 
                 # Listen for ACK response
                 for _ in range(2):  # Retry up to 3 times
-                    response = self._packet_manager.listen(5)
-                    if response is not None:
+                    b = self._packet_manager.listen(5)
+                    if b is not None:
                         self._log.info(
-                            "Received response",
-                            header=self._packet_manager._get_header(response),
-                            payload=self._packet_manager._get_payload(response),
-                            length=len(response),
+                            message="Received response", response=b.decode("utf-8")
                         )
                 # else:
                 #     self._log.warning("No response received, retrying...")
