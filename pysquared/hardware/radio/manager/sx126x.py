@@ -117,7 +117,7 @@ class SX126xManager(BaseRadioManager):
                     if err != ERR_NONE:
                         self._log.warning("Radio receive failed", error_code=err)
                         return None
-                    self._log.info(f"Received message ({len(msg)} bytes)")
+                    self._log.debug(f"Received message ({len(msg)} bytes)")
                     return msg
 
                 time.sleep(0)

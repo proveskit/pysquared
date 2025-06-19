@@ -55,7 +55,7 @@ class BurnwireManager(BurnwireProto):
         """
         _start_time = time.monotonic()
 
-        self._log.info(
+        self._log.debug(
             f"BURN Attempt {self.number_of_attempts} Started with Duration {timeout_duration}s"
         )
         try:
@@ -63,7 +63,7 @@ class BurnwireManager(BurnwireProto):
             return True
 
         except KeyboardInterrupt:
-            self._log.info(
+            self._log.debug(
                 f"Burn Attempt Interupted after {time.monotonic() - _start_time:.2f} seconds"
             )
             return False
@@ -113,7 +113,7 @@ class BurnwireManager(BurnwireProto):
         try:
             self._fire_burn.value = not self._enable_logic
             self._enable_burn.value = not self._enable_logic
-            self._log.info("Burnwire safed")
+            self._log.debug("Burnwire safed")
         except Exception as e:
             raise RuntimeError("Failed to safe burnwire pins") from e
 
@@ -155,7 +155,7 @@ class BurnwireManager(BurnwireProto):
             # Burnwire cleanup in the finally block to ensure it always happens
             try:
                 self._disable()
-                self._log.info("Burnwire Safed")
+                self._log.debug("Burnwire Safed")
             except Exception as e:
                 # Only log critical if this wasn't caused by the original error
                 if error is None:

@@ -35,13 +35,13 @@ class PacketManager:
 
         packets: list[bytes] = self._pack_data(data)
         total_packets: int = len(packets)
-        self._logger.info("Sending packets...", num_packets=total_packets)
+        self._logger.debug("Sending packets...", num_packets=total_packets)
 
         for i, packet in enumerate(packets):
             self._radio.send(packet)
             time.sleep(self._send_delay)
 
-        self._logger.info(
+        self._logger.debug(
             "Successfully sent all the packets!", num_packets=total_packets
         )
         return True
@@ -56,7 +56,7 @@ class PacketManager:
         """
         # Calculate number of packets needed
         total_packets: int = math.ceil(len(data) / self._payload_size)
-        self._logger.info(
+        self._logger.debug(
             "Packing data into packets",
             num_packets=total_packets,
             data_length=len(data),
@@ -88,7 +88,7 @@ class PacketManager:
         """
         _timeout = timeout if timeout is not None else 10
 
-        self._logger.info("Listening for data...", timeout=_timeout)
+        self._logger.debug("Listening for data...", timeout=_timeout)
 
         start_time = time.time()
         received_packets = []
@@ -111,7 +111,7 @@ class PacketManager:
                 continue
 
             # # Log the first received packet
-            self._logger.info(
+            self._logger.debug(
                 "Received packet",
                 packet_length=len(packet),
                 header=self._get_header(packet),
@@ -124,18 +124,10 @@ class PacketManager:
             # Check if we have all packets
             _, total_packets = self._get_header(packet)
             if total_packets == len(received_packets):
-                self._logger.info(
+                self._logger.debug(
                     "Received all expected packets", received=total_packets
                 )
                 break
-
-            # Log progress periodically
-            if len(received_packets) % 10 == 0:
-                self._logger.info(
-                    "Receive progress",
-                    received=len(received_packets),
-                    expected=total_packets,
-                )
 
         # Attempt to unpack the data
         return self._unpack_data(received_packets)
@@ -143,7 +135,7 @@ class PacketManager:
     def send_acknowledgement(self) -> None:
         """Send an acknowledgment to the radio."""
         self.send(b"ACK")
-        self._logger.info("Sent acknowledgment packet")
+        self._logger.debug("Sent acknowledgment packet")
 
     def _unpack_data(self, packets: list[bytes]) -> bytes:
         """

@@ -33,7 +33,7 @@ class CommandDataHandler:
         Listen for commands from the radio and handle them.
         :param timeout: Timeout in seconds for listening for commands.
         """
-        self._log.info("Listening for commands...", timeout=timeout)
+        self._log.debug("Listening for commands...", timeout=timeout)
 
         json_bytes = self._packet_manager.listen(timeout)
         if json_bytes is None:
@@ -60,7 +60,7 @@ class CommandDataHandler:
             if isinstance(raw_args, list):
                 args: list[str] = raw_args
 
-            self._log.info("Received command message", cmd=cmd, args=args)
+            self._log.debug("Received command message", cmd=cmd, args=args)
 
             # Delay to give the ground station time to switch to listening mode
             time.sleep(0.5)

@@ -100,7 +100,7 @@ def test_cleanup_on_error(burnwire_manager):
         assert burnwire_manager._enable_burn.value == (
             not burnwire_manager._enable_logic
         )
-        burnwire_manager._log.info.assert_any_call("Burnwire Safed")
+        burnwire_manager._log.debug.assert_any_call("Burnwire Safed")
 
 
 def test_attempt_burn_exception_handling(burnwire_manager):
@@ -125,7 +125,7 @@ def test_burn_keyboard_interrupt(burnwire_manager):
         # Check that the log contains the interruption message from burn()
         found = any(
             "Burn Attempt Interupted after" in str(call[0][0])
-            for call in burnwire_manager._log.info.call_args_list
+            for call in burnwire_manager._log.debug.call_args_list
         )
         assert found
 

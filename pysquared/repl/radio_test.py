@@ -4,7 +4,7 @@ import time
 from ..cdh import CommandDataHandler
 from ..config.config import Config
 from ..hardware.radio.packetizer.packet_manager import PacketManager
-from ..logger import Logger
+from ..logger import Logger, LogLevel
 
 
 class RadioTest:
@@ -17,6 +17,7 @@ class RadioTest:
     ):
         self._log = logger
         self._log.colorized = True
+        self._log._log_level = LogLevel.INFO
         self._config = config
         self._packet_manager = packet_manager
         self._cdh = cdh
@@ -47,7 +48,7 @@ class RadioTest:
             ====================================================
             """
             )
-            if cmd_selection not in ["1", "2", "3"]:
+            if cmd_selection not in range(3):
                 self._log.warning("Invalid command selection. Please try again.")
                 return
 
@@ -77,8 +78,8 @@ class RadioTest:
                 self._packet_manager.send(json.dumps(message).encode("utf-8"))
 
                 # Listen for ACK response
-                for _ in range(3):  # Retry up to 3 times
-                    response = self._packet_manager.listen(3)
+                for _ in range(2):  # Retry up to 3 times
+                    response = self._packet_manager.listen(5)
                     if response is not None:
                         self._log.info(
                             "Received response",
@@ -96,7 +97,7 @@ class RadioTest:
                 #         "No ACK response received, retrying...", response=response
                 #     )
 
-            self.listen()
+            # self.listen()
         except KeyboardInterrupt:
             self._log.debug("Keyboard interrupt received, exiting send mode.")
 

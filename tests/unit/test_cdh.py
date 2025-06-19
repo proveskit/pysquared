@@ -99,7 +99,7 @@ def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger)
     cdh.listen_for_commands(30)
 
     mock_packet_manager.listen.assert_called_once_with(30)
-    mock_logger.info.assert_any_call(
+    mock_logger.debug.assert_any_call(
         "Received command message", cmd="send_joke", args=[]
     )
 

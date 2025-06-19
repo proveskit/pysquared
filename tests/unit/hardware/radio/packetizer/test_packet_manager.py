@@ -111,8 +111,8 @@ def test_send_success(mock_sleep, mock_logger, mock_radio):
     mock_sleep.assert_called_with(0.1)
 
     # Verify log messages
-    mock_logger.info.assert_any_call("Sending packets...", num_packets=total_packets)
-    mock_logger.info.assert_any_call(
+    mock_logger.debug.assert_any_call("Sending packets...", num_packets=total_packets)
+    mock_logger.debug.assert_any_call(
         "Successfully sent all the packets!", num_packets=total_packets
     )
 
@@ -175,11 +175,11 @@ def test_receive_success(mock_time, mock_logger, mock_radio):
     assert result == expected_data
 
     # Verify proper logging
-    mock_logger.info.assert_any_call("Listening for data...", timeout=10)
-    mock_logger.info.assert_any_call(
+    mock_logger.debug.assert_any_call("Listening for data...", timeout=10)
+    mock_logger.debug.assert_any_call(
         "Received packet", packet_length=len(packet1), header=(0, 2), payload=b"first"
     )
-    mock_logger.info.assert_any_call("Received all expected packets", received=2)
+    mock_logger.debug.assert_any_call("Received all expected packets", received=2)
 
 
 @patch("time.time")
@@ -237,7 +237,7 @@ def test_receive_progress_logging(mock_time, mock_logger, mock_radio):
 
     # Check if these calls exist in the logger calls
     for log_call in progress_log_calls:
-        assert log_call in mock_logger.info.call_args_list
+        assert log_call in mock_logger.debug.call_args_list
 
     # Verify we got the combined data from all packets
     assert result is not None
