@@ -97,7 +97,7 @@ class PacketManager:
         while True:
             # Stop listening if timeout is reached
             if time.time() - start_time > _timeout:
-                self._logger.warning(
+                self._logger.info(
                     "Listen timeout reached",
                     elapsed=time.time() - start_time,
                 )

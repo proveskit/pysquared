@@ -48,7 +48,7 @@ class RadioTest:
             ====================================================
             """
             )
-            if cmd_selection not in range(3):
+            if cmd_selection not in ["1", "2", "3"]:
                 self._log.warning("Invalid command selection. Please try again.")
                 return
 
