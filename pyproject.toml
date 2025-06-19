@@ -12,26 +12,25 @@ dependencies = [
     "adafruit-circuitpython-lsm6ds==4.5.13",
     "adafruit-circuitpython-mcp9808==3.3.24",
     "adafruit-circuitpython-neopixel==6.3.12",
-    "adafruit-circuitpython-register==1.10.2",
+    "adafruit-circuitpython-register==1.10.4",
     "adafruit-circuitpython-rfm==1.0.6",
     "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A@1.0.0",
     "adafruit-circuitpython-ticks==1.1.1",
     "adafruit-circuitpython-veml7700==2.0.2",
-    "proves-circuitpython-rv3028 @ git+https://github.com/proveskit/PROVES_CircuitPython_RV3028@1.0.0",
+    "proves-circuitpython-rv3028 @ git+https://github.com/proveskit/PROVES_CircuitPython_RV3028@1.0.1",
     "proves-circuitpython-sx126 @ git+https://github.com/proveskit/micropySX126X@1.0.0",
-    "proves-circuitpython-sx1280 @ git+https://github.com/proveskit/CircuitPython_SX1280@1.0.3",
+    "proves-circuitpython-sx1280 @ git+https://github.com/proveskit/CircuitPython_SX1280@1.0.4",
 ]
 
 [dependency-groups]
 dev = [
-    "adafruit-circuitpython-typing==1.11.2",
-    "adafruit-circuitpython-register==1.10.2",
-    "circuitpython-stubs==9.2.5",
-    "coverage==7.6.10",
-    "freezegun>=1.5.1",
-    "pre-commit==4.0.1",
-    "pyright[nodejs]==1.1.399",
-    "pytest==8.3.2",
+    "adafruit-circuitpython-typing==1.12.1",
+    "circuitpython-stubs==9.2.8",
+    "coverage==7.9.1",
+    "freezegun>=1.5.2",
+    "pre-commit==4.2.0",
+    "pyright[nodejs]==1.1.402",
+    "pytest==8.4.1",
 ]
 
 [tool.setuptools]
