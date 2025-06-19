@@ -8,13 +8,6 @@
   "detumble_enable_y": true,
   "detumble_enable_z": true,
   "heating": false,
-  "joke_reply": [
-    "Your Mom",
-    "Your Mum",
-    "Your Face",
-    "not True lol",
-    "I have brought peace, freedom, justice, and security to my new empire! Your New Empire?"
-  ],
   "jokes": [
     "Hey it is pretty cold up here, did someone forget to pay the electric bill?",
     "sudo rf - rf*",

@@ -28,7 +28,6 @@ CONFIG_SCHEMA = {
     "radio": dict,
     "super_secret_code": str,
     "repeat_code": str,
-    "joke_reply": list,
 }
 
 
@@ -222,7 +221,7 @@ def test_field_types(config_data):
         assert isinstance(config_data[field], bool), f"{field} must be a boolean"
 
     # Test list fields
-    list_fields = ["jokes", "joke_reply"]
+    list_fields = ["jokes"]
     for field in list_fields:
         assert isinstance(config_data[field], list), f"{field} must be a list"
         assert all(
@@ -301,10 +300,6 @@ def test_current_draw_positive(config_data):
 def test_lists_not_empty(config_data):
     """Test that list fields are not empty."""
     assert len(config_data["jokes"]) > 0, "jokes list cannot be empty"
-    assert len(config_data["joke_reply"]) > 0, "joke_reply list cannot be empty"
     assert all(
         isinstance(joke, str) for joke in config_data["jokes"]
     ), "All jokes must be strings"
-    assert all(
-        isinstance(reply, str) for reply in config_data["joke_reply"]
-    ), "All joke replies must be strings"
