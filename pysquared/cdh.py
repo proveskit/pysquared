@@ -71,7 +71,7 @@ class CommandDataHandler:
             if cmd == self.command_reset:
                 self.reset()
             elif cmd == self.command_change_radio_modulation:
-                self.change_radio_modulation(args[0])
+                self.change_radio_modulation(args)
             elif cmd == self.command_send_joke:
                 self.send_joke()
             else:
@@ -89,13 +89,26 @@ class CommandDataHandler:
         self._log.info("Sending joke", joke=joke)
         self._packet_manager.send(joke.encode("utf-8"))
 
-    def change_radio_modulation(self, modulation: str) -> None:
+    def change_radio_modulation(self, args: list[str]) -> None:
         """
         Change the radio modulation.
         :param modulation: The new radio modulation to set.
         """
+        modulation = "UNSET"
+
+        if len(args) < 1:
+            self._log.warning("No modulation specified")
+            self._packet_manager.send(
+                "No modulation specified. Please provide a modulation type.".encode(
+                    "utf-8"
+                )
+            )
+            return
+
+        modulation = args[0]
+
         try:
-            self._config.update_config("radio_modulation", modulation, temporary=False)
+            self._config.update_config("modulation", modulation, temporary=False)
             self._log.info("Radio modulation changed", modulation=modulation)
             self._packet_manager.send(
                 f"Radio modulation changed: {modulation}".encode("utf-8")
