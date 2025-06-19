@@ -1,4 +1,5 @@
-from microcontroller import Processor
+import microcontroller
+from typing import Any
 
 from pysquared.config.config import Config
 from pysquared.logger import Logger
@@ -29,12 +30,12 @@ class StateOfHealth:
         self,
         logger: Logger,
         config: Config,
-        *args: PowerMonitorProto | TemperatureSensorProto | Processor,
+        *args: PowerMonitorProto | TemperatureSensorProto | Any,
     ) -> None:
         self.logger: Logger = logger
         self.config: Config = config
         self._sensors: tuple[
-            PowerMonitorProto | TemperatureSensorProto | Processor, ...
+            PowerMonitorProto | TemperatureSensorProto | Any, ...
         ] = args
 
     def get(self) -> NOMINAL | DEGRADED:
@@ -75,7 +76,7 @@ class StateOfHealth:
                     errors.append(
                         f"Temperature reading {temperature} is outside of normal range {self.config.normal_temp}"
                     )
-            elif isinstance(sensor, Processor):
+            elif hasattr(sensor, 'temperature'):  # Check if it's a CPU-like object
                 temperature = sensor.temperature
                 self.logger.debug("Temp: ", temperature=temperature)
                 if (
@@ -108,6 +109,6 @@ class StateOfHealth:
             reading = func()
             if reading is None:
                 self.logger.warning(f"Couldn't get reading from {func.__name__}")
-                return
+                return None
             readings += reading
         return readings / num_readings

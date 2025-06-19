@@ -10,112 +10,129 @@ from pysquared.nvm.flag import Flag
 from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
-from pysquared.state_of_health import StateOfHealth
+from pysquared.state_of_health import StateOfHealth, NOMINAL, DEGRADED
+from pysquared.config.config import Config
+from pysquared.protos.temperature_sensor import TemperatureSensorProto
 
 
 @pytest.fixture
 def state_of_health():
     # Mock dependencies
     logger = MagicMock(spec=Logger)
-    battery_power_monitor = MagicMock(spec=PowerMonitorProto)
-    solar_power_monitor = MagicMock(spec=PowerMonitorProto)
-    radio_manager = MagicMock(spec=RadioProto)
-    imu_manager = MagicMock(spec=IMUProto)
-    radio_manager.get_temperature = MagicMock(return_value=25.0)
-    imu_manager.get_temperature = MagicMock(return_value=30.0)
-    boot_count = Counter(index=0, datastore=ByteArray(size=8))
-    burned_flag = Flag(index=0, bit_index=1, datastore=ByteArray(size=8))
-    brownout_flag = Flag(index=0, bit_index=2, datastore=ByteArray(size=8))
-    fsk_flag = Flag(index=0, bit_index=3, datastore=ByteArray(size=8))
+    config = MagicMock(spec=Config)
+    config.normal_charge_current = 1.5
+    config.normal_battery_voltage = 3.7
+    config.normal_temp = 25
+    config.normal_micro_temp = 45
+    battery_power_monitor = MagicMock(spec=PowerMonitorProto, autospec=True)
+    solar_power_monitor = MagicMock(spec=PowerMonitorProto, autospec=True)
+    temperature_sensor = MagicMock(spec=TemperatureSensorProto, autospec=True)
+    radio_manager = MagicMock()
+    imu_manager = MagicMock()
+    
+    # Set up mock return values
+    battery_power_monitor.get_bus_voltage.side_effect = [3.7] * 50
+    battery_power_monitor.get_shunt_voltage.side_effect = [0.1] * 50
+    battery_power_monitor.get_current.side_effect = [1.5] * 50
+    solar_power_monitor.get_bus_voltage.side_effect = [5.0] * 50
+    solar_power_monitor.get_shunt_voltage.side_effect = [0.1] * 50
+    solar_power_monitor.get_current.side_effect = [2.0] * 50
+    temperature_sensor.get_temperature.side_effect = [25.0] * 50
+    radio_manager.get_temperature.return_value = 25.0
+    imu_manager.get_temperature.return_value = 30.0
     microcontroller.cpu = MagicMock()
+    microcontroller.cpu.temperature = 45.0
 
-    # Create StateOfHealth instance
+    # Remove .temperature from all mocks except microcontroller.cpu
+    if hasattr(battery_power_monitor, 'temperature'):
+        del battery_power_monitor.temperature
+    if hasattr(solar_power_monitor, 'temperature'):
+        del solar_power_monitor.temperature
+    if hasattr(radio_manager, 'temperature'):
+        del radio_manager.temperature
+    if hasattr(imu_manager, 'temperature'):
+        del imu_manager.temperature
+
+    # Create StateOfHealth instance with sensors as *args
     return StateOfHealth(
-        logger=logger,
-        battery_power_monitor=battery_power_monitor,
-        solar_power_monitor=solar_power_monitor,
-        radio_manager=radio_manager,
-        imu_manager=imu_manager,
-        boot_count=boot_count,
-        burned_flag=burned_flag,
-        brownout_flag=brownout_flag,
-        fsk_flag=fsk_flag,
+        logger,
+        config,
+        battery_power_monitor,
+        solar_power_monitor,
+        temperature_sensor,
+        radio_manager,
+        imu_manager,
+        microcontroller.cpu,
     )
 
 
-def test_system_voltage(state_of_health):
-    state_of_health.battery_power_monitor.get_bus_voltage.return_value = 3.7
-    state_of_health.battery_power_monitor.get_shunt_voltage.return_value = 0.1
-
-    result = state_of_health.system_voltage()
-
-    assert result == pytest.approx(3.8, rel=1e-2)
-    assert state_of_health.battery_power_monitor.get_bus_voltage.call_count == 50
-    assert state_of_health.battery_power_monitor.get_shunt_voltage.call_count == 50
+def test_nominal_health(state_of_health):
+    """Test that StateOfHealth returns NOMINAL when all sensors are within normal ranges"""
+    result = state_of_health.get()
+    if isinstance(result, DEGRADED):
+        print('Logger.warning call args:', state_of_health.logger.warning.call_args)
+    assert isinstance(result, NOMINAL)
+    state_of_health.logger.info.assert_called_with("State of health is NOMINAL")
 
 
-def test_battery_voltage(state_of_health):
-    state_of_health.battery_power_monitor.get_bus_voltage.return_value = 3.7
-
-    result = state_of_health.battery_voltage()
-
-    assert result == pytest.approx(3.9, rel=1e-2)
-    assert state_of_health.battery_power_monitor.get_bus_voltage.call_count == 50
-
-
-def test_current_draw(state_of_health):
-    state_of_health.battery_power_monitor.get_current.return_value = 1.5
-
-    result = state_of_health.current_draw()
-
-    assert result == pytest.approx(1.5, rel=1e-2)
-    assert state_of_health.battery_power_monitor.get_current.call_count == 50
+def test_degraded_health_high_current(state_of_health):
+    """Test that StateOfHealth returns DEGRADED when current is outside normal range"""
+    # Set current to be outside normal range for all 50 readings
+    state_of_health._sensors[0].get_current.side_effect = [1.5 + 11.0] * 50
+    state_of_health._sensors[0].get_bus_voltage.side_effect = [3.7] * 50
+    state_of_health._sensors[0].get_shunt_voltage.side_effect = [0.1] * 50
+    state_of_health._sensors[1].get_bus_voltage.side_effect = [5.0] * 50
+    state_of_health._sensors[1].get_shunt_voltage.side_effect = [0.1] * 50
+    state_of_health._sensors[1].get_current.side_effect = [2.0] * 50
+    result = state_of_health.get()
+    assert isinstance(result, DEGRADED)
+    state_of_health.logger.warning.assert_called()
 
 
-def test_charge_current(state_of_health):
-    state_of_health.solar_power_monitor.get_current.return_value = 2.0
-
-    result = state_of_health.charge_current()
-
-    assert result == pytest.approx(2.0, rel=1e-2)
-    assert state_of_health.solar_power_monitor.get_current.call_count == 50
-
-
-def test_solar_voltage(state_of_health):
-    state_of_health.solar_power_monitor.get_bus_voltage.return_value = 5.0
-
-    result = state_of_health.solar_voltage()
-
-    assert result == pytest.approx(5.0, rel=1e-2)
-    assert state_of_health.solar_power_monitor.get_bus_voltage.call_count == 50
+def test_degraded_health_high_voltage(state_of_health):
+    """Test that StateOfHealth returns DEGRADED when voltage is outside normal range"""
+    # Set bus voltage to be outside normal range for all 50 readings
+    state_of_health._sensors[0].get_bus_voltage.side_effect = [3.7 + 11.0] * 50
+    state_of_health._sensors[0].get_shunt_voltage.side_effect = [0.1] * 50
+    state_of_health._sensors[0].get_current.side_effect = [1.5] * 50
+    state_of_health._sensors[1].get_bus_voltage.side_effect = [5.0] * 50
+    state_of_health._sensors[1].get_shunt_voltage.side_effect = [0.1] * 50
+    state_of_health._sensors[1].get_current.side_effect = [2.0] * 50
+    result = state_of_health.get()
+    assert isinstance(result, DEGRADED)
+    state_of_health.logger.warning.assert_called()
 
 
-def test_update(state_of_health):
-    # Mock return values for all dependencies
-    state_of_health.system_voltage = MagicMock(return_value=3.8)
-    state_of_health.current_draw = MagicMock(return_value=1.5)
-    state_of_health.solar_voltage = MagicMock(return_value=5.0)
-    state_of_health.charge_current = MagicMock(return_value=2.0)
-    state_of_health.battery_voltage = MagicMock(return_value=3.9)
-    state_of_health.radio_manager.get_temperature.return_value = 25.0
-    state_of_health.radio_manager.get_modulation.return_value = "FSK"
-    state_of_health.imu_manager.get_temperature.return_value = 30.0
-    state_of_health.logger.get_error_count.return_value = 0
-    microcontroller.cpu.temperature = 45.0
+def test_degraded_health_high_temperature(state_of_health):
+    """Test that StateOfHealth returns DEGRADED when temperature is outside normal range"""
+    # Set temperature to be outside normal range for all 50 readings
+    state_of_health._sensors[2].get_temperature.side_effect = [25 + 11.0] * 50
+    result = state_of_health.get()
+    assert isinstance(result, DEGRADED)
+    state_of_health.logger.warning.assert_called()
 
-    state_of_health.update()
 
-    assert state_of_health.state["system_voltage"] == 3.8
-    assert state_of_health.state["system_current"] == 1.5
-    assert state_of_health.state["solar_voltage"] == 5.0
-    assert state_of_health.state["solar_current"] == 2.0
-    assert state_of_health.state["battery_voltage"] == 3.9
-    assert state_of_health.state["radio_temperature"] == 25.0
-    assert state_of_health.state["radio_modulation"] == "FSK"
-    assert state_of_health.state["internal_temperature"] == 30.0
-    assert state_of_health.state["microcontroller_temperature"] == 45.0
-    assert state_of_health.state["error_count"] == 0
-    assert state_of_health.state["boot_count"] == 0
-    assert state_of_health.state["burned_flag"] is False
-    assert state_of_health.state["brownout_flag"] is False
-    assert state_of_health.state["fsk_flag"] is False
+def test_avg_reading_with_valid_readings(state_of_health):
+    """Test that _avg_reading returns correct average for valid readings"""
+    # Mock a sensor function that returns consistent values
+    mock_func = MagicMock()
+    mock_func.return_value = 10.0
+    mock_func.__name__ = "test_sensor"
+    
+    result = state_of_health._avg_reading(mock_func, num_readings=5)
+    
+    assert result == 10.0
+    assert mock_func.call_count == 5
+
+
+def test_avg_reading_with_none_readings(state_of_health):
+    """Test that _avg_reading returns None when sensor returns None"""
+    # Mock a sensor function that returns None
+    mock_func = MagicMock()
+    mock_func.return_value = None
+    mock_func.__name__ = "test_sensor"
+    
+    result = state_of_health._avg_reading(mock_func, num_readings=5)
+    
+    assert result is None
+    state_of_health.logger.warning.assert_called()
