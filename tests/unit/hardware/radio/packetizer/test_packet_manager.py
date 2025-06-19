@@ -204,7 +204,7 @@ def test_receive_timeout(mock_time, mock_logger, mock_radio):
     assert result is None
 
     # Verify listen timeout was logged
-    mock_logger.info.assert_called_with("Listen timeout reached", elapsed=11.0)
+    mock_logger.debug.assert_called_with("Listen timeout reached", elapsed=11.0)
 
 
 @patch("time.time")
