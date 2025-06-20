@@ -39,54 +39,115 @@ class StateOfHealth:
 
     def get(self) -> NOMINAL | DEGRADED:
         """
-        Get the state of health
+        Get the state of health by checking all sensors
         """
         errors: List[str] = []
+
         for sensor in self._sensors:
             self.logger.debug("Sensor: ", sensor=sensor)
-            if isinstance(sensor, PowerMonitorProto):
-                bus_voltage = self._avg_reading(sensor.get_bus_voltage)
-                shunt_voltage = self._avg_reading(sensor.get_shunt_voltage)
-                current = self._avg_reading(sensor.get_current)
+            sensor_errors = self._check_sensor(sensor)
+            errors.extend(sensor_errors)
 
-                # range is hardcoded for now
-                if current and abs(current - self.config.normal_charge_current) > 10:
-                    errors.append(
-                        f"Current reading {current} is outside of normal range {self.config.normal_charge_current}"
-                    )
-                if (
-                    bus_voltage
-                    and abs(bus_voltage - self.config.normal_battery_voltage) > 10
-                ):
-                    errors.append(
-                        f"Bus voltage reading {bus_voltage} is outside of normal range {self.config.normal_battery_voltage}"
-                    )
-                if (
-                    shunt_voltage
-                    and abs(shunt_voltage - self.config.normal_battery_voltage) > 10
-                ):
-                    errors.append(
-                        f"Shunt voltage reading {shunt_voltage} is outside of normal range {self.config.normal_battery_voltage}"
-                    )
-            elif isinstance(sensor, TemperatureSensorProto):
-                temperature = self._avg_reading(sensor.get_temperature)
-                self.logger.debug("Temp: ", temperature=temperature)
-                if temperature and abs(temperature - self.config.normal_temp) > 10:
-                    errors.append(
-                        f"Temperature reading {temperature} is outside of normal range {self.config.normal_temp}"
-                    )
-            elif hasattr(sensor, "temperature"):  # Check if it's a CPU-like object
-                temperature = sensor.temperature
-                self.logger.debug("Temp: ", temperature=temperature)
-                if (
-                    temperature
-                    and abs(temperature - self.config.normal_micro_temp) > 10
-                ):
-                    errors.append(
-                        f"Processor temperature reading {temperature} is outside of normal range {self.config.normal_micro_temp}"
-                    )
+        return self._determine_state(errors)
 
-        if len(errors) > 0:
+    def _check_sensor(self, sensor) -> List[str]:
+        """
+        Check a single sensor and return any errors found
+        """
+        if isinstance(sensor, PowerMonitorProto):
+            return self._check_power_monitor(sensor)
+        elif isinstance(sensor, TemperatureSensorProto):
+            return self._check_temperature_sensor(sensor)
+        elif hasattr(sensor, "temperature"):  # CPU-like object
+            return self._check_cpu_sensor(sensor)
+        else:
+            return []
+
+    def _check_power_monitor(self, sensor: PowerMonitorProto) -> List[str]:
+        """
+        Check power monitor sensor readings
+        """
+        errors = []
+
+        # Get average readings
+        bus_voltage = self._avg_reading(sensor.get_bus_voltage)
+        shunt_voltage = self._avg_reading(sensor.get_shunt_voltage)
+        current = self._avg_reading(sensor.get_current)
+
+        # Check current reading
+        if current and self._is_out_of_range(
+            current, self.config.normal_charge_current
+        ):
+            errors.append(
+                f"Current reading {current} is outside of normal range {self.config.normal_charge_current}"
+            )
+
+        # Check bus voltage reading
+        if bus_voltage and self._is_out_of_range(
+            bus_voltage, self.config.normal_battery_voltage
+        ):
+            errors.append(
+                f"Bus voltage reading {bus_voltage} is outside of normal range {self.config.normal_battery_voltage}"
+            )
+
+        # Check shunt voltage reading
+        if shunt_voltage and self._is_out_of_range(
+            shunt_voltage, self.config.normal_battery_voltage
+        ):
+            errors.append(
+                f"Shunt voltage reading {shunt_voltage} is outside of normal range {self.config.normal_battery_voltage}"
+            )
+
+        return errors
+
+    def _check_temperature_sensor(self, sensor: TemperatureSensorProto) -> List[str]:
+        """
+        Check temperature sensor readings
+        """
+        temperature = self._avg_reading(sensor.get_temperature)
+        self.logger.debug("Temp: ", temperature=temperature)
+
+        if temperature and self._is_out_of_range(temperature, self.config.normal_temp):
+            return [
+                f"Temperature reading {temperature} is outside of normal range {self.config.normal_temp}"
+            ]
+
+        return []
+
+    def _check_cpu_sensor(self, sensor) -> List[str]:
+        """
+        Check CPU-like sensor readings
+        """
+        temperature = sensor.temperature
+        self.logger.debug("Temp: ", temperature=temperature)
+
+        if temperature and self._is_out_of_range(
+            temperature, self.config.normal_micro_temp
+        ):
+            return [
+                f"Processor temperature reading {temperature} is outside of normal range {self.config.normal_micro_temp}"
+            ]
+
+        return []
+
+    def _is_out_of_range(
+        self, reading: float, normal_value: float, tolerance: float = 10
+    ) -> bool:
+        """
+        Check if a reading is outside the acceptable range
+
+        :param reading: The sensor reading to check
+        :param normal_value: The expected normal value
+        :param tolerance: The acceptable deviation from normal (default: 10)
+        :return: True if reading is out of range, False otherwise
+        """
+        return abs(reading - normal_value) > tolerance
+
+    def _determine_state(self, errors: List[str]) -> NOMINAL | DEGRADED:
+        """
+        Determine the final state based on collected errors
+        """
+        if errors:
             self.logger.warning("State of health is DEGRADED", errors=errors)
             return DEGRADED()
         else:
