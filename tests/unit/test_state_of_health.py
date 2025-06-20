@@ -3,16 +3,11 @@ from unittest.mock import MagicMock
 import microcontroller
 import pytest
 
-from mocks.circuitpython.byte_array import ByteArray
-from pysquared.logger import Logger
-from pysquared.nvm.counter import Counter
-from pysquared.nvm.flag import Flag
-from pysquared.protos.imu import IMUProto
-from pysquared.protos.power_monitor import PowerMonitorProto
-from pysquared.protos.radio import RadioProto
-from pysquared.state_of_health import StateOfHealth, NOMINAL, DEGRADED
 from pysquared.config.config import Config
+from pysquared.logger import Logger
+from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.temperature_sensor import TemperatureSensorProto
+from pysquared.state_of_health import DEGRADED, NOMINAL, StateOfHealth
 
 
 @pytest.fixture
@@ -29,7 +24,7 @@ def state_of_health():
     temperature_sensor = MagicMock(spec=TemperatureSensorProto, autospec=True)
     radio_manager = MagicMock()
     imu_manager = MagicMock()
-    
+
     # Set up mock return values
     battery_power_monitor.get_bus_voltage.side_effect = [3.7] * 50
     battery_power_monitor.get_shunt_voltage.side_effect = [0.1] * 50
@@ -44,13 +39,13 @@ def state_of_health():
     microcontroller.cpu.temperature = 45.0
 
     # Remove .temperature from all mocks except microcontroller.cpu
-    if hasattr(battery_power_monitor, 'temperature'):
+    if hasattr(battery_power_monitor, "temperature"):
         del battery_power_monitor.temperature
-    if hasattr(solar_power_monitor, 'temperature'):
+    if hasattr(solar_power_monitor, "temperature"):
         del solar_power_monitor.temperature
-    if hasattr(radio_manager, 'temperature'):
+    if hasattr(radio_manager, "temperature"):
         del radio_manager.temperature
-    if hasattr(imu_manager, 'temperature'):
+    if hasattr(imu_manager, "temperature"):
         del imu_manager.temperature
 
     # Create StateOfHealth instance with sensors as *args
@@ -70,7 +65,7 @@ def test_nominal_health(state_of_health):
     """Test that StateOfHealth returns NOMINAL when all sensors are within normal ranges"""
     result = state_of_health.get()
     if isinstance(result, DEGRADED):
-        print('Logger.warning call args:', state_of_health.logger.warning.call_args)
+        print("Logger.warning call args:", state_of_health.logger.warning.call_args)
     assert isinstance(result, NOMINAL)
     state_of_health.logger.info.assert_called_with("State of health is NOMINAL")
 
@@ -118,9 +113,9 @@ def test_avg_reading_with_valid_readings(state_of_health):
     mock_func = MagicMock()
     mock_func.return_value = 10.0
     mock_func.__name__ = "test_sensor"
-    
+
     result = state_of_health._avg_reading(mock_func, num_readings=5)
-    
+
     assert result == 10.0
     assert mock_func.call_count == 5
 
@@ -131,8 +126,8 @@ def test_avg_reading_with_none_readings(state_of_health):
     mock_func = MagicMock()
     mock_func.return_value = None
     mock_func.__name__ = "test_sensor"
-    
+
     result = state_of_health._avg_reading(mock_func, num_readings=5)
-    
+
     assert result is None
     state_of_health.logger.warning.assert_called()
