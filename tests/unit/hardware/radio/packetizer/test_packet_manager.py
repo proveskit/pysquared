@@ -1,3 +1,4 @@
+import random
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -95,7 +96,34 @@ def test_send_success(mock_sleep, mock_logger, mock_radio):
     test_data = b'{"message": "test beacon"}'
     _ = packet_manager.send(test_data)
 
-    # The send method should prepend the license to the data
+    # Calculate number of packets that would be created
+    total_packets = (
+        len(test_data) + packet_manager._payload_size - 1
+    ) // packet_manager._payload_size
+
+    # Verify radio.send was called for each packet
+    assert mock_radio.send.call_count == total_packets
+
+    # Verify sleep was not called
+    assert mock_sleep.call_count == 0
+
+    # Verify log messages
+    mock_logger.debug.assert_any_call("Sending packets...", num_packets=total_packets)
+    mock_logger.debug.assert_any_call(
+        "Successfully sent all the packets!", num_packets=total_packets
+    )
+
+
+@patch("time.sleep")
+def test_send_success_multipacket(mock_sleep, mock_logger, mock_radio):
+    """Test successful execution of send method."""
+    license_str = "TEST"
+
+    packet_manager = PacketManager(mock_logger, mock_radio, license_str, send_delay=0.1)
+
+    # Create test data that requires multiple packets (> 252 bytes)
+    test_data = bytes([random.randint(0, 255) for _ in range(300)])
+    _ = packet_manager.send(test_data)
 
     # Calculate number of packets that would be created
     total_packets = (
@@ -105,7 +133,7 @@ def test_send_success(mock_sleep, mock_logger, mock_radio):
     # Verify radio.send was called for each packet
     assert mock_radio.send.call_count == total_packets
 
-    # Verify sleep was called between sends with correct delay
+    # Verify sleep was called between packet sends with correct delay
     assert mock_sleep.call_count == total_packets
     mock_sleep.assert_called_with(0.1)
 
@@ -116,8 +144,7 @@ def test_send_success(mock_sleep, mock_logger, mock_radio):
     )
 
 
-@patch("time.sleep")
-def test_send_unlicensed(mock_sleep, mock_logger, mock_radio):
+def test_send_unlicensed(mock_logger, mock_radio):
     """Test unlicensed execution of send method."""
     license_str = ""
 
@@ -161,10 +188,11 @@ def test_receive_success(mock_time, mock_logger, mock_radio):
 
     # Create test packets
     packet1 = (0).to_bytes(2, "big") + (2).to_bytes(2, "big") + b"first"
-    packet2 = (1).to_bytes(2, "big") + (2).to_bytes(2, "big") + b" second"
+    packet2 = None
+    packet3 = (1).to_bytes(2, "big") + (2).to_bytes(2, "big") + b" second"
 
     # Configure mock_radio.receive to return packets then None
-    mock_radio.receive.side_effect = [packet1, packet2]
+    mock_radio.receive.side_effect = [packet1, packet2, packet3]
 
     # Call the receive method
     result = packet_manager.listen()
@@ -226,3 +254,17 @@ def test_get_header_and_payload(mock_logger, mock_radio):
     # Test _get_payload
     extracted_payload = packet_manager._get_payload(test_packet)
     assert extracted_payload == payload
+
+
+def test_send_acknowledgement(mock_logger, mock_radio):
+    """Test sending acknowledgment packet."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "TEST")
+
+    # Call the send_acknowledgement method
+    packet_manager.send_acknowledgement()
+
+    # Verify that send was called with ACK message
+    mock_radio.send.assert_called()
+
+    # Verify that the acknowledgment message was logged
+    mock_logger.debug.assert_called_with("Sent acknowledgment packet")

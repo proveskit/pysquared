@@ -154,6 +154,23 @@ def test_change_radio_modulation_failure(
     )
 
 
+def test_change_radio_modulation_no_modulation(cdh, mock_logger, mock_packet_manager):
+    """Test change_radio_modulation when no modulation is specified."""
+    # Call the method with an empty list
+    cdh.change_radio_modulation([])
+
+    # Verify warning was logged
+    mock_logger.warning.assert_called_once_with("No modulation specified")
+
+    # Verify error message was sent
+    mock_packet_manager.send.assert_called_once()
+
+    # Extract the bytes that were sent
+    sent_bytes = mock_packet_manager.send.call_args[0][0]
+    expected_message = "No modulation specified. Please provide a modulation type."
+    assert sent_bytes.decode("utf-8") == expected_message
+
+
 @patch("pysquared.cdh.microcontroller")
 def test_reset(mock_microcontroller, cdh, mock_logger):
     """Test the reset method."""
