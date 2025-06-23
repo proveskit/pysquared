@@ -41,8 +41,6 @@ def mock_radio_config() -> RadioConfig:
         {
             "license": "testlicense",
             "modulation": "FSK",
-            "sender_id": 1,
-            "receiver_id": 2,
             "transmit_frequency": 915,
             "start_time": 0,
             "fsk": {"broadcast_address": 255, "node_address": 1, "modulation_type": 0},
@@ -104,8 +102,6 @@ def test_init_fsk_success(
     )
     mock_rfm9x.assert_not_called()
     assert manager._radio == mock_fsk_instance
-    assert mock_fsk_instance.node == mock_radio_config.sender_id
-    assert mock_fsk_instance.destination == mock_radio_config.receiver_id
     assert (
         mock_fsk_instance.fsk_broadcast_address
         == mock_radio_config.fsk.broadcast_address
@@ -147,8 +143,6 @@ def test_init_lora_success(
     )
     mock_rfm9xfsk.assert_not_called()
     assert manager._radio == mock_lora_instance
-    assert mock_lora_instance.node == mock_radio_config.sender_id
-    assert mock_lora_instance.destination == mock_radio_config.receiver_id
     assert mock_lora_instance.ack_delay == mock_radio_config.lora.ack_delay
     assert (
         mock_lora_instance.enable_crc == mock_radio_config.lora.cyclic_redundancy_check
@@ -565,12 +559,9 @@ def test_modify_lora_config(
     manager._radio = RFM9x(
         mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
     )
-    manager._radio.node = mock_radio_config.sender_id
     manager._radio.ack_delay = mock_radio_config.lora.ack_delay
 
     # Modify the config
-    manager.modify_config("sender_id", 255)
-    manager.modify_config("receiver_id", 123)
     manager.modify_config("spreading_factor", 7)
     manager.modify_config("ack_delay", 0.5)
     manager.modify_config("cyclic_redundancy_check", False)
@@ -608,12 +599,10 @@ def test_modify_lora_config_high_sf_success(
     manager._radio = RFM9x(
         mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
     )
-    manager._radio.node = mock_radio_config.sender_id
     manager._radio.ack_delay = mock_radio_config.lora.ack_delay
     manager._radio.spreading_factor = mock_radio_config.lora.spreading_factor
 
     # Modify the config
-    manager.modify_config("sender_id", 255)
     manager.modify_config("spreading_factor", 10)
 
     # Verify the radio was modified with the new config
@@ -642,11 +631,9 @@ def test_modify_fsk_config(
     manager._radio = RFM9xFSK(
         mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
     )
-    manager._radio.node = mock_radio_config.sender_id
     manager._radio.fsk_broadcast_address = mock_radio_config.fsk.broadcast_address
 
     # Modify the config
-    manager.modify_config("sender_id", 111)
     manager.modify_config("broadcast_address", 123)
     manager.modify_config("node_address", 222)
     manager.modify_config("modulation_type", 1)

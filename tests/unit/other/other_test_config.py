@@ -76,8 +76,6 @@ def validate_config(config: Dict[str, Any]) -> None:
 
     # Validate basic radio fields
     radio_basic_fields = {
-        "sender_id": int,
-        "receiver_id": int,
         "transmit_frequency": float,
         "start_time": int,
         "license": str,
@@ -233,8 +231,6 @@ def test_field_types(config_data):
 
     # Test basic radio fields
     radio_basic_fields = {
-        "sender_id": int,
-        "receiver_id": int,
         "transmit_frequency": float,
         "start_time": int,
     }

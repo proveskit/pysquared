@@ -13,5 +13,6 @@ class RFM9xFSK(RFMSPI):
     max_packet_length: int
     last_rssi: float
     tx_power: int
+    radiohead: bool
 
     def __init__(self, spi, cs, reset, frequency) -> None: ...

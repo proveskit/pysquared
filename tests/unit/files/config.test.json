@@ -68,8 +68,6 @@
       "transmit_power": 23
     },
     "modulation": "LoRa",
-    "receiver_id": 250,
-    "sender_id": 251,
     "start_time": 80000,
     "transmit_frequency": 437.4
   },

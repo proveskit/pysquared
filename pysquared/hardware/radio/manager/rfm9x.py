@@ -74,8 +74,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
                 self._radio_config.lora,
             )
 
-        self._radio.node = self._radio_config.sender_id
-        self._radio.destination = self._radio_config.receiver_id
+        self._radio.radiohead = False
 
     def _send_internal(self, data: bytes) -> bool:
         """Send data using the RFM9x radio."""
@@ -90,14 +89,8 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         """
         self._radio_config.validate(key, value)
 
-        # Handle base radio parameters
-        if key == "sender_id":
-            self._radio.node = value
-        elif key == "receiver_id":
-            self._radio.destination = value
-
         # Handle FSK-specific parameters
-        elif isinstance(self._radio, RFM9xFSK):
+        if isinstance(self._radio, RFM9xFSK):
             if key == "broadcast_address":
                 self._radio.fsk_broadcast_address = value
             elif key == "node_address":

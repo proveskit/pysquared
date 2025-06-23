@@ -49,7 +49,19 @@ class CommandDataHandler:
 
             # If message has password field, check it
             if msg.get("password") != self._config.super_secret_code:
-                self._log.warning("Invalid password in message", msg=msg)
+                self._log.debug(
+                    "Invalid password in message",
+                    msg=msg,
+                    expected=self._config.super_secret_code,
+                )
+                return
+
+            if msg.get("name") != self._config.cubesat_name:
+                self._log.debug(
+                    "Satellite name mismatch in message",
+                    msg=msg,
+                    expected=self._config.cubesat_name,
+                )
                 return
 
             # If message has command field, execute the command

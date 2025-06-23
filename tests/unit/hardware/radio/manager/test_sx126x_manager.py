@@ -51,8 +51,6 @@ def mock_radio_config() -> RadioConfig:
         {
             "license": "test license",
             "modulation": "FSK",
-            "sender_id": 1,  # Not directly used by SX126xManager init
-            "receiver_id": 2,  # Not directly used by SX126xManager init
             "transmit_frequency": 915,
             "start_time": 0,
             "fsk": {

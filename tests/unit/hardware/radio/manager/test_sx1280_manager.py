@@ -55,8 +55,6 @@ def mock_radio_config() -> RadioConfig:
         {
             "license": "testlicense",
             "modulation": "FSK",
-            "sender_id": 1,
-            "receiver_id": 2,
             "transmit_frequency": 915,
             "start_time": 0,
             "fsk": {"broadcast_address": 255, "node_address": 1, "modulation_type": 0},
