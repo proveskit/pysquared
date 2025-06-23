@@ -3,119 +3,272 @@ from unittest.mock import MagicMock
 import microcontroller
 import pytest
 
-from mocks.circuitpython.byte_array import ByteArray
+from pysquared.config.config import Config
 from pysquared.logger import Logger
-from pysquared.nvm.counter import Counter
-from pysquared.nvm.flag import Flag
-from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
-from pysquared.protos.radio import RadioProto
-from pysquared.state_of_health import StateOfHealth
+from pysquared.protos.temperature_sensor import TemperatureSensorProto
+from pysquared.state_of_health import DEGRADED, NOMINAL, StateOfHealth
 
 
 @pytest.fixture
 def state_of_health():
     # Mock dependencies
     logger = MagicMock(spec=Logger)
-    battery_power_monitor = MagicMock(spec=PowerMonitorProto)
-    solar_power_monitor = MagicMock(spec=PowerMonitorProto)
-    radio_manager = MagicMock(spec=RadioProto)
-    imu_manager = MagicMock(spec=IMUProto)
-    radio_manager.get_temperature = MagicMock(return_value=25.0)
-    imu_manager.get_temperature = MagicMock(return_value=30.0)
-    boot_count = Counter(index=0, datastore=ByteArray(size=8))
-    burned_flag = Flag(index=0, bit_index=1, datastore=ByteArray(size=8))
-    brownout_flag = Flag(index=0, bit_index=2, datastore=ByteArray(size=8))
-    fsk_flag = Flag(index=0, bit_index=3, datastore=ByteArray(size=8))
-    microcontroller.cpu = MagicMock()
+    config = MagicMock(spec=Config)
+    config.normal_charge_current = 1.5
+    config.normal_battery_voltage = 3.7
+    config.normal_temp = 25
+    config.normal_micro_temp = 45
 
-    # Create StateOfHealth instance
+    # Add CONFIG_SCHEMA to the mock config
+    config.CONFIG_SCHEMA = {
+        "normal_charge_current": {"type": float, "min": 0.0, "max": 2000.0},
+        "normal_battery_voltage": {"type": float, "min": 6.0, "max": 8.4},
+        "normal_temp": {"type": int, "min": 5, "max": 40},
+        "normal_micro_temp": {"type": int, "min": 1, "max": 50},
+    }
+
+    battery_power_monitor = MagicMock(spec=PowerMonitorProto, autospec=True)
+    solar_power_monitor = MagicMock(spec=PowerMonitorProto, autospec=True)
+    temperature_sensor = MagicMock(spec=TemperatureSensorProto, autospec=True)
+    radio_manager = MagicMock()
+    imu_manager = MagicMock()
+
+    # Set up mock return values
+    battery_power_monitor.get_bus_voltage.side_effect = [7.0] * 50
+    battery_power_monitor.get_shunt_voltage.side_effect = [7.0] * 50
+    battery_power_monitor.get_current.side_effect = [1.5] * 50
+    solar_power_monitor.get_bus_voltage.side_effect = [7.0] * 50
+    solar_power_monitor.get_shunt_voltage.side_effect = [7.0] * 50
+    solar_power_monitor.get_current.side_effect = [2.0] * 50
+    temperature_sensor.get_temperature.side_effect = [25.0] * 50
+    radio_manager.get_temperature.return_value = 25.0
+    imu_manager.get_temperature.return_value = 30.0
+    microcontroller.cpu = MagicMock()
+    microcontroller.cpu.temperature = 45.0
+
+    # Remove .temperature from all mocks except microcontroller.cpu
+    if hasattr(battery_power_monitor, "temperature"):
+        del battery_power_monitor.temperature
+    if hasattr(solar_power_monitor, "temperature"):
+        del solar_power_monitor.temperature
+    if hasattr(radio_manager, "temperature"):
+        del radio_manager.temperature
+    if hasattr(imu_manager, "temperature"):
+        del imu_manager.temperature
+
+    # Create StateOfHealth instance with sensors as *args
     return StateOfHealth(
-        logger=logger,
-        battery_power_monitor=battery_power_monitor,
-        solar_power_monitor=solar_power_monitor,
-        radio_manager=radio_manager,
-        imu_manager=imu_manager,
-        boot_count=boot_count,
-        burned_flag=burned_flag,
-        brownout_flag=brownout_flag,
-        fsk_flag=fsk_flag,
+        logger,
+        config,
+        battery_power_monitor,
+        solar_power_monitor,
+        temperature_sensor,
+        radio_manager,
+        imu_manager,
+        microcontroller.cpu,
     )
 
 
-def test_system_voltage(state_of_health):
-    state_of_health.battery_power_monitor.get_bus_voltage.return_value = 3.7
-    state_of_health.battery_power_monitor.get_shunt_voltage.return_value = 0.1
-
-    result = state_of_health.system_voltage()
-
-    assert result == pytest.approx(3.8, rel=1e-2)
-    assert state_of_health.battery_power_monitor.get_bus_voltage.call_count == 50
-    assert state_of_health.battery_power_monitor.get_shunt_voltage.call_count == 50
+def test_nominal_health(state_of_health):
+    """Test that StateOfHealth returns NOMINAL when all sensors are within normal ranges"""
+    result = state_of_health.get()
+    if isinstance(result, DEGRADED):
+        print("Logger.warning call args:", state_of_health.logger.warning.call_args)
+    assert isinstance(result, NOMINAL)
+    state_of_health.logger.info.assert_called_with("State of health is NOMINAL")
 
 
-def test_battery_voltage(state_of_health):
-    state_of_health.battery_power_monitor.get_bus_voltage.return_value = 3.7
-
-    result = state_of_health.battery_voltage()
-
-    assert result == pytest.approx(3.9, rel=1e-2)
-    assert state_of_health.battery_power_monitor.get_bus_voltage.call_count == 50
-
-
-def test_current_draw(state_of_health):
-    state_of_health.battery_power_monitor.get_current.return_value = 1.5
-
-    result = state_of_health.current_draw()
-
-    assert result == pytest.approx(1.5, rel=1e-2)
-    assert state_of_health.battery_power_monitor.get_current.call_count == 50
-
-
-def test_charge_current(state_of_health):
-    state_of_health.solar_power_monitor.get_current.return_value = 2.0
-
-    result = state_of_health.charge_current()
-
-    assert result == pytest.approx(2.0, rel=1e-2)
-    assert state_of_health.solar_power_monitor.get_current.call_count == 50
+def test_degraded_health_high_current(state_of_health):
+    """Test that StateOfHealth returns DEGRADED when current is outside normal range"""
+    # Set current to be outside normal range for all 50 readings
+    state_of_health.set_sensor_readings(
+        sensor_index=0,
+        readings={
+            "get_current": [1.5 + 11.0] * 50,
+            "get_bus_voltage": [3.7] * 50,
+            "get_shunt_voltage": [0.1] * 50,
+        },
+    )
+    state_of_health.set_sensor_readings(
+        sensor_index=1,
+        readings={
+            "get_bus_voltage": [5.0] * 50,
+            "get_shunt_voltage": [0.1] * 50,
+            "get_current": [2.0] * 50,
+        },
+    )
+    result = state_of_health.get()
+    assert isinstance(result, DEGRADED)
+    state_of_health.logger.warning.assert_called()
 
 
-def test_solar_voltage(state_of_health):
-    state_of_health.solar_power_monitor.get_bus_voltage.return_value = 5.0
+def test_degraded_health_high_voltage(state_of_health):
+    """Test that StateOfHealth returns DEGRADED when voltage is outside normal range"""
+    # Set bus voltage to be outside normal range for all 50 readings
+    state_of_health._sensors[0].get_bus_voltage.side_effect = [3.7 + 11.0] * 50
+    state_of_health._sensors[0].get_shunt_voltage.side_effect = [0.1] * 50
+    state_of_health._sensors[0].get_current.side_effect = [1.5] * 50
+    state_of_health._sensors[1].get_bus_voltage.side_effect = [5.0] * 50
+    state_of_health._sensors[1].get_shunt_voltage.side_effect = [0.1] * 50
+    state_of_health._sensors[1].get_current.side_effect = [2.0] * 50
+    result = state_of_health.get()
+    assert isinstance(result, DEGRADED)
+    state_of_health.logger.warning.assert_called()
 
-    result = state_of_health.solar_voltage()
 
-    assert result == pytest.approx(5.0, rel=1e-2)
-    assert state_of_health.solar_power_monitor.get_bus_voltage.call_count == 50
+def test_degraded_health_high_temperature(state_of_health):
+    """Test that StateOfHealth returns DEGRADED when temperature is outside normal range"""
+    # Set temperature to be outside normal range for all 50 readings
+    state_of_health._sensors[2].get_temperature.side_effect = [
+        41.0
+    ] * 50  # Above max of 40
+    result = state_of_health.get()
+    assert isinstance(result, DEGRADED)
+    state_of_health.logger.warning.assert_called()
 
 
-def test_update(state_of_health):
-    # Mock return values for all dependencies
-    state_of_health.system_voltage = MagicMock(return_value=3.8)
-    state_of_health.current_draw = MagicMock(return_value=1.5)
-    state_of_health.solar_voltage = MagicMock(return_value=5.0)
-    state_of_health.charge_current = MagicMock(return_value=2.0)
-    state_of_health.battery_voltage = MagicMock(return_value=3.9)
-    state_of_health.radio_manager.get_temperature.return_value = 25.0
-    state_of_health.radio_manager.get_modulation.return_value = "FSK"
-    state_of_health.imu_manager.get_temperature.return_value = 30.0
-    state_of_health.logger.get_error_count.return_value = 0
-    microcontroller.cpu.temperature = 45.0
+def test_avg_reading_with_valid_readings(state_of_health):
+    """Test that _avg_reading returns correct average for valid readings"""
+    # Mock a sensor function that returns consistent values
+    mock_func = MagicMock()
+    mock_func.return_value = 10.0
+    mock_func.__name__ = "test_sensor"
 
-    state_of_health.update()
+    result = state_of_health._avg_reading(mock_func, num_readings=5)
 
-    assert state_of_health.state["system_voltage"] == 3.8
-    assert state_of_health.state["system_current"] == 1.5
-    assert state_of_health.state["solar_voltage"] == 5.0
-    assert state_of_health.state["solar_current"] == 2.0
-    assert state_of_health.state["battery_voltage"] == 3.9
-    assert state_of_health.state["radio_temperature"] == 25.0
-    assert state_of_health.state["radio_modulation"] == "FSK"
-    assert state_of_health.state["internal_temperature"] == 30.0
-    assert state_of_health.state["microcontroller_temperature"] == 45.0
-    assert state_of_health.state["error_count"] == 0
-    assert state_of_health.state["boot_count"] == 0
-    assert state_of_health.state["burned_flag"] is False
-    assert state_of_health.state["brownout_flag"] is False
-    assert state_of_health.state["fsk_flag"] is False
+    assert result == 10.0
+    assert mock_func.call_count == 5
+
+
+def test_avg_reading_with_none_readings(state_of_health):
+    """Test that _avg_reading returns None when sensor returns None"""
+    # Mock a sensor function that returns None
+    mock_func = MagicMock()
+    mock_func.return_value = None
+    mock_func.__name__ = "test_sensor"
+
+    result = state_of_health._avg_reading(mock_func, num_readings=5)
+
+    assert result is None
+    state_of_health.logger.warning.assert_called()
+
+
+def test_check_power_monitor_within_range(state_of_health):
+    """Test that _check_power_monitor returns empty list when all readings are within schema bounds"""
+    # Create a mock power monitor with readings within schema bounds
+    power_monitor = MagicMock(spec=PowerMonitorProto, autospec=True)
+    power_monitor.get_bus_voltage.side_effect = [7.0] * 50  # Within 6.0-8.4 bounds
+    power_monitor.get_shunt_voltage.side_effect = [7.0] * 50  # Within 6.0-8.4 bounds
+    power_monitor.get_current.side_effect = [1.0] * 50  # Within 0.0-2000.0 bounds
+
+    result = state_of_health._check_power_monitor(power_monitor)
+
+    assert result == []
+    assert len(result) == 0
+
+
+def test_check_power_monitor_out_of_range(state_of_health):
+    """Test that _check_power_monitor returns error list when readings are outside schema bounds"""
+    # Create a mock power monitor with readings outside schema bounds
+    power_monitor = MagicMock(spec=PowerMonitorProto, autospec=True)
+    power_monitor.get_bus_voltage.side_effect = [9.0] * 50  # Above 8.4 max
+    power_monitor.get_shunt_voltage.side_effect = [5.0] * 50  # Below 6.0 min
+    power_monitor.get_current.side_effect = [2500.0] * 50  # Above 2000.0 max
+
+    result = state_of_health._check_power_monitor(power_monitor)
+
+    assert len(result) == 3  # Three errors: bus voltage, shunt voltage, and current
+    assert any(
+        "Bus voltage reading" in error and "above maximum bound 8.4" in error
+        for error in result
+    )
+    assert any(
+        "Shunt voltage reading" in error and "below minimum bound 6.0" in error
+        for error in result
+    )
+    assert any(
+        "Current reading" in error and "above maximum bound 2000.0" in error
+        for error in result
+    )
+
+
+def test_check_cpu_sensor_within_range(state_of_health):
+    """Test that _check_cpu_sensor returns empty list when temperature is within schema bounds"""
+    # Create a mock CPU sensor with temperature within schema bounds
+    cpu_sensor = MagicMock()
+    cpu_sensor.temperature = 25.0  # Within 1-50 bounds
+
+    result = state_of_health._check_cpu_sensor(cpu_sensor)
+
+    assert result == []
+    assert len(result) == 0
+
+
+def test_check_cpu_sensor_out_of_range(state_of_health):
+    """Test that _check_cpu_sensor returns error list when temperature is outside schema bounds"""
+    # Create a mock CPU sensor with temperature outside schema bounds
+    cpu_sensor = MagicMock()
+    cpu_sensor.temperature = 55.0  # Above 50 max
+
+    result = state_of_health._check_cpu_sensor(cpu_sensor)
+
+    assert len(result) == 1
+    assert "Processor temperature reading" in result[0]
+    assert "above maximum bound 50" in result[0]
+
+
+def test_check_cpu_sensor_below_min(state_of_health):
+    """Test that _check_cpu_sensor returns error when temperature is below minimum bound"""
+    # Create a mock CPU sensor with temperature below minimum bound
+    cpu_sensor = MagicMock()
+    cpu_sensor.temperature = 0.0  # Below 1 min
+
+    result = state_of_health._check_cpu_sensor(cpu_sensor)
+
+    assert len(result) == 1
+    assert "Processor temperature reading" in result[0]
+    assert "below minimum bound 1" in result[0]
+
+
+def test_check_against_schema_bounds_within_range(state_of_health):
+    """Test that _check_against_schema_bounds returns empty list when reading is within bounds"""
+    result = state_of_health._check_against_schema_bounds(
+        reading=25.0, config_key="normal_temp", reading_name="Test reading"
+    )
+    assert result == []
+
+
+def test_check_against_schema_bounds_above_max(state_of_health):
+    """Test that _check_against_schema_bounds returns error when reading is above max"""
+    result = state_of_health._check_against_schema_bounds(
+        reading=45.0, config_key="normal_temp", reading_name="Test reading"
+    )
+    assert len(result) == 1
+    assert "above maximum bound 40" in result[0]
+
+
+def test_check_against_schema_bounds_below_min(state_of_health):
+    """Test that _check_against_schema_bounds returns error when reading is below min"""
+    result = state_of_health._check_against_schema_bounds(
+        reading=3.0, config_key="normal_temp", reading_name="Test reading"
+    )
+    assert len(result) == 1
+    assert "below minimum bound 5" in result[0]
+
+
+def test_check_against_schema_bounds_invalid_config_key(state_of_health):
+    """Test that _check_against_schema_bounds handles invalid config keys gracefully"""
+    result = state_of_health._check_against_schema_bounds(
+        reading=25.0, config_key="invalid_key", reading_name="Test reading"
+    )
+    assert result == []
+    state_of_health.logger.warning.assert_called()
+
+
+def test_check_against_schema_bounds_none_reading(state_of_health):
+    """Test that _check_against_schema_bounds handles None readings gracefully"""
+    result = state_of_health._check_against_schema_bounds(
+        reading=None, config_key="normal_temp", reading_name="Test reading"
+    )
+    assert result == []
