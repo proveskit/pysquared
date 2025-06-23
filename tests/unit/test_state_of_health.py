@@ -82,12 +82,22 @@ def test_nominal_health(state_of_health):
 def test_degraded_health_high_current(state_of_health):
     """Test that StateOfHealth returns DEGRADED when current is outside normal range"""
     # Set current to be outside normal range for all 50 readings
-    state_of_health._sensors[0].get_current.side_effect = [1.5 + 11.0] * 50
-    state_of_health._sensors[0].get_bus_voltage.side_effect = [3.7] * 50
-    state_of_health._sensors[0].get_shunt_voltage.side_effect = [0.1] * 50
-    state_of_health._sensors[1].get_bus_voltage.side_effect = [5.0] * 50
-    state_of_health._sensors[1].get_shunt_voltage.side_effect = [0.1] * 50
-    state_of_health._sensors[1].get_current.side_effect = [2.0] * 50
+    state_of_health.set_sensor_readings(
+        sensor_index=0,
+        readings={
+            "get_current": [1.5 + 11.0] * 50,
+            "get_bus_voltage": [3.7] * 50,
+            "get_shunt_voltage": [0.1] * 50,
+        },
+    )
+    state_of_health.set_sensor_readings(
+        sensor_index=1,
+        readings={
+            "get_bus_voltage": [5.0] * 50,
+            "get_shunt_voltage": [0.1] * 50,
+            "get_current": [2.0] * 50,
+        },
+    )
     result = state_of_health.get()
     assert isinstance(result, DEGRADED)
     state_of_health.logger.warning.assert_called()
