@@ -59,12 +59,18 @@ class Beacon:
         state: OrderedDict[str, object] = OrderedDict()
         state["name"] = self._name
 
-        now = time.localtime()  # Warning: CircuitPython does not support time.gmtime(), when testing this code it will use your local timezone
-        state["time"] = (
-            f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
-        )
+        # Warning: CircuitPython does not support time.gmtime(), when testing this code it will use your local timezone
+        now = time.localtime()
+        state["time"] = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {
+                now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
 
         state["uptime"] = time.time() - self._boot_time
+
+        try:
+            last_rssi = self._packet_manager._radio.get_rssi()
+        except NotImplementedError:
+            last_rssi = None
+        state["last_rssi"] = last_rssi
 
         for index, sensor in enumerate(self._sensors):
             if isinstance(sensor, Processor):
@@ -81,8 +87,14 @@ class Beacon:
                 )
             if isinstance(sensor, IMUProto):
                 sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_acceleration"] = sensor.get_acceleration()
-                state[f"{sensor_name}_{index}_gyroscope"] = sensor.get_gyro_data()
+                state[
+                    f"{sensor_name}_{
+                    index}_acceleration"
+                ] = sensor.get_acceleration()
+                state[
+                    f"{sensor_name}_{
+                    index}_gyroscope"
+                ] = sensor.get_gyro_data()
             if isinstance(sensor, PowerMonitorProto):
                 sensor_name: str = sensor.__class__.__name__
                 state[f"{sensor_name}_{index}_current_avg"] = self.avg_readings(
@@ -96,7 +108,10 @@ class Beacon:
                 )
             if isinstance(sensor, TemperatureSensorProto):
                 sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_temperature"] = sensor.get_temperature()
+                state[
+                    f"{sensor_name}_{
+                    index}_temperature"
+                ] = sensor.get_temperature()
 
         b = json.dumps(state, separators=(",", ":")).encode("utf-8")
         return self._packet_manager.send(b)
