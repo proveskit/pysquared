@@ -56,8 +56,11 @@ class RadioProto:
 
         ...
 
-    def get_rssi(self) -> float:
+    def get_rssi(self) -> int:
         """Get the RSSI of the last received packet.
+
+        :return: The RSSI value in dBm.
+        :rtype: int
 
         :raises NotImplementedError: If not implemented by subclass.
         """

@@ -61,16 +61,11 @@ class Beacon:
 
         # Warning: CircuitPython does not support time.gmtime(), when testing this code it will use your local timezone
         now = time.localtime()
-        state["time"] = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {
-                now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
+        state["time"] = (
+            f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
+        )
 
         state["uptime"] = time.time() - self._boot_time
-
-        try:
-            last_rssi = self._packet_manager._radio.get_rssi()
-        except NotImplementedError:
-            last_rssi = None
-        state["last_rssi"] = last_rssi
 
         for index, sensor in enumerate(self._sensors):
             if isinstance(sensor, Processor):

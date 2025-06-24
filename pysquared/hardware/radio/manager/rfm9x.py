@@ -212,6 +212,8 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         # https://github.com/adafruit/Adafruit_CircuitPython_RFM/issues/14
         return self._radio.max_packet_length - 4
 
-    def get_rssi(self) -> float:
+    def get_rssi(self) -> int:
         """Get the RSSI of the last received packet."""
-        return self._radio.last_rssi
+        # library reads rssi from an unsigned byte, so we know it's in the range 0-255
+        # it is safe to cast it to int
+        return int(self._radio.last_rssi)
