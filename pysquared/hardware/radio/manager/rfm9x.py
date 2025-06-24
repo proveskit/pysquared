@@ -208,9 +208,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             return None
 
     def get_max_packet_size(self) -> int:
-        # Max packet lenght minus 4 bytes for radiohead compatibility enforced by the RFM9x library
-        # https://github.com/adafruit/Adafruit_CircuitPython_RFM/issues/14
-        return self._radio.max_packet_length - 4
+        return self._radio.max_packet_length
 
     def get_rssi(self) -> int:
         """Get the RSSI of the last received packet."""
