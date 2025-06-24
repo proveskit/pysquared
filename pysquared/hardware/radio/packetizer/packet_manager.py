@@ -137,7 +137,7 @@ class PacketManager:
 
     def send_acknowledgement(self) -> None:
         """Send an acknowledgment to the radio."""
-        self.send(b"ACK RSSI: " + str(self._radio.get_rssi()).encode("utf-8"))
+        self.send(b"ACK")
         self._logger.debug("Sent acknowledgment packet")
 
     def _unpack_data(self, packets: list[bytes]) -> bytes:
