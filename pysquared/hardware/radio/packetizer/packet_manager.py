@@ -73,7 +73,7 @@ class PacketManager:
             header: bytes = (
                 sequence_number.to_bytes(2, "big")
                 + total_packets.to_bytes(2, "big")
-                + self._radio.get_rssi().to_bytes(1, "big")
+                + abs(self._radio.get_rssi()).to_bytes(1, "big")
             )
 
             # Get payload slice for this packet
@@ -117,7 +117,7 @@ class PacketManager:
             if packet is None:
                 continue
 
-            # # Log the first received packet
+            # Log the first received packet
             self._logger.debug(
                 "Received packet",
                 packet_length=len(packet),
@@ -160,7 +160,7 @@ class PacketManager:
         return (
             int.from_bytes(packet[0:2], "big"),  # sequence number
             int.from_bytes(packet[2:4], "big"),  # total packets
-            int.from_bytes(packet[4:5], "big"),  # RSSI
+            -int.from_bytes(packet[4:5], "big"),  # RSSI
         )
 
     def _get_payload(self, packet: bytes) -> bytes:

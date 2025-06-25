@@ -17,7 +17,7 @@ def mock_logger() -> MagicMock:
 def mock_radio() -> MagicMock:
     radio = MagicMock(spec=RadioProto)
     radio.get_max_packet_size.return_value = 100  # Mock packet size for tests
-    radio.get_rssi.return_value = 70  # Mock RSSI value
+    radio.get_rssi.return_value = -70  # Mock RSSI value
     return radio
 
 
@@ -236,7 +236,7 @@ def test_receive_success(mock_time, mock_logger, mock_radio):
     mock_logger.debug.assert_any_call(
         "Received packet",
         packet_length=len(packet1),
-        header=(0, 2, 70),
+        header=(0, 2, -70),
         payload=b"first",
     )
     mock_logger.debug.assert_any_call("Received all expected packets", received=2)
@@ -274,13 +274,13 @@ def test_get_header_and_payload(mock_logger, mock_radio):
     # Create a test packet
     sequence_num = 42
     total_packets = 100
-    rssi = 70
+    rssi = -70
     payload = b"Test payload data"
 
     header = (
         sequence_num.to_bytes(2, "big")
         + total_packets.to_bytes(2, "big")
-        + rssi.to_bytes(1, "big")
+        + abs(rssi).to_bytes(1, "big")
     )
     test_packet = header + payload
 

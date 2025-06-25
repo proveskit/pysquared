@@ -133,7 +133,7 @@ class BaseRadioManager(RadioProto):
         """
         raise NotImplementedError
 
-    def get_rssi(self) -> float:
+    def get_rssi(self) -> int:
         """Get the RSSI of the last received packet.
 
         :return: The RSSI of the last received packet.
