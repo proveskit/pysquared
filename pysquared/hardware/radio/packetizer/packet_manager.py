@@ -117,7 +117,7 @@ class PacketManager:
             if packet is None:
                 continue
 
-            # Log the first received packet
+            # Log received packets
             self._logger.debug(
                 "Received packet",
                 packet_length=len(packet),
