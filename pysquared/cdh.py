@@ -52,7 +52,6 @@ class CommandDataHandler:
                 self._log.debug(
                     "Invalid password in message",
                     msg=msg,
-                    expected=self._config.super_secret_code,
                 )
                 return
 
@@ -60,7 +59,6 @@ class CommandDataHandler:
                 self._log.debug(
                     "Satellite name mismatch in message",
                     msg=msg,
-                    expected=self._config.cubesat_name,
                 )
                 return
 

@@ -23,6 +23,7 @@ def mock_packet_manager() -> MagicMock:
 def mock_config() -> MagicMock:
     config = MagicMock(spec=Config)
     config.super_secret_code = "test_password"
+    config.cubesat_name = "test_satellite"
     config.jokes = ["Why did the satellite cross the orbit? To get to the other side!"]
     return config
 
@@ -64,24 +65,31 @@ def test_listen_for_commands_invalid_password(cdh, mock_packet_manager, mock_log
     cdh.listen_for_commands(30)
 
     mock_packet_manager.listen.assert_called_once_with(30)
-    mock_logger.warning.assert_called_once_with(
-        "Invalid password in message", msg=message
-    )
-    # No command should be executed
+    mock_logger.debug.assert_any_call("Invalid password in message", msg=message)
 
 
-def test_listen_for_commands_missing_command(cdh, mock_packet_manager, mock_logger):
+def test_listen_for_commands_invalid_name(cdh, mock_packet_manager, mock_logger):
     """Test listen_for_commands with missing command field."""
-    # Create a message with valid password but no command
-    message = {"password": "test_password", "args": []}
+    # Create a message with valid password and satellite name but no command
+    message = {"password": "test_password", "name": "wrong_name", "args": []}
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
     cdh.listen_for_commands(30)
 
     mock_packet_manager.listen.assert_called_once_with(30)
-    mock_logger.warning.assert_called_once_with(
-        "No command found in message", msg=message
-    )
+    mock_logger.debug.assert_any_call("Satellite name mismatch in message", msg=message)
+
+
+def test_listen_for_commands_missing_command(cdh, mock_packet_manager, mock_logger):
+    """Test listen_for_commands with missing command field."""
+    # Create a message with valid password but no command
+    message = {"password": "test_password", "name": "test_satellite", "args": []}
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    mock_packet_manager.listen.assert_called_once_with(30)
+    mock_logger.warning.assert_any_call("No command found in message", msg=message)
 
 
 def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger):
@@ -89,6 +97,7 @@ def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger)
     # Create a message with valid password but no command
     message = {
         "password": "test_password",
+        "name": "test_satellite",
         "command": "send_joke",
         "args": "not_a_list",
     }
@@ -195,7 +204,12 @@ def test_listen_for_commands_reset(mock_microcontroller, cdh, mock_packet_manage
     mock_microcontroller.reset = MagicMock()
     mock_microcontroller.on_next_reset = MagicMock()
 
-    message = {"password": "test_password", "command": "reset", "args": []}
+    message = {
+        "password": "test_password",
+        "name": "test_satellite",
+        "command": "reset",
+        "args": [],
+    }
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
     cdh.listen_for_commands(30)
@@ -211,7 +225,12 @@ def test_listen_for_commands_send_joke(
     mock_random_choice, cdh, mock_packet_manager, mock_config
 ):
     """Test listen_for_commands with send_joke command."""
-    message = {"password": "test_password", "command": "send_joke", "args": []}
+    message = {
+        "password": "test_password",
+        "name": "test_satellite",
+        "command": "send_joke",
+        "args": [],
+    }
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
     mock_random_choice.return_value = mock_config.jokes[0]
 
@@ -228,6 +247,7 @@ def test_listen_for_commands_change_radio_modulation(
     """Test listen_for_commands with change_radio_modulation command."""
     message = {
         "password": "test_password",
+        "name": "test_satellite",
         "command": "change_radio_modulation",
         "args": ["FSK"],
     }
@@ -242,7 +262,12 @@ def test_listen_for_commands_change_radio_modulation(
 
 def test_listen_for_commands_unknown_command(cdh, mock_packet_manager, mock_logger):
     """Test listen_for_commands with an unknown command."""
-    message = {"password": "test_password", "command": "unknown_command", "args": []}
+    message = {
+        "password": "test_password",
+        "name": "test_satellite",
+        "command": "unknown_command",
+        "args": [],
+    }
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
     cdh.listen_for_commands(30)

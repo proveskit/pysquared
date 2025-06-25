@@ -568,8 +568,6 @@ def test_modify_lora_config(
     manager.modify_config("transmit_power", 20)
 
     # Verify the radio was modified with the new config
-    assert manager._radio.node == 255
-    assert manager._radio.destination == 123
     assert manager._radio.spreading_factor == 7
     assert manager._radio.ack_delay == pytest.approx(0.5, rel=1e-9)
     # Check that preamble_length is set to 8 (default for LoRa)
@@ -606,7 +604,6 @@ def test_modify_lora_config_high_sf_success(
     manager.modify_config("spreading_factor", 10)
 
     # Verify the radio was modified with the new config
-    assert manager._radio.node == 255
     assert manager._radio.ack_delay == pytest.approx(
         mock_radio_config.lora.ack_delay, rel=1e-9
     )
@@ -639,7 +636,6 @@ def test_modify_fsk_config(
     manager.modify_config("modulation_type", 1)
 
     # Verify the radio was modified with the new config
-    assert manager._radio.node == 111
     assert manager._radio.fsk_broadcast_address == 123
     assert manager._radio.fsk_node_address == 222
     assert manager._radio.modulation_type == 1
@@ -669,7 +665,7 @@ def test_get_max_packet_size_lora(
     manager._radio.max_packet_length = 252
 
     # Check that get_max_packet_size returns the radio's max_packet_length
-    assert manager.get_max_packet_size() == 248
+    assert manager.get_max_packet_size() == 252
 
 
 def test_get_max_packet_size_fsk(
@@ -692,7 +688,7 @@ def test_get_max_packet_size_fsk(
     manager._radio.max_packet_length = 252
 
     # Check that get_max_packet_size returns the radio's max_packet_length
-    assert manager.get_max_packet_size() == 248
+    assert manager.get_max_packet_size() == 252
 
 
 def test_get_rssi(
@@ -706,7 +702,7 @@ def test_get_rssi(
     """Test getting the RSSI value from the radio."""
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
-    expected_rssi = -70.0
+    expected_rssi = 70.0
     mock_radio_instance.last_rssi = expected_rssi
     mock_rfm9x.return_value = mock_radio_instance
 

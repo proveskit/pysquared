@@ -16,7 +16,8 @@ def mock_logger() -> MagicMock:
 @pytest.fixture
 def mock_radio() -> MagicMock:
     radio = MagicMock(spec=RadioProto)
-    radio.get_max_packet_size.return_value = 100  # Default packet size for tests
+    radio.get_max_packet_size.return_value = 100  # Mock packet size for tests
+    radio.get_rssi.return_value = 70  # Mock RSSI value
     return radio
 
 
@@ -30,8 +31,8 @@ def test_packet_manager_init(mock_logger, mock_radio):
     assert packet_manager._radio is mock_radio
     assert packet_manager._license == license_str
     assert packet_manager._send_delay == 0.5
-    assert packet_manager._header_size == 4
-    assert packet_manager._payload_size == 96  # 100 - 4 header bytes
+    assert packet_manager._header_size == 5
+    assert packet_manager._payload_size == 95  # 100 - 5 header bytes
 
 
 def test_pack_data_single_packet(mock_logger, mock_radio):
@@ -51,10 +52,12 @@ def test_pack_data_single_packet(mock_logger, mock_radio):
     # Check header
     sequence_number = int.from_bytes(packet[0:2], "big")
     total_packets = int.from_bytes(packet[2:4], "big")
-    payload = packet[4:]
+    rssi = int.from_bytes(packet[4:5], "big")
+    payload = packet[5:]
 
     assert sequence_number == 0
     assert total_packets == 1
+    assert rssi == 70
     assert payload == test_data
 
 
@@ -75,10 +78,12 @@ def test_pack_data_multiple_packets(mock_logger, mock_radio):
     for i, packet in enumerate(packets):
         sequence_number = int.from_bytes(packet[0:2], "big")
         total_packets = int.from_bytes(packet[2:4], "big")
-        payload = packet[4:]
+        rssi = int.from_bytes(packet[4:5], "big")
+        payload = packet[5:]
 
         assert sequence_number == i
         assert total_packets == 3
+        assert rssi == 70
         reconstructed_data += payload
 
     # Verify the reconstructed data matches the original
@@ -163,9 +168,24 @@ def test_unpack_data(mock_time, mock_logger, mock_radio):
     packet_manager = PacketManager(mock_logger, mock_radio, "")
 
     # Create test packets with proper headers
-    packet1 = (0).to_bytes(2, "big") + (3).to_bytes(2, "big") + b"first"
-    packet2 = (1).to_bytes(2, "big") + (3).to_bytes(2, "big") + b" second"
-    packet3 = (2).to_bytes(2, "big") + (3).to_bytes(2, "big") + b" third"
+    packet1 = (
+        (0).to_bytes(2, "big")
+        + (3).to_bytes(2, "big")
+        + (70).to_bytes(1, "big")
+        + b"first"
+    )
+    packet2 = (
+        (1).to_bytes(2, "big")
+        + (3).to_bytes(2, "big")
+        + (70).to_bytes(1, "big")
+        + b" second"
+    )
+    packet3 = (
+        (2).to_bytes(2, "big")
+        + (3).to_bytes(2, "big")
+        + (70).to_bytes(1, "big")
+        + b" third"
+    )
 
     # Mix up the order to test sorting
     packets = [packet2, packet3, packet1]
@@ -187,9 +207,19 @@ def test_receive_success(mock_time, mock_logger, mock_radio):
     mock_time.side_effect = [10.0, 10.1, 10.2, 10.3, 10.4]
 
     # Create test packets
-    packet1 = (0).to_bytes(2, "big") + (2).to_bytes(2, "big") + b"first"
+    packet1 = (
+        (0).to_bytes(2, "big")
+        + (2).to_bytes(2, "big")
+        + (70).to_bytes(1, "big")
+        + b"first"
+    )
     packet2 = None
-    packet3 = (1).to_bytes(2, "big") + (2).to_bytes(2, "big") + b" second"
+    packet3 = (
+        (1).to_bytes(2, "big")
+        + (2).to_bytes(2, "big")
+        + (70).to_bytes(1, "big")
+        + b" second"
+    )
 
     # Configure mock_radio.receive to return packets then None
     mock_radio.receive.side_effect = [packet1, packet2, packet3]
@@ -204,7 +234,10 @@ def test_receive_success(mock_time, mock_logger, mock_radio):
     # Verify proper logging
     mock_logger.debug.assert_any_call("Listening for data...", timeout=10)
     mock_logger.debug.assert_any_call(
-        "Received packet", packet_length=len(packet1), header=(0, 2), payload=b"first"
+        "Received packet",
+        packet_length=len(packet1),
+        header=(0, 2, 70),
+        payload=b"first",
     )
     mock_logger.debug.assert_any_call("Received all expected packets", received=2)
 
@@ -241,15 +274,21 @@ def test_get_header_and_payload(mock_logger, mock_radio):
     # Create a test packet
     sequence_num = 42
     total_packets = 100
+    rssi = 70
     payload = b"Test payload data"
 
-    header = sequence_num.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
+    header = (
+        sequence_num.to_bytes(2, "big")
+        + total_packets.to_bytes(2, "big")
+        + rssi.to_bytes(1, "big")
+    )
     test_packet = header + payload
 
     # Test _get_header
-    seq, total = packet_manager._get_header(test_packet)
+    seq, total, signal = packet_manager._get_header(test_packet)
     assert seq == sequence_num
     assert total == total_packets
+    assert signal == rssi
 
     # Test _get_payload
     extracted_payload = packet_manager._get_payload(test_packet)
