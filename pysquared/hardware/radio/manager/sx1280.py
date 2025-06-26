@@ -2,9 +2,9 @@ from busio import SPI
 from digitalio import DigitalInOut
 from proves_sx1280.sx1280 import SX1280
 
-from ....config.radio import RadioConfig
+from pysquared.config.radio import RadioConfig
+
 from ....logger import Logger
-from ....nvm.flag import Flag
 from ..modulation import LoRa, RadioModulation
 from .base import BaseRadioManager
 
@@ -24,7 +24,6 @@ class SX1280Manager(BaseRadioManager):
         self,
         logger: Logger,
         radio_config: RadioConfig,
-        use_fsk: Flag,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
@@ -55,11 +54,7 @@ class SX1280Manager(BaseRadioManager):
         self._txen = txen
         self._rxen = rxen
 
-        super().__init__(
-            logger=logger,
-            radio_config=radio_config,
-            use_fsk=use_fsk,
-        )
+        super().__init__(logger=logger, radio_config=radio_config)
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific SX1280 radio hardware."""
@@ -73,13 +68,12 @@ class SX1280Manager(BaseRadioManager):
             rxen=self._rxen,
         )
 
-    def _send_internal(self, payload: bytes) -> bool:
+    def _send_internal(self, data: bytes) -> bool:
         """Send data using the SX1280 radio."""
-        return bool(self._radio.send(payload))
+        return bool(self._radio.send(data))
 
     def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized SX1280 radio."""
-        self._log.warning("SX1280 library does not support FSK modulation, using LoRa")
         return LoRa
 
     def receive(self, timeout: Optional[int] = None) -> bytes | None:

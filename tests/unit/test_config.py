@@ -29,12 +29,6 @@ def test_radio_cfg(cleanup) -> None:
 
     # Test basic radio config properties
     assert (
-        config.radio.sender_id == json_data["radio"]["sender_id"]
-    ), "No match for: sender_id"
-    assert (
-        config.radio.receiver_id == json_data["radio"]["receiver_id"]
-    ), "No match for: receiver_id"
-    assert (
         config.radio.transmit_frequency == json_data["radio"]["transmit_frequency"]
     ), "No match for: transmit_frequency"
     assert (
@@ -166,12 +160,6 @@ def test_validation_updateable(cleanup) -> None:
     except KeyError as e:
         print(e)
 
-    # radio
-    try:
-        config.validate("receiver_id", 11)
-    except KeyError as e:
-        print(e)
-
     # fsk
     try:
         config.validate("ack_delay", 1.5)
@@ -209,12 +197,6 @@ def test_validation_range(cleanup) -> None:
         config.validate("cubesat_name", "")
     with pytest.raises(ValueError):
         config.validate("cubesat_name", "more_than_seven")
-
-    # radio config
-    with pytest.raises(ValueError):
-        config.validate("receiver_id", -1)
-    with pytest.raises(ValueError):
-        config.validate("receiver_id", 256)
 
     # transmit_frequency specific
     with pytest.raises(ValueError):
@@ -265,17 +247,6 @@ def test_update_config(cleanup) -> None:
     except ValueError as e:
         print(e)
 
-    # radio temp
-    try:
-        config.update_config("receiver_id", 1, False)
-    except ValueError as e:
-        print(e)
-    # radio permanent
-    try:
-        config.update_config("receiver_id", 1, True)
-    except ValueError as e:
-        print(e)
-
     # fsk temp
     try:
         config.update_config("ack_delay", 1.0, False)
@@ -297,3 +268,14 @@ def test_update_config(cleanup) -> None:
         config.update_config("broadcast_address", 1, True)
     except ValueError as e:
         print(e)
+
+
+def test_allowed_values(cleanup) -> None:
+    file = cleanup
+    config = Config(file)
+
+    with pytest.raises(TypeError):
+        config.validate("modulation", "DefinitelyRealModulation")
+
+    config.validate("modulation", "LoRa")
+    config.validate("modulation", "FSK")

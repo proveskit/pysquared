@@ -2,7 +2,6 @@
 Protocol defining the interface for a radio.
 """
 
-from ..config.radio import RadioConfig
 from ..hardware.radio.modulation import RadioModulation
 
 # Type hinting only
@@ -13,11 +12,11 @@ except ImportError:
 
 
 class RadioProto:
-    def send(self, data: object) -> bool:
+    def send(self, data: bytes) -> bool:
         """Send data over the radio.
 
-        :param Any data: The data to send.
-        :return: True if the send was successful (e.g., ACK received if applicable), False otherwise.
+        :param bytes data: The data to send.
+        :return: True if the send was successful.
         :rtype: bool
         """
         ...
@@ -47,9 +46,31 @@ class RadioProto:
         """
         ...
 
-    def modify_config(self, radio_config: RadioConfig) -> None:
-        """Modify the radio configuration. This will apply any new configuration options during runtime.
+    def modify_config(self, key: str, value) -> None:
+        """Modify a specific radio configuration parameter.
 
-        :param RadioConfig radio_config: The new radio configuration.
+        :param str key: The configuration parameter key to modify.
+        :param value: The new value to set for the parameter.
+        :raises NotImplementedError: If not implemented by subclass.
+        """
+
+        ...
+
+    def get_rssi(self) -> int:
+        """Get the RSSI of the last received packet.
+
+        :return: The RSSI value in dBm.
+        :rtype: int
+
+        :raises NotImplementedError: If not implemented by subclass.
+        """
+
+        ...
+
+    def get_max_packet_size(self) -> int:
+        """Get the maximum packet size supported by the radio.
+
+        :return: The maximum packet size in bytes.
+        :rtype: int
         """
         ...

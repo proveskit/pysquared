@@ -1,223 +1,275 @@
-"""
-Unit tests for the CommandDataHandler class, specifically focusing on the update_config functionality.
-"""
-
-from unittest.mock import Mock
+import json
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from pysquared.cdh import CommandDataHandler
 from pysquared.config.config import Config
+from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
-from pysquared.protos.radio import RadioProto
-
-# Mock CircuitPython modules before any imports that might use them
 
 
 @pytest.fixture
-def mock_logger():
-    """Create a mock logger for testing."""
-    return Mock(spec=Logger)
+def mock_logger() -> MagicMock:
+    return MagicMock(spec=Logger)
 
 
 @pytest.fixture
-def mock_radio():
-    """Create a mock radio for testing."""
-    return Mock(spec=RadioProto)
+def mock_packet_manager() -> MagicMock:
+    return MagicMock(spec=PacketManager)
 
 
 @pytest.fixture
-def mock_config():
-    """Create a mock config for testing using real configuration keys."""
-    config = Mock(spec=Config)
-    config.CONFIG_SCHEMA = {
-        "cubesat_name": {"type": str, "min_length": 1, "max_length": 10},
-        "sleep_duration": {"type": int, "min": 1, "max": 86400},
-        "detumble_enable_z": {"type": bool, "allowed_values": [True, False]},
-        "detumble_enable_x": {"type": bool, "allowed_values": [True, False]},
-        "detumble_enable_y": {"type": bool, "allowed_values": [True, False]},
-        "debug": {"type": bool, "allowed_values": [True, False]},
-        "heating": {"type": bool, "allowed_values": [True, False]},
-        "normal_temp": {"type": int, "min": 5, "max": 40},
-        "normal_battery_temp": {"type": int, "min": 1, "max": 35},
-        "normal_micro_temp": {"type": int, "min": 1, "max": 50},
-        "normal_charge_current": {"type": float, "min": 0.0, "max": 2000.0},
-        "normal_battery_voltage": {"type": float, "min": 6.0, "max": 8.4},
-        "critical_battery_voltage": {"type": float, "min": 5.4, "max": 7.2},
-        "reboot_time": {"type": int, "min": 3600, "max": 604800},
-        "turbo_clock": {"type": bool, "allowed_values": [True, False]},
-    }
-    config.joke_reply = ["Joke 1", "Joke 2"]
-    config.super_secret_code = "ABCD"
-    config.repeat_code = "RP"
-    config.radio = Mock()
+def mock_config() -> MagicMock:
+    config = MagicMock(spec=Config)
+    config.super_secret_code = "test_password"
+    config.cubesat_name = "test_satellite"
+    config.jokes = ["Why did the satellite cross the orbit? To get to the other side!"]
     return config
 
 
 @pytest.fixture
-def cdh(mock_logger, mock_radio, mock_config):
-    """Create a CommandDataHandler instance for testing."""
-    return CommandDataHandler(config=mock_config, logger=mock_logger, radio=mock_radio)
+def cdh(mock_logger, mock_config, mock_packet_manager) -> CommandDataHandler:
+    return CommandDataHandler(
+        logger=mock_logger,
+        config=mock_config,
+        packet_manager=mock_packet_manager,
+    )
 
 
-class TestUpdateConfig:
-    """Test cases for the update_config method."""
+def test_cdh_init(mock_logger, mock_config, mock_packet_manager):
+    """Test CommandDataHandler initialization."""
+    cdh = CommandDataHandler(mock_logger, mock_config, mock_packet_manager)
 
-    def test_successful_temporary_update(self, cdh, mock_config):
-        """Test successful temporary update of a config value."""
-        # Arrange
-        key = "sleep_duration"
-        value = 60
-        temporary = True
+    assert cdh._log is mock_logger
+    assert cdh._config is mock_config
+    assert cdh._packet_manager is mock_packet_manager
 
-        # Act
-        cdh.update_config(key, value, temporary)
 
-        # Assert
-        mock_config.update_config.assert_called_once_with(key, value, temporary)
+def test_listen_for_commands_no_message(cdh, mock_packet_manager):
+    """Test listen_for_commands when no message is received."""
+    mock_packet_manager.listen.return_value = None
 
-    def test_successful_permanent_update(self, cdh, mock_config):
-        """Test successful permanent update of a config value."""
-        # Arrange
-        key = "normal_temp"
-        value = 25
-        temporary = False
+    cdh.listen_for_commands(30)
 
-        # Act
-        cdh.update_config(key, value, temporary)
+    mock_packet_manager.listen.assert_called_once_with(30)
+    # If no message received, function should simply return
 
-        # Assert
-        mock_config.update_config.assert_called_once_with(key, value, temporary)
 
-    def test_key_error(self, cdh, mock_config, mock_logger):
-        """Test KeyError when updating non-existent config key."""
-        # Arrange
-        key = "non_existent_key"
-        value = 50
-        temporary = False
-        mock_config.update_config.side_effect = KeyError("Key not found")
+def test_listen_for_commands_invalid_password(cdh, mock_packet_manager, mock_logger):
+    """Test listen_for_commands with invalid password."""
+    # Create a message with wrong password
+    message = {"password": "wrong_password", "command": "send_joke", "args": []}
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
-        # Act
-        cdh.update_config(key, value, temporary)
+    cdh.listen_for_commands(30)
 
-        # Assert
-        mock_logger.error.assert_called_once()
-        assert "Value not in config or immutable" in mock_logger.error.call_args[0][0]
+    mock_packet_manager.listen.assert_called_once_with(30)
+    mock_logger.debug.assert_any_call("Invalid password in message", msg=message)
 
-    def test_type_error(self, cdh, mock_config, mock_logger):
-        """Test TypeError when updating with wrong value type."""
-        # Arrange
-        key = "sleep_duration"
-        value = "not_an_integer"  # Should be int
-        temporary = False
-        mock_config.update_config.side_effect = TypeError("Invalid type")
 
-        # Act
-        cdh.update_config(key, value, temporary)
+def test_listen_for_commands_invalid_name(cdh, mock_packet_manager, mock_logger):
+    """Test listen_for_commands with missing command field."""
+    # Create a message with valid password and satellite name but no command
+    message = {"password": "test_password", "name": "wrong_name", "args": []}
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
-        # Assert
-        mock_logger.error.assert_called_once()
-        assert "Value type incorrect" in mock_logger.error.call_args[0][0]
+    cdh.listen_for_commands(30)
 
-    def test_value_error(self, cdh, mock_config, mock_logger):
-        """Test ValueError when updating with out-of-range value."""
-        # Arrange
-        key = "normal_temp"
-        value = 150  # Outside max range of 40
-        temporary = False
-        mock_config.update_config.side_effect = ValueError("Value out of range")
+    mock_packet_manager.listen.assert_called_once_with(30)
+    mock_logger.debug.assert_any_call("Satellite name mismatch in message", msg=message)
 
-        # Act
-        cdh.update_config(key, value, temporary)
 
-        # Assert
-        mock_logger.error.assert_called_once()
-        assert "Value not in acceptable range" in mock_logger.error.call_args[0][0]
+def test_listen_for_commands_missing_command(cdh, mock_packet_manager, mock_logger):
+    """Test listen_for_commands with missing command field."""
+    # Create a message with valid password but no command
+    message = {"password": "test_password", "name": "test_satellite", "args": []}
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
-    def test_empty_key_value(self, cdh, mock_config, mock_logger):
-        """Test updating with empty key/value."""
-        # Arrange
-        key = ""
-        value = 50
-        temporary = False
-        # Simulate KeyError for empty key
-        mock_config.update_config.side_effect = KeyError("Key not in config")
+    cdh.listen_for_commands(30)
 
-        # Act
-        cdh.update_config(key, value, temporary)
+    mock_packet_manager.listen.assert_called_once_with(30)
+    mock_logger.warning.assert_any_call("No command found in message", msg=message)
 
-        # Assert
-        mock_logger.error.assert_called_once()
-        assert "Value not in config or immutable" in mock_logger.error.call_args[0][0]
 
-    def test_none_values(self, cdh, mock_config, mock_logger):
-        """Test updating with None values."""
-        # Arrange
-        key = None
-        value = None
-        temporary = False
-        # Simulate KeyError for None key
-        mock_config.update_config.side_effect = KeyError("Key not in config")
+def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger):
+    """Test listen_for_commands with missing command field."""
+    # Create a message with valid password but no command
+    message = {
+        "password": "test_password",
+        "name": "test_satellite",
+        "command": "send_joke",
+        "args": "not_a_list",
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
-        # Act
-        cdh.update_config(key, value, temporary)
+    cdh.listen_for_commands(30)
 
-        # Assert
-        mock_logger.error.assert_called_once()
-        assert "Value not in config or immutable" in mock_logger.error.call_args[0][0]
+    mock_packet_manager.listen.assert_called_once_with(30)
+    mock_logger.debug.assert_any_call(
+        "Received command message", cmd="send_joke", args=[]
+    )
 
-    def test_boundary_values(self, cdh, mock_config):
-        """Test updating with maximum/minimum allowed values."""
-        # Arrange
-        key = "normal_temp"
-        min_value = 5
-        max_value = 40
-        temporary = False
 
-        # Act & Assert
-        # Test minimum value
-        cdh.update_config(key, min_value, temporary)
-        mock_config.update_config.assert_called_with(key, min_value, temporary)
+def test_listen_for_commands_invalid_json(cdh, mock_packet_manager, mock_logger):
+    """Test listen_for_commands with invalid JSON."""
+    message = b"this is not valid json"
+    mock_packet_manager.listen.return_value = message
 
-        # Test maximum value
-        cdh.update_config(key, max_value, temporary)
-        mock_config.update_config.assert_called_with(key, max_value, temporary)
+    cdh.listen_for_commands(30)
 
-    def test_multiple_updates(self, cdh, mock_config):
-        """Test updating multiple values in sequence."""
-        # Arrange
-        updates = [
-            ("sleep_duration", 60, False),
-            ("cubesat_name", "TestSat", True),
-            ("debug", True, False),
-        ]
+    mock_packet_manager.listen.assert_called_once_with(30)
+    mock_logger.error.assert_called_once()
+    assert mock_logger.error.call_args[0][0] == "Failed to process command message"
 
-        # Act
-        for key, value, temporary in updates:
-            cdh.update_config(key, value, temporary)
 
-        # Assert
-        assert mock_config.update_config.call_count == len(updates)
-        for i, (key, value, temporary) in enumerate(updates):
-            assert mock_config.update_config.call_args_list[i] == (
-                (key, value, temporary),
-            )
+@patch("random.choice")
+def test_send_joke(mock_random_choice, cdh, mock_packet_manager, mock_config):
+    """Test the send_joke method."""
+    mock_random_choice.return_value = mock_config.jokes[0]
 
-    def test_radio_config_update(self, cdh, mock_config, mock_logger):
-        """Test updating radio configuration values."""
-        # Arrange
-        key = "transmit_frequency"
-        value = 437.5
-        temporary = False
+    cdh.send_joke()
 
-        # Simulate radio.validate being called inside update_config
-        def update_config_side_effect(k, v, t):
-            mock_config.radio.validate(k, v)
+    mock_random_choice.assert_called_once_with(mock_config.jokes)
+    mock_packet_manager.send.assert_called_once_with(
+        mock_config.jokes[0].encode("utf-8")
+    )
 
-        mock_config.update_config.side_effect = update_config_side_effect
 
-        # Act
-        cdh.update_config(key, value, temporary)
+def test_change_radio_modulation_success(cdh, mock_config, mock_logger):
+    """Test change_radio_modulation with valid modulation value."""
+    modulation = ["FSK"]
 
-        # Assert
-        mock_config.radio.validate.assert_called_once_with(key, value)
+    cdh.change_radio_modulation(modulation)
+
+    mock_config.update_config.assert_called_once_with(
+        "modulation", modulation[0], temporary=False
+    )
+    mock_logger.info.assert_called_once()
+
+
+def test_change_radio_modulation_failure(
+    cdh, mock_config, mock_logger, mock_packet_manager
+):
+    """Test change_radio_modulation with an error case."""
+    modulation = ["INVALID"]
+    mock_config.update_config.side_effect = ValueError("Invalid modulation")
+
+    cdh.change_radio_modulation(modulation)
+
+    mock_logger.error.assert_called_once()
+    mock_packet_manager.send.assert_called_once_with(
+        "Failed to change radio modulation: Invalid modulation".encode("utf-8")
+    )
+
+
+def test_change_radio_modulation_no_modulation(cdh, mock_logger, mock_packet_manager):
+    """Test change_radio_modulation when no modulation is specified."""
+    # Call the method with an empty list
+    cdh.change_radio_modulation([])
+
+    # Verify warning was logged
+    mock_logger.warning.assert_called_once_with("No modulation specified")
+
+    # Verify error message was sent
+    mock_packet_manager.send.assert_called_once()
+
+    # Extract the bytes that were sent
+    sent_bytes = mock_packet_manager.send.call_args[0][0]
+    expected_message = "No modulation specified. Please provide a modulation type."
+    assert sent_bytes.decode("utf-8") == expected_message
+
+
+@patch("pysquared.cdh.microcontroller")
+def test_reset(mock_microcontroller, cdh, mock_logger):
+    """Test the reset method."""
+    mock_microcontroller.reset = MagicMock()
+    mock_microcontroller.on_next_reset = MagicMock()
+    mock_microcontroller.RunMode = MagicMock()
+    mock_microcontroller.RunMode.NORMAL = MagicMock()
+
+    cdh.reset()
+
+    mock_microcontroller.on_next_reset.assert_called_once_with(
+        mock_microcontroller.RunMode.NORMAL
+    )
+    mock_microcontroller.reset.assert_called_once()
+    mock_logger.info.assert_called_once()
+
+
+@patch("pysquared.cdh.microcontroller")
+def test_listen_for_commands_reset(mock_microcontroller, cdh, mock_packet_manager):
+    """Test listen_for_commands with reset command."""
+    # Set up mocked attributes
+    mock_microcontroller.reset = MagicMock()
+    mock_microcontroller.on_next_reset = MagicMock()
+
+    message = {
+        "password": "test_password",
+        "name": "test_satellite",
+        "command": "reset",
+        "args": [],
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    mock_microcontroller.on_next_reset.assert_called_once_with(
+        mock_microcontroller.RunMode.NORMAL
+    )
+    mock_microcontroller.reset.assert_called_once()
+
+
+@patch("random.choice")
+def test_listen_for_commands_send_joke(
+    mock_random_choice, cdh, mock_packet_manager, mock_config
+):
+    """Test listen_for_commands with send_joke command."""
+    message = {
+        "password": "test_password",
+        "name": "test_satellite",
+        "command": "send_joke",
+        "args": [],
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+    mock_random_choice.return_value = mock_config.jokes[0]
+
+    cdh.listen_for_commands(30)
+
+    mock_packet_manager.send.assert_called_once_with(
+        mock_config.jokes[0].encode("utf-8")
+    )
+
+
+def test_listen_for_commands_change_radio_modulation(
+    cdh, mock_packet_manager, mock_config
+):
+    """Test listen_for_commands with change_radio_modulation command."""
+    message = {
+        "password": "test_password",
+        "name": "test_satellite",
+        "command": "change_radio_modulation",
+        "args": ["FSK"],
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    mock_config.update_config.assert_called_once_with(
+        "modulation", "FSK", temporary=False
+    )
+
+
+def test_listen_for_commands_unknown_command(cdh, mock_packet_manager, mock_logger):
+    """Test listen_for_commands with an unknown command."""
+    message = {
+        "password": "test_password",
+        "name": "test_satellite",
+        "command": "unknown_command",
+        "args": [],
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    mock_logger.warning.assert_called_once()

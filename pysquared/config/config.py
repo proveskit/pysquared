@@ -42,7 +42,6 @@ class Config:
         self.turbo_clock: bool = json_data["turbo_clock"]
         self.super_secret_code: str = json_data["super_secret_code"]
         self.repeat_code: str = json_data["repeat_code"]
-        self.joke_reply: list[str] = json_data["joke_reply"]
         self.longest_allowable_sleep_time: int = json_data[
             "longest_allowable_sleep_time"
         ]
@@ -59,12 +58,12 @@ class Config:
             "normal_battery_temp": {"type": int, "min": 1, "max": 35},
             "normal_micro_temp": {"type": int, "min": 1, "max": 50},
             "reboot_time": {"type": int, "min": 3600, "max": 604800},
-            "detumble_enable_z": {"type": bool, "allowed_values": [True, False]},
-            "detumble_enable_x": {"type": bool, "allowed_values": [True, False]},
-            "detumble_enable_y": {"type": bool, "allowed_values": [True, False]},
-            "debug": {"type": bool, "allowed_values": [True, False]},
-            "heating": {"type": bool, "allowed_values": [True, False]},
-            "turbo_clock": {"type": bool, "allowed_values": [True, False]},
+            "detumble_enable_z": {"type": bool},
+            "detumble_enable_x": {"type": bool},
+            "detumble_enable_y": {"type": bool},
+            "debug": {"type": bool},
+            "heating": {"type": bool},
+            "turbo_clock": {"type": bool},
         }
 
     # validates values from input
