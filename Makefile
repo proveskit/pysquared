@@ -22,6 +22,9 @@ pre-commit-install: uv
 fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
+typecheck: .venv ## Run type check
+	@$(UV) run -m pyright .
+
 .PHONY: test
 test: .venv ## Run tests
 ifeq ($(TEST_SELECT),ALL)
@@ -69,7 +72,7 @@ $(TOOLS_DIR):
 	mkdir -p $(TOOLS_DIR)
 
 ### Tool Versions
-UV_VERSION ?= 0.5.24
+UV_VERSION ?= 0.7.13
 MPY_CROSS_VERSION ?= 9.0.5
 
 UV_DIR ?= $(TOOLS_DIR)/uv-$(UV_VERSION)

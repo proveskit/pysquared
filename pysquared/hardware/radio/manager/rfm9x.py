@@ -1,25 +1,22 @@
-from ....config.radio import FSKConfig, LORAConfig
-from ....logger import Logger
-from ....protos.temperature_sensor import TemperatureSensorProto
-from ..modulation import RadioModulation
-from .base import BaseRadioManager
+from busio import SPI
+from digitalio import DigitalInOut
 
 try:
-    from mocks.adafruit_rfm.rfm9x import RFM9x  # type: ignore
-    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
+    from mocks.adafruit_rfm.rfm9x import RFM9x
+    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
 except ImportError:
     from adafruit_rfm.rfm9x import RFM9x
     from adafruit_rfm.rfm9xfsk import RFM9xFSK
 
+from ....config.radio import FSKConfig, LORAConfig, RadioConfig
+from ....logger import Logger
+from ....protos.temperature_sensor import TemperatureSensorProto
+from ..modulation import FSK, LoRa, RadioModulation
+from .base import BaseRadioManager
+
 # Type hinting only
 try:
-    from typing import Any, Optional
-
-    from busio import SPI
-    from digitalio import DigitalInOut
-
-    from ....config.radio import RadioConfig
-    from ....nvm.flag import Flag
+    from typing import Optional, Type
 except ImportError:
     pass
 
@@ -27,11 +24,12 @@ except ImportError:
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
     """Manager class implementing RadioProto for RFM9x radios."""
 
+    _radio: RFM9xFSK | RFM9x
+
     def __init__(
         self,
         logger: Logger,
         radio_config: RadioConfig,
-        use_fsk: Flag,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
@@ -47,56 +45,77 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         :raises HardwareInitializationError: If the radio fails to initialize after retries.
         """
+        self._spi = spi
+        self._chip_select = chip_select
+        self._reset = reset
+
         super().__init__(
             logger=logger,
             radio_config=radio_config,
-            use_fsk=use_fsk,
-            spi=spi,
-            chip_select=chip_select,
-            reset=reset,
         )
 
-    def _initialize_radio(self, modulation: RadioModulation, **kwargs: Any) -> Any:
+    def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
         """Initialize the specific RFM9x radio hardware."""
-        spi: SPI = kwargs["spi"]
-        cs: DigitalInOut = kwargs["chip_select"]
-        rst: DigitalInOut = kwargs["reset"]
 
-        if modulation == RadioModulation.FSK:
-            radio: RFM9xFSK = self._create_fsk_radio(
-                spi,
-                cs,
-                rst,
+        if modulation == FSK:
+            self._radio = self._create_fsk_radio(
+                self._spi,
+                self._chip_select,
+                self._reset,
                 self._radio_config.transmit_frequency,
                 self._radio_config.fsk,
             )
         else:
-            radio: RFM9x = self._create_lora_radio(
-                spi,
-                cs,
-                rst,
+            self._radio = self._create_lora_radio(
+                self._spi,
+                self._chip_select,
+                self._reset,
                 self._radio_config.transmit_frequency,
                 self._radio_config.lora,
             )
 
-        radio.node = self._radio_config.sender_id
-        radio.destination = self._radio_config.receiver_id
+        self._radio.radiohead = False
 
-        return radio
-
-    def _send_internal(self, payload: bytes) -> bool:
+    def _send_internal(self, data: bytes) -> bool:
         """Send data using the RFM9x radio."""
-        # Assuming send returns bool or similar truthy/falsy
-        return bool(self._radio.send(payload))
+        return bool(self._radio.send(data))
 
-    def _get_current_modulation(self) -> RadioModulation:
-        """Get the modulation mode from the initialized RFM9x radio."""
+    def modify_config(self, key: str, value) -> None:
+        """Modify a specific radio configuration parameter.
+
+        :param str key: The configuration parameter key to modify.
+        :param object value: The new value to set for the parameter.
+        :raises ValueError: If the key is not recognized or invalid for the current radio type.
+        """
+        self._radio_config.validate(key, value)
+
+        # Handle FSK-specific parameters
         if isinstance(self._radio, RFM9xFSK):
-            return RadioModulation.FSK
+            if key == "broadcast_address":
+                self._radio.fsk_broadcast_address = value
+            elif key == "node_address":
+                self._radio.fsk_node_address = value
+            elif key == "modulation_type":
+                self._radio.modulation_type = value
+
+        # Handle LoRa-specific parameters
         elif isinstance(self._radio, RFM9x):
-            return RadioModulation.LORA
-        else:
-            raise TypeError(f"Unknown radio instance type: {type(self._radio)}")
+            if key == "ack_delay":
+                self._radio.ack_delay = value
+            elif key == "cyclic_redundancy_check":
+                self._radio.enable_crc = value
+            elif key == "spreading_factor":
+                self._radio.spreading_factor = value
+                if value > 9:
+                    self._radio.preamble_length = value
+                else:
+                    self._radio.preamble_length = 8  # Default preamble length
+            elif key == "transmit_power":
+                self._radio.tx_power = value
+
+    def get_modulation(self) -> Type[RadioModulation]:
+        """Get the modulation mode from the initialized RFM9x radio."""
+        return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
     def get_temperature(self) -> float:
         """Get the temperature reading from the radio sensor."""
@@ -106,7 +125,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             if (raw_temp & 0x80) == 0x80:  # Check sign bit (if 1, it's negative)
                 # Perform two's complement for negative numbers
                 # Invert bits, add 1, mask to 8 bits
-                temp = -((~temp + 1) & 0xFF)
+                temp = -((~raw_temp + 1) & 0xFF)
 
             # This prescaler seems specific and might need verification/context.
             prescaler = 143.0  # Use float for calculation
@@ -157,17 +176,15 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
         radio.ack_delay = lora_config.ack_delay
         radio.enable_crc = lora_config.cyclic_redundancy_check
-        radio.max_output = lora_config.max_output
         radio.spreading_factor = lora_config.spreading_factor
         radio.tx_power = lora_config.transmit_power
 
         if radio.spreading_factor > 9:
             radio.preamble_length = radio.spreading_factor
-            radio.low_datarate_optimize = 1
 
         return radio
 
-    def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+    def receive(self, timeout: Optional[int] = None) -> bytes | None:
         """Receive data from the radio.
 
         :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
@@ -176,10 +193,25 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         _timeout = timeout if timeout is not None else self._receive_timeout
         self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
         try:
-            return self._radio.receive(
+            msg: bytearray | None = self._radio.receive(
                 keep_listening=True,
                 timeout=_timeout,
             )
+
+            if msg is None:
+                self._log.debug("No message received")
+                return None
+
+            return bytes(msg)
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+
+    def get_max_packet_size(self) -> int:
+        return self._radio.max_packet_length
+
+    def get_rssi(self) -> int:
+        """Get the RSSI of the last received packet."""
+        # library reads rssi from an unsigned byte, so we know it's in the range 0-255
+        # it is safe to cast it to int
+        return int(self._radio.last_rssi)

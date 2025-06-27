@@ -1,3 +1,4 @@
+from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
@@ -17,7 +18,18 @@ def mock_logger():
     return MagicMock()
 
 
-def test_create_magnetometer(mock_i2c, mock_logger):
+@pytest.fixture
+def mock_lis2mdl(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+    with patch("pysquared.hardware.magnetometer.manager.lis2mdl.LIS2MDL") as mock_class:
+        mock_class.return_value = LIS2MDL(mock_i2c)
+        yield mock_class
+
+
+def test_create_magnetometer(
+    mock_lis2mdl: MagicMock,
+    mock_i2c: MagicMock,
+    mock_logger: MagicMock,
+) -> None:
     """Test successful creation of a LIS2MDL magnetometer instance."""
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
 
@@ -26,8 +38,11 @@ def test_create_magnetometer(mock_i2c, mock_logger):
 
 
 @pytest.mark.slow
-@patch("pysquared.hardware.magnetometer.manager.lis2mdl.LIS2MDL")
-def test_create_with_retries(mock_lis2mdl, mock_i2c, mock_logger):
+def test_create_with_retries(
+    mock_lis2mdl: MagicMock,
+    mock_i2c: MagicMock,
+    mock_logger: MagicMock,
+) -> None:
     """Test that initialization is retried when it fails."""
     mock_lis2mdl.side_effect = Exception("Simulated LIS2MDL failure")
 
@@ -42,7 +57,11 @@ def test_create_with_retries(mock_lis2mdl, mock_i2c, mock_logger):
     assert mock_i2c.call_count <= 3
 
 
-def test_get_vector_success(mock_i2c, mock_logger):
+def test_get_vector_success(
+    mock_lis2mdl: MagicMock,
+    mock_i2c: MagicMock,
+    mock_logger: MagicMock,
+) -> None:
     """Test successful retrieval of the magnetic field vector."""
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
     magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
@@ -52,7 +71,11 @@ def test_get_vector_success(mock_i2c, mock_logger):
     assert vector == (1.0, 2.0, 3.0)
 
 
-def test_get_vector_failure(mock_i2c, mock_logger):
+def test_get_vector_failure(
+    mock_lis2mdl: MagicMock,
+    mock_i2c: MagicMock,
+    mock_logger: MagicMock,
+) -> None:
     """Test handling of exceptions when retrieving the magnetic field vector."""
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
 

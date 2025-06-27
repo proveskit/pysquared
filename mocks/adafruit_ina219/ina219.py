@@ -9,3 +9,7 @@ class INA219:
     def __init__(self, i2c, addr) -> None:
         self.i2c = i2c
         self.addr = addr
+
+    bus_voltage = 0.0
+    shunt_voltage = 0.0
+    current = 0.0

@@ -4,12 +4,10 @@ Protocol defining the interface for a temperature sensor.
 
 
 class TemperatureSensorProto:
-    def get_temperature(self) -> float:
+    def get_temperature(self) -> float | None:
         """Get the temperature reading of the sensor.
 
-        :return: The temperature in degrees Celsius.
-        :rtype: float
-
-        :raises RuntimeError: If the temperature reading fails.
+        :return: The temperature in degrees Celsius or None if not available.
+        :rtype: float | None
         """
         ...

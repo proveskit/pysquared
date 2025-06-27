@@ -35,7 +35,9 @@ def test_initialize_spi_bus_success(mock_spi: MagicMock):
     # Assertions
     mock_spi.assert_called_once_with(mock_clock, mock_mosi, mock_miso)
     mock_spi_instance.try_lock.assert_called_once()
-    mock_spi_instance.configure.assert_called_once_with(baudrate, phase, polarity, bits)
+    mock_spi_instance.configure.assert_called_once_with(
+        baudrate=baudrate, phase=phase, polarity=polarity, bits=bits
+    )
     mock_spi_instance.unlock.assert_called_once()
     assert mock_logger.debug.call_count == 2
     assert result == mock_spi_instance
@@ -154,7 +156,7 @@ def test_initialize_i2c_bus_failure(mock_i2c: MagicMock):
 
     # Call the function and assert exception
     with pytest.raises(HardwareInitializationError):
-        initialize_i2c_bus(mock_logger, mock_scl, mock_sda)
+        initialize_i2c_bus(mock_logger, mock_scl, mock_sda, 1)
 
     # Assertions
     assert mock_i2c.call_count == 3  # Called 3 times due to retries

@@ -16,7 +16,7 @@ def with_retries(max_attempts: int = 3, initial_delay: float = 1.0):
 
     def decorator(func):
         def wrapper(*args, **kwargs):
-            last_exception = None
+            last_exception = Exception("with_retries decorator had unknown error")
             delay = initial_delay
 
             for attempt in range(max_attempts):
