@@ -2,7 +2,6 @@ from pysquared.config.config import Config
 from pysquared.logger import Logger
 from pysquared.protos.power_monitor import PowerMonitorProto
 
-
 try:
     from typing import Callable, List
 
@@ -50,7 +49,7 @@ class PowerHealth:
 
             # Critical check first - if battery voltage is below critical threshold
             if bus_voltage and bus_voltage <= self.config.critical_battery_voltage:
-                self.logger.error(
+                self.logger.warning(
                     f"CRITICAL: Battery voltage {bus_voltage}V is at or below critical threshold {self.config.critical_battery_voltage}V"
                 )
                 return CRITICAL()
