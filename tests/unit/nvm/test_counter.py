@@ -49,3 +49,12 @@ def test_counter_raises_error_when_nvm_is_none(mock_microcontroller: MagicMock):
 
     with pytest.raises(ValueError, match="nvm is not available"):
         counter.Counter(0)
+
+
+@patch("pysquared.nvm.counter.microcontroller")
+def test_get_name(mock_microcontroller: MagicMock):
+    datastore = ByteArray(size=2)
+    mock_microcontroller.nvm = datastore
+
+    count = counter.Counter(0)
+    assert count.get_name() == "Counter_index_0"

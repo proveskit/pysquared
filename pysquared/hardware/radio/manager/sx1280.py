@@ -68,13 +68,12 @@ class SX1280Manager(BaseRadioManager):
             rxen=self._rxen,
         )
 
-    def _send_internal(self, payload: bytes) -> bool:
+    def _send_internal(self, data: bytes) -> bool:
         """Send data using the SX1280 radio."""
-        return bool(self._radio.send(payload))
+        return bool(self._radio.send(data))
 
     def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized SX1280 radio."""
-        self._log.warning("SX1280 library does not support FSK modulation, using LoRa")
         return LoRa
 
     def receive(self, timeout: Optional[int] = None) -> bytes | None:

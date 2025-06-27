@@ -72,7 +72,7 @@ $(TOOLS_DIR):
 	mkdir -p $(TOOLS_DIR)
 
 ### Tool Versions
-UV_VERSION ?= 0.5.24
+UV_VERSION ?= 0.7.13
 MPY_CROSS_VERSION ?= 9.0.5
 
 UV_DIR ?= $(TOOLS_DIR)/uv-$(UV_VERSION)
@@ -112,3 +112,9 @@ endif
 define compile_mpy
 	@$(UV) run python -c "import os, subprocess; [subprocess.run(['$(MPY_CROSS)', os.path.join(root, file)]) for root, _, files in os.walk('pysquared') for file in files if file.endswith('.py')]" || exit 1
 endef
+
+.PHONY: docs
+
+docs:
+	cd pysquared && ../tools/uv-0.7.13/uv run mkdocs build
+	cd pysquared && ../tools/uv-0.7.13/uv run mkdocs serve

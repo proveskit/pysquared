@@ -9,8 +9,6 @@ class RadioConfig:
     def __init__(self, radio_dict: dict) -> None:
         self.license: str = radio_dict["license"]
         self.modulation: Literal["LoRa", "FSK"] = radio_dict["modulation"]
-        self.sender_id: int = radio_dict["sender_id"]
-        self.receiver_id: int = radio_dict["receiver_id"]
         self.transmit_frequency: int = radio_dict["transmit_frequency"]
         self.start_time: int = radio_dict["start_time"]
         self.fsk: FSKConfig = FSKConfig(radio_dict["fsk"])
@@ -19,8 +17,6 @@ class RadioConfig:
         self.RADIO_SCHEMA = {
             "license": {"type": str},
             "modulation": {"type": str, "allowed_values": ["LoRa", "FSK"]},
-            "receiver_id": {"type": int, "min": 0, "max": 255},
-            "sender_id": {"type": int, "min": 0, "max": 255},
             "start_time": {"type": int, "min": 0, "max": 80000},
             "transmit_frequency": {
                 "type": (int, float),

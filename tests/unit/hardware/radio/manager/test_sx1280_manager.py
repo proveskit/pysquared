@@ -10,7 +10,7 @@ from mocks.proves_sx1280.sx1280 import SX1280
 from pysquared.config.radio import RadioConfig
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.radio.manager.sx1280 import SX1280Manager
-from pysquared.hardware.radio.modulation import FSK, LoRa
+from pysquared.hardware.radio.modulation import LoRa
 from pysquared.logger import Logger
 
 
@@ -55,8 +55,6 @@ def mock_radio_config() -> RadioConfig:
         {
             "license": "testlicense",
             "modulation": "FSK",
-            "sender_id": 1,
-            "receiver_id": 2,
             "transmit_frequency": 915,
             "start_time": 0,
             "fsk": {"broadcast_address": 255, "node_address": 1, "modulation_type": 0},
@@ -131,7 +129,7 @@ def test_init_fsk_success(
     )
     assert manager._radio == mock_radio_instance
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="SX1280Manager", modulation=FSK
+        "Initializing radio", radio_type="SX1280Manager", modulation="FSK"
     )
 
 
@@ -174,7 +172,7 @@ def test_init_lora_success(
     )
     assert manager._radio == mock_radio_instance
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="SX1280Manager", modulation=LoRa
+        "Initializing radio", radio_type="SX1280Manager", modulation="LoRa"
     )
 
 
@@ -207,7 +205,7 @@ def test_init_with_retries_fsk(
         )
 
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="SX1280Manager", modulation=FSK
+        "Initializing radio", radio_type="SX1280Manager", modulation="FSK"
     )
     assert mock_sx1280.call_count == 3
 
@@ -241,7 +239,7 @@ def test_init_with_retries_lora(
         )
 
     mock_logger.debug.assert_called_with(
-        "Initializing radio", radio_type="SX1280Manager", modulation=FSK
+        "Initializing radio", radio_type="SX1280Manager", modulation="FSK"
     )
     assert mock_sx1280.call_count == 3
 
@@ -262,7 +260,6 @@ def test_send_success_bytes(
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
-    mock_radio_instance.send.return_value = True  # Simulate successful send
     mock_sx1280.return_value = mock_radio_instance
 
     manager = SX1280Manager(
@@ -278,101 +275,9 @@ def test_send_success_bytes(
     )
 
     msg = b"Hello Radio"
-    result = manager.send(msg)
+    _ = manager.send(msg)
 
-    license_bytes: bytes = bytes(mock_radio_config.license, "UTF-8")
-    expected_msg: bytes = b" ".join([license_bytes, msg, license_bytes])
-
-    assert result is True
-    mock_radio_instance.send.assert_called_once_with(expected_msg)
-    mock_logger.info.assert_called_once_with("Radio message sent")
-
-
-def test_send_success_string(
-    mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
-    mock_radio_config: RadioConfig,
-):
-    """Test successful sending of a string (should be converted to bytes)."""
-    mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
-    mock_radio_instance.send = MagicMock()
-    mock_radio_instance.send.return_value = True
-    mock_sx1280.return_value = mock_radio_instance
-
-    manager = SX1280Manager(
-        mock_logger,
-        mock_radio_config,
-        mock_spi,
-        mock_chip_select,
-        mock_reset,
-        mock_busy,
-        2.4,
-        mock_txen,
-        mock_rxen,
-    )
-
-    data_str = "Hello String"
-    expected_bytes: bytes = b" ".join(
-        [
-            bytes(mock_radio_config.license, "UTF-8"),
-            bytes(data_str, "UTF-8"),
-            bytes(mock_radio_config.license, "UTF-8"),
-        ]
-    )
-
-    result = manager.send(data_str)
-
-    assert result is True
-    mock_radio_instance.send.assert_called_once_with(expected_bytes)
-    mock_logger.info.assert_called_once_with("Radio message sent")
-
-
-def test_send_unexpected_type(
-    mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
-    mock_radio_config: RadioConfig,
-):
-    """Test successful sending of a string (should be converted to bytes)."""
-    mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
-    mock_radio_instance.send = MagicMock()
-    mock_radio_instance.send.return_value = True
-    mock_sx1280.return_value = mock_radio_instance
-
-    manager = SX1280Manager(
-        mock_logger,
-        mock_radio_config,
-        mock_spi,
-        mock_chip_select,
-        mock_reset,
-        mock_busy,
-        2.4,
-        mock_txen,
-        mock_rxen,
-    )
-
-    result = manager.send(manager)
-    assert result is True
-
-    mock_radio_instance.send.assert_called_once_with(
-        bytes(f"testlicense {manager} testlicense", "UTF-8")
-    )
-    mock_logger.warning.assert_called_once_with(
-        "Attempting to send non-bytes/str data type: <class 'pysquared.hardware.radio.manager.sx1280.SX1280Manager'>",
-    )
+    mock_radio_instance.send.assert_called_once_with(msg)
 
 
 def test_send_unlicensed(

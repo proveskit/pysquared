@@ -1,0 +1,38 @@
+# Welcome to PySquared
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![CI](https://github.com/proveskit/pysquared/actions/workflows/ci.yaml/badge.svg)
+
+CircuitPython based Flight Software Library for the PROVES Kit. This repo contains all of the core manager components, protocols, and libraries used by the PROVES Kit.
+
+# Development Getting Started
+We welcome contributions, so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
+
+You can find our Getting Started Guide [here](docs/dev-guide.md).
+
+## Supported Boards
+
+| Board Version | Proves Repo                          | Firmware                     |
+|---------------|--------------------------------------|------------------------------|
+| v4            | [proveskit/CircuitPython_RP2040_v4](https://github.com/proveskit/CircuitPython_RP2040_v4) | [proveskit_rp2040_v4](https://circuitpython.org/board/proveskit_rp2040_v4/) |
+| v5            | [proveskit/CircuitPython_RP2040_v5](https://github.com/proveskit/CircuitPython_RP2040_v5) | [proveskit_rp2040_v5](https://drive.google.com/file/d/1S_xKkCfLgaMHhTQQ2uGI1fz-TgWfvwOZ/view?usp=drive_link/) |
+| v5a           | [proveskit/CircuitPython_RP2350_v5a](https://github.com/proveskit/CircuitPython_RP2350_v5a) | [proveskit_rp2350A_V5a](https://github.com/proveskit/flight_controller_board/blob/main/Firmware/FC_FIRM_v5a_V1.uf2) |
+
+
+# Welcome to MkDocs
+
+For full MkDocs documentation visit [mkdocs.org](https://www.mkdocs.org).
+
+## Commands
+
+* `mkdocs new [dir-name]` - Create a new project.
+* `mkdocs serve` - Start the live-reloading docs server.
+* `mkdocs build` - Build the documentation site.
+* `mkdocs -h` - Print help message and exit.
+
+## Project layout
+
+    mkdocs.yml    # The configuration file.
+    docs/
+        index.md  # The documentation homepage.
+        ...       # Other markdown pages, images and other files.
