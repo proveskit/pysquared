@@ -1,9 +1,7 @@
-from microcontroller import Processor
-
 from pysquared.config.config import Config
 from pysquared.logger import Logger
 from pysquared.protos.power_monitor import PowerMonitorProto
-from pysquared.protos.temperature_sensor import TemperatureSensorProto
+
 
 try:
     from typing import Callable, List
@@ -24,73 +22,73 @@ class DEGRADED(State):
     pass
 
 
-class StateOfHealth:
+class CRITICAL(State):
+    pass
+
+
+class PowerHealth:
     def __init__(
         self,
         logger: Logger,
         config: Config,
-        *args: PowerMonitorProto | TemperatureSensorProto | Processor,
+        power_monitor: PowerMonitorProto,
     ) -> None:
         self.logger: Logger = logger
         self.config: Config = config
-        self._sensors: tuple[
-            PowerMonitorProto | TemperatureSensorProto | Processor, ...
-        ] = args
+        self._sensor: PowerMonitorProto = power_monitor
 
-    def get(self) -> NOMINAL | DEGRADED:
+    def get(self) -> NOMINAL | DEGRADED | CRITICAL:
         """
-        Get the state of health
+        Get the power health
         """
         errors: List[str] = []
-        for sensor in self._sensors:
-            self.logger.debug("Sensor: ", sensor=sensor)
-            if isinstance(sensor, PowerMonitorProto):
-                bus_voltage = self._avg_reading(sensor.get_bus_voltage)
-                shunt_voltage = self._avg_reading(sensor.get_shunt_voltage)
-                current = self._avg_reading(sensor.get_current)
+        self.logger.debug("Power monitor: ", sensor=self._sensor)
 
-                # range is hardcoded for now
-                if current and abs(current - self.config.normal_charge_current) > 10:
-                    errors.append(
-                        f"Current reading {current} is outside of normal range {self.config.normal_charge_current}"
-                    )
-                if (
-                    bus_voltage
-                    and abs(bus_voltage - self.config.normal_battery_voltage) > 10
-                ):
-                    errors.append(
-                        f"Bus voltage reading {bus_voltage} is outside of normal range {self.config.normal_battery_voltage}"
-                    )
-                if (
-                    shunt_voltage
-                    and abs(shunt_voltage - self.config.normal_battery_voltage) > 10
-                ):
-                    errors.append(
-                        f"Shunt voltage reading {shunt_voltage} is outside of normal range {self.config.normal_battery_voltage}"
-                    )
-            elif isinstance(sensor, TemperatureSensorProto):
-                temperature = self._avg_reading(sensor.get_temperature)
-                self.logger.debug("Temp: ", temperature=temperature)
-                if temperature and abs(temperature - self.config.normal_temp) > 10:
-                    errors.append(
-                        f"Temperature reading {temperature} is outside of normal range {self.config.normal_temp}"
-                    )
-            elif isinstance(sensor, Processor):
-                temperature = sensor.temperature
-                self.logger.debug("Temp: ", temperature=temperature)
-                if (
-                    temperature
-                    and abs(temperature - self.config.normal_micro_temp) > 10
-                ):
-                    errors.append(
-                        f"Processor temperature reading {temperature} is outside of normal range {self.config.normal_micro_temp}"
-                    )
+        if isinstance(self._sensor, PowerMonitorProto):
+            bus_voltage = self._avg_reading(self._sensor.get_bus_voltage)
+            current = self._avg_reading(self._sensor.get_current)
+
+            # Critical check first - if battery voltage is below critical threshold
+            if bus_voltage and bus_voltage <= self.config.critical_battery_voltage:
+                self.logger.error(
+                    f"CRITICAL: Battery voltage {bus_voltage}V is at or below critical threshold {self.config.critical_battery_voltage}V"
+                )
+                return CRITICAL()
+
+            # Check current deviation from normal
+            if (
+                current
+                and abs(current - self.config.normal_charge_current)
+                > self.config.normal_charge_current
+            ):
+                errors.append(
+                    f"Current reading {current} is outside of normal range {self.config.normal_charge_current}"
+                )
+
+            # Check bus voltage deviation from normal
+            voltage_tolerance = (
+                abs(
+                    self.config.normal_battery_voltage
+                    - self.config.critical_battery_voltage
+                )
+                / 2
+            )
+            if (
+                bus_voltage
+                and abs(bus_voltage - self.config.normal_battery_voltage)
+                > voltage_tolerance
+            ):
+                errors.append(
+                    f"Bus voltage reading {bus_voltage}V is outside of normal range {self.config.normal_battery_voltage}V ±{voltage_tolerance}V"
+                )
 
         if len(errors) > 0:
-            self.logger.warning("State of health is DEGRADED", errors=errors)
+            self.logger.info(
+                "Power health is NOMINAL with minor deviations", errors=errors
+            )
             return DEGRADED()
         else:
-            self.logger.info("State of health is NOMINAL")
+            self.logger.info("Power health is NOMINAL")
             return NOMINAL()
 
     def _avg_reading(
