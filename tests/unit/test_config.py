@@ -169,12 +169,6 @@ def test_validation_updateable(cleanup) -> None:
     except KeyError as e:
         print(e)
 
-    # radio
-    try:
-        config.validate("receiver_id", 11)
-    except KeyError as e:
-        print(e)
-
     # fsk
     try:
         config.validate("ack_delay", 1.5)
@@ -212,12 +206,6 @@ def test_validation_range(cleanup) -> None:
         config.validate("cubesat_name", "")
     with pytest.raises(ValueError):
         config.validate("cubesat_name", "more_than_seven")
-
-    # radio config
-    with pytest.raises(ValueError):
-        config.validate("receiver_id", -1)
-    with pytest.raises(ValueError):
-        config.validate("receiver_id", 256)
 
     # transmit_frequency specific
     with pytest.raises(ValueError):
@@ -265,17 +253,6 @@ def test_update_config(cleanup) -> None:
     # config permanent
     try:
         config.update_config("cubesat_name", "accept", True)
-    except ValueError as e:
-        print(e)
-
-    # radio temp
-    try:
-        config.update_config("receiver_id", 1, False)
-    except ValueError as e:
-        print(e)
-    # radio permanent
-    try:
-        config.update_config("receiver_id", 1, True)
     except ValueError as e:
         print(e)
 

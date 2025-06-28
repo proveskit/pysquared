@@ -1,10 +1,13 @@
 {
+  "battery_voltage": 5.2,
+  "critical_battery_voltage": 6.6,
   "cubesat_name": "Orpheus",
-  "last_battery_temp": 20.0,
-  "sleep_duration": 30,
-  "detumble_enable_z": true,
+  "current_draw": 240.5,
+  "debug": true,
   "detumble_enable_x": true,
   "detumble_enable_y": true,
+  "detumble_enable_z": true,
+  "heating": false,
   "jokes": [
     "Hey it is pretty cold up here, did someone forget to pay the electric bill?",
     "sudo rf - rf*",
@@ -42,27 +45,21 @@
     "Woah is that the Launcher Orbiter?????",
     "Everything in life is a spring if you think hard enough!"
   ],
-  "debug": true,
-  "heating": false,
-  "normal_temp": 20,
+  "last_battery_temp": 20.0,
+  "longest_allowable_sleep_time": 600,
   "normal_battery_temp": 1,
-  "normal_micro_temp": 20,
-  "normal_charge_current": 0.5,
   "normal_battery_voltage": 6.9,
   "degraded_battery_voltage": 7.0,
-  "critical_battery_voltage": 6.6,
-  "battery_voltage": 5.2,
-  "current_draw": 240.5,
-  "reboot_time": 3600,
-  "longest_allowable_sleep_time": 600,
-  "turbo_clock": false,
+  "normal_charge_current": 0.5,
+  "normal_micro_temp": 20,
+  "normal_temp": 20,
   "radio": {
+    "fsk": {
+      "broadcast_address": 255,
+      "modulation_type": 0,
+      "node_address": 1
+    },
     "license": "",
-    "modulation": "LoRa",
-    "receiver_id": 250,
-    "sender_id": 251,
-    "start_time": 80000,
-    "transmit_frequency": 437.4,
     "lora": {
       "ack_delay": 0.2,
       "coding_rate": 8,
@@ -71,19 +68,13 @@
       "spreading_factor": 8,
       "transmit_power": 23
     },
-    "fsk": {
-      "broadcast_address": 255,
-      "node_address": 1,
-      "modulation_type": 0
-    }
+    "modulation": "LoRa",
+    "start_time": 80000,
+    "transmit_frequency": 437.4
   },
-  "super_secret_code": "ABCD",
+  "reboot_time": 3600,
   "repeat_code": "RP",
-  "joke_reply": [
-    "Your Mom",
-    "Your Mum",
-    "Your Face",
-    "not True lol",
-    "I have brought peace, freedom, justice, and security to my new empire! Your New Empire?"
-  ]
+  "sleep_duration": 30,
+  "super_secret_code": "ABCD",
+  "turbo_clock": false
 }

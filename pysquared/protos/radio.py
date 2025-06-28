@@ -12,11 +12,11 @@ except ImportError:
 
 
 class RadioProto:
-    def send(self, data: object) -> bool:
+    def send(self, data: bytes) -> bool:
         """Send data over the radio.
 
-        :param Any data: The data to send.
-        :return: True if the send was successful (e.g., ACK received if applicable), False otherwise.
+        :param bytes data: The data to send.
+        :return: True if the send was successful.
         :rtype: bool
         """
         ...
@@ -56,10 +56,21 @@ class RadioProto:
 
         ...
 
-    def get_rssi(self) -> float:
+    def get_rssi(self) -> int:
         """Get the RSSI of the last received packet.
+
+        :return: The RSSI value in dBm.
+        :rtype: int
 
         :raises NotImplementedError: If not implemented by subclass.
         """
 
+        ...
+
+    def get_max_packet_size(self) -> int:
+        """Get the maximum packet size supported by the radio.
+
+        :return: The maximum packet size in bytes.
+        :rtype: int
+        """
         ...

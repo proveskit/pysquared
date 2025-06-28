@@ -1,89 +1,85 @@
-import gc
+"""
+sleep_helper Module
+==================
+
+This module provides the SleepHelper class for managing safe sleep and hibernation
+modes for the PySquared satellite. It ensures the satellite sleeps for specified
+durations while maintaining system safety and watchdog activity.
+
+"""
+
 import time
 
 import alarm
-from alarm import time as alarmTime
 from alarm.time import TimeAlarm
 
 from .config.config import Config
 from .logger import Logger
-from .satellite import Satellite
 from .watchdog import Watchdog
-
-try:
-    from typing import Literal
-except Exception:
-    pass
 
 
 class SleepHelper:
     """
-    Class responsible for sleeping the Satellite to conserve power
+    Class responsible for sleeping the Satellite to conserve power.
+
+    Attributes:
+        cubesat (Satellite): The Satellite object.
+        logger (Logger): Logger instance for logging events and errors.
+        watchdog (Watchdog): Watchdog instance for system safety.
+        config (Config): Configuration object.
     """
 
-    def __init__(
-        self, cubesat: Satellite, logger: Logger, watchdog: Watchdog, config: Config
-    ) -> None:
+    def __init__(self, logger: Logger, config: Config, watchdog: Watchdog) -> None:
         """
         Creates a SleepHelper object.
 
-        :param cubesat: The Satellite object
-        :param logger: The Logger object allowing for log output
-
+        Args:
+            cubesat (Satellite): The Satellite object.
+            logger (Logger): Logger instance for logging events and errors.
+            watchdog (Watchdog): Watchdog instance for system safety.
+            config (Config): Configuration object.
         """
-        self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
+        self.config: Config = config
         self.watchdog: Watchdog = watchdog
-        self.config = config
 
-    def safe_sleep(self, duration: int = 15) -> None:
+    def safe_sleep(self, duration) -> None:
         """
-        Puts the Satellite to sleep for specified duration, in seconds.
+        Puts the Satellite to sleep for a specified duration, in seconds.
 
         Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config
 
-        :param duration: Specified time, in seconds, to sleep the Satellite for
+        Args:
+            duration (int): Specified time, in seconds, to sleep the Satellite for.
         """
+        # Ensure the duration does not exceed the longest allowable sleep time
+        if duration > self.config.longest_allowable_sleep_time:
+            self.logger.warning(
+                "Requested sleep duration exceeds longest allowable sleep time. "
+                "Adjusting to longest allowable sleep time.",
+                requested_duration=duration,
+                longest_allowable_sleep_time=self.config.longest_allowable_sleep_time,
+            )
+            duration = self.config.longest_allowable_sleep_time
 
+        self.logger.debug("Setting Safe Sleep Mode", duration=duration)
+
+        end_sleep_time = time.monotonic() + duration
+
+        # Pet the watchdog before sleeping
         self.watchdog.pet()
 
-        time_remaining = min(duration, self.config.longest_allowable_sleep_time)
+        # Sleep in increments to allow for watchdog to be pet
+        while time.monotonic() < end_sleep_time:
+            # TODO(nateinaction): Replace the hardcoded watchdog timeout with a config value
+            watchdog_timeout = 15
 
-        self.logger.debug("Setting Safe Sleep Mode", duration=time_remaining)
+            time_increment = min(end_sleep_time - time.monotonic(), watchdog_timeout)
 
-        while time_remaining > 0:
-            time_increment = time_remaining if time_remaining < 15 else 15
-
-            time_alarm: TimeAlarm = alarmTime.TimeAlarm(
+            time_alarm: TimeAlarm = TimeAlarm(
                 monotonic_time=time.monotonic() + time_increment
             )
             alarm.light_sleep_until_alarms(time_alarm)
-            time_remaining -= time_increment
 
+            # Pet the watchdog on wake
             self.watchdog.pet()
-
-    def short_hibernate(self) -> Literal[True]:
-        """Puts the Satellite to sleep for 120 seconds"""
-
-        self.watchdog.pet()
-        self.logger.debug("Short Hibernation Coming UP")
-        gc.collect()
-        # all should be off from cubesat powermode
-
-        self.cubesat.f_softboot.toggle(True)
-        self.safe_sleep(120)
-
-        return True
-
-    def long_hibernate(self) -> Literal[True]:
-        """Puts the Satellite to sleep for 180 seconds"""
-
-        self.watchdog.pet()
-        self.logger.debug("LONG Hibernation Coming UP")
-        gc.collect()
-        # all should be off from cubesat powermode
-
-        self.cubesat.f_softboot.toggle(True)
-        self.safe_sleep(600)
-
-        return True

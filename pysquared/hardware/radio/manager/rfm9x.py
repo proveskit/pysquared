@@ -1,7 +1,12 @@
-from adafruit_rfm.rfm9x import RFM9x
-from adafruit_rfm.rfm9xfsk import RFM9xFSK
 from busio import SPI
 from digitalio import DigitalInOut
+
+try:
+    from mocks.adafruit_rfm.rfm9x import RFM9x
+    from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
+except ImportError:
+    from adafruit_rfm.rfm9x import RFM9x
+    from adafruit_rfm.rfm9xfsk import RFM9xFSK
 
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger import Logger
@@ -14,12 +19,6 @@ try:
     from typing import Optional, Type
 except ImportError:
     pass
-
-# try:
-#     from mocks.adafruit_rfm.rfm9x import RFM9x
-#     from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
-# except ImportError:
-#     pass
 
 
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
@@ -75,13 +74,11 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
                 self._radio_config.lora,
             )
 
-        self._radio.node = self._radio_config.sender_id
-        self._radio.destination = self._radio_config.receiver_id
+        self._radio.radiohead = False
 
-    def _send_internal(self, payload: bytes) -> bool:
+    def _send_internal(self, data: bytes) -> bool:
         """Send data using the RFM9x radio."""
-        # Assuming send returns bool or similar truthy/falsy
-        return bool(self._radio.send(payload))
+        return bool(self._radio.send(data))
 
     def modify_config(self, key: str, value) -> None:
         """Modify a specific radio configuration parameter.
@@ -90,52 +87,31 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         :param object value: The new value to set for the parameter.
         :raises ValueError: If the key is not recognized or invalid for the current radio type.
         """
-        # Handle base radio parameters
-        if key == "sender_id":
-            self._radio_config.validate("sender_id", value)
-            self._radio.node = value
-        elif key == "receiver_id":
-            self._radio_config.validate("receiver_id", value)
-            self._radio.destination = value
+        self._radio_config.validate(key, value)
 
         # Handle FSK-specific parameters
-        elif self._radio.__class__.__name__ == "RFM9xFSK":
-            if key == "fsk_broadcast_address":
-                self._radio_config.validate("broadcast_address", value)
-                self._radio.fsk_broadcast_address = value  # type: ignore
-            elif key == "fsk_node_address":
-                self._radio_config.validate("node_address", value)
-                self._radio.fsk_node_address = value  # type: ignore
+        if isinstance(self._radio, RFM9xFSK):
+            if key == "broadcast_address":
+                self._radio.fsk_broadcast_address = value
+            elif key == "node_address":
+                self._radio.fsk_node_address = value
             elif key == "modulation_type":
-                self._radio_config.validate("modulation_type", value)
-                self._radio.modulation_type = value  # type: ignore
-            else:
-                raise ValueError(f"Unknown FSK parameter key: {key}")
+                self._radio.modulation_type = value
 
         # Handle LoRa-specific parameters
-        elif self._radio.__class__.__name__ == "RFM9x":
+        elif isinstance(self._radio, RFM9x):
             if key == "ack_delay":
-                self._radio_config.validate("ack_delay", value)
-                self._radio.ack_delay = value  # type: ignore
+                self._radio.ack_delay = value
             elif key == "cyclic_redundancy_check":
-                self._radio.enable_crc = value  # type: ignore
+                self._radio.enable_crc = value
             elif key == "spreading_factor":
-                self._radio_config.validate("spreading_factor", value)
-                self._radio.spreading_factor = value  # type: ignore
-                # Update related parameters when spreading factor changes
-                if self._radio.spreading_factor > 9:  # type: ignore
-                    self._radio.preamble_length = self._radio.spreading_factor  # type: ignore
-                    self._radio.low_datarate_optimize = 1  # type: ignore
+                self._radio.spreading_factor = value
+                if value > 9:
+                    self._radio.preamble_length = value
+                else:
+                    self._radio.preamble_length = 8  # Default preamble length
             elif key == "transmit_power":
                 self._radio.tx_power = value
-            elif key == "preamble_length":
-                self._radio.preamble_length = value  # type: ignore
-            elif key == "low_datarate_optimize":
-                self._radio.low_datarate_optimize = value  # type: ignore
-            else:
-                raise ValueError(f"Unknown LoRa parameter key: {key}")
-        else:
-            raise ValueError(f"Unknown parameter key: {key}")
 
     def get_modulation(self) -> Type[RadioModulation]:
         """Get the modulation mode from the initialized RFM9x radio."""
@@ -198,14 +174,13 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             transmit_frequency,
         )
 
-        radio.ack_delay = lora_config.ack_delay  # type: ignore # https://github.com/adafruit/Adafruit_CircuitPython_RFM/pull/13
+        radio.ack_delay = lora_config.ack_delay
         radio.enable_crc = lora_config.cyclic_redundancy_check
         radio.spreading_factor = lora_config.spreading_factor
         radio.tx_power = lora_config.transmit_power
 
         if radio.spreading_factor > 9:
             radio.preamble_length = radio.spreading_factor
-            radio.low_datarate_optimize = 1
 
         return radio
 
@@ -232,6 +207,11 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             self._log.error("Error receiving data", e)
             return None
 
-    def get_rssi(self) -> float:
+    def get_max_packet_size(self) -> int:
+        return self._radio.max_packet_length
+
+    def get_rssi(self) -> int:
         """Get the RSSI of the last received packet."""
-        return self._radio.last_rssi
+        # library reads rssi from an unsigned byte, so we know it's in the range 0-255
+        # it is safe to cast it to int
+        return int(self._radio.last_rssi)

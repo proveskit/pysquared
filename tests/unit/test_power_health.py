@@ -67,7 +67,7 @@ def test_get_critical_state_low_voltage(power_health):
     result = power_health.get()
 
     assert isinstance(result, CRITICAL)
-    power_health.logger.error.assert_called_with(
+    power_health.logger.warning.assert_called_with(
         "CRITICAL: Battery voltage 5.8V is at or below critical threshold 6.0V"
     )
 

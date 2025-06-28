@@ -43,7 +43,6 @@ class Config:
         self.turbo_clock: bool = json_data["turbo_clock"]
         self.super_secret_code: str = json_data["super_secret_code"]
         self.repeat_code: str = json_data["repeat_code"]
-        self.joke_reply: list[str] = json_data["joke_reply"]
         self.longest_allowable_sleep_time: int = json_data[
             "longest_allowable_sleep_time"
         ]
