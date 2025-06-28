@@ -67,7 +67,7 @@ def test_get_critical_state_low_voltage(power_health):
     result = power_health.get()
 
     assert isinstance(result, CRITICAL)
-    power_health.logger.error.assert_called_with(
+    power_health.logger.warning.assert_called_with(
         "CRITICAL: Battery voltage 5.8V is at or below critical threshold 6.0V"
     )
 
@@ -81,6 +81,9 @@ def test_get_critical_state_exactly_critical_voltage(power_health):
     result = power_health.get()
 
     assert isinstance(result, CRITICAL)
+    power_health.logger.warning.assert_called_with(
+        "CRITICAL: Battery voltage 6.0V is at or below critical threshold 6.0V"
+    )
 
 
 def test_get_degraded_state_current_deviation(power_health):
@@ -92,7 +95,10 @@ def test_get_degraded_state_current_deviation(power_health):
     result = power_health.get()
 
     assert isinstance(result, DEGRADED)
-    power_health.logger.info.assert_called()
+    power_health.logger.info.assert_called_with(
+        "Power health is NOMINAL with minor deviations",
+        errors=["Current reading 250.0 is outside of normal range 100.0"],
+    )
 
 
 def test_get_degraded_state_voltage_deviation(power_health):
@@ -105,6 +111,10 @@ def test_get_degraded_state_voltage_deviation(power_health):
     result = power_health.get()
 
     assert isinstance(result, DEGRADED)
+    power_health.logger.info.assert_called_with(
+        "Power health is NOMINAL with minor deviations",
+        errors=["Bus voltage reading 6.8V is at or below degraded threshold 7.0V"],
+    )
 
 
 def test_get_nominal_with_minor_voltage_deviation(power_health):
@@ -117,6 +127,7 @@ def test_get_nominal_with_minor_voltage_deviation(power_health):
     result = power_health.get()
 
     assert isinstance(result, NOMINAL)
+    power_health.logger.info.assert_called_with("Power health is NOMINAL")
 
 
 def test_avg_reading_normal_operation(power_health):
@@ -173,6 +184,7 @@ def test_get_with_none_voltage_reading(power_health):
     result = power_health.get()
 
     assert isinstance(result, NOMINAL)
+    power_health.logger.info.assert_called_with("Power health is NOMINAL")
 
 
 def test_get_with_none_current_reading(power_health):
@@ -186,6 +198,7 @@ def test_get_with_none_current_reading(power_health):
     result = power_health.get()
 
     assert isinstance(result, NOMINAL)
+    power_health.logger.info.assert_called_with("Power health is NOMINAL")
 
 
 def test_get_logs_sensor_debug_info(power_health):
@@ -211,6 +224,10 @@ def test_degraded_vs_critical_voltage_boundaries(power_health):
     result = power_health.get()
 
     assert isinstance(result, DEGRADED)
+    power_health.logger.info.assert_called_with(
+        "Power health is NOMINAL with minor deviations",
+        errors=["Bus voltage reading 6.5V is at or below degraded threshold 7.0V"],
+    )
 
 
 def test_current_deviation_threshold(power_health):
@@ -222,6 +239,10 @@ def test_current_deviation_threshold(power_health):
     result = power_health.get()
 
     assert isinstance(result, DEGRADED)
+    power_health.logger.info.assert_called_with(
+        "Power health is NOMINAL with minor deviations",
+        errors=["Current reading 250.0 is outside of normal range 100.0"],
+    )
 
 
 def test_degraded_battery_voltage_threshold(power_health):
@@ -234,6 +255,10 @@ def test_degraded_battery_voltage_threshold(power_health):
     result = power_health.get()
 
     assert isinstance(result, DEGRADED)
+    power_health.logger.info.assert_called_with(
+        "Power health is NOMINAL with minor deviations",
+        errors=["Bus voltage reading 7.0V is at or below degraded threshold 7.0V"],
+    )
 
 
 def test_voltage_just_above_degraded_threshold(power_health):
@@ -246,3 +271,4 @@ def test_voltage_just_above_degraded_threshold(power_health):
     result = power_health.get()
 
     assert isinstance(result, NOMINAL)
+    power_health.logger.info.assert_called_with("Power health is NOMINAL")
