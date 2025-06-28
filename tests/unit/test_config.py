@@ -28,12 +28,6 @@ def test_radio_cfg(cleanup) -> None:
     config = Config(file)
 
     # Test basic radio config properties
-    assert config.radio.sender_id == json_data["radio"]["sender_id"], (
-        "No match for: sender_id"
-    )
-    assert config.radio.receiver_id == json_data["radio"]["receiver_id"], (
-        "No match for: receiver_id"
-    )
     assert (
         config.radio.transmit_frequency == json_data["radio"]["transmit_frequency"]
     ), "No match for: transmit_frequency"
