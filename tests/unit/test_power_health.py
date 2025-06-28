@@ -133,6 +133,7 @@ def test_avg_reading_normal_operation(power_health):
 def test_avg_reading_with_none_values(power_health):
     """Test _avg_reading() when sensor returns None"""
     mock_func = MagicMock(return_value=None)
+    mock_func.__name__ = "test_sensor_function"
 
     result = power_health._avg_reading(mock_func, num_readings=5)
 
