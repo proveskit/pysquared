@@ -61,13 +61,13 @@ class PowerHealth:
                 > self.config.normal_charge_current
             ):
                 errors.append(
-                    f"Current reading {current} is outside of normal range {self.config.normal_charge_current}"
+                    f"Current reading {current:.1f} is outside of normal range {self.config.normal_charge_current}"
                 )
 
             # Check if bus voltage is below degraded threshold
             if bus_voltage and bus_voltage <= self.config.degraded_battery_voltage:
                 errors.append(
-                    f"Bus voltage reading {bus_voltage}V is at or below degraded threshold {self.config.degraded_battery_voltage}V"
+                    f"Bus voltage reading {bus_voltage:.1f}V is at or below degraded threshold {self.config.degraded_battery_voltage}V"
                 )
 
         if len(errors) > 0:
