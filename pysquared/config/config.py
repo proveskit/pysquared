@@ -37,6 +37,7 @@ class Config:
         self.normal_micro_temp: int = json_data["normal_micro_temp"]
         self.normal_charge_current: float = json_data["normal_charge_current"]
         self.normal_battery_voltage: float = json_data["normal_battery_voltage"]
+        self.degraded_battery_voltage: float = json_data["degraded_battery_voltage"]
         self.critical_battery_voltage: float = json_data["critical_battery_voltage"]
         self.reboot_time: int = json_data["reboot_time"]
         self.turbo_clock: bool = json_data["turbo_clock"]
@@ -53,6 +54,7 @@ class Config:
             "repeat_code": {"type": bytes, "min": 1, "max": 4},
             "normal_charge_current": {"type": float, "min": 0.0, "max": 2000.0},
             "normal_battery_voltage": {"type": float, "min": 6.0, "max": 8.4},
+            "degraded_battery_voltage": {"type": float, "min": 5.4, "max": 8.0},
             "critical_battery_voltage": {"type": float, "min": 5.4, "max": 7.2},
             "sleep_duration": {"type": int, "min": 1, "max": 86400},
             "normal_temp": {"type": int, "min": 5, "max": 40},

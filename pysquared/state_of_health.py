@@ -64,21 +64,10 @@ class PowerHealth:
                     f"Current reading {current} is outside of normal range {self.config.normal_charge_current}"
                 )
 
-            # Check bus voltage deviation from normal
-            voltage_tolerance = (
-                abs(
-                    self.config.normal_battery_voltage
-                    - self.config.critical_battery_voltage
-                )
-                / 2
-            )
-            if (
-                bus_voltage
-                and abs(bus_voltage - self.config.normal_battery_voltage)
-                > voltage_tolerance
-            ):
+            # Check if bus voltage is below degraded threshold
+            if bus_voltage and bus_voltage <= self.config.degraded_battery_voltage:
                 errors.append(
-                    f"Bus voltage reading {bus_voltage}V is outside of normal range {self.config.normal_battery_voltage}V ±{voltage_tolerance}V"
+                    f"Bus voltage reading {bus_voltage}V is at or below degraded threshold {self.config.degraded_battery_voltage}V"
                 )
 
         if len(errors) > 0:

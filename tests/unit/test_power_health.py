@@ -18,6 +18,7 @@ def mock_config():
     config = MagicMock(spec=Config)
     config.normal_charge_current = 100.0
     config.normal_battery_voltage = 7.2
+    config.degraded_battery_voltage = 7.0
     config.critical_battery_voltage = 6.0
     return config
 
@@ -95,10 +96,9 @@ def test_get_degraded_state_current_deviation(power_health):
 
 
 def test_get_degraded_state_voltage_deviation(power_health):
-    """Test that get() returns DEGRADED when voltage is outside normal range but not critical"""
-    # Voltage tolerance = abs(7.2 - 6.0) / 2 = 0.6
+    """Test that get() returns DEGRADED when voltage is at or below degraded threshold but not critical"""
     power_health._sensor.get_bus_voltage.return_value = (
-        6.5  # Outside tolerance but not critical
+        6.8  # Below degraded threshold (7.0) but above critical (6.0)
     )
     power_health._sensor.get_current.return_value = 100.0  # Normal current
 
@@ -108,10 +108,9 @@ def test_get_degraded_state_voltage_deviation(power_health):
 
 
 def test_get_nominal_with_minor_voltage_deviation(power_health):
-    """Test that get() returns NOMINAL when voltage deviation is within tolerance"""
-    # Voltage tolerance = abs(7.2 - 6.0) / 2 = 0.6
+    """Test that get() returns NOMINAL when voltage is above degraded threshold"""
     power_health._sensor.get_bus_voltage.return_value = (
-        6.8  # Within tolerance (7.2 ± 0.6)
+        7.1  # Above degraded threshold (7.0)
     )
     power_health._sensor.get_current.return_value = 100.0  # Normal current
 
@@ -201,13 +200,11 @@ def test_get_logs_sensor_debug_info(power_health):
     )
 
 
-def test_voltage_tolerance_calculation(power_health):
-    """Test that voltage tolerance is calculated correctly based on config"""
-    # normal_battery_voltage = 7.2, critical_battery_voltage = 6.0
-    # Expected tolerance = abs(7.2 - 6.0) / 2 = 0.6
-
+def test_degraded_vs_critical_voltage_boundaries(power_health):
+    """Test boundary conditions between degraded and critical voltage thresholds"""
+    # Test voltage just above critical but below degraded
     power_health._sensor.get_bus_voltage.return_value = (
-        6.55  # Just outside tolerance (7.2 - 0.6 = 6.6)
+        6.5  # Above critical (6.0) but below degraded (7.0)
     )
     power_health._sensor.get_current.return_value = 100.0
 
@@ -225,3 +222,27 @@ def test_current_deviation_threshold(power_health):
     result = power_health.get()
 
     assert isinstance(result, DEGRADED)
+
+
+def test_degraded_battery_voltage_threshold(power_health):
+    """Test that get() returns DEGRADED when voltage is exactly at degraded threshold"""
+    power_health._sensor.get_bus_voltage.return_value = (
+        7.0  # Exactly at degraded threshold
+    )
+    power_health._sensor.get_current.return_value = 100.0  # Normal current
+
+    result = power_health.get()
+
+    assert isinstance(result, DEGRADED)
+
+
+def test_voltage_just_above_degraded_threshold(power_health):
+    """Test that get() returns NOMINAL when voltage is just above degraded threshold"""
+    power_health._sensor.get_bus_voltage.return_value = (
+        7.01  # Just above degraded threshold (7.0)
+    )
+    power_health._sensor.get_current.return_value = 100.0  # Normal current
+
+    result = power_health.get()
+
+    assert isinstance(result, NOMINAL)
