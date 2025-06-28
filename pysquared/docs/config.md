@@ -29,6 +29,7 @@ Encapsulates configuration values and provides validation and update mechanisms.
 - **normal_micro_temp** (int): Normal microcontroller temperature.
 - **normal_charge_current** (float): Normal charge current.
 - **normal_battery_voltage** (float): Normal battery voltage.
+- **degraded_battery_voltage** (float): Degraded battery voltage threshold.
 - **critical_battery_voltage** (float): Critical battery voltage threshold.
 - **reboot_time** (int): Time before automatic reboot.
 - **turbo_clock** (bool): Turbo clock enabled flag.
@@ -64,6 +65,7 @@ def __init__(self, config_path: str) -> None:
     self.normal_micro_temp: int = json_data["normal_micro_temp"]
     self.normal_charge_current: float = json_data["normal_charge_current"]
     self.normal_battery_voltage: float = json_data["normal_battery_voltage"]
+    self.degraded_battery_voltage: float = json_data["degraded_battery_voltage"]
     self.critical_battery_voltage: float = json_data["critical_battery_voltage"]
     self.reboot_time: int = json_data["reboot_time"]
     self.turbo_clock: bool = json_data["turbo_clock"]
@@ -78,6 +80,7 @@ def __init__(self, config_path: str) -> None:
         "repeat_code": {"type": bytes, "min": 1, "max": 4},
         "normal_charge_current": {"type": float, "min": 0.0, "max": 2000.0},
         "normal_battery_voltage": {"type": float, "min": 6.0, "max": 8.4},
+        "degraded_battery_voltage": {"type": float, "min": 5.4, "max": 8.0},
         "critical_battery_voltage": {"type": float, "min": 5.4, "max": 7.2},
         "sleep_duration": {"type": int, "min": 1, "max": 86400},
         "normal_temp": {"type": int, "min": 5, "max": 40},
