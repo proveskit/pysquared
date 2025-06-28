@@ -1,6 +1,5 @@
 {
   "battery_voltage": 5.2,
-  "critical_battery_voltage": 6.6,
   "cubesat_name": "Orpheus",
   "current_draw": 240.5,
   "debug": true,
@@ -50,6 +49,7 @@
   "normal_battery_temp": 1,
   "normal_battery_voltage": 6.9,
   "degraded_battery_voltage": 7.0,
+  "critical_battery_voltage": 6.6,
   "normal_charge_current": 0.5,
   "normal_micro_temp": 20,
   "normal_temp": 20,
