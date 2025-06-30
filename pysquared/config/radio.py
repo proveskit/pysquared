@@ -1,3 +1,20 @@
+"""
+Radio configuration module for PySquared.
+
+This module provides classes for handling and validating radio configuration
+parameters, including support for both FSK and LoRa modulation schemes.
+
+Classes:
+    RadioConfig: Handles top-level radio configuration and validation.
+    FSKConfig: Handles FSK-specific configuration and validation.
+    LORAConfig: Handles LoRa-specific configuration and validation.
+
+Usage:
+    Instantiate `RadioConfig` with a dictionary of radio parameters.
+    Use the `validate` method to check if a given key/value pair is valid
+    according to the radio schema.
+"""
+
 # type-hinting only
 try:
     from typing import Literal
@@ -6,7 +23,31 @@ except ImportError:
 
 
 class RadioConfig:
+    """
+    Handles radio configuration and validation for PySquared.
+
+    Attributes:
+        license (str): The radio license identifier.
+        modulation (Literal["LoRa", "FSK"]): The modulation type.
+        transmit_frequency (int): The transmission frequency in MHz.
+        start_time (int): The radio start time in seconds.
+        fsk (FSKConfig): FSK-specific configuration handler.
+        lora (LORAConfig): LoRa-specific configuration handler.
+        RADIO_SCHEMA (dict): Validation schema for radio configuration keys.
+
+    Methods:
+        validate(key, value):
+            Validates a radio configuration value against its schema.
+    """
+
     def __init__(self, radio_dict: dict) -> None:
+        """
+        Initializes the RadioConfig object with values from a dictionary.
+
+        Args:
+            radio_dict (dict): Dictionary containing radio configuration values.
+        """
+
         self.license: str = radio_dict["license"]
         self.modulation: Literal["LoRa", "FSK"] = radio_dict["modulation"]
         self.transmit_frequency: int = radio_dict["transmit_frequency"]
@@ -28,6 +69,19 @@ class RadioConfig:
         }
 
     def validate(self, key: str, value) -> None:
+        """
+        Validates a radio configuration value against its schema.
+
+        Args:
+            key (str): The configuration key to validate.
+            value: The value to validate.
+
+        Raises:
+            KeyError: If the key is not found in any schema.
+            TypeError: If the value is not of the expected type or not allowed.
+            ValueError: If the value is out of the allowed range.
+        """
+
         if key in self.RADIO_SCHEMA:
             schema = self.RADIO_SCHEMA[key]
         elif key in self.fsk.FSK_SCHEMA:
@@ -70,7 +124,24 @@ class RadioConfig:
 
 
 class FSKConfig:
+    """
+    Handles FSK-specific radio configuration and validation.
+
+    Attributes:
+        broadcast_address (int): Broadcast address for FSK.
+        node_address (int): Node address for FSK.
+        modulation_type (int): Modulation type for FSK.
+        FSK_SCHEMA (dict): Validation schema for FSK configuration keys.
+    """
+
     def __init__(self, fsk_dict: dict) -> None:
+        """
+        Initializes the FSKConfig object with values from a dictionary.
+
+        Args:
+            fsk_dict (dict): Dictionary containing FSK configuration values.
+        """
+
         self.broadcast_address: int = fsk_dict["broadcast_address"]
         self.node_address: int = fsk_dict["node_address"]
         self.modulation_type: int = fsk_dict["modulation_type"]
@@ -83,7 +154,26 @@ class FSKConfig:
 
 
 class LORAConfig:
+    """
+    Handles LoRa-specific radio configuration and validation.
+
+    Attributes:
+        ack_delay (float): Acknowledgement delay in seconds.
+        coding_rate (int): Coding rate for LoRa.
+        cyclic_redundancy_check (bool): CRC enabled flag.
+        spreading_factor (Literal[6, 7, 8, 9, 10, 11, 12]): LoRa spreading factor.
+        transmit_power (int): Transmit power in dBm.
+        LORA_SCHEMA (dict): Validation schema for LoRa configuration keys.
+    """
+
     def __init__(self, lora_dict: dict) -> None:
+        """
+        Initializes the LORAConfig object with values from a dictionary.
+
+        Args:
+            lora_dict (dict): Dictionary containing LoRa configuration values.
+        """
+
         self.ack_delay: float = lora_dict["ack_delay"]
         self.coding_rate: int = lora_dict["coding_rate"]
         self.cyclic_redundancy_check: bool = lora_dict["cyclic_redundancy_check"]
