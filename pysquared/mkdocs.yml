@@ -6,24 +6,18 @@ nav:
       - Decorators: decorators.md
       - Digitalio Pins: digitalio.md
   - Satellite Configuration: config.md
-  - Satellite Hardware Management: satellite.md
-  - Satellite Operations: functions.md
   - Satellite Functionalities:
-      - Satellite Faces: Big_Data.md
       - Logging Functionality: logger.md
       - Sleep Functionality: sleep_helper.md
       - Detumbling Functionality: detumble.md
       - Radio Functionality:
           - Radio Configuration: radio.md
-          - Modulation: modulation.md
       - Watchdog: watchdog.md
       - Non Volatile Memory (NVM):
           - Boot Counter: counter.md
           - Bit Flags: flag.md
   - Communications:
       - Message Handling: cdh.md
-      - Packet Manager: packet_manager.md
-      - Packet Sender: packet_sender.md
 
 
 theme:
@@ -68,7 +62,10 @@ theme:
 
 plugins:
   - search  # To have search functionality on the document
-
+  - mkdocstrings:
+        handlers:
+          python:
+            paths: [pysquared/pysquared] # Location of code directory
 
 extra:
   social:
