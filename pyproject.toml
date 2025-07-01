@@ -41,6 +41,8 @@ packages = [
     "pysquared.hardware",
     "pysquared.hardware.imu",
     "pysquared.hardware.imu.manager",
+    "pysquared.hardware.load_switch",
+    "pysquared.hardware.load_switch.manager",
     "pysquared.hardware.magnetometer",
     "pysquared.hardware.magnetometer.manager",
     "pysquared.hardware.radio",
