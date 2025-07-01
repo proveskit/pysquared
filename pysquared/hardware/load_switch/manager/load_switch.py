@@ -35,8 +35,6 @@ radio_state = load_switch_manager.get_switch_state("radio")
 all_states = load_switch_manager.get_all_states()
 """
 
-from typing import Dict
-
 from digitalio import DigitalInOut
 
 from ....logger import Logger
@@ -51,27 +49,25 @@ class LoadSwitchManager(LoadSwitchProto):
     def __init__(
         self,
         logger: Logger,
-        load_switches: Dict[str, DigitalInOut],
+        load_switches: dict,
         enable_logic: bool = True,
     ) -> None:
         """
         Initializes the load switch manager class.
 
         :param Logger logger: Logger instance for logging messages.
-        :param Dict[str, DigitalInOut] load_switches: Dictionary mapping switch names to their DigitalInOut pins.
+        :param dict load_switches: Dictionary mapping switch names to their DigitalInOut pins.
         :param bool enable_logic: Boolean defining whether the load switches are enabled when True or False. Defaults to `True`.
         """
         self._log: Logger = logger
         self._enable_logic: bool = enable_logic
-        self._load_switches: Dict[str, DigitalInOut] = load_switches
+        self._load_switches: dict = load_switches
 
         # Initialize all switches to the off state
         self._initialize_switches()
 
         # Public dictionary to track switch states
-        self.switch_states: Dict[str, bool] = {
-            name: False for name in load_switches.keys()
-        }
+        self.switch_states: dict = {name: False for name in load_switches.keys()}
 
     def turn_on(self, switch_name: str) -> bool:
         """Turn on a specific load switch.
@@ -173,11 +169,11 @@ class LoadSwitchManager(LoadSwitchProto):
 
         return self.switch_states[switch_name]
 
-    def get_all_states(self) -> Dict[str, bool]:
+    def get_all_states(self) -> dict:
         """Get the current state of all load switches.
 
         :return: A dictionary mapping switch names to their current states
-        :rtype: Dict[str, bool]
+        :rtype: dict
         """
         return self.switch_states.copy()
 

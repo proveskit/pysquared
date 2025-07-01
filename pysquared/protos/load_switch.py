@@ -2,8 +2,6 @@
 Protocol defining the interface for load switch management.
 """
 
-from typing import Dict
-
 
 class LoadSwitchProto:
     """Protocol defining the interface for load switch management."""
@@ -62,10 +60,10 @@ class LoadSwitchProto:
         """
         ...
 
-    def get_all_states(self) -> Dict[str, bool]:
+    def get_all_states(self) -> dict:
         """Get the current state of all load switches.
 
         :return: A dictionary mapping switch names to their current states
-        :rtype: Dict[str, bool]
+        :rtype: dict
         """
         ...
