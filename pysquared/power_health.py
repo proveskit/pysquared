@@ -51,18 +51,18 @@ class PowerHealth:
         try:
             bus_voltage = self._avg_reading(self._power_monitor.get_bus_voltage)
             if bus_voltage is None:
-                self.logger.error("Power monitor failed to provide bus voltage reading")
+                self.logger.warning(
+                    "Power monitor failed to provide bus voltage reading"
+                )
                 return UNKNOWN()
 
             current = self._avg_reading(self._power_monitor.get_current)
             if current is None:
-                self.logger.error("Power monitor failed to provide current reading")
+                self.logger.warning("Power monitor failed to provide current reading")
                 return UNKNOWN()
 
         except Exception as e:
-            self.logger.error(
-                "Exception occurred while reading from power monitor", error=e
-            )
+            self.logger.error("Exception occurred while reading from power monitor", e)
             return UNKNOWN()
 
         # Critical check first - if battery voltage is below critical threshold

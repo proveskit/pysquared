@@ -188,7 +188,7 @@ def test_get_with_none_voltage_reading(power_health):
     result = power_health.get()
 
     assert isinstance(result, UNKNOWN)
-    power_health.logger.error.assert_called_with(
+    power_health.logger.warning.assert_called_with(
         "Power monitor failed to provide bus voltage reading"
     )
 
@@ -204,7 +204,7 @@ def test_get_with_none_current_reading(power_health):
     result = power_health.get()
 
     assert isinstance(result, UNKNOWN)
-    power_health.logger.error.assert_called_with(
+    power_health.logger.warning.assert_called_with(
         "Power monitor failed to provide current reading"
     )
 
@@ -218,12 +218,10 @@ def test_get_with_exception_during_voltage_reading(power_health):
     result = power_health.get()
 
     assert isinstance(result, UNKNOWN)
-    # Check that error was called with the correct message and exception type/message
-    power_health.logger.error.assert_called_once()
-    call_args = power_health.logger.error.call_args
-    assert call_args[0][0] == "Exception occurred while reading from power monitor"
-    assert isinstance(call_args[1]["error"], RuntimeError)
-    assert str(call_args[1]["error"]) == "Sensor communication error"
+    # Check that error was called with the correct message and exception as positional parameter
+    power_health.logger.error.assert_called_once_with(
+        "Exception occurred while reading from power monitor", test_exception
+    )
 
 
 def test_get_with_exception_during_current_reading(power_health):
@@ -235,12 +233,10 @@ def test_get_with_exception_during_current_reading(power_health):
     result = power_health.get()
 
     assert isinstance(result, UNKNOWN)
-    # Check that error was called with the correct message and exception type/message
-    power_health.logger.error.assert_called_once()
-    call_args = power_health.logger.error.call_args
-    assert call_args[0][0] == "Exception occurred while reading from power monitor"
-    assert isinstance(call_args[1]["error"], RuntimeError)
-    assert str(call_args[1]["error"]) == "Current sensor failed"
+    # Check that error was called with the correct message and exception as positional parameter
+    power_health.logger.error.assert_called_once_with(
+        "Exception occurred while reading from power monitor", test_exception
+    )
 
 
 def test_get_with_sensor_method_exception(power_health):
@@ -252,12 +248,10 @@ def test_get_with_sensor_method_exception(power_health):
     result = power_health.get()
 
     assert isinstance(result, UNKNOWN)
-    # Check that error was called with the correct message and exception type/message
-    power_health.logger.error.assert_called_once()
-    call_args = power_health.logger.error.call_args
-    assert call_args[0][0] == "Exception occurred while reading from power monitor"
-    assert isinstance(call_args[1]["error"], OSError)
-    assert str(call_args[1]["error"]) == "I2C communication failed"
+    # Check that error was called with the correct message and exception as positional parameter
+    power_health.logger.error.assert_called_once_with(
+        "Exception occurred while reading from power monitor", test_exception
+    )
 
 
 def test_get_logs_sensor_debug_info(power_health):
