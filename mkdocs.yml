@@ -65,6 +65,7 @@ plugins:
   - search  # To have search functionality on the document
   - autorefs
   - section-index
+  # - llmstxt # Investigate using https://github.com/pawamoy/mkdocs-llmstxt to help llms understand the repository
   - mkdocstrings:
         handlers:
           python:
