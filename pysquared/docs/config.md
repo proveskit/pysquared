@@ -1,3 +1,0 @@
-## Configuration Management
-
-:::config.config

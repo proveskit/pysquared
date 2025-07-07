@@ -1,3 +1,0 @@
-## Hardware Decorators
-
-:::hardware.decorators

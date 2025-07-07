@@ -115,6 +115,6 @@ endef
 
 .PHONY: docs
 
-docs:
+docs: uv
 	@$(UV) run mkdocs build
 	@$(UV) run mkdocs serve

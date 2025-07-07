@@ -1,3 +1,0 @@
-## Hardware Watchdog
-
-:::watchdog

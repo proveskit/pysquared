@@ -32,6 +32,8 @@ dev = [
     "pyright[nodejs]==1.1.402",
     "pytest==8.4.1",
     "mkdocs-material==9.6.14",
+    "mkdocstrings[python]==0.29.1",
+    "mkdocs-section-index==0.3.10"
 ]
 
 [tool.setuptools]

@@ -1,3 +1,0 @@
-## Radio Configuration
-
-:::config.radio

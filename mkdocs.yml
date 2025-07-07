@@ -1,23 +1,24 @@
-site_name: ProvesKit CirucuitPySquared
+site_name: ProvesKit PySquared
+site_description: "CircuitPython based Flight Software Library for the PROVES Kit."
+site_url: https://docs.proveskit.space/
+repo_url: https://github.com/proveskit/pysquared
+repo_name: proveskit/pysquared
+site_dir: site
+watch: [mkdocs.yml, README.md, docs/]
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
 nav:
   - Home: index.md
-  - Hardware Initialization:
-      - Bus: busio.md
-      - Decorators: decorators.md
-      - Digitalio Pins: digitalio.md
-  - Satellite Configuration: config.md
-  - Satellite Functionalities:
-      - Logging Functionality: logger.md
-      - Sleep Functionality: sleep_helper.md
-      - Detumbling Functionality: detumble.md
-      - Radio Functionality:
-          - Radio Configuration: radio.md
-      - Watchdog: watchdog.md
-      - Non Volatile Memory (NVM):
-          - Boot Counter: counter.md
-          - Bit Flags: flag.md
-  - Communications:
-      - Message Handling: cdh.md
+  - Getting Started:
+      - Introduction: dev-guide.md
+      - Linux: dev-guide-linux.md
+      - Mac: dev-guide-macos.md
+      - Windows: dev-guide-windows.md
+  - API Reference: api.md
 
 
 theme:
@@ -62,16 +63,35 @@ theme:
 
 plugins:
   - search  # To have search functionality on the document
+  - autorefs
+  - section-index
   - mkdocstrings:
         handlers:
           python:
-            paths: [pysquared/pysquared] # Location of code directory
+            options:
+              backlinks: tree
+              docstring_options:
+                ignore_init_summary: true
+              docstring_section_style: list
+              filters: ["!^_"]
+              heading_level: 1
+              inherited_members: true
+              merge_init_into_class: true
+              parameter_headings: true
+              separate_signature: true
+              show_root_heading: true
+              show_root_full_path: false
+              show_signature_annotations: true
+              show_source: false
+              show_symbol_type_heading: true
+              show_symbol_type_toc: true
+              signature_crossrefs: true
+              summary: true
 
 extra:
   social:
     - icon: material/github
       link: https://github.com/proveskit
-
 
 markdown_extensions:
   - pymdownx.highlight:

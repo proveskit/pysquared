@@ -1,3 +1,0 @@
-## Satellite Detumbling
-
-:::detumble
