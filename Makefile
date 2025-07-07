@@ -116,5 +116,5 @@ endef
 .PHONY: docs
 
 docs:
-	cd pysquared && ../tools/uv-0.7.13/uv run mkdocs build
-	cd pysquared && ../tools/uv-0.7.13/uv run mkdocs serve
+	@$(UV) run mkdocs build
+	@$(UV) run mkdocs serve

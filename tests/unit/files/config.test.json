@@ -4,6 +4,7 @@
   "cubesat_name": "Orpheus",
   "current_draw": 240.5,
   "debug": true,
+  "degraded_battery_voltage": 7.0,
   "detumble_enable_x": true,
   "detumble_enable_y": true,
   "detumble_enable_z": true,

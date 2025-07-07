@@ -121,6 +121,9 @@ def test_floats(cleanup) -> None:
         config.normal_battery_voltage == json_data["normal_battery_voltage"]
     ), "No match for: normal_battery_voltage"
     assert (
+        config.degraded_battery_voltage == json_data["degraded_battery_voltage"]
+    ), "No match for: degraded_battery_voltage"
+    assert (
         config.critical_battery_voltage == json_data["critical_battery_voltage"]
     ), "No match for: critical_battery_voltage"
 
