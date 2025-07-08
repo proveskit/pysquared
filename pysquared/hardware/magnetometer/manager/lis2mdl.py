@@ -1,8 +1,6 @@
-"""This module provides a manager for the LIS2MDL magnetometer.
-
-The LIS2MDLManager class provides a high-level interface for interacting with the
-LIS2MDL magnetometer. It handles the initialization of the sensor and provides a
-method for reading the magnetic field vector.
+"""This module defines the `LIS2MDLManager` class, which provides a high-level interface
+for interacting with the LIS2MDL magnetometer. It handles the initialization of the sensor
+and provides a method for reading the magnetic field vector.
 
 Usage:
     logger = Logger()

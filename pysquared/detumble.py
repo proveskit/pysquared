@@ -1,8 +1,4 @@
-"""
-detumble Module
-===============
-
-This module provides functions for satellite detumbling using magnetorquers.
+"""This module provides functions for satellite detumbling using magnetorquers.
 Includes vector math utilities and the main dipole calculation for attitude control.
 """
 

@@ -1,8 +1,6 @@
-"""This module provides a manager for the INA219 power monitor.
-
-The INA219Manager class provides a high-level interface for interacting with the
-INA219 power monitor. It handles the initialization of the sensor and provides
-methods for reading bus voltage, shunt voltage, and current.
+"""This module defines the `INA219Manager` class, which provides a high-level interface
+for interacting with the INA219 power monitor. It handles the initialization of the sensor
+and provides methods for reading bus voltage, shunt voltage, and current.
 
 Usage:
     logger = Logger()

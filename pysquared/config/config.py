@@ -1,7 +1,4 @@
-"""
-Config module for PySquared.
-
-This module provides the `Config` class, which encapsulates the configuration
+"""This module provides the Config, which encapsulates the configuration
 logic for the PySquared project. It loads, validates, and updates configuration
 values from a JSON file, and distributes these values across the application.
 

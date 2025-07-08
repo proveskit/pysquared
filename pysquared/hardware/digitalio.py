@@ -1,10 +1,5 @@
-"""
-digitalio Module
-================
-
-This module provides functions for initializing DigitalInOut pins on the PySquared
+"""This module provides functions for initializing DigitalInOut pins on the PySquared
 satellite hardware. Includes retry logic for robust hardware initialization and error handling.
-
 """
 
 from digitalio import DigitalInOut, Direction

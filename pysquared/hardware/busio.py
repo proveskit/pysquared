@@ -1,11 +1,6 @@
-"""
-busio Module
-============
-
-This module provides functions for initializing and configuring SPI and I2C buses
+"""This module provides functions for initializing and configuring SPI and I2C buses
 on the PySquared satellite hardware. Includes retry logic for robust hardware
 initialization and error handling.
-
 """
 
 import time

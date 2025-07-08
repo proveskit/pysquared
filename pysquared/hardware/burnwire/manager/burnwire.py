@@ -1,7 +1,5 @@
-"""This module provides a manager for controlling burnwire mechanisms.
-
-The BurnwireManager class provides a high-level interface for controlling
-burnwire circuits, which are commonly used for deployment mechanisms in
+"""This module defines the `BurnwireManager` class, which provides a high-level interface
+for controlling burnwire circuits, which are commonly used for deployment mechanisms in
 satellites. It handles the timing and sequencing of the burnwire activation
 and provides error handling and logging.
 

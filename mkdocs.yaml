@@ -4,7 +4,7 @@ site_url: https://docs.proveskit.space/
 repo_url: https://github.com/proveskit/pysquared
 repo_name: proveskit/pysquared
 site_dir: site
-watch: [mkdocs.yaml, README.md, docs/]
+watch: [mkdocs.yaml, README.md, docs/, pysquared/]
 
 validation:
   omitted_files: warn

@@ -100,8 +100,7 @@ reportMissingModuleSource = false
 
 [tool.interrogate]
 ignore-init-method = true
-ignore-init-module = true
 omit-covered-files = true
-fail-under = 95
+fail-under = 100
 verbose = 2
 color = true

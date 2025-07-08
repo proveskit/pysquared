@@ -1,8 +1,4 @@
-"""
-Radio configuration module for PySquared.
-
-This module provides classes for handling and validating radio configuration
-parameters, including support for both FSK and LoRa modulation schemes.
+"""This module provides classes for handling and validating radio configuration parameters, including support for both FSK and LoRa modulation schemes.
 
 Classes:
     RadioConfig: Handles top-level radio configuration and validation.

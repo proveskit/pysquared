@@ -1,10 +1,5 @@
-"""
-counter Module
-==============
-
-This module provides the Counter class for managing 8-bit counters stored in
+"""This module provides the Counter class for managing 8-bit counters stored in
 non-volatile memory (NVM) on CircuitPython devices.
-
 """
 
 import microcontroller

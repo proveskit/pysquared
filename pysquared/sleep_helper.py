@@ -1,8 +1,4 @@
-"""
-sleep_helper Module
-==================
-
-This module provides the SleepHelper class for managing safe sleep and hibernation
+"""This module provides the SleepHelper class for managing safe sleep and hibernation
 modes for the PySquared satellite. It ensures the satellite sleeps for specified
 durations while maintaining system safety and watchdog activity.
 

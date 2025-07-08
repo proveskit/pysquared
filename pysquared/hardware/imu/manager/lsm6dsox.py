@@ -1,7 +1,5 @@
-"""This module provides a manager for the LSM6DSOX IMU.
-
-The LSM6DSOXManager class provides a high-level interface for interacting with the
-LSM6DSOX inertial measurement unit. It handles the initialization of the sensor and
+"""This module defines the `LSM6DSOXManager` class, which provides a high-level interface
+for interacting with the LSM6DSOX inertial measurement unit. It handles the initialization of the sensor and
 provides methods for reading gyroscope, acceleration, and temperature data.
 
 Usage:
