@@ -3,11 +3,6 @@
 This module provides a mock implementation of the CircuitPython bytearray for
 testing purposes. It allows for simulating the behavior of the bytearray without the
 need for actual hardware.
-
-Usage:
-    mem = ByteArray(10)
-    mem[0] = 1
-    value = mem[0]
 """
 
 

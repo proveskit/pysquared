@@ -3,11 +3,6 @@
 This module provides a mock implementation of the Adafruit LIS2MDL magnetometer for
 testing purposes. It allows for simulating the behavior of the LIS2MDL without the
 need for actual hardware.
-
-Usage:
-    i2c = I2C()
-    lis2mdl = LIS2MDL(i2c)
-    magnetic_field = lis2mdl.magnetic
 """
 
 

@@ -2,11 +2,13 @@
 for interacting with the LIS2MDL magnetometer. It handles the initialization of the sensor
 and provides a method for reading the magnetic field vector.
 
-Usage:
-    logger = Logger()
-    i2c = busio.I2C(board.SCL, board.SDA)
-    magnetometer = LIS2MDLManager(logger, i2c)
-    mag_data = magnetometer.get_vector()
+**Usage:**
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+magnetometer = LIS2MDLManager(logger, i2c)
+mag_data = magnetometer.get_vector()
+```
 """
 
 from adafruit_lis2mdl import LIS2MDL

@@ -1,11 +1,5 @@
-"""This module defines the RTCProto protocol for Real-Time Clocks.
-
-This protocol specifies the interface that any RTC implementation must adhere to,
-ensuring consistent behavior across different RTC hardware.
-
-Usage:
-    # This is a protocol class and should not be instantiated directly.
-    # Implementations of this protocol should be used instead.
+"""This protocol specifies the interface that any Real-Time Clock (RTC) implementation
+must adhere to, ensuring consistent behavior across different RTC hardware.
 """
 
 

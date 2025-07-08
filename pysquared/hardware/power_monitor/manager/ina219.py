@@ -2,13 +2,15 @@
 for interacting with the INA219 power monitor. It handles the initialization of the sensor
 and provides methods for reading bus voltage, shunt voltage, and current.
 
-Usage:
-    logger = Logger()
-    i2c = busio.I2C(board.SCL, board.SDA)
-    power_monitor = INA219Manager(logger, i2c, 0x40)
-    bus_voltage = power_monitor.get_bus_voltage()
-    shunt_voltage = power_monitor.get_shunt_voltage()
-    current = power_monitor.get_current()
+**Usage:**
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+power_monitor = INA219Manager(logger, i2c, 0x40)
+bus_voltage = power_monitor.get_bus_voltage()
+shunt_voltage = power_monitor.get_shunt_voltage()
+current = power_monitor.get_current()
+```
 """
 
 from adafruit_ina219 import INA219

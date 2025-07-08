@@ -3,12 +3,14 @@ for controlling burnwire circuits, which are commonly used for deployment mechan
 satellites. It handles the timing and sequencing of the burnwire activation
 and provides error handling and logging.
 
-Usage:
-    logger = Logger()
-    enable_pin = DigitalInOut(board.D1)
-    fire_pin = DigitalInOut(board.D2)
-    burnwire = BurnwireManager(logger, enable_pin, fire_pin)
-    burnwire.burn()
+**Usage:**
+```python
+logger = Logger()
+enable_pin = DigitalInOut(board.D1)
+fire_pin = DigitalInOut(board.D2)
+burnwire = BurnwireManager(logger, enable_pin, fire_pin)
+burnwire.burn()
+```
 """
 
 import time

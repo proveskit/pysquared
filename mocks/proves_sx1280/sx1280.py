@@ -3,14 +3,6 @@
 This module provides a mock implementation of the PROVES SX1280 radio module for
 testing purposes. It allows for simulating the behavior of the SX1280 without the
 need for actual hardware.
-
-Usage:
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-    cs = digitalio.DigitalInOut(board.D5)
-    reset = digitalio.DigitalInOut(board.D6)
-    busy = digitalio.DigitalInOut(board.D7)
-    sx1280 = SX1280(spi, cs, reset, busy, 2400.0)
-    sx1280.send(b"Hello world!")
 """
 
 from busio import SPI

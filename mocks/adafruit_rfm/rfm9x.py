@@ -3,13 +3,6 @@
 This module provides a mock implementation of the Adafruit RFM9x LoRa radio module
 for testing purposes. It allows for simulating the behavior of the RFM9x without the
 need for actual hardware.
-
-Usage:
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-    cs = digitalio.DigitalInOut(board.D5)
-    reset = digitalio.DigitalInOut(board.D6)
-    rfm9x = RFM9x(spi, cs, reset, 433.0)
-    rfm9x.send(b"Hello world!")
 """
 
 from .rfm_common import RFMSPI

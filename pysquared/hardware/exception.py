@@ -3,8 +3,10 @@
 This exception is raised when a hardware component fails to initialize after a
 certain number of retries.
 
-Usage:
-    raise HardwareInitializationError("Failed to initialize the IMU.")
+**Usage:**
+```python
+raise HardwareInitializationError("Failed to initialize the IMU.")
+```
 """
 
 

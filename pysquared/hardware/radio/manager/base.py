@@ -3,10 +3,6 @@
 This module defines the `BaseRadioManager` class, which serves as an abstract base
 class for all radio managers in the system. It provides common functionality and
 ensures that all radio managers adhere to a consistent interface.
-
-Usage:
-    # This is a base class and should not be instantiated directly.
-    # Subclasses like RFM9xManager or SX126xManager should be used instead.
 """
 
 from ....config.radio import RadioConfig

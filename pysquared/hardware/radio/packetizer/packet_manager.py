@@ -4,12 +4,14 @@ This module handles the fragmentation and reassembly of data into packets for
 transmission over a radio. It also provides methods for sending and receiving
 acknowledgments.
 
-Usage:
-    logger = Logger()
-    radio = RFM9xManager(logger, radio_config, spi, cs, reset)
-    packet_manager = PacketManager(logger, radio, "my_license_key")
-    packet_manager.send(b"Hello world!")
-    received_data = packet_manager.listen()
+**Usage:**
+```python
+logger = Logger()
+radio = RFM9xManager(logger, radio_config, spi, cs, reset)
+packet_manager = PacketManager(logger, radio, "my_license_key")
+packet_manager.send(b"Hello world!")
+received_data = packet_manager.listen()
+```
 """
 
 import math

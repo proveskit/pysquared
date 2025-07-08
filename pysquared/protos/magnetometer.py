@@ -1,11 +1,5 @@
-"""This module defines the MagnetometerProto protocol for magnetometers.
-
-This protocol specifies the interface that any magnetometer implementation must
+"""This protocol specifies the interface that any magnetometer implementation must
 adhere to, ensuring consistent behavior across different magnetometer hardware.
-
-Usage:
-    # This is a protocol class and should not be instantiated directly.
-    # Implementations of this protocol should be used instead.
 """
 
 

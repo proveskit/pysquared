@@ -3,16 +3,6 @@
 This module provides a mock implementation of the PROVES SX1262 radio module for
 testing purposes. It allows for simulating the behavior of the SX1262 without the
 need for actual hardware.
-
-Usage:
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-    cs = digitalio.DigitalInOut(board.D5)
-    irq = digitalio.DigitalInOut(board.D6)
-    rst = digitalio.DigitalInOut(board.D7)
-    gpio = digitalio.DigitalInOut(board.D8)
-    sx1262 = SX1262(spi, cs, irq, rst, gpio)
-    sx1262.begin()
-    sx1262.send(b"Hello world!")
 """
 
 from busio import SPI

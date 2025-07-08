@@ -3,9 +3,6 @@
 This module provides a mock implementation of the CircuitPython busio module for
 testing purposes. It allows for simulating the behavior of the busio module without
 the need for actual hardware.
-
-Usage:
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 """
 
 from __future__ import annotations

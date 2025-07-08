@@ -4,12 +4,14 @@ The Beacon class collects data from various sensors and system components, forma
 as a JSON string, and sends it using a provided packet manager. This is typically
 used for sending telemetry or health information from a satellite or remote device.
 
-Usage:
-    logger = Logger()
-    packet_manager = PacketManager(logger, radio)
-    boot_time = time.time()
-    beacon = Beacon(logger, "MySat", packet_manager, boot_time, imu, power_monitor)
-    beacon.send()
+**Usage:**
+```python
+logger = Logger()
+packet_manager = PacketManager(logger, radio)
+boot_time = time.time()
+beacon = Beacon(logger, "MySat", packet_manager, boot_time, imu, power_monitor)
+beacon.send()
+```
 """
 
 import json

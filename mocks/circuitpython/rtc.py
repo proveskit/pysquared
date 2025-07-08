@@ -3,10 +3,6 @@
 This module provides a mock implementation of the CircuitPython RTC module for
 testing purposes. It allows for simulating the behavior of the RTC module without
 the need for actual hardware.
-
-Usage:
-    rtc = RTC()
-    rtc.datetime = time.struct_time((2024, 1, 1, 12, 30, 0, 0, -1, -1))
 """
 
 from time import struct_time

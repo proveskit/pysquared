@@ -1,11 +1,5 @@
-"""This module defines the PowerMonitorProto protocol for power monitors.
-
-This protocol specifies the interface that any power monitor implementation must
+"""This protocol specifies the interface that any power monitor implementation must
 adhere to, ensuring consistent behavior across different power monitor hardware.
-
-Usage:
-    # This is a protocol class and should not be instantiated directly.
-    # Implementations of this protocol should be used instead.
 """
 
 

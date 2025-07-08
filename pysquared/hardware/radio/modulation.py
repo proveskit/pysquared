@@ -3,9 +3,6 @@
 This module provides a set of classes that represent the different radio
 modulation types that can be used by the radio hardware. These classes are used to
 configure the radio and to identify the current modulation type.
-
-Usage:
-    modulation = FSK()
 """
 
 

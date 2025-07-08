@@ -1,11 +1,5 @@
-"""This module defines the BurnwireProto protocol for burnwire interfaces.
-
-This protocol specifies the interface that any burnwire implementation must adhere
+"""This protocol specifies the interface that any burnwire implementation must adhere
 to, ensuring consistent behavior across different burnwire hardware.
-
-Usage:
-    # This is a protocol class and should not be instantiated directly.
-    # Implementations of this protocol should be used instead.
 """
 
 

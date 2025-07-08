@@ -3,12 +3,6 @@
 This module provides a mock implementation of the RV3028 real-time clock for testing
 purposes. It allows for simulating the behavior of the RV3028 without the need for
 actual hardware.
-
-Usage:
-    i2c = I2C()
-    rv3028 = RV3028(i2c)
-    rv3028.set_time(12, 30, 0)
-    rv3028.set_date(2024, 1, 1, 1)
 """
 
 from busio import I2C

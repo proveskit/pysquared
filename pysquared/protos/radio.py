@@ -1,11 +1,5 @@
-"""This module defines the RadioProto protocol for radio interfaces.
-
-This protocol specifies the interface that any radio implementation must adhere
+"""This protocol specifies the interface that any radio implementation must adhere
 to, ensuring consistent behavior across different radio hardware.
-
-Usage:
-    # This is a protocol class and should not be instantiated directly.
-    # Implementations of this protocol should be used instead.
 """
 
 from ..hardware.radio.modulation import RadioModulation

@@ -4,9 +4,11 @@ This module defines the `MicrocontrollerManager` class, which provides an interf
 for interacting with the microcontroller's built-in RTC. It allows for setting
 the current time.
 
-Usage:
-    rtc_manager = MicrocontrollerManager()
-    rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 AM, Monday
+**Usage:**
+```python
+rtc_manager = MicrocontrollerManager()
+rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 AM, Monday
+```
 """
 
 import time

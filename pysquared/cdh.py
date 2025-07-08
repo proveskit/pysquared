@@ -5,12 +5,14 @@ includes command parsing, validation, execution, and handling of radio
 communications. The CommandDataHandler class is the main entry point for this
 functionality.
 
-Usage:
-    logger = Logger()
-    config = Config("config.json")
-    packet_manager = PacketManager(logger, radio)
-    cdh = CommandDataHandler(logger, config, packet_manager)
-    cdh.listen_for_commands(timeout=60)
+**Usage:**
+```python
+logger = Logger()
+config = Config("config.json")
+packet_manager = PacketManager(logger, radio)
+cdh = CommandDataHandler(logger, config, packet_manager)
+cdh.listen_for_commands(timeout=60)
+```
 """
 
 import json

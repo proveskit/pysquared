@@ -4,17 +4,19 @@ This module defines the `SX1280Manager` class, which implements the `RadioProto`
 interface for SX1280 radios. It handles the initialization and configuration of
 the radio, as well as sending and receiving data.
 
-Usage:
-    logger = Logger()
-    radio_config = RadioConfig()
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-    cs = digitalio.DigitalInOut(board.D5)
-    reset = digitalio.DigitalInOut(board.D6)
-    busy = digitalio.DigitalInOut(board.D7)
-    txen = digitalio.DigitalInOut(board.D8)
-    rxen = digitalio.DigitalInOut(board.D9)
-    sx1280_manager = SX1280Manager(logger, radio_config, spi, cs, reset, busy, 2400.0, txen, rxen)
-    sx1280_manager.send(b"Hello world!")
+**Usage:**
+```python
+logger = Logger()
+radio_config = RadioConfig()
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+cs = digitalio.DigitalInOut(board.D5)
+reset = digitalio.DigitalInOut(board.D6)
+busy = digitalio.DigitalInOut(board.D7)
+txen = digitalio.DigitalInOut(board.D8)
+rxen = digitalio.DigitalInOut(board.D9)
+sx1280_manager = SX1280Manager(logger, radio_config, spi, cs, reset, busy, 2400.0, txen, rxen)
+sx1280_manager.send(b"Hello world!")
+```
 """
 
 from busio import SPI

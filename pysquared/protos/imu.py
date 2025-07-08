@@ -1,11 +1,5 @@
-"""This module defines the IMUProto protocol for Inertial Measurement Units.
-
-This protocol specifies the interface that any IMU implementation must adhere to,
+"""This protocol specifies the interface that any IMU implementation must adhere to,
 ensuring consistent behavior across different IMU hardware.
-
-Usage:
-    # This is a protocol class and should not be instantiated directly.
-    # Implementations of this protocol should be used instead.
 """
 
 

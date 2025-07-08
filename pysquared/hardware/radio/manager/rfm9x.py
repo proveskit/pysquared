@@ -4,14 +4,16 @@ This module defines the `RFM9xManager` class, which implements the `RadioProto`
 interface for RFM9x radios. It handles the initialization and configuration of
 the radio, as well as sending and receiving data.
 
-Usage:
-    logger = Logger()
-    radio_config = RadioConfig()
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-    cs = digitalio.DigitalInOut(board.D5)
-    reset = digitalio.DigitalInOut(board.D6)
-    rfm9x_manager = RFM9xManager(logger, radio_config, spi, cs, reset)
-    rfm9x_manager.send(b"Hello world!")
+**Usage:**
+```python
+logger = Logger()
+radio_config = RadioConfig()
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+cs = digitalio.DigitalInOut(board.D5)
+reset = digitalio.DigitalInOut(board.D6)
+rfm9x_manager = RFM9xManager(logger, radio_config, spi, cs, reset)
+rfm9x_manager.send(b"Hello world!")
+```
 """
 
 from busio import SPI

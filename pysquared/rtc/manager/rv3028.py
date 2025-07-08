@@ -4,11 +4,13 @@ This module defines the `RV3028Manager` class, which provides a high-level inter
 for interacting with the RV3028 RTC. It handles the initialization of the sensor
 and provides methods for setting the current time.
 
-Usage:
-    logger = Logger()
-    i2c = busio.I2C(board.SCL, board.SDA)
-    rtc_manager = RV3028Manager(logger, i2c)
-    rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 AM, Monday
+**Usage:**
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+rtc_manager = RV3028Manager(logger, i2c)
+rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 AM, Monday
+```
 """
 
 from busio import I2C

@@ -2,13 +2,15 @@
 for interacting with the LSM6DSOX inertial measurement unit. It handles the initialization of the sensor and
 provides methods for reading gyroscope, acceleration, and temperature data.
 
-Usage:
-    logger = Logger()
-    i2c = busio.I2C(board.SCL, board.SDA)
-    imu = LSM6DSOXManager(logger, i2c, 0x6A)
-    gyro_data = imu.get_gyro_data()
-    accel_data = imu.get_acceleration()
-    temp_data = imu.get_temperature()
+**Usage:**
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+imu = LSM6DSOXManager(logger, i2c, 0x6A)
+gyro_data = imu.get_gyro_data()
+accel_data = imu.get_acceleration()
+temp_data = imu.get_temperature()
+```
 """
 
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX

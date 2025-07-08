@@ -4,16 +4,18 @@ This module defines the `SX126xManager` class, which implements the `RadioProto`
 interface for SX126x radios. It handles the initialization and configuration of
 the radio, as well as sending and receiving data.
 
-Usage:
-    logger = Logger()
-    radio_config = RadioConfig()
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-    cs = digitalio.DigitalInOut(board.D5)
-    irq = digitalio.DigitalInOut(board.D6)
-    reset = digitalio.DigitalInOut(board.D7)
-    gpio = digitalio.DigitalInOut(board.D8)
-    sx126x_manager = SX126xManager(logger, radio_config, spi, cs, irq, reset, gpio)
-    sx126x_manager.send(b"Hello world!")
+**Usage:**
+```python
+logger = Logger()
+radio_config = RadioConfig()
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+cs = digitalio.DigitalInOut(board.D5)
+irq = digitalio.DigitalInOut(board.D6)
+reset = digitalio.DigitalInOut(board.D7)
+gpio = digitalio.DigitalInOut(board.D8)
+sx126x_manager = SX126xManager(logger, radio_config, spi, cs, irq, reset, gpio)
+sx126x_manager.send(b"Hello world!")
+```
 """
 
 import time

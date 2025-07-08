@@ -3,9 +3,6 @@
 This module provides a mock implementation of the CircuitPython digitalio module for
 testing purposes. It allows for simulating the behavior of the digitalio module without
 the need for actual hardware.
-
-Usage:
-    pin = digitalio.DigitalInOut(board.D5)
 """
 
 from __future__ import annotations

@@ -3,12 +3,6 @@
 This module provides a mock implementation of the Adafruit INA219 power monitor for
 testing purposes. It allows for simulating the behavior of the INA219 without the
 need for actual hardware.
-
-Usage:
-    i2c = I2C()
-    ina219 = INA219(i2c, 0x40)
-    voltage = ina219.bus_voltage
-    current = ina219.current
 """
 
 

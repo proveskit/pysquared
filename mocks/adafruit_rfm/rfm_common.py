@@ -3,13 +3,6 @@
 This module provides a mock implementation of the Adafruit RFM SPI interface for
 testing purposes. It allows for simulating the behavior of the RFM SPI interface
 without the need for actual hardware.
-
-Usage:
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-    cs = digitalio.DigitalInOut(board.D5)
-    reset = digitalio.DigitalInOut(board.D6)
-    rfm = RFMSPI(spi, cs, reset, 433.0)
-    rfm.send(b"Hello world!")
 """
 
 from typing import Optional

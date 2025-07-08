@@ -4,12 +4,14 @@ The PowerHealth class checks the battery voltage and current draw to determine t
 overall health of the power system. It returns one of four states: NOMINAL,
 DEGRADED, CRITICAL, or UNKNOWN.
 
-Usage:
-    logger = Logger()
-    config = Config("config.json")
-    power_monitor = INA219Manager(logger, i2c)
-    power_health = PowerHealth(logger, config, power_monitor)
-    health_status = power_health.get()
+**Usage:**
+```python
+logger = Logger()
+config = Config("config.json")
+power_monitor = INA219Manager(logger, i2c)
+power_health = PowerHealth(logger, config, power_monitor)
+health_status = power_health.get()
+```
 """
 
 from pysquared.config.config import Config

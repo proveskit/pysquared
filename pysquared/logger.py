@@ -3,11 +3,13 @@
 The Logger class supports different severity levels, colorized output, and error
 counting. Logs are formatted as JSON and can be output to the console.
 
-Usage:
-    error_counter = Counter(nvm)
-    logger = Logger(error_counter, log_level=LogLevel.INFO, colorized=True)
-    logger.info("This is an informational message.")
-    logger.error("This is an error message.", err=Exception("Something went wrong."))
+**Usage:**
+```python
+error_counter = Counter(nvm)
+logger = Logger(error_counter, log_level=LogLevel.INFO, colorized=True)
+logger.info("This is an informational message.")
+logger.error("This is an error message.", err=Exception("Something went wrong."))
+```
 """
 
 import json

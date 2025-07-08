@@ -3,13 +3,6 @@
 This module provides a mock implementation of the Adafruit LSM6DSOX IMU for
 testing purposes. It allows for simulating the behavior of the LSM6DSOX without the
 need for actual hardware.
-
-Usage:
-    i2c = I2C()
-    lsm6dsox = LSM6DSOX(i2c, 0x6A)
-    acceleration = lsm6dsox.acceleration
-    gyro = lsm6dsox.gyro
-    temperature = lsm6dsox.temperature
 """
 
 from busio import I2C
