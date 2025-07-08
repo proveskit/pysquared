@@ -1,3 +1,11 @@
+"""Unit tests for the RFM9xManager class.
+
+This module contains unit tests for the `RFM9xManager` class, which manages
+RFM9x radios. The tests cover initialization, sending and receiving data,
+modifying radio configuration, and retrieving radio parameters like temperature
+and RSSI.
+"""
+
 import math
 from typing import Generator
 from unittest.mock import MagicMock, patch
@@ -17,26 +25,31 @@ from pysquared.logger import Logger
 
 @pytest.fixture
 def mock_spi() -> MagicMock:
+    """Mocks the SPI bus."""
     return MagicMock(spec=SPI)
 
 
 @pytest.fixture
 def mock_chip_select() -> MagicMock:
+    """Mocks the chip select DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_reset() -> MagicMock:
+    """Mocks the reset DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_logger() -> MagicMock:
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
 def mock_radio_config() -> RadioConfig:
+    """Provides a mock RadioConfig instance with default values."""
     return RadioConfig(
         {
             "license": "testlicense",
@@ -59,6 +72,16 @@ def mock_radio_config() -> RadioConfig:
 def mock_rfm9x(
     mock_spi: MagicMock, mock_chip_select: MagicMock, mock_reset: MagicMock
 ) -> Generator[MagicMock, None, None]:
+    """Mocks the RFM9x class.
+
+    Args:
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+
+    Yields:
+        A MagicMock instance of RFM9x.
+    """
     with patch("pysquared.hardware.radio.manager.rfm9x.RFM9x") as mock_class:
         mock_class.return_value = RFM9x(mock_spi, mock_chip_select, mock_reset, 0)
         yield mock_class
@@ -68,6 +91,16 @@ def mock_rfm9x(
 def mock_rfm9xfsk(
     mock_spi: MagicMock, mock_chip_select: MagicMock, mock_reset: MagicMock
 ) -> Generator[MagicMock, None, None]:
+    """Mocks the RFM9xFSK class.
+
+    Args:
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+
+    Yields:
+        A MagicMock instance of RFM9xFSK.
+    """
     with patch("pysquared.hardware.radio.manager.rfm9x.RFM9xFSK") as mock_class:
         mock_class.return_value = RFM9xFSK(mock_spi, mock_chip_select, mock_reset, 0)
         yield mock_class
@@ -82,7 +115,17 @@ def test_init_fsk_success(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation == "FSK"."""
+    """Tests successful initialization when radio_config.modulation is FSK.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_rfm9xfsk: Mocked RFM9xFSK class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_fsk_instance = MagicMock(spec=RFM9xFSK)
     mock_rfm9xfsk.return_value = mock_fsk_instance
 
@@ -122,7 +165,17 @@ def test_init_lora_success(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation == "LoRa"."""
+    """Tests successful initialization when radio_config.modulation is LoRa.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_rfm9xfsk: Mocked RFM9xFSK class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_lora_instance = MagicMock(spec=RFM9x)
     mock_rfm9x.return_value = mock_lora_instance
@@ -170,7 +223,17 @@ def test_init_lora_high_sf_success(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,  # Use base config
 ):
-    """Test LoRa initialization with high spreading factor."""
+    """Tests LoRa initialization with high spreading factor.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_rfm9xfsk: Mocked RFM9xFSK class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     # Modify config for high SF
     mock_radio_config.lora.spreading_factor = 10
@@ -202,7 +265,16 @@ def test_init_with_retries_fsk(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test __init__ retries on FSK initialization failure."""
+    """Tests __init__ retries on FSK initialization failure.
+
+    Args:
+        mock_rfm9xfsk: Mocked RFM9xFSK class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_rfm9xfsk.side_effect = Exception("Simulated FSK failure")
 
     with pytest.raises(HardwareInitializationError):
@@ -229,7 +301,16 @@ def test_init_with_retries_lora(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test __init__ retries on LoRa initialization failure."""
+    """Tests __init__ retries on LoRa initialization failure.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_rfm9x.side_effect = Exception("Simulated LoRa failure")
 
@@ -248,7 +329,6 @@ def test_init_with_retries_lora(
     assert mock_rfm9x.call_count == 3
 
 
-# Test send Method
 def test_send_success_bytes(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
@@ -257,7 +337,16 @@ def test_send_success_bytes(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful sending of bytes."""
+    """Tests successful sending of bytes.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
@@ -285,7 +374,16 @@ def test_send_unlicensed(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test send attempt when not licensed."""
+    """Tests send attempt when not licensed.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
@@ -318,7 +416,16 @@ def test_send_exception(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test handling of exception during radio.send()."""
+    """Tests handling of exception during radio.send().
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
@@ -349,7 +456,17 @@ def test_get_modulation_initialized(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test get_modulation when radio is initialized."""
+    """Tests get_modulation when radio is initialized.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_rfm9xfsk: Mocked RFM9xFSK class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     # Test FSK instance
     manager_fsk = RFM9xManager(
         mock_logger,
@@ -372,7 +489,6 @@ def test_get_modulation_initialized(
     assert manager_lora.get_modulation() == LoRa
 
 
-# Test get_temperature Method
 @pytest.mark.parametrize(
     "raw_value, expected_temperature",
     [
@@ -394,7 +510,19 @@ def test_get_temperature_success(
     raw_value: int,
     expected_temperature: float,
 ):
-    """Test successful temperature reading and calculation."""
+    """Tests successful temperature reading and calculation.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_rfm9xfsk: Mocked RFM9xFSK class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+        raw_value: Raw temperature value from the radio.
+        expected_temperature: Expected calculated temperature.
+    """
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.read_u8 = MagicMock()
     mock_radio_instance.read_u8.return_value = raw_value
@@ -425,7 +553,17 @@ def test_get_temperature_read_exception(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test handling exception during radio.read_u8()."""
+    """Tests handling exception during radio.read_u8().
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_rfm9xfsk: Mocked RFM9xFSK class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     manager = RFM9xManager(
         mock_logger,
@@ -457,7 +595,16 @@ def test_receive_success(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful reception of a message."""
+    """Tests successful reception of a message.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     expected_data = b"Received Data"
@@ -488,7 +635,16 @@ def test_receive_no_message(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test receiving when no message is available (timeout)."""
+    """Tests receiving when no message is available (timeout).
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.receive = MagicMock()
@@ -519,7 +675,16 @@ def test_receive_exception(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test handling of exception during radio.receive()."""
+    """Tests handling of exception during radio.receive().
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.receive = MagicMock()
@@ -549,7 +714,15 @@ def test_modify_lora_config(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test modifying the radio configuration."""
+    """Tests modifying the radio configuration for LoRa mode.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     # Create manager without initializing the radio
     manager = RFM9xManager.__new__(RFM9xManager)
     manager._log = mock_logger
@@ -587,7 +760,15 @@ def test_modify_lora_config_high_sf_success(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,  # Use base config
 ):
-    """Test LoRa initialization with high spreading factor."""
+    """Tests LoRa initialization with high spreading factor.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     # Create manager without initializing the radio
     manager = RFM9xManager.__new__(RFM9xManager)
     manager._log = mock_logger
@@ -618,7 +799,15 @@ def test_modify_fsk_config(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test modifying the radio configuration."""
+    """Tests modifying the radio configuration for FSK mode.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     # Create manager without initializing the radio
     manager = RFM9xManager.__new__(RFM9xManager)
     manager._log = mock_logger
@@ -652,7 +841,15 @@ def test_get_max_packet_size_lora(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test get_max_packet_size method with LoRa radio."""
+    """Tests get_max_packet_size method with LoRa radio.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     # Create manager without initializing the radio
     manager = RFM9xManager.__new__(RFM9xManager)
     manager._log = mock_logger
@@ -675,7 +872,15 @@ def test_get_max_packet_size_fsk(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test get_max_packet_size method with FSK radio."""
+    """Tests get_max_packet_size method with FSK radio.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     # Create manager without initializing the radio
     manager = RFM9xManager.__new__(RFM9xManager)
     manager._log = mock_logger
@@ -699,7 +904,16 @@ def test_get_rssi(
     mock_reset: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test getting the RSSI value from the radio."""
+    """Tests getting the RSSI value from the radio.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     expected_rssi = 70.0

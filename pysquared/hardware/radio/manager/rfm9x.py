@@ -1,3 +1,19 @@
+"""This module provides a manager for RFM9x radios.
+
+This module defines the `RFM9xManager` class, which implements the `RadioProto`
+interface for RFM9x radios. It handles the initialization and configuration of
+the radio, as well as sending and receiving data.
+
+Usage:
+    logger = Logger()
+    radio_config = RadioConfig()
+    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    cs = digitalio.DigitalInOut(board.D5)
+    reset = digitalio.DigitalInOut(board.D6)
+    rfm9x_manager = RFM9xManager(logger, radio_config, spi, cs, reset)
+    rfm9x_manager.send(b"Hello world!")
+"""
+
 from busio import SPI
 from digitalio import DigitalInOut
 
@@ -22,7 +38,7 @@ except ImportError:
 
 
 class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
-    """Manager class implementing RadioProto for RFM9x radios."""
+    """Manages RFM9x radios, implementing the RadioProto interface."""
 
     _radio: RFM9xFSK | RFM9x
 
@@ -34,16 +50,17 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         chip_select: DigitalInOut,
         reset: DigitalInOut,
     ) -> None:
-        """Initialize the manager class and the underlying radio hardware.
+        """Initializes the RFM9xManager and the underlying radio hardware.
 
-        :param Logger logger: Logger instance for logging messages.
-        :param RadioConfig radio_config: Radio config object.
-        :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
-        :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
-        :param ~digitalio.DigitalInOut chip_select: A DigitalInOut object connected to the chip's CS/chip select line.
-        :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset line.
+        Args:
+            logger: Logger instance for logging messages.
+            radio_config: Radio configuration object.
+            spi: The SPI bus connected to the chip.
+            chip_select: A DigitalInOut object connected to the chip's CS/chip select line.
+            reset: A DigitalInOut object connected to the chip's RST/reset line.
 
-        :raises HardwareInitializationError: If the radio fails to initialize after retries.
+        Raises:
+            HardwareInitializationError: If the radio fails to initialize after retries.
         """
         self._spi = spi
         self._chip_select = chip_select
@@ -55,7 +72,11 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         )
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
-        """Initialize the specific RFM9x radio hardware."""
+        """Initializes the specific RFM9x radio hardware.
+
+        Args:
+            modulation: The modulation mode to initialize with.
+        """
 
         if modulation == FSK:
             self._radio = self._create_fsk_radio(
@@ -77,15 +98,25 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         self._radio.radiohead = False
 
     def _send_internal(self, data: bytes) -> bool:
-        """Send data using the RFM9x radio."""
+        """Sends data using the RFM9x radio.
+
+        Args:
+            data: The data to send.
+
+        Returns:
+            True if the data was sent successfully, False otherwise.
+        """
         return bool(self._radio.send(data))
 
     def modify_config(self, key: str, value) -> None:
-        """Modify a specific radio configuration parameter.
+        """Modifies a specific radio configuration parameter.
 
-        :param str key: The configuration parameter key to modify.
-        :param object value: The new value to set for the parameter.
-        :raises ValueError: If the key is not recognized or invalid for the current radio type.
+        Args:
+            key: The configuration parameter key to modify.
+            value: The new value to set for the parameter.
+
+        Raises:
+            ValueError: If the key is not recognized or invalid for the current radio type.
         """
         self._radio_config.validate(key, value)
 
@@ -114,11 +145,19 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
                 self._radio.tx_power = value
 
     def get_modulation(self) -> Type[RadioModulation]:
-        """Get the modulation mode from the initialized RFM9x radio."""
+        """Gets the modulation mode from the initialized RFM9x radio.
+
+        Returns:
+            The current modulation mode of the hardware.
+        """
         return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
     def get_temperature(self) -> float:
-        """Get the temperature reading from the radio sensor."""
+        """Gets the temperature reading from the radio sensor.
+
+        Returns:
+            The temperature in degrees Celsius.
+        """
         try:
             raw_temp = self._radio.read_u8(0x5B)
             temp = raw_temp & 0x7F  # Mask out sign bit
@@ -144,7 +183,18 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         transmit_frequency: int,
         fsk_config: FSKConfig,
     ) -> RFM9xFSK:
-        """Create a FSK radio instance."""
+        """Creates a FSK radio instance.
+
+        Args:
+            spi: The SPI bus connected to the chip.
+            cs: A DigitalInOut object connected to the chip's CS/chip select line.
+            rst: A DigitalInOut object connected to the chip's RST/reset line.
+            transmit_frequency: The transmit frequency.
+            fsk_config: The FSK configuration.
+
+        Returns:
+            A configured RFM9xFSK instance.
+        """
         radio: RFM9xFSK = RFM9xFSK(
             spi,
             cs,
@@ -166,7 +216,18 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         transmit_frequency: int,
         lora_config: LORAConfig,
     ) -> RFM9x:
-        """Create a LoRa radio instance."""
+        """Creates a LoRa radio instance.
+
+        Args:
+            spi: The SPI bus connected to the chip.
+            cs: A DigitalInOut object connected to the chip's CS/chip select line.
+            rst: A DigitalInOut object connected to the chip's RST/reset line.
+            transmit_frequency: The transmit frequency.
+            lora_config: The LoRa configuration.
+
+        Returns:
+            A configured RFM9x instance.
+        """
         radio: RFM9x = RFM9x(
             spi,
             cs,
@@ -185,10 +246,13 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         return radio
 
     def receive(self, timeout: Optional[int] = None) -> bytes | None:
-        """Receive data from the radio.
+        """Receives data from the radio.
 
-        :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
-        :return: The received data as bytes, or None if no data was received.
+        Args:
+            timeout: Optional receive timeout in seconds. If None, use the default timeout.
+
+        Returns:
+            The received data as bytes, or None if no data was received.
         """
         _timeout = timeout if timeout is not None else self._receive_timeout
         self._log.debug(f"Attempting to receive data with timeout: {_timeout}s")
@@ -208,10 +272,19 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             return None
 
     def get_max_packet_size(self) -> int:
+        """Gets the maximum packet size supported by the radio.
+
+        Returns:
+            The maximum packet size in bytes.
+        """
         return self._radio.max_packet_length
 
     def get_rssi(self) -> int:
-        """Get the RSSI of the last received packet."""
+        """Gets the RSSI of the last received packet.
+
+        Returns:
+            The RSSI of the last received packet.
+        """
         # library reads rssi from an unsigned byte, so we know it's in the range 0-255
         # it is safe to cast it to int
         return int(self._radio.last_rssi)

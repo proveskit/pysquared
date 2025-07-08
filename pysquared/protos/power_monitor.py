@@ -1,32 +1,37 @@
-"""
-Protocol defining the interface for a Power Monitor.
+"""This module defines the PowerMonitorProto protocol for power monitors.
+
+This protocol specifies the interface that any power monitor implementation must
+adhere to, ensuring consistent behavior across different power monitor hardware.
+
+Usage:
+    # This is a protocol class and should not be instantiated directly.
+    # Implementations of this protocol should be used instead.
 """
 
 
 class PowerMonitorProto:
+    """Protocol defining the interface for a Power Monitor."""
+
     def get_bus_voltage(self) -> float | None:
-        """Get the bus voltage from the power monitor.
+        """Gets the bus voltage from the power monitor.
 
-        :return: The bus voltage in volts
-        :rtype: float | None
-
+        Returns:
+            The bus voltage in volts, or None if not available.
         """
         ...
 
     def get_shunt_voltage(self) -> float | None:
-        """Get the shunt voltage from the power monitor.
+        """Gets the shunt voltage from the power monitor.
 
-        :return: The shunt voltage in volts
-        :rtype: float | None
-
+        Returns:
+            The shunt voltage in volts, or None if not available.
         """
         ...
 
     def get_current(self) -> float | None:
-        """Get the current from the power monitor.
+        """Gets the current from the power monitor.
 
-        :return: The current in amps
-        :rtype: float | None
-
+        Returns:
+            The current in amps, or None if not available.
         """
         ...

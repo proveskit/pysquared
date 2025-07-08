@@ -1,3 +1,10 @@
+"""Unit tests for the BurnwireManager class.
+
+This module contains unit tests for the `BurnwireManager` class, which controls
+the activation of burnwires. The tests cover initialization, successful burn
+operations, error handling, and cleanup procedures.
+"""
+
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
@@ -9,21 +16,25 @@ from pysquared.logger import Logger
 
 @pytest.fixture
 def mock_logger():
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
 def mock_enable_burn():
+    """Mocks the DigitalInOut pin for enabling the burnwire."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_fire_burn():
+    """Mocks the DigitalInOut pin for firing the burnwire."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def burnwire_manager(mock_logger, mock_enable_burn, mock_fire_burn):
+    """Provides a BurnwireManager instance for testing."""
     return BurnwireManager(
         logger=mock_logger,
         enable_burn=mock_enable_burn,
@@ -35,7 +46,13 @@ def burnwire_manager(mock_logger, mock_enable_burn, mock_fire_burn):
 def test_burnwire_initialization_default_logic(
     mock_logger, mock_enable_burn, mock_fire_burn
 ):
-    """Test burnwire initialization with default enable_logic=True."""
+    """Tests burnwire initialization with default enable_logic=True.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_enable_burn: Mocked enable_burn pin.
+        mock_fire_burn: Mocked fire_burn pin.
+    """
     manager = BurnwireManager(mock_logger, mock_enable_burn, mock_fire_burn)
     assert manager._enable_logic is True
     assert manager.number_of_attempts == 0
@@ -44,7 +61,13 @@ def test_burnwire_initialization_default_logic(
 def test_burnwire_initialization_inverted_logic(
     mock_logger, mock_enable_burn, mock_fire_burn
 ):
-    """Test burnwire initialization with enable_logic=False."""
+    """Tests burnwire initialization with enable_logic=False.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_enable_burn: Mocked enable_burn pin.
+        mock_fire_burn: Mocked fire_burn pin.
+    """
     manager = BurnwireManager(
         mock_logger, mock_enable_burn, mock_fire_burn, enable_logic=False
     )
@@ -53,7 +76,11 @@ def test_burnwire_initialization_inverted_logic(
 
 
 def test_successful_burn(burnwire_manager):
-    """Test a successful burnwire activation."""
+    """Tests a successful burnwire activation.
+
+    Args:
+        burnwire_manager: BurnwireManager instance for testing.
+    """
     with patch("time.sleep") as mock_sleep:
         result = burnwire_manager.burn(timeout_duration=1.0)
 
@@ -71,7 +98,11 @@ def test_successful_burn(burnwire_manager):
 
 
 def test_burn_error_handling(burnwire_manager):
-    """Test error handling during burnwire activation."""
+    """Tests error handling during burnwire activation.
+
+    Args:
+        burnwire_manager: BurnwireManager instance for testing.
+    """
     # Mock the enable_burn pin to raise an exception when setting value
     type(burnwire_manager._enable_burn).value = property(
         fset=MagicMock(side_effect=RuntimeError("Hardware failure"))
@@ -88,7 +119,11 @@ def test_burn_error_handling(burnwire_manager):
 
 
 def test_cleanup_on_error(burnwire_manager):
-    """Test that cleanup occurs even when an error happens during burn."""
+    """Tests that cleanup occurs even when an error happens during burn.
+
+    Args:
+        burnwire_manager: BurnwireManager instance for testing.
+    """
     with patch("time.sleep") as mock_sleep:
         mock_sleep.side_effect = RuntimeError("Unexpected error")
 
@@ -104,7 +139,11 @@ def test_cleanup_on_error(burnwire_manager):
 
 
 def test_attempt_burn_exception_handling(burnwire_manager):
-    """Test that _attempt_burn properly handles and propagates exceptions."""
+    """Tests that _attempt_burn properly handles and propagates exceptions.
+
+    Args:
+        burnwire_manager: BurnwireManager instance for testing.
+    """
     # Mock the enable_burn pin to raise an exception when setting value
     type(burnwire_manager._enable_burn).value = property(
         fset=MagicMock(side_effect=RuntimeError("Hardware failure"))
@@ -117,7 +156,11 @@ def test_attempt_burn_exception_handling(burnwire_manager):
 
 
 def test_burn_keyboard_interrupt(burnwire_manager):
-    """Test that a KeyboardInterrupt during burn is handled and logged, including in _attempt_burn."""
+    """Tests that a KeyboardInterrupt during burn is handled and logged, including in _attempt_burn.
+
+    Args:
+        burnwire_manager: BurnwireManager instance for testing.
+    """
     # Patch _attempt_burn to raise KeyboardInterrupt
     with patch.object(burnwire_manager, "_attempt_burn", side_effect=KeyboardInterrupt):
         result = burnwire_manager.burn(timeout_duration=1.0)
@@ -140,7 +183,11 @@ def test_burn_keyboard_interrupt(burnwire_manager):
 
 
 def test_enable_fire_burn_pin_error(burnwire_manager):
-    """Test that a RuntimeError is raised if setting fire_burn pin fails in _enable."""
+    """Tests that a RuntimeError is raised if setting fire_burn pin fails in _enable.
+
+    Args:
+        burnwire_manager: BurnwireManager instance for testing.
+    """
     # Allow enable_burn to succeed
     burnwire_manager._enable_burn.value = burnwire_manager._enable_logic
     # Make fire_burn raise an exception when set
@@ -153,7 +200,11 @@ def test_enable_fire_burn_pin_error(burnwire_manager):
 
 
 def test_disable_cleanup_critical_log(burnwire_manager):
-    """Test that a critical log is made if _disable fails during cleanup and no prior error occurred."""
+    """Tests that a critical log is made if _disable fails during cleanup and no prior error occurred.
+
+    Args:
+        burnwire_manager: BurnwireManager instance for testing.
+    """
     # Patch _enable to succeed
     with patch.object(burnwire_manager, "_enable", return_value=None):
         # Patch time.sleep to avoid delay

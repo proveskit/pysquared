@@ -1,3 +1,10 @@
+"""Unit tests for the MicrocontrollerManager class.
+
+This module contains unit tests for the `MicrocontrollerManager` class, which
+manages the microcontroller's built-in Real-Time Clock (RTC). The tests cover
+initialization and setting the time.
+"""
+
 import time
 
 import pytest
@@ -8,12 +15,18 @@ from pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 
 @pytest.fixture(autouse=True)
 def cleanup():
+    """Cleans up the MockRTC instance after each test."""
     yield
     MockRTC().destroy()
 
 
 def test_init():
-    """Test that the RTC.datetime is initialized with a time.struct_time"""
+    """Tests that the RTC.datetime is initialized with a time.struct_time.
+
+    This test verifies that upon initialization of `MicrocontrollerManager`,
+    the underlying mock RTC's `datetime` attribute is set to a `time.struct_time`
+    instance, indicating proper setup.
+    """
     MicrocontrollerManager()
 
     mrtc: MockRTC = MockRTC()
@@ -24,7 +37,12 @@ def test_init():
 
 
 def test_set_time():
-    """Test that the RP2040RTCManager.set_time method correctly sets RTC.datetime"""
+    """Tests that the MicrocontrollerManager.set_time method correctly sets RTC.datetime.
+
+    This test verifies that calling `set_time` on the `MicrocontrollerManager`
+    updates the mock RTC's `datetime` attribute with the provided time components,
+    and that the individual components of the `struct_time` match the input.
+    """
     year = 2025
     month = 3
     day = 6

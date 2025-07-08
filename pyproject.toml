@@ -99,8 +99,18 @@ stubPath = "./typings"
 reportMissingModuleSource = false
 
 [tool.interrogate]
+ignore-init-method = true
 ignore-init-module = true
-fail-under = 75
-verbose = 2
-color = true
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-module = false
+ignore-property-decorators = false
+fail-under = 95
+exclude = ["docs"]
+verbose = 0
 omit-covered-files = true
+quiet = false
+whitelist-regex = []
+ignore-regex = []
+color = true

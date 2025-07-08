@@ -1,25 +1,37 @@
-"""
-Protocol defining the interface for an Inertial Measurement Unit (IMU).
+"""This module defines the IMUProto protocol for Inertial Measurement Units.
+
+This protocol specifies the interface that any IMU implementation must adhere to,
+ensuring consistent behavior across different IMU hardware.
+
+Usage:
+    # This is a protocol class and should not be instantiated directly.
+    # Implementations of this protocol should be used instead.
 """
 
 
 class IMUProto:
+    """Protocol defining the interface for an Inertial Measurement Unit (IMU)."""
+
     def get_gyro_data(self) -> tuple[float, float, float] | None:
-        """Get the gyroscope data from the inertial measurement unit.
+        """Gets the gyroscope data from the inertial measurement unit.
 
-        :return: A tuple containing the x, y, and z angular acceleration values in radians per second or None if not available.
-        :rtype: tuple[float, float, float] | None
+        Returns:
+            A tuple containing the x, y, and z angular acceleration values in
+            radians per second, or None if not available.
 
-        :raises Exception: If there is an error retrieving the values.
+        Raises:
+            Exception: If there is an error retrieving the values.
         """
         ...
 
     def get_acceleration(self) -> tuple[float, float, float] | None:
-        """Get the acceleration data from the inertial measurement unit.
+        """Gets the acceleration data from the inertial measurement unit.
 
-        :return: A tuple containing the x, y, and z acceleration values in m/s^2 or None if not available.
-        :rtype: tuple[float, float, float] | None
+        Returns:
+            A tuple containing the x, y, and z acceleration values in m/s^2, or
+            None if not available.
 
-        :raises Exception: If there is an error retrieving the values.
+        Raises:
+            Exception: If there is an error retrieving the values.
         """
         ...

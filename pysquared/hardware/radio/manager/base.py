@@ -1,3 +1,14 @@
+"""This module provides a base class for radio managers.
+
+This module defines the `BaseRadioManager` class, which serves as an abstract base
+class for all radio managers in the system. It provides common functionality and
+ensures that all radio managers adhere to a consistent interface.
+
+Usage:
+    # This is a base class and should not be instantiated directly.
+    # Subclasses like RFM9xManager or SX126xManager should be used instead.
+"""
+
 from ....config.radio import RadioConfig
 from ....logger import Logger
 from ....protos.radio import RadioProto
@@ -22,14 +33,15 @@ class BaseRadioManager(RadioProto):
         radio_config: RadioConfig,
         **kwargs: object,
     ) -> None:
-        """Initialize the base manager class.
+        """Initializes the base manager class.
 
-        :param Logger logger: Logger instance for logging messages.
-        :param RadioConfig radio_config: Radio configuration object.
-        :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
-        :param Any kwargs: Hardware-specific arguments (e.g., spi, cs, rst).
+        Args:
+            logger: Logger instance for logging messages.
+            radio_config: Radio configuration object.
+            **kwargs: Hardware-specific arguments (e.g., spi, cs, rst).
 
-        :raises HardwareInitializationError: If the radio fails to initialize after retries.
+        Raises:
+            HardwareInitializationError: If the radio fails to initialize after retries.
         """
         self._log = logger
         self._radio_config = radio_config
@@ -52,11 +64,15 @@ class BaseRadioManager(RadioProto):
             ) from e
 
     def send(self, data: bytes) -> bool:
-        """Send data over the radio.
+        """Sends data over the radio.
 
-        Must be implemented by subclasses.
+        This method must be implemented by subclasses.
 
-        :param bytes data: The data to send.
+        Args:
+            data: The data to send.
+
+        Returns:
+            True if the data was sent successfully, False otherwise.
         """
         try:
             if self._radio_config.license == "":
@@ -75,76 +91,93 @@ class BaseRadioManager(RadioProto):
             return False
 
     def receive(self, timeout: Optional[int] = None) -> bytes | None:
-        """Receive data from the radio.
+        """Receives data from the radio.
 
-        Must be implemented by subclasses.
+        This method must be implemented by subclasses.
 
-        :param int | None timeout: Optional receive timeout in seconds.If None, use the default timeout.
-        :return: The received data as bytes, or None if no data was received.
+        Args:
+            timeout: Optional receive timeout in seconds. If None, use the default timeout.
 
-        :raises NotImplementedError: If not implemented by subclass.
-        :raises Exception: If receiving fails unexpectedly.
+        Returns:
+            The received data as bytes, or None if no data was received.
+
+        Raises:
+            NotImplementedError: If not implemented by subclass.
+            Exception: If receiving fails unexpectedly.
         """
         raise NotImplementedError
 
     def get_modulation(self) -> Type[RadioModulation]:
-        """Get the modulation mode from the initialized radio hardware.
+        """Gets the modulation mode from the initialized radio hardware.
 
-        :return: The current modulation mode of the hardware.
+        Returns:
+            The current modulation mode of the hardware.
 
-        :raises NotImplementedError: If not implemented by subclass.
+        Raises:
+            NotImplementedError: If not implemented by subclass.
         """
         raise NotImplementedError
 
     def modify_config(self, key: str, value) -> None:
-        """Modify a specific radio configuration parameter.
+        """Modifies a specific radio configuration parameter.
 
-        Must be implemented by subclasses.
+        This method must be implemented by subclasses.
 
-        :param str key: The configuration parameter key to modify.
-        :param value: The new value to set for the parameter.
-        :raises NotImplementedError: If not implemented by subclass.
+        Args:
+            key: The configuration parameter key to modify.
+            value: The new value to set for the parameter.
+
+        Raises:
+            NotImplementedError: If not implemented by subclass.
         """
         raise NotImplementedError
 
-    # Methods to be overridden by subclasses
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
-        """Initialize the specific radio hardware.
+        """Initializes the specific radio hardware.
 
-        Must be implemented by subclasses.
+        This method must be implemented by subclasses.
 
-        :param RadioModulation modulation: The modulation mode to initialize with.
-        :param Any kwargs: Hardware-specific arguments passed from __init__.
-        :return: The initialized radio hardware object.
-        :raises NotImplementedError: If not implemented by subclass.
-        :raises Exception: If initialization fails.
+        Args:
+            modulation: The modulation mode to initialize with.
+
+        Raises:
+            NotImplementedError: If not implemented by subclass.
+            Exception: If initialization fails.
         """
         raise NotImplementedError
 
     def _send_internal(self, data: bytes) -> bool:
-        """Send data using the specific radio hardware's method.
+        """Sends data using the specific radio hardware's method.
 
-        Must be implemented by subclasses.
+        This method must be implemented by subclasses.
 
-        :param bytes data: The data to send.
-        :return: True if sending was successful, False otherwise.
-        :raises NotImplementedError: If not implemented by subclass.
-        :raises Exception: If sending fails unexpectedly.
+        Args:
+            data: The data to send.
+
+        Returns:
+            True if sending was successful, False otherwise.
+
+        Raises:
+            NotImplementedError: If not implemented by subclass.
+            Exception: If sending fails unexpectedly.
         """
         raise NotImplementedError
 
     def get_rssi(self) -> int:
-        """Get the RSSI of the last received packet.
+        """Gets the RSSI of the last received packet.
 
-        :return: The RSSI of the last received packet.
-        :raises NotImplementedError: If not implemented by subclass.
-        :raises Exception: If querying the hardware fails.
+        Returns:
+            The RSSI of the last received packet.
+
+        Raises:
+            NotImplementedError: If not implemented by subclass.
         """
         raise NotImplementedError
 
     def get_max_packet_size(self) -> int:
-        """Get the maximum packet size supported by the radio.
+        """Gets the maximum packet size supported by the radio.
 
-        :return: The maximum packet size in bytes.
+        Returns:
+            The maximum packet size in bytes.
         """
         return 128  # Placeholder value, should be overridden by subclasses

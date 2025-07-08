@@ -1,3 +1,16 @@
+"""This module provides a manager for the RV3028 Real-Time Clock (RTC).
+
+This module defines the `RV3028Manager` class, which provides a high-level interface
+for interacting with the RV3028 RTC. It handles the initialization of the sensor
+and provides methods for setting the current time.
+
+Usage:
+    logger = Logger()
+    i2c = busio.I2C(board.SCL, board.SDA)
+    rtc_manager = RV3028Manager(logger, i2c)
+    rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 AM, Monday
+"""
+
 from busio import I2C
 from rv3028.rv3028 import RV3028
 
@@ -8,10 +21,7 @@ from ...protos.rtc import RTCProto
 
 
 class RV3028Manager(RTCProto):
-    """Manager class for creating RV3028 RTC instances.
-    The purpose of the manager class is to hide the complexity of RTC initialization from the caller.
-    Specifically we should try to keep adafruit_lis2mdl to only this manager class.
-    """
+    """Manages the RV3028 RTC."""
 
     @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
@@ -19,12 +29,14 @@ class RV3028Manager(RTCProto):
         logger: Logger,
         i2c: I2C,
     ) -> None:
-        """Initialize the manager class.
+        """Initializes the RV3028Manager.
 
-        :param Logger logger: Logger instance for logging messages.
-        :param busio.I2C i2c: The I2C bus connected to the chip.
+        Args:
+            logger: The logger to use.
+            i2c: The I2C bus connected to the chip.
 
-        :raises HardwareInitializationError: If the RTC fails to initialize.
+        Raises:
+            HardwareInitializationError: If the RTC fails to initialize.
         """
         self._log: Logger = logger
 
@@ -46,17 +58,19 @@ class RV3028Manager(RTCProto):
         second: int,
         weekday: int,
     ) -> None:
-        """Set the time on the real time clock.
+        """Sets the time on the real-time clock.
 
-        :param year: The year value (0-9999)
-        :param month: The month value (1-12)
-        :param date: The date value (1-31)
-        :param hour: The hour value (0-23)
-        :param minute: The minute value (0-59)
-        :param second: The second value (0-59)
-        :param weekday: The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday
+        Args:
+            year: The year value (0-9999).
+            month: The month value (1-12).
+            date: The date value (1-31).
+            hour: The hour value (0-23).
+            minute: The minute value (0-59).
+            second: The second value (0-59).
+            weekday: The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday.
 
-        :raises Exception: If there is an error setting the values.
+        Raises:
+            Exception: If there is an error setting the values.
         """
         try:
             self._rtc.set_date(year, month, date, weekday)

@@ -1,3 +1,10 @@
+"""Unit tests for the LSM6DSOXManager class.
+
+This module contains unit tests for the `LSM6DSOXManager` class, which manages
+the LSM6DSOX IMU. The tests cover initialization, successful data retrieval,
+and error handling for acceleration, gyroscope, and temperature readings.
+"""
+
 import math
 from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -27,15 +34,31 @@ def mock_logger() -> MagicMock:
 
 @pytest.fixture
 def mock_lsm6dsox(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+    """Mocks the LSM6DSOX class.
+
+    Args:
+        mock_i2c: Mocked I2C bus.
+
+    Yields:
+        A MagicMock instance of LSM6DSOX.
+    """
     with patch("pysquared.hardware.imu.manager.lsm6dsox.LSM6DSOX") as mock_class:
         mock_class.return_value = LSM6DSOX(mock_i2c, address)
         yield mock_class
 
 
 def test_create_imu(
-    mock_lsm6dsox: MagicMock, mock_i2c: MagicMock, mock_logger: MagicMock
+    mock_lsm6dsox: MagicMock,
+    mock_i2c: MagicMock,
+    mock_logger: MagicMock,
 ) -> None:
-    """Test successful creation of an LSM6DSOX IMU instance."""
+    """Tests successful creation of an LSM6DSOX IMU instance.
+
+    Args:
+        mock_lsm6dsox: Mocked LSM6DSOX class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
 
     assert isinstance(imu_manager._imu, LSM6DSOX)
@@ -48,7 +71,13 @@ def test_create_with_retries(
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Test that initialization is retried when it fails."""
+    """Tests that initialization is retried when it fails.
+
+    Args:
+        mock_lsm6dsox: Mocked LSM6DSOX class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     mock_lsm6dsox.side_effect = Exception("Simulated LSM6DSOX failure")
 
     with pytest.raises(HardwareInitializationError):
@@ -63,7 +92,13 @@ def test_get_acceleration_success(
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Test successful retrieval of the acceleration vector."""
+    """Tests successful retrieval of the acceleration vector.
+
+    Args:
+        mock_lsm6dsox: Mocked LSM6DSOX class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     # Replace the automatically created mock instance with a MagicMock we can configure
     imu_manager._imu = MagicMock(spec=LSM6DSOX)
@@ -79,7 +114,13 @@ def test_get_acceleration_failure(
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Test handling of exceptions when retrieving the acceleration vector."""
+    """Tests handling of exceptions when retrieving the acceleration vector.
+
+    Args:
+        mock_lsm6dsox: Mocked LSM6DSOX class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     mock_imu_instance = MagicMock(spec=LSM6DSOX)
     imu_manager._imu = mock_imu_instance
@@ -105,7 +146,13 @@ def test_get_gyro_success(
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Test successful retrieval of the gyro vector."""
+    """Tests successful retrieval of the gyro vector.
+
+    Args:
+        mock_lsm6dsox: Mocked LSM6DSOX class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     imu_manager._imu = MagicMock(spec=LSM6DSOX)
     expected_gyro = (0.1, 0.2, 0.3)
@@ -120,7 +167,13 @@ def test_get_gyro_failure(
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Test handling of exceptions when retrieving the gyro vector."""
+    """Tests handling of exceptions when retrieving the gyro vector.
+
+    Args:
+        mock_lsm6dsox: Mocked LSM6DSOX class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     mock_imu_instance = MagicMock(spec=LSM6DSOX)
     imu_manager._imu = mock_imu_instance
@@ -145,7 +198,13 @@ def test_get_temperature_success(
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Test successful retrieval of the temperature."""
+    """Tests successful retrieval of the temperature.
+
+    Args:
+        mock_lsm6dsox: Mocked LSM6DSOX class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     imu_manager._imu = MagicMock(spec=LSM6DSOX)
     expected_temp = 25.5
@@ -157,9 +216,17 @@ def test_get_temperature_success(
 
 
 def test_get_temperature_failure(
-    mock_lsm6dsox: MagicMock, mock_i2c: MagicMock, mock_logger: MagicMock
+    mock_lsm6dsox: MagicMock,
+    mock_i2c: MagicMock,
+    mock_logger: MagicMock,
 ) -> None:
-    """Test handling of exceptions when retrieving the temperature."""
+    """Tests handling of exceptions when retrieving the temperature.
+
+    Args:
+        mock_lsm6dsox: Mocked LSM6DSOX class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     mock_imu_instance = MagicMock(spec=LSM6DSOX)
     imu_manager._imu = mock_imu_instance

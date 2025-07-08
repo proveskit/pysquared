@@ -1,3 +1,10 @@
+"""Unit tests for the Config class.
+
+This module contains unit tests for the `Config` class, which is responsible for
+loading, validating, and updating configuration settings. The tests cover various
+data types, validation rules, and update scenarios.
+"""
+
 import json
 import os
 import tempfile
@@ -9,6 +16,7 @@ from pysquared.config.config import Config
 
 @pytest.fixture(autouse=True)
 def cleanup():
+    """Sets up a temporary config file for testing and cleans it up afterwards."""
     temp_dir = tempfile.mkdtemp()
     file = os.path.join(temp_dir, "config.test.json")
 
@@ -21,6 +29,11 @@ def cleanup():
 
 
 def test_radio_cfg(cleanup) -> None:
+    """Tests the radio configuration properties.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
@@ -68,6 +81,11 @@ def test_radio_cfg(cleanup) -> None:
 
 
 def test_strings(cleanup) -> None:
+    """Tests string configuration properties.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
@@ -84,6 +102,11 @@ def test_strings(cleanup) -> None:
 
 
 def test_ints(cleanup) -> None:
+    """Tests integer configuration properties.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
@@ -108,6 +131,11 @@ def test_ints(cleanup) -> None:
 
 
 def test_floats(cleanup) -> None:
+    """Tests float configuration properties.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
@@ -129,6 +157,11 @@ def test_floats(cleanup) -> None:
 
 
 def test_bools(cleanup) -> None:
+    """Tests boolean configuration properties.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     with open(file, "r") as f:
         json_data = json.loads(f.read())
@@ -150,6 +183,11 @@ def test_bools(cleanup) -> None:
 
 
 def test_validation_updateable(cleanup) -> None:
+    """Tests validation of updateable configuration fields.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     config = Config(file)
 
@@ -177,6 +215,11 @@ def test_validation_updateable(cleanup) -> None:
 
 
 def test_validation_type(cleanup) -> None:
+    """Tests validation of configuration field types.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     config = Config(file)
 
@@ -192,6 +235,11 @@ def test_validation_type(cleanup) -> None:
 
 
 def test_validation_range(cleanup) -> None:
+    """Tests validation of configuration field ranges.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     config = Config(file)
 
@@ -227,6 +275,11 @@ def test_validation_range(cleanup) -> None:
 
 
 def test_save_config(cleanup) -> None:
+    """Tests saving configuration changes.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     config = Config(file)
     try:
@@ -236,6 +289,11 @@ def test_save_config(cleanup) -> None:
 
 
 def test_update_config(cleanup) -> None:
+    """Tests updating configuration settings.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     config = Config(file)
 
@@ -274,6 +332,11 @@ def test_update_config(cleanup) -> None:
 
 
 def test_allowed_values(cleanup) -> None:
+    """Tests validation of allowed values for configuration fields.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
     file = cleanup
     config = Config(file)
 

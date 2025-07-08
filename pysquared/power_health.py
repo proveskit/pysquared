@@ -1,3 +1,17 @@
+"""This module provides a PowerHealth class for monitoring the power system.
+
+The PowerHealth class checks the battery voltage and current draw to determine the
+overall health of the power system. It returns one of four states: NOMINAL,
+DEGRADED, CRITICAL, or UNKNOWN.
+
+Usage:
+    logger = Logger()
+    config = Config("config.json")
+    power_monitor = INA219Manager(logger, i2c)
+    power_health = PowerHealth(logger, config, power_monitor)
+    health_status = power_health.get()
+"""
+
 from pysquared.config.config import Config
 from pysquared.logger import Logger
 from pysquared.protos.power_monitor import PowerMonitorProto
@@ -10,39 +24,60 @@ except Exception:
 
 
 class State:
+    """Base class for power health states."""
+
     pass
 
 
 class NOMINAL(State):
+    """Represents a nominal power health state."""
+
     pass
 
 
 class DEGRADED(State):
+    """Represents a degraded power health state."""
+
     pass
 
 
 class CRITICAL(State):
+    """Represents a critical power health state."""
+
     pass
 
 
 class UNKNOWN(State):
+    """Represents an unknown power health state."""
+
     pass
 
 
 class PowerHealth:
+    """Monitors the power system and determines its health."""
+
     def __init__(
         self,
         logger: Logger,
         config: Config,
         power_monitor: PowerMonitorProto,
     ) -> None:
+        """Initializes the PowerHealth monitor.
+
+        Args:
+            logger: The logger to use.
+            config: The configuration to use.
+            power_monitor: The power monitor to use.
+        """
         self.logger: Logger = logger
         self.config: Config = config
         self._power_monitor: PowerMonitorProto = power_monitor
 
     def get(self) -> NOMINAL | DEGRADED | CRITICAL | UNKNOWN:
-        """
-        Get the power health
+        """Gets the current power health.
+
+        Returns:
+            The current power health state.
         """
         errors: List[str] = []
         self.logger.debug("Power monitor: ", sensor=self._power_monitor)
@@ -99,12 +134,14 @@ class PowerHealth:
     def _avg_reading(
         self, func: Callable[..., float | None], num_readings: int = 50
     ) -> float | None:
-        """
-        Get average reading from a sensor
+        """Gets the average reading from a sensor.
 
-        :param func: function to call
-        :param num_readings: number of readings to take
-        :return: average of the readings
+        Args:
+            func: The function to call to get a reading.
+            num_readings: The number of readings to take.
+
+        Returns:
+            The average of the readings, or None if a reading could not be taken.
         """
         readings: float = 0.0
         for _ in range(num_readings):

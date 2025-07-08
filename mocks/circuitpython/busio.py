@@ -1,6 +1,11 @@
-"""
-Mock for Circuit Python busio
-https://docs.circuitpython.org/en/latest/shared-bindings/microcontroller/index.html
+"""Mock for the CircuitPython busio module.
+
+This module provides a mock implementation of the CircuitPython busio module for
+testing purposes. It allows for simulating the behavior of the busio module without
+the need for actual hardware.
+
+Usage:
+    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 """
 
 from __future__ import annotations
@@ -11,10 +16,21 @@ import mocks.circuitpython.microcontroller as microcontroller
 
 
 class SPI:
+    """A mock SPI bus."""
+
     def __init__(
         self,
         clock: microcontroller.Pin,
         MOSI: Optional[microcontroller.Pin] = None,
         MISO: Optional[microcontroller.Pin] = None,
         half_duplex: bool = False,
-    ) -> None: ...
+    ) -> None:
+        """Initializes the mock SPI bus.
+
+        Args:
+            clock: The clock pin.
+            MOSI: The MOSI pin.
+            MISO: The MISO pin.
+            half_duplex: Whether to use half-duplex mode.
+        """
+        ...

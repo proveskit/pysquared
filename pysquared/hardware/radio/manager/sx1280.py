@@ -1,3 +1,22 @@
+"""This module provides a manager for SX1280 radios.
+
+This module defines the `SX1280Manager` class, which implements the `RadioProto`
+interface for SX1280 radios. It handles the initialization and configuration of
+the radio, as well as sending and receiving data.
+
+Usage:
+    logger = Logger()
+    radio_config = RadioConfig()
+    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    cs = digitalio.DigitalInOut(board.D5)
+    reset = digitalio.DigitalInOut(board.D6)
+    busy = digitalio.DigitalInOut(board.D7)
+    txen = digitalio.DigitalInOut(board.D8)
+    rxen = digitalio.DigitalInOut(board.D9)
+    sx1280_manager = SX1280Manager(logger, radio_config, spi, cs, reset, busy, 2400.0, txen, rxen)
+    sx1280_manager.send(b"Hello world!")
+"""
+
 from busio import SPI
 from digitalio import DigitalInOut
 from proves_sx1280.sx1280 import SX1280
@@ -16,7 +35,7 @@ except ImportError:
 
 
 class SX1280Manager(BaseRadioManager):
-    """Manager class implementing RadioProto for SX1280 radios."""
+    """Manages SX1280 radios, implementing the RadioProto interface."""
 
     _radio: SX1280
 
@@ -32,19 +51,18 @@ class SX1280Manager(BaseRadioManager):
         txen: DigitalInOut,
         rxen: DigitalInOut,
     ) -> None:
-        """Initialize the manager class and the underlying radio hardware.
+        """Initializes the SX1280Manager and the underlying radio hardware.
 
-        :param Logger logger: Logger instance for logging messages.
-        :param RadioConfig radio_config: Radio configuration object.
-        :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
-        :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
-        :param ~digitalio.DigitalInOut chip_select: Chip select pin.
-        :param ~digitalio.DigitalInOut busy: Interrupt request pin.
-        :param ~digitalio.DigitalInOut reset: Reset pin.
-        :param ~digitalio.DigitalInOut txen: Transmit enable pin.
-        :param ~digitalio.DigitalInOut rxen: Receive enable pin.
-
-        :raises HardwareInitializationError: If the radio fails to initialize after retries.
+        Args:
+            logger: Logger instance for logging messages.
+            radio_config: Radio configuration object.
+            spi: The SPI bus connected to the chip.
+            chip_select: Chip select pin.
+            reset: Reset pin.
+            busy: Busy pin.
+            frequency: The frequency to operate on.
+            txen: Transmit enable pin.
+            rxen: Receive enable pin.
         """
         self._spi = spi
         self._chip_select = chip_select
@@ -57,7 +75,11 @@ class SX1280Manager(BaseRadioManager):
         super().__init__(logger=logger, radio_config=radio_config)
 
     def _initialize_radio(self, modulation: Type[RadioModulation]) -> None:
-        """Initialize the specific SX1280 radio hardware."""
+        """Initializes the specific SX1280 radio hardware.
+
+        Args:
+            modulation: The modulation mode to initialize with.
+        """
         self._radio = SX1280(
             self._spi,
             self._chip_select,
@@ -69,18 +91,32 @@ class SX1280Manager(BaseRadioManager):
         )
 
     def _send_internal(self, data: bytes) -> bool:
-        """Send data using the SX1280 radio."""
+        """Sends data using the SX1280 radio.
+
+        Args:
+            data: The data to send.
+
+        Returns:
+            True if the data was sent successfully, False otherwise.
+        """
         return bool(self._radio.send(data))
 
     def get_modulation(self) -> Type[RadioModulation]:
-        """Get the modulation mode from the initialized SX1280 radio."""
+        """Gets the modulation mode from the initialized SX1280 radio.
+
+        Returns:
+            The current modulation mode of the hardware.
+        """
         return LoRa
 
     def receive(self, timeout: Optional[int] = None) -> bytes | None:
-        """Receive data from the radio.
+        """Receives data from the radio.
 
-        :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
-        :return: The received data as bytes, or None if no data was received.
+        Args:
+            timeout: Optional receive timeout in seconds. If None, use the default timeout.
+
+        Returns:
+            The received data as bytes, or None if no data was received.
         """
         try:
             msg = self._radio.receive(keep_listening=True)

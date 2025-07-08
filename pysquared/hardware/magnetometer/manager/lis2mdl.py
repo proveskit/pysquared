@@ -1,3 +1,16 @@
+"""This module provides a manager for the LIS2MDL magnetometer.
+
+The LIS2MDLManager class provides a high-level interface for interacting with the
+LIS2MDL magnetometer. It handles the initialization of the sensor and provides a
+method for reading the magnetic field vector.
+
+Usage:
+    logger = Logger()
+    i2c = busio.I2C(board.SCL, board.SDA)
+    magnetometer = LIS2MDLManager(logger, i2c)
+    mag_data = magnetometer.get_vector()
+"""
+
 from adafruit_lis2mdl import LIS2MDL
 from busio import I2C
 
@@ -8,10 +21,7 @@ from ...exception import HardwareInitializationError
 
 
 class LIS2MDLManager(MagnetometerProto):
-    """Manager class for creating LIS2MDL magnetometer instances.
-    The purpose of the manager class is to hide the complexity of magnetometer initialization from the caller.
-    Specifically we should try to keep adafruit_lis2mdl to only this manager class.
-    """
+    """Manages the LIS2MDL magnetometer."""
 
     @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
@@ -19,12 +29,14 @@ class LIS2MDLManager(MagnetometerProto):
         logger: Logger,
         i2c: I2C,
     ) -> None:
-        """Initialize the manager class.
+        """Initializes the LIS2MDLManager.
 
-        :param Logger logger: Logger instance for logging messages.
-        :param busio.I2C i2c: The I2C bus connected to the chip.
+        Args:
+            logger: The logger to use.
+            i2c: The I2C bus connected to the chip.
 
-        :raises HardwareInitializationError: If the magnetometer fails to initialize.
+        Raises:
+            HardwareInitializationError: If the magnetometer fails to initialize.
         """
         self._log: Logger = logger
 
@@ -37,12 +49,11 @@ class LIS2MDLManager(MagnetometerProto):
             ) from e
 
     def get_vector(self) -> tuple[float, float, float] | None:
-        """Get the magnetic field vector from the magnetometer.
+        """Gets the magnetic field vector from the magnetometer.
 
-        :return: A tuple containing the x, y, and z magnetic field values in Gauss or None if not available.
-        :rtype: tuple[float, float, float] | None
-
-        :raises Exception: If there is an error retrieving the values.
+        Returns:
+            A tuple containing the x, y, and z magnetic field values in Gauss, or
+            None if the data is not available.
         """
         try:
             return self._magnetometer.magnetic

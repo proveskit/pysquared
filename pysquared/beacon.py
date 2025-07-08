@@ -1,3 +1,17 @@
+"""This module provides a Beacon class for sending periodic status messages.
+
+The Beacon class collects data from various sensors and system components, formats it
+as a JSON string, and sends it using a provided packet manager. This is typically
+used for sending telemetry or health information from a satellite or remote device.
+
+Usage:
+    logger = Logger()
+    packet_manager = PacketManager(logger, radio)
+    boot_time = time.time()
+    beacon = Beacon(logger, "MySat", packet_manager, boot_time, imu, power_monitor)
+    beacon.send()
+"""
+
 import json
 import time
 from collections import OrderedDict
@@ -23,6 +37,8 @@ except Exception:
 
 
 class Beacon:
+    """A beacon for sending status messages."""
+
     def __init__(
         self,
         logger: Logger,
@@ -37,6 +53,15 @@ class Beacon:
         | Counter
         | Processor,
     ) -> None:
+        """Initializes the Beacon.
+
+        Args:
+            logger: The logger to use.
+            name: The name of the beacon.
+            packet_manager: The packet manager to use for sending the beacon.
+            boot_time: The time the system booted.
+            *args: A list of sensors and other components to include in the beacon.
+        """
         self._log: Logger = logger
         self._name: str = name
         self._packet_manager: PacketManager = packet_manager
@@ -53,8 +78,10 @@ class Beacon:
         ] = args
 
     def send(self) -> bool:
-        """
-        Send the beacon
+        """Sends the beacon.
+
+        Returns:
+            True if the beacon was sent successfully, False otherwise.
         """
         state: OrderedDict[str, object] = OrderedDict()
         state["name"] = self._name
@@ -82,14 +109,8 @@ class Beacon:
                 )
             if isinstance(sensor, IMUProto):
                 sensor_name: str = sensor.__class__.__name__
-                state[
-                    f"{sensor_name}_{
-                    index}_acceleration"
-                ] = sensor.get_acceleration()
-                state[
-                    f"{sensor_name}_{
-                    index}_gyroscope"
-                ] = sensor.get_gyro_data()
+                state[f"{sensor_name}_{index}_acceleration"] = sensor.get_acceleration()
+                state[f"{sensor_name}_{index}_gyroscope"] = sensor.get_gyro_data()
             if isinstance(sensor, PowerMonitorProto):
                 sensor_name: str = sensor.__class__.__name__
                 state[f"{sensor_name}_{index}_current_avg"] = self.avg_readings(
@@ -103,10 +124,7 @@ class Beacon:
                 )
             if isinstance(sensor, TemperatureSensorProto):
                 sensor_name = sensor.__class__.__name__
-                state[
-                    f"{sensor_name}_{
-                    index}_temperature"
-                ] = sensor.get_temperature()
+                state[f"{sensor_name}_{index}_temperature"] = sensor.get_temperature()
 
         b = json.dumps(state, separators=(",", ":")).encode("utf-8")
         return self._packet_manager.send(b)
@@ -114,13 +132,14 @@ class Beacon:
     def avg_readings(
         self, func: Callable[..., float | None], num_readings: int = 50
     ) -> float | None:
-        """
-        Get the average of the readings from a function
+        """Gets the average of the readings from a function.
 
-        :param func: The function to call
-        :param num_readings: The number of readings to take
-        :return: The average of the readings
-        :rtype: float | None
+        Args:
+            func: The function to call.
+            num_readings: The number of readings to take.
+
+        Returns:
+            The average of the readings, or None if the readings could not be taken.
         """
         readings: float = 0
         for _ in range(num_readings):

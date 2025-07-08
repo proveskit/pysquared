@@ -1,10 +1,13 @@
-"""
-logger Module
-=============
+"""This module provides a Logger class for handling logging messages.
 
-Logger class for handling logging messages with different severity levels.
-Logs can be output to standard output or saved to a file (functionality to be implemented).
-Includes colorized output and error counting.
+The Logger class supports different severity levels, colorized output, and error
+counting. Logs are formatted as JSON and can be output to the console.
+
+Usage:
+    error_counter = Counter(nvm)
+    logger = Logger(error_counter, log_level=LogLevel.INFO, colorized=True)
+    logger.info("This is an informational message.")
+    logger.error("This is an error message.", err=Exception("Something went wrong."))
 """
 
 import json
@@ -69,14 +72,7 @@ class LogLevel:
 
 
 class Logger:
-    """
-    Logger class for handling logging messages with different severity levels.
-
-    Attributes:
-        _error_counter (Counter): Counter for error occurrences.
-        _log_level (int): Current log level.
-        colorized (bool): Whether to colorize output.
-    """
+    """Handles logging messages with different severity levels."""
 
     def __init__(
         self,
@@ -109,6 +105,14 @@ class Logger:
         return level_value >= self._log_level
 
     def _is_valid_json_type(self, object) -> bool:
+        """Checks if the object is a valid JSON type.
+
+        Args:
+            object: The object to check.
+
+        Returns:
+            True if the object is a valid JSON type, False otherwise.
+        """
         valid_types = {dict, list, tuple, str, int, float, bool, None}
 
         return type(object) in valid_types

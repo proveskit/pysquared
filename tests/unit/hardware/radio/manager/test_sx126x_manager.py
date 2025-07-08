@@ -1,3 +1,10 @@
+"""Unit tests for the SX126xManager class.
+
+This module contains unit tests for the `SX126xManager` class, which manages
+SX126x radios. The tests cover initialization, sending and receiving data,
+and retrieving the current modulation.
+"""
+
 from typing import Generator
 from unittest.mock import MagicMock, call, patch
 
@@ -16,36 +23,43 @@ from pysquared.logger import Logger
 
 @pytest.fixture
 def mock_spi() -> MagicMock:
+    """Mocks the SPI bus."""
     return MagicMock(spec=SPI)
 
 
 @pytest.fixture
 def mock_chip_select() -> MagicMock:
+    """Mocks the chip select DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_reset() -> MagicMock:
+    """Mocks the reset DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_irq() -> MagicMock:
+    """Mocks the IRQ DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_gpio() -> MagicMock:
+    """Mocks the GPIO DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_logger() -> MagicMock:
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
 def mock_radio_config() -> RadioConfig:
+    """Provides a mock RadioConfig instance with default values."""
     # Using the same config as RFM9x for consistency, adjust if needed
     return RadioConfig(
         {
@@ -77,6 +91,18 @@ def mock_sx1262(
     mock_irq: MagicMock,
     mock_gpio: MagicMock,
 ) -> Generator[MagicMock, None, None]:
+    """Mocks the SX1262 class.
+
+    Args:
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_irq: Mocked IRQ pin.
+        mock_gpio: Mocked GPIO pin.
+
+    Yields:
+        A MagicMock instance of SX1262.
+    """
     with patch("pysquared.hardware.radio.manager.sx126x.SX1262") as mock_class:
         mock_class.return_value = SX1262(
             mock_spi, mock_chip_select, mock_reset, mock_irq, mock_gpio
@@ -94,7 +120,18 @@ def test_init_fsk_success(
     mock_gpio: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation == "FSK"."""
+    """Tests successful initialization when radio_config.modulation is FSK.
+
+    Args:
+        mock_sx1262: Mocked SX1262 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_irq: Mocked IRQ pin.
+        mock_gpio: Mocked GPIO pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_sx1262_instance = mock_sx1262.return_value
     mock_sx1262_instance.beginFSK = MagicMock()
     mock_sx1262_instance.begin = MagicMock()
@@ -134,7 +171,18 @@ def test_init_lora_success(
     mock_gpio: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation == "LoRa"."""
+    """Tests successful initialization when radio_config.modulation is LoRa.
+
+    Args:
+        mock_sx1262: Mocked SX1262 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_irq: Mocked IRQ pin.
+        mock_gpio: Mocked GPIO pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_sx1262_instance = mock_sx1262.return_value
     mock_sx1262_instance.beginFSK = MagicMock()
@@ -180,7 +228,18 @@ def test_init_with_retries_fsk(
     mock_gpio: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test __init__ retries on FSK initialization failure."""
+    """Tests __init__ retries on FSK initialization failure.
+
+    Args:
+        mock_sx1262: Mocked SX1262 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_irq: Mocked IRQ pin.
+        mock_gpio: Mocked GPIO pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_sx1262_instance = mock_sx1262.return_value
     mock_sx1262_instance.beginFSK = MagicMock()
     mock_sx1262_instance.beginFSK.side_effect = Exception("SPI Error")
@@ -213,7 +272,18 @@ def test_init_with_retries_lora(
     mock_gpio: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test __init__ retries on FSK initialization failure."""
+    """Tests __init__ retries on FSK initialization failure.
+
+    Args:
+        mock_sx1262: Mocked SX1262 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_irq: Mocked IRQ pin.
+        mock_gpio: Mocked GPIO pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_sx1262_instance = mock_sx1262.return_value
     mock_sx1262_instance.begin = MagicMock()
@@ -249,7 +319,21 @@ def initialized_manager(
     mock_gpio: MagicMock,
     mock_radio_config: RadioConfig,
 ) -> SX126xManager:
-    """Provides an initialized SX126xManager instance with a mock radio."""
+    """Provides an initialized SX126xManager instance with a mock radio.
+
+    Args:
+        mock_sx1262: Mocked SX1262 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_irq: Mocked IRQ pin.
+        mock_gpio: Mocked GPIO pin.
+        mock_radio_config: Mocked RadioConfig instance.
+
+    Returns:
+        An initialized SX126xManager instance.
+    """
     return SX126xManager(
         mock_logger,
         mock_radio_config,
@@ -265,7 +349,12 @@ def test_send_success_bytes(
     initialized_manager: SX126xManager,
     mock_logger: MagicMock,
 ):
-    """Test successful sending of bytes."""
+    """Tests successful sending of bytes.
+
+    Args:
+        initialized_manager: Initialized SX126xManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     data_bytes = b"Hello SX126x"
 
     initialized_manager._radio = MagicMock(spec=SX1262)
@@ -285,7 +374,18 @@ def test_send_unlicensed(
     mock_gpio: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test send attempt when not licensed."""
+    """Tests send attempt when not licensed.
+
+    Args:
+        mock_sx1262: Mocked SX1262 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_irq: Mocked IRQ pin.
+        mock_gpio: Mocked GPIO pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.license = ""  # Simulate unlicensed state
 
     manager = SX126xManager(
@@ -312,7 +412,13 @@ def test_send_radio_error(
     mock_logger: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test handling of error code returned by radio.send()."""
+    """Tests handling of error code returned by radio.send().
+
+    Args:
+        initialized_manager: Initialized SX126xManager instance.
+        mock_logger: Mocked Logger instance.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     initialized_manager._radio = MagicMock(spec=SX1262)
     initialized_manager._radio.send = MagicMock()
     initialized_manager._radio.send.return_value = (0, -1)
@@ -332,7 +438,13 @@ def test_send_exception(
     mock_logger: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test handling of exception during radio.send()."""
+    """Tests handling of exception during radio.send().
+
+    Args:
+        initialized_manager: Initialized SX126xManager instance.
+        mock_logger: Mocked Logger instance.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     initialized_manager._radio = MagicMock(spec=SX1262)
     initialized_manager._radio.send = MagicMock()
 
@@ -352,7 +464,13 @@ def test_receive_success(
     initialized_manager: SX126xManager,
     mock_logger: MagicMock,
 ):
-    """Test successful reception of a message."""
+    """Tests successful reception of a message.
+
+    Args:
+        mock_time: Mocked time module.
+        initialized_manager: Initialized SX126xManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     expected_data = b"SX Received"
     initialized_manager._radio = MagicMock(spec=SX1262)
     initialized_manager._radio.recv = MagicMock()
@@ -374,7 +492,13 @@ def test_receive_timeout(
     initialized_manager: SX126xManager,
     mock_logger: MagicMock,
 ):
-    """Test receiving when no message arrives before timeout."""
+    """Tests receiving when no message arrives before timeout.
+
+    Args:
+        mock_time: Mocked time module.
+        initialized_manager: Initialized SX126xManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     initialized_manager._radio = MagicMock(spec=SX1262)
     initialized_manager._radio.recv = MagicMock()
     initialized_manager._radio.recv.return_value = (b"", ERR_NONE)
@@ -402,7 +526,13 @@ def test_receive_radio_error(
     initialized_manager: SX126xManager,
     mock_logger: MagicMock,
 ):
-    """Test handling of error code returned by radio.recv()."""
+    """Tests handling of error code returned by radio.recv().
+
+    Args:
+        mock_time: Mocked time module.
+        initialized_manager: Initialized SX126xManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     error_code = -5
     initialized_manager._radio = MagicMock(spec=SX1262)
     initialized_manager._radio.recv = MagicMock()
@@ -424,7 +554,13 @@ def test_receive_exception(
     initialized_manager: SX126xManager,
     mock_logger: MagicMock,
 ):
-    """Test handling of exception during radio.recv()."""
+    """Tests handling of exception during radio.recv().
+
+    Args:
+        mock_time: Mocked time module.
+        initialized_manager: Initialized SX126xManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     initialized_manager._radio = MagicMock(spec=SX1262)
     receive_error = RuntimeError("SPI Comms Failed")
     initialized_manager._radio.recv = MagicMock()
@@ -450,7 +586,18 @@ def test_get_modulation_initialized(
     mock_gpio: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test get_modulation when radio is initialized."""
+    """Tests get_modulation when radio is initialized.
+
+    Args:
+        mock_sx1262: Mocked SX1262 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_irq: Mocked IRQ pin.
+        mock_gpio: Mocked GPIO pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
 
     manager = SX126xManager(
         mock_logger,

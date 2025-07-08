@@ -1,6 +1,15 @@
-"""
-Mock for Adafruit RFM SPI
-https://github.com/adafruit/Adafruit_CircuitPython_RFM/blob/8a55e345501e038996b2aa89e71d4e5e3ddbdebe/adafruit_rfm/rfm_common.py
+"""Mock for the Adafruit RFM SPI interface.
+
+This module provides a mock implementation of the Adafruit RFM SPI interface for
+testing purposes. It allows for simulating the behavior of the RFM SPI interface
+without the need for actual hardware.
+
+Usage:
+    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    cs = digitalio.DigitalInOut(board.D5)
+    reset = digitalio.DigitalInOut(board.D6)
+    rfm = RFMSPI(spi, cs, reset, 433.0)
+    rfm.send(b"Hello world!")
 """
 
 from typing import Optional
@@ -9,6 +18,8 @@ from circuitpython_typing import ReadableBuffer
 
 
 class RFMSPI:
+    """A mock RFM SPI interface."""
+
     node: int
     destination: int
 
@@ -21,9 +32,32 @@ class RFMSPI:
         node: Optional[int] = None,
         identifier: Optional[int] = None,
         flags: Optional[int] = None,
-    ) -> bool: ...
+    ) -> bool:
+        """Sends data over the radio.
 
-    def read_u8(self, address: int) -> int: ...
+        Args:
+            data: The data to send.
+            keep_listening: Whether to keep listening after sending.
+            destination: The destination node address.
+            node: The source node address.
+            identifier: The packet identifier.
+            flags: The packet flags.
+
+        Returns:
+            True if the data was sent successfully, False otherwise.
+        """
+        ...
+
+    def read_u8(self, address: int) -> int:
+        """Reads a byte from the given address.
+
+        Args:
+            address: The address to read from.
+
+        Returns:
+            The byte read from the address.
+        """
+        ...
 
     def receive(
         self,
@@ -31,4 +65,15 @@ class RFMSPI:
         keep_listening: bool = True,
         with_header: bool = False,
         timeout: Optional[float] = None,
-    ) -> Optional[bytearray]: ...
+    ) -> Optional[bytearray]:
+        """Receives data from the radio.
+
+        Args:
+            keep_listening: Whether to keep listening after receiving.
+            with_header: Whether to include the header in the received data.
+            timeout: The timeout for receiving data.
+
+        Returns:
+            The received data, or None if no data was received.
+        """
+        ...

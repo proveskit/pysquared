@@ -1,3 +1,18 @@
+"""This module provides a manager for the LSM6DSOX IMU.
+
+The LSM6DSOXManager class provides a high-level interface for interacting with the
+LSM6DSOX inertial measurement unit. It handles the initialization of the sensor and
+provides methods for reading gyroscope, acceleration, and temperature data.
+
+Usage:
+    logger = Logger()
+    i2c = busio.I2C(board.SCL, board.SDA)
+    imu = LSM6DSOXManager(logger, i2c, 0x6A)
+    gyro_data = imu.get_gyro_data()
+    accel_data = imu.get_acceleration()
+    temp_data = imu.get_temperature()
+"""
+
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from busio import I2C
 
@@ -9,10 +24,7 @@ from ...exception import HardwareInitializationError
 
 
 class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
-    """Manager class for creating LIS2MDL IMU instances.
-    The purpose of the manager class is to hide the complexity of IMU initialization from the caller.
-    Specifically we should try to keep adafruit_lsm6ds to only this manager class.
-    """
+    """Manages the LSM6DSOX IMU."""
 
     @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
@@ -21,13 +33,15 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
         i2c: I2C,
         address: int,
     ) -> None:
-        """Initialize the manager class.
+        """Initializes the LSM6DSOXManager.
 
-        :param Logger logger: Logger instance for logging messages.
-        :param busio.I2C i2c: The I2C bus connected to the chip.
-        :param int address: The I2C address of the IMU.
+        Args:
+            logger: The logger to use.
+            i2c: The I2C bus connected to the chip.
+            address: The I2C address of the IMU.
 
-        :raises HardwareInitializationError: If the IMU fails to initialize.
+        Raises:
+            HardwareInitializationError: If the IMU fails to initialize.
         """
         self._log: Logger = logger
 
@@ -38,12 +52,11 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
             raise HardwareInitializationError("Failed to initialize IMU") from e
 
     def get_gyro_data(self) -> tuple[float, float, float] | None:
-        """Get the gyroscope data from the inertial measurement unit.
+        """Gets the gyroscope data from the IMU.
 
-        :return: A tuple containing the x, y, and z angular acceleration values in radians per second or None if not available.
-        :rtype: tuple[float, float, float] | None
-
-        :raises Exception: If there is an error retrieving the values.
+        Returns:
+            A tuple containing the x, y, and z angular acceleration values in
+            radians per second, or None if the data is not available.
         """
         try:
             return self._imu.gyro
@@ -51,12 +64,11 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
             self._log.error("Error retrieving IMU gyro sensor values", e)
 
     def get_acceleration(self) -> tuple[float, float, float] | None:
-        """Get the acceleration data from the inertial measurement unit.
+        """Gets the acceleration data from the IMU.
 
-        :return: A tuple containing the x, y, and z acceleration values in m/s^2 or None if not available.
-        :rtype: tuple[float, float, float] | None
-
-        :raises Exception: If there is an error retrieving the values.
+        Returns:
+            A tuple containing the x, y, and z acceleration values in m/s^2, or
+            None if the data is not available.
         """
         try:
             return self._imu.acceleration
@@ -64,12 +76,10 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
             self._log.error("Error retrieving IMU acceleration sensor values", e)
 
     def get_temperature(self) -> float | None:
-        """Get the temperature reading from the inertial measurement unit, if available.
+        """Gets the temperature reading from the IMU.
 
-        :return: The temperature in degrees Celsius or None if not available.
-        :rtype: float | None
-
-        :raises Exception: If there is an error retrieving the temperature value.
+        Returns:
+            The temperature in degrees Celsius, or None if the data is not available.
         """
         try:
             return self._imu.temperature

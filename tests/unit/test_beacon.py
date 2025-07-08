@@ -1,3 +1,10 @@
+"""Unit tests for the Beacon class.
+
+This module contains unit tests for the `Beacon` class, which is responsible for
+collecting and sending telemetry data. The tests cover initialization, basic
+sending functionality, and sending with various sensor types.
+"""
+
 import json
 import time
 from typing import Optional, Type
@@ -22,70 +29,103 @@ from pysquared.protos.temperature_sensor import TemperatureSensorProto
 
 @pytest.fixture
 def mock_logger() -> MagicMock:
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
 def mock_packet_manager() -> MagicMock:
+    """Mocks the PacketManager class."""
     return MagicMock(spec=PacketManager)
 
 
 class MockRadio(RadioProto):
+    """Mocks the RadioProto for testing."""
+
     def send(self, data: object) -> bool:
+        """Mocks the send method."""
         return True
 
     def set_modulation(self, modulation: Type[RadioModulation]) -> None:
+        """Mocks the set_modulation method."""
         pass
 
     def get_modulation(self) -> Type[RadioModulation]:
+        """Mocks the get_modulation method."""
         return LoRa
 
     def receive(self, timeout: Optional[int] = None) -> Optional[bytes]:
+        """Mocks the receive method."""
         return b"test_data"
 
 
 class MockFlag(Flag):
+    """Mocks the Flag class for testing."""
+
     def get(self) -> bool:
+        """Mocks the get method."""
         return True
 
     def get_name(self) -> str:
+        """Mocks the get_name method."""
         return "test_flag"
 
 
 class MockCounter(Counter):
+    """Mocks the Counter class for testing."""
+
     def get(self) -> int:
+        """Mocks the get method."""
         return 42
 
     def get_name(self) -> str:
+        """Mocks the get_name method."""
         return "test_counter"
 
 
 class MockPowerMonitor(PowerMonitorProto):
+    """Mocks the PowerMonitorProto for testing."""
+
     def get_current(self) -> float:
+        """Mocks the get_current method."""
         return 0.5
 
     def get_bus_voltage(self) -> float:
+        """Mocks the get_bus_voltage method."""
         return 3.3
 
     def get_shunt_voltage(self) -> float:
+        """Mocks the get_shunt_voltage method."""
         return 0.1
 
 
 class MockTemperatureSensor(TemperatureSensorProto):
+    """Mocks the TemperatureSensorProto for testing."""
+
     def get_temperature(self) -> float:
+        """Mocks the get_temperature method."""
         return 22.5
 
 
 class MockIMU(IMUProto):
+    """Mocks the IMUProto for testing."""
+
     def get_gyro_data(self) -> tuple[float, float, float]:
+        """Mocks the get_gyro_data method."""
         return (0.1, 2.3, 4.5)
 
     def get_acceleration(self) -> tuple[float, float, float]:
+        """Mocks the get_acceleration method."""
         return (5.4, 3.2, 1.0)
 
 
 def test_beacon_init(mock_logger, mock_packet_manager):
-    """Test Beacon initialization."""
+    """Tests Beacon initialization.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     boot_time = time.time()
     beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, boot_time)
 
@@ -99,7 +139,13 @@ def test_beacon_init(mock_logger, mock_packet_manager):
 @freeze_time(time_to_freeze="2025-05-16 12:34:56", tz_offset=0)
 @patch("time.time")
 def test_beacon_send_basic(mock_time, mock_logger, mock_packet_manager):
-    """Test sending a basic beacon with no sensors."""
+    """Tests sending a basic beacon with no sensors.
+
+    Args:
+        mock_time: Mocked time.time function.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     boot_time = 1000.0
     mock_time.return_value = 1060.0  # 60 seconds after boot
 
@@ -116,6 +162,7 @@ def test_beacon_send_basic(mock_time, mock_logger, mock_packet_manager):
 
 @pytest.fixture
 def setup_datastore():
+    """Sets up a mock datastore for NVM components."""
     return ByteArray(size=17)
 
 
@@ -127,7 +174,14 @@ def test_beacon_send_with_sensors(
     mock_logger,
     mock_packet_manager,
 ):
-    """Test sending a beacon with sensors."""
+    """Tests sending a beacon with various sensor types.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     mock_flag_microcontroller.nvm = (
         setup_datastore  # Mock the nvm module to use the ByteArray
     )
@@ -185,7 +239,12 @@ def test_beacon_send_with_sensors(
 
 
 def test_beacon_avg_readings(mock_logger, mock_packet_manager):
-    """Test the avg_readings method in the context of the Beacon class."""
+    """Tests the avg_readings method in the context of the Beacon class.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
 
     # Test with a function that returns consistent values
@@ -205,7 +264,12 @@ def test_beacon_avg_readings(mock_logger, mock_packet_manager):
 
 
 def test_avg_readings_varying_values(mock_logger, mock_packet_manager):
-    """Test avg_readings with values that vary."""
+    """Tests avg_readings with values that vary.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
 
     # Create a simple counter function that returns incrementing values

@@ -1,3 +1,14 @@
+"""This module provides a manager for the Microcontroller's Real-Time Clock (RTC).
+
+This module defines the `MicrocontrollerManager` class, which provides an interface
+for interacting with the microcontroller's built-in RTC. It allows for setting
+the current time.
+
+Usage:
+    rtc_manager = MicrocontrollerManager()
+    rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 AM, Monday
+"""
+
 import time
 
 from ...protos.rtc import RTCProto
@@ -9,17 +20,12 @@ except ImportError:
 
 
 class MicrocontrollerManager(RTCProto):
-    """
-    Class for interfacing with the Microcontroller's Real Time Clock (RTC) via CircuitPython.
-
-    rtc.RTC is a singleton and does not need to be stored as a class variable.
-    """
+    """Manages the Microcontroller's Real Time Clock (RTC)."""
 
     def __init__(self) -> None:
-        """
-        Initialize the RTC
+        """Initializes the RTC.
 
-        Required on every boot to ensure the RTC is ready for use
+        This method is required on every boot to ensure the RTC is ready for use.
         """
         microcontroller_rtc = rtc.RTC()
         microcontroller_rtc.datetime = time.localtime()
@@ -34,16 +40,16 @@ class MicrocontrollerManager(RTCProto):
         second: int,
         weekday: int,
     ) -> None:
-        """
-        Updates the Microcontroller's Real Time Clock (RTC) to the date and time passed
+        """Updates the Microcontroller's Real Time Clock (RTC).
 
-        :param year: The year value (0-9999)
-        :param month: The month value (1-12)
-        :param date: The date value (1-31)
-        :param hour: The hour value (0-23)
-        :param minute: The minute value (0-59)
-        :param second: The second value (0-59)
-        :param day_of_week: The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday
+        Args:
+            year: The year value (0-9999).
+            month: The month value (1-12).
+            date: The date value (1-31).
+            hour: The hour value (0-23).
+            minute: The minute value (0-59).
+            second: The second value (0-59).
+            weekday: The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday.
         """
         microcontroller_rtc = rtc.RTC()
         microcontroller_rtc.datetime = time.struct_time(

@@ -1,10 +1,16 @@
-"""
-cdh Module
-==========
+"""This module provides the CommandDataHandler for managing and processing commands.
 
-This module provides the CommandDataHandler class for managing and processing
-commands received by the satellite, including command parsing, execution,
-and radio communication handling.
+This module is responsible for handling commands received by the satellite. It
+includes command parsing, validation, execution, and handling of radio
+communications. The CommandDataHandler class is the main entry point for this
+functionality.
+
+Usage:
+    logger = Logger()
+    config = Config("config.json")
+    packet_manager = PacketManager(logger, radio)
+    cdh = CommandDataHandler(logger, config, packet_manager)
+    cdh.listen_for_commands(timeout=60)
 """
 
 import json
@@ -20,17 +26,7 @@ from .logger import Logger
 
 
 class CommandDataHandler:
-    """
-    Handles command parsing, validation, and execution for the satellite.
-
-    Attributes:
-        logger (Logger): Logger instance for logging events and errors.
-        _commands (dict[bytes, str]): Mapping of command codes to handler method names.
-        _joke_reply (list[str]): List of joke replies for the joke_reply command.
-        _super_secret_code (bytes): Passcode required for command execution.
-        _repeat_code (bytes): Passcode for repeating the last message.
-        radio_manager (RFM9xManager): Radio manager for communication.
-    """
+    """Handles command parsing, validation, and execution for the satellite."""
 
     command_reset: str = "reset"
     command_change_radio_modulation: str = "change_radio_modulation"
@@ -43,15 +39,24 @@ class CommandDataHandler:
         packet_manager: PacketManager,
         send_delay: float = 0.2,
     ) -> None:
+        """Initializes the CommandDataHandler.
+
+        Args:
+            logger: The logger to use.
+            config: The configuration to use.
+            packet_manager: The packet manager to use for sending and receiving data.
+            send_delay: The delay between sending an acknowledgement and the response.
+        """
         self._log: Logger = logger
         self._config: Config = config
         self._packet_manager: PacketManager = packet_manager
         self._send_delay: float = send_delay
 
     def listen_for_commands(self, timeout: int) -> None:
-        """
-        Listen for commands from the radio and handle them.
-        :param timeout: Timeout in seconds for listening for commands.
+        """Listens for commands from the radio and handles them.
+
+        Args:
+            timeout: The time in seconds to listen for commands.
         """
         self._log.debug("Listening for commands...", timeout=timeout)
 
@@ -121,17 +126,16 @@ class CommandDataHandler:
             return
 
     def send_joke(self) -> None:
-        """
-        Send a random joke from the config.
-        """
+        """Sends a random joke from the config."""
         joke = random.choice(self._config.jokes)
         self._log.info("Sending joke", joke=joke)
         self._packet_manager.send(joke.encode("utf-8"))
 
     def change_radio_modulation(self, args: list[str]) -> None:
-        """
-        Change the radio modulation.
-        :param modulation: The new radio modulation to set.
+        """Changes the radio modulation.
+
+        Args:
+            args: A list of arguments, where the first argument is the new modulation.
         """
         modulation = "UNSET"
 
@@ -159,9 +163,7 @@ class CommandDataHandler:
             )
 
     def reset(self) -> None:
-        """
-        Reset the hardware.
-        """
+        """Resets the hardware."""
         self._log.info("Resetting satellite")
         self._packet_manager.send(data="Resetting satellite".encode("utf-8"))
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)

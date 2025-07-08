@@ -1,3 +1,17 @@
+"""This module provides a PacketManager for sending and receiving data over a radio.
+
+This module handles the fragmentation and reassembly of data into packets for
+transmission over a radio. It also provides methods for sending and receiving
+acknowledgments.
+
+Usage:
+    logger = Logger()
+    radio = RFM9xManager(logger, radio_config, spi, cs, reset)
+    packet_manager = PacketManager(logger, radio, "my_license_key")
+    packet_manager.send(b"Hello world!")
+    received_data = packet_manager.listen()
+"""
+
 import math
 import time
 
@@ -10,8 +24,9 @@ except ImportError:
     pass
 
 
-# TODO(nateinaction): Add retransmission support.
 class PacketManager:
+    """Manages the sending and receiving of data packets over a radio."""
+
     def __init__(
         self,
         logger: Logger,
@@ -19,7 +34,14 @@ class PacketManager:
         license: str,
         send_delay: float = 0.2,
     ) -> None:
-        """Initialize the packet manager with maximum packet size"""
+        """Initializes the PacketManager.
+
+        Args:
+            logger: The logger to use.
+            radio: The radio instance to use for communication.
+            license: The license key for sending data.
+            send_delay: The delay between sending packets.
+        """
         self._logger: Logger = logger
         self._radio: RadioProto = radio
         self._send_delay: float = send_delay
@@ -30,7 +52,14 @@ class PacketManager:
         self._payload_size: int = radio.get_max_packet_size() - self._header_size
 
     def send(self, data: bytes) -> bool:
-        """Send data"""
+        """Sends data over the radio.
+
+        Args:
+            data: The data to send.
+
+        Returns:
+            True if the data was sent successfully, False otherwise.
+        """
         if self._license == "":
             self._logger.warning("License is required to send data")
             return False
@@ -52,12 +81,19 @@ class PacketManager:
         return True
 
     def _pack_data(self, data: bytes) -> list[bytes]:
-        """
-        Takes input data and returns a list of packets ready for transmission
+        """Packs input data into a list of packets ready for transmission.
+
         Each packet includes:
         - 2 bytes: sequence number (0-based)
         - 2 bytes: total number of packets
+        - 1 byte: RSSI
         - remaining bytes: payload
+
+        Args:
+            data: The data to pack.
+
+        Returns:
+            A list of packets.
         """
         # Calculate number of packets needed
         total_packets: int = math.ceil(len(data) / self._payload_size)
@@ -88,10 +124,13 @@ class PacketManager:
         return packets
 
     def listen(self, timeout: Optional[int] = None) -> bytes | None:
-        """Listen for data from the radio.
+        """Listens for data from the radio.
 
-        :param int | None timeout: Optional receive timeout in seconds. If None, use the default timeout.
-        :return: The received data as bytes, or None if no data was received.
+        Args:
+            timeout: Optional receive timeout in seconds. If None, use the default timeout.
+
+        Returns:
+            The received data as bytes, or None if no data was received.
         """
         _timeout = timeout if timeout is not None else 10
 
@@ -140,14 +179,18 @@ class PacketManager:
         return self._unpack_data(received_packets)
 
     def send_acknowledgement(self) -> None:
-        """Send an acknowledgment to the radio."""
+        """Sends an acknowledgment to the radio."""
         self.send(b"ACK")
         self._logger.debug("Sent acknowledgment packet")
 
     def _unpack_data(self, packets: list[bytes]) -> bytes:
-        """
-        Takes a list of packets and reassembles the original data
-        Returns None if packets are missing or corrupted
+        """Unpacks a list of packets and reassembles the original data.
+
+        Args:
+            packets: A list of packets.
+
+        Returns:
+            The reassembled data.
         """
         sorted_packets: list = sorted(
             packets, key=lambda p: int.from_bytes(p[:2], "big")
@@ -156,7 +199,14 @@ class PacketManager:
         return b"".join(self._get_payload(packet) for packet in sorted_packets)
 
     def _get_header(self, packet: bytes) -> tuple[int, int, int]:
-        """Returns the sequence number and total packets stored in the header."""
+        """Returns the sequence number, total packets, and RSSI stored in the header.
+
+        Args:
+            packet: The packet to extract the header from.
+
+        Returns:
+            A tuple containing the sequence number, total packets, and RSSI.
+        """
         return (
             int.from_bytes(packet[0:2], "big"),  # sequence number
             int.from_bytes(packet[2:4], "big"),  # total packets
@@ -164,5 +214,12 @@ class PacketManager:
         )
 
     def _get_payload(self, packet: bytes) -> bytes:
-        """Returns the payload of the packet."""
+        """Returns the payload of the packet.
+
+        Args:
+            packet: The packet to extract the payload from.
+
+        Returns:
+            The payload of the packet.
+        """
         return packet[self._header_size :]

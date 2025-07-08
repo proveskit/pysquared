@@ -22,8 +22,10 @@ repos:
         args: [--fix, --select, I] # import sorting
       - id: ruff-format
 
-  - repo: https://github.com/econchick/interrogate
-    rev: 1.7.0
+  # Move back to econchick/interrogate once
+  # https://github.com/econchick/interrogate/issues/187 has been resolved
+  - repo: https://github.com/nateinaction/interrogate/
+    rev: 07d2503 # use-uv branch
     hooks:
       - id: interrogate
         args: [--config=pyproject.toml]
