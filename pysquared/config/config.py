@@ -126,7 +126,7 @@ class Config:
         }
 
     # validates values from input
-    def validate(self, key: str, value: object) -> None:
+    def validate(self, key: str, value) -> None:
         """
         Validates a configuration value against its schema.
 
@@ -165,7 +165,7 @@ class Config:
             self.radio.validate(key, value)
 
     # permanently updates values
-    def _save_config(self, key: str, value: object) -> None:
+    def _save_config(self, key: str, value) -> None:
         """
         Saves a configuration value to the JSON file.
 
@@ -183,13 +183,13 @@ class Config:
             f.write(json.dumps(json_data))
 
     # handles temp or permanent updates
-    def update_config(self, key: str, value: object, temporary: bool) -> None:
+    def update_config(self, key: str, value, temporary: bool) -> None:
         """
         Updates a configuration value, either temporarily (RAM only) or permanently (persisted to file).
 
         Args:
             key (str): The configuration key to update.
-            value (object): The new value to set.
+            value: The new value to set.
             temporary (bool): If True, update only in RAM; if False, persist to file.
 
         Raises:

@@ -61,12 +61,12 @@ class RadioProto:
         """
         ...
 
-    def modify_config(self, key: str, value: object) -> None:
+    def modify_config(self, key: str, value) -> None:
         """Modifies a specific radio configuration parameter.
 
         Args:
             key (str): The configuration parameter key to modify.
-            value (object): The new value to set for the parameter.
+            value: The new value to set for the parameter.
 
         Raises:
             NotImplementedError: If not implemented by subclass.

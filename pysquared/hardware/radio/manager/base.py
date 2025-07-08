@@ -116,7 +116,7 @@ class BaseRadioManager(RadioProto):
         """
         raise NotImplementedError
 
-    def modify_config(self, key: str, value: object) -> None:
+    def modify_config(self, key: str, value) -> None:
         """Modifies a specific radio configuration parameter.
 
         This method must be implemented by subclasses.
