@@ -4,7 +4,7 @@ site_url: https://docs.proveskit.space/
 repo_url: https://github.com/proveskit/pysquared
 repo_name: proveskit/pysquared
 site_dir: site
-watch: [mkdocs.yml, README.md, docs/]
+watch: [mkdocs.yaml, README.md, docs/]
 
 validation:
   omitted_files: warn
@@ -88,6 +88,12 @@ plugins:
               show_symbol_type_toc: true
               signature_crossrefs: true
               summary: true
+  - git-revision-date-localized:
+      enabled: true
+      enable_creation_date: true
+      type: timeago
+  - minify:
+      minify_html: true
 
 extra:
   social:
