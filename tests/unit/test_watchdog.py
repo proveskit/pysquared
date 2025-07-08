@@ -75,6 +75,7 @@ def test_watchdog_pet(
     value_during_sleep = None
 
     def check_value_and_sleep(_: float) -> None:
+        """Check the pin value and set it during sleep."""
         nonlocal value_during_sleep
         value_during_sleep = mock_digital_in_out.value
 

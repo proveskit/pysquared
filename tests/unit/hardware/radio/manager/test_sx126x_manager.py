@@ -217,8 +217,7 @@ def test_init_lora_success(
     )
 
 
-@pytest.mark.slow
-def test_init_with_retries_fsk(
+def test_init_failed_fsk(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -258,11 +257,10 @@ def test_init_with_retries_fsk(
     mock_logger.debug.assert_any_call(
         "Initializing radio", radio_type="SX126xManager", modulation=FSK.__name__
     )
-    assert mock_sx1262_instance.beginFSK.call_count == 3
+    mock_sx1262_instance.beginFSK.assert_called_once()
 
 
-@pytest.mark.slow
-def test_init_with_retries_lora(
+def test_init_failed_lora(
     mock_sx1262: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -305,7 +303,7 @@ def test_init_with_retries_lora(
         radio_type="SX126xManager",
         modulation=LoRa.__name__,
     )
-    assert mock_sx1262_instance.begin.call_count == 3
+    mock_sx1262_instance.begin.assert_called_once()
 
 
 @pytest.fixture

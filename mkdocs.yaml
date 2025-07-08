@@ -19,6 +19,7 @@ nav:
       - Mac: dev-guide-macos.md
       - Windows: dev-guide-windows.md
   - API Reference: api.md
+  - License: license.md
 
 
 theme:

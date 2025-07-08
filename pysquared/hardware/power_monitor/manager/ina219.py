@@ -18,14 +18,12 @@ from busio import I2C
 
 from ....logger import Logger
 from ....protos.power_monitor import PowerMonitorProto
-from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 
 
 class INA219Manager(PowerMonitorProto):
     """Manages the INA219 power monitor."""
 
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,

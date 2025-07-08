@@ -68,7 +68,7 @@ class RadioConfig:
             },
         }
 
-    def validate(self, key: str, value) -> None:
+    def validate(self, key: str, value: object) -> None:
         """
         Validates a radio configuration value against its schema.
 

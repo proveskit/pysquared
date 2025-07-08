@@ -12,7 +12,6 @@ Usage:
 from ....config.radio import RadioConfig
 from ....logger import Logger
 from ....protos.radio import RadioProto
-from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 from ..modulation import FSK, LoRa, RadioModulation
 
@@ -26,7 +25,6 @@ except ImportError:
 class BaseRadioManager(RadioProto):
     """Base class for radio managers (CircuitPython compatible)."""
 
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,
@@ -118,7 +116,7 @@ class BaseRadioManager(RadioProto):
         """
         raise NotImplementedError
 
-    def modify_config(self, key: str, value) -> None:
+    def modify_config(self, key: str, value: object) -> None:
         """Modifies a specific radio configuration parameter.
 
         This method must be implemented by subclasses.

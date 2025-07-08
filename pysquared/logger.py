@@ -169,7 +169,7 @@ class Logger:
                 )
             print(json_output)
 
-    def debug(self, message: str, **kwargs) -> None:
+    def debug(self, message: str, **kwargs: object) -> None:
         """
         Log a message with severity level DEBUG.
 
@@ -179,7 +179,7 @@ class Logger:
         """
         self._log("DEBUG", 1, message, **kwargs)
 
-    def info(self, message: str, **kwargs) -> None:
+    def info(self, message: str, **kwargs: object) -> None:
         """
         Log a message with severity level INFO.
 
@@ -189,7 +189,7 @@ class Logger:
         """
         self._log("INFO", 2, message, **kwargs)
 
-    def warning(self, message: str, **kwargs) -> None:
+    def warning(self, message: str, **kwargs: object) -> None:
         """
         Log a message with severity level WARNING.
 
@@ -199,7 +199,7 @@ class Logger:
         """
         self._log("WARNING", 3, message, **kwargs)
 
-    def error(self, message: str, err: Exception, **kwargs) -> None:
+    def error(self, message: str, err: Exception, **kwargs: object) -> None:
         """
         Log a message with severity level ERROR.
 
@@ -212,7 +212,7 @@ class Logger:
         self._error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
 
-    def critical(self, message: str, err: Exception, **kwargs) -> None:
+    def critical(self, message: str, err: Exception, **kwargs: object) -> None:
         """
         Log a message with severity level CRITICAL.
 

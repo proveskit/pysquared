@@ -58,8 +58,7 @@ def test_create_rtc(mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock) ->
     mock_logger.debug.assert_called_once_with("Initializing RTC")
 
 
-@pytest.mark.slow
-def test_create_with_retries(
+def test_create_rtc_failed(
     mock_rv3028: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,

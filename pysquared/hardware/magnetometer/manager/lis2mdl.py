@@ -16,14 +16,12 @@ from busio import I2C
 
 from ....logger import Logger
 from ....protos.magnetometer import MagnetometerProto
-from ...decorators import with_retries
 from ...exception import HardwareInitializationError
 
 
 class LIS2MDLManager(MagnetometerProto):
     """Manages the LIS2MDL magnetometer."""
 
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,

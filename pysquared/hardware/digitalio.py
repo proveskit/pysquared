@@ -11,11 +11,9 @@ from digitalio import DigitalInOut, Direction
 from microcontroller import Pin
 
 from ..logger import Logger
-from .decorators import with_retries
 from .exception import HardwareInitializationError
 
 
-@with_retries(max_attempts=3, initial_delay=1)
 def initialize_pin(
     logger: Logger, pin: Pin, direction: Direction, initial_value: bool
 ) -> DigitalInOut:

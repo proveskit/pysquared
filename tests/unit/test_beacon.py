@@ -249,6 +249,7 @@ def test_beacon_avg_readings(mock_logger, mock_packet_manager):
 
     # Test with a function that returns consistent values
     def constant_func():
+        """Returns a constant value."""
         return 5.0
 
     result = beacon.avg_readings(constant_func, num_readings=5)
@@ -256,6 +257,7 @@ def test_beacon_avg_readings(mock_logger, mock_packet_manager):
 
     # Test with a function that returns None
     def none_func():
+        """Returns None to simulate a sensor failure."""
         return None
 
     result = beacon.avg_readings(none_func)
@@ -280,6 +282,7 @@ def test_avg_readings_varying_values(mock_logger, mock_packet_manager):
     read_count = 0
 
     def incrementing_func():
+        """Returns incrementing values from the list."""
         nonlocal read_count
         value = values[read_count % len(values)]
         read_count += 1

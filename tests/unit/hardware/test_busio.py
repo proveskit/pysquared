@@ -56,7 +56,6 @@ def test_initialize_spi_bus_success(mock_spi: MagicMock):
     assert result == mock_spi_instance
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.busio.SPI")
 def test_initialize_spi_bus_failure(mock_spi: MagicMock):
     """Tests SPI bus initialization failure with retries.
@@ -80,7 +79,7 @@ def test_initialize_spi_bus_failure(mock_spi: MagicMock):
         initialize_spi_bus(mock_logger, mock_clock, mock_mosi, mock_miso)
 
     # Assertions
-    assert mock_spi.call_count == 3  # Called 3 times due to retries
+    mock_spi.assert_called_once()
     mock_logger.debug.assert_called_with("Initializing spi bus")
 
 
@@ -174,7 +173,6 @@ def test_initialize_i2c_bus_success(mock_i2c: MagicMock):
     assert result == mock_i2c_instance
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.busio.I2C")
 def test_initialize_i2c_bus_failure(mock_i2c: MagicMock):
     """Tests I2C bus initialization failure with retries.
@@ -197,5 +195,5 @@ def test_initialize_i2c_bus_failure(mock_i2c: MagicMock):
         initialize_i2c_bus(mock_logger, mock_scl, mock_sda, 1)
 
     # Assertions
-    assert mock_i2c.call_count == 3  # Called 3 times due to retries
+    mock_i2c.assert_called_once()
     mock_logger.debug.assert_called()

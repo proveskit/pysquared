@@ -39,7 +39,7 @@ def x_product(vector1: tuple, vector2: tuple) -> list:
     ]
 
 
-def gain_func():
+def gain_func() -> float:
     """
     Returns the gain value for the detumble control law.
 

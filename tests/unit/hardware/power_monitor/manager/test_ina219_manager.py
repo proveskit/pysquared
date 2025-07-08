@@ -58,8 +58,7 @@ def test_create_power_monitor(mock_ina219, mock_i2c, mock_logger):
     mock_logger.debug.assert_called_once_with("Initializing INA219 power monitor")
 
 
-@pytest.mark.slow
-def test_create_with_retries(mock_ina219, mock_i2c, mock_logger):
+def test_create_power_monitor_failed(mock_ina219, mock_i2c, mock_logger):
     """Tests that initialization is retried when it fails.
 
     Args:

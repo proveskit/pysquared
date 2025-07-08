@@ -60,8 +60,7 @@ def test_create_magnetometer(
     mock_logger.debug.assert_called_once_with("Initializing magnetometer")
 
 
-@pytest.mark.slow
-def test_create_with_retries(
+def test_create_magnetometer_failed(
     mock_lis2mdl: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,

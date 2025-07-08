@@ -108,7 +108,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         """
         return bool(self._radio.send(data))
 
-    def modify_config(self, key: str, value) -> None:
+    def modify_config(self, key: str, value: object) -> None:
         """Modifies a specific radio configuration parameter.
 
         Args:

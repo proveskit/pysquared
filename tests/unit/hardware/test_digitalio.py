@@ -45,7 +45,6 @@ def test_initialize_pin_success(mock_pin: MagicMock, mock_digital_in_out: MagicM
     mock_logger.debug.assert_called_once()
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.digitalio.DigitalInOut")
 @patch("pysquared.hardware.digitalio.Pin")
 def test_initialize_pin_failure(mock_pin: MagicMock, mock_digital_in_out: MagicMock):
@@ -71,5 +70,5 @@ def test_initialize_pin_failure(mock_pin: MagicMock, mock_digital_in_out: MagicM
         initialize_pin(mock_logger, mock_pin, mock_direction, initial_value)
 
     # Assertions
-    assert mock_digital_in_out.call_count == 3  # Called 3 times due to retries
+    mock_digital_in_out.assert_called_once_with(mock_pin)
     mock_logger.debug.assert_called()

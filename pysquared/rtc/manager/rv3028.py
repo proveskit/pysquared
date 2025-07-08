@@ -14,7 +14,6 @@ Usage:
 from busio import I2C
 from rv3028.rv3028 import RV3028
 
-from ...hardware.decorators import with_retries
 from ...hardware.exception import HardwareInitializationError
 from ...logger import Logger
 from ...protos.rtc import RTCProto
@@ -23,7 +22,6 @@ from ...protos.rtc import RTCProto
 class RV3028Manager(RTCProto):
     """Manages the RV3028 RTC."""
 
-    @with_retries(max_attempts=3, initial_delay=1)
     def __init__(
         self,
         logger: Logger,

@@ -256,8 +256,7 @@ def test_init_lora_high_sf_success(
     assert mock_lora_instance.preamble_length == 10
 
 
-@pytest.mark.slow
-def test_init_with_retries_fsk(
+def test_init_failed_fsk(
     mock_rfm9xfsk: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -289,11 +288,10 @@ def test_init_with_retries_fsk(
     mock_logger.debug.assert_called_with(
         "Initializing radio", radio_type="RFM9xManager", modulation=FSK.__name__
     )
-    assert mock_rfm9xfsk.call_count == 3
+    mock_rfm9xfsk.assert_called_once()
 
 
-@pytest.mark.slow
-def test_init_with_retries_lora(
+def test_init_failed_lora(
     mock_rfm9x: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -326,7 +324,7 @@ def test_init_with_retries_lora(
     mock_logger.debug.assert_called_with(
         "Initializing radio", radio_type="RFM9xManager", modulation=LoRa.__name__
     )
-    assert mock_rfm9x.call_count == 3
+    mock_rfm9x.assert_called_once()
 
 
 def test_send_success_bytes(
