@@ -1,3 +1,13 @@
+"""
+sleep_helper Module
+==================
+
+This module provides the SleepHelper class for managing safe sleep and hibernation
+modes for the PySquared satellite. It ensures the satellite sleeps for specified
+durations while maintaining system safety and watchdog activity.
+
+"""
+
 import time
 
 import alarm
@@ -10,16 +20,24 @@ from .watchdog import Watchdog
 
 class SleepHelper:
     """
-    Class responsible for sleeping the Satellite to conserve power
+    Class responsible for sleeping the Satellite to conserve power.
+
+    Attributes:
+        cubesat (Satellite): The Satellite object.
+        logger (Logger): Logger instance for logging events and errors.
+        watchdog (Watchdog): Watchdog instance for system safety.
+        config (Config): Configuration object.
     """
 
     def __init__(self, logger: Logger, config: Config, watchdog: Watchdog) -> None:
         """
         Creates a SleepHelper object.
 
-        :param cubesat: The Satellite object
-        :param logger: The Logger object allowing for log output
-
+        Args:
+            cubesat (Satellite): The Satellite object.
+            logger (Logger): Logger instance for logging events and errors.
+            watchdog (Watchdog): Watchdog instance for system safety.
+            config (Config): Configuration object.
         """
         self.logger: Logger = logger
         self.config: Config = config
@@ -27,11 +45,12 @@ class SleepHelper:
 
     def safe_sleep(self, duration) -> None:
         """
-        Puts the Satellite to sleep for specified duration, in seconds.
+        Puts the Satellite to sleep for a specified duration, in seconds.
 
         Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config
 
-        :param duration: Specified time, in seconds, to sleep the Satellite for
+        Args:
+            duration (int): Specified time, in seconds, to sleep the Satellite for.
         """
         # Ensure the duration does not exceed the longest allowable sleep time
         if duration > self.config.longest_allowable_sleep_time:
@@ -60,7 +79,6 @@ class SleepHelper:
             time_alarm: TimeAlarm = TimeAlarm(
                 monotonic_time=time.monotonic() + time_increment
             )
-
             alarm.light_sleep_until_alarms(time_alarm)
 
             # Pet the watchdog on wake

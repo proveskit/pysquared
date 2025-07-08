@@ -112,3 +112,12 @@ endif
 define compile_mpy
 	@$(UV) run python -c "import os, subprocess; [subprocess.run(['$(MPY_CROSS)', os.path.join(root, file)]) for root, _, files in os.walk('pysquared') for file in files if file.endswith('.py')]" || exit 1
 endef
+
+.PHONY: docs
+docs: uv
+	@$(UV) run mkdocs build
+	@$(UV) run mkdocs serve
+
+.PHONY: docs-deploy
+docs-deploy: uv
+	@$(UV) run mkdocs gh-deploy --config-file mkdocs.yaml --force

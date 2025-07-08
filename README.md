@@ -8,7 +8,7 @@ CircuitPython based Flight Software Library for the PROVES Kit. This repo contai
 # Development Getting Started
 We welcome contributions, so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
 
-You can find our Getting Started Guide [here](docs/dev-guide.md).
+You can find our Getting Started Guide [here](https://proveskit.github.io/pysquared/dev-guide/).
 
 ## Supported Boards
 

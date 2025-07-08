@@ -1,3 +1,12 @@
+"""
+cdh Module
+==========
+
+This module provides the CommandDataHandler class for managing and processing
+commands received by the satellite, including command parsing, execution,
+and radio communication handling.
+"""
+
 import json
 import random
 import time
@@ -12,7 +21,15 @@ from .logger import Logger
 
 class CommandDataHandler:
     """
-    Constructor
+    Handles command parsing, validation, and execution for the satellite.
+
+    Attributes:
+        logger (Logger): Logger instance for logging events and errors.
+        _commands (dict[bytes, str]): Mapping of command codes to handler method names.
+        _joke_reply (list[str]): List of joke replies for the joke_reply command.
+        _super_secret_code (bytes): Passcode required for command execution.
+        _repeat_code (bytes): Passcode for repeating the last message.
+        radio_manager (RFM9xManager): Radio manager for communication.
     """
 
     command_reset: str = "reset"

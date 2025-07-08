@@ -36,7 +36,7 @@ Windows Subsystem for Linux (WSL) is a nice way to have a POSIX compatible works
     wsl
     ```
 1. If you have Satellite hardware, [connect][connect-usb] and [mount][mount-disk] it in WSL.
-1. Continue with our [Linux Development Guide](docs/dev-guide-linux.md).
+1. Continue with our [Linux Development Guide](dev-guide-linux.md).
 
 ### A note on `make install`
 

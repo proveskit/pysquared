@@ -1,0 +1,21 @@
+name: Publish docs via GitHub Pages
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+      - name: Deploy docs
+        run: |
+          make docs-deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

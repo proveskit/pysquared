@@ -7,9 +7,9 @@ If this is your first time using CircuitPython, it is highly recommended that yo
 ## OS Specific Guides
 We suggest you get started with the development guide for your operating system:
 
-- [Windows](/docs/dev-guide-windows.md)
-- [MacOS](/docs/dev-guide-macos.md)
-- [Linux](/docs/dev-guide-linux.md)
+- [Windows](dev-guide-windows.md)
+- [MacOS](dev-guide-macos.md)
+- [Linux](dev-guide-linux.md)
 
 Once you have your development environment set up, you should be able to run the following command to finish the setup:
 ```sh

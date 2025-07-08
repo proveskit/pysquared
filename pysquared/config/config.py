@@ -1,14 +1,22 @@
 """
-Class for encapsulating config.json. The goal is to
-distribute these values across the files & variables
-that use them. Instantiation happens in main.
+Config module for PySquared.
 
-Also it allow values to be set temporarily or permanently using the
-update_config method. Validation occurs before the update.
+This module provides the `Config` class, which encapsulates the configuration
+logic for the PySquared project. It loads, validates, and updates configuration
+values from a JSON file, and distributes these values across the application.
 
-It is assumed the key and value to update are not empty when the
-funciton is called. Also, it's important not to use the same key for
-different values in the config file.
+Classes:
+    Config: Handles loading, validating, and updating configuration values,
+        including radio settings.
+
+Usage:
+    Instantiate the `Config` class with the path to the configuration JSON file.
+    Use the `update_config` method to update configuration values, either
+    temporarily (RAM only) or permanently (persisted to file).
+
+Example:
+    config = Config("config.json")
+    config.update_config("cubesat_name", "Cube1", temporary=False)
 """
 
 import json
@@ -17,7 +25,59 @@ from .radio import RadioConfig
 
 
 class Config:
+    """
+    Configuration handler for PySquared.
+
+    Loads configuration from a JSON file, validates values, and provides
+    methods to update configuration settings. Supports both temporary (RAM-only)
+    and permanent (file-persisted) updates. Delegates radio-related validation
+    and updates to the RadioConfig class.
+
+    Attributes:
+        config_file (str): Path to the configuration JSON file.
+        radio (RadioConfig): Radio configuration handler.
+        cubesat_name (str): Name of the cubesat.
+        sleep_duration (int): Sleep duration in seconds.
+        detumble_enable_z (bool): Enable detumbling on Z axis.
+        detumble_enable_x (bool): Enable detumbling on X axis.
+        detumble_enable_y (bool): Enable detumbling on Y axis.
+        jokes (list[str]): List of jokes for the cubesat.
+        debug (bool): Debug mode flag.
+        heating (bool): Heating system enabled flag.
+        normal_temp (int): Normal operating temperature.
+        normal_battery_temp (int): Normal battery temperature.
+        normal_micro_temp (int): Normal microcontroller temperature.
+        normal_charge_current (float): Normal charge current.
+        normal_battery_voltage (float): Normal battery voltage.
+        critical_battery_voltage (float): Critical battery voltage.
+        reboot_time (int): Time before reboot in seconds.
+        turbo_clock (bool): Turbo clock enabled flag.
+        super_secret_code (str): Secret code for special operations.
+        repeat_code (str): Code for repeated operations.
+        longest_allowable_sleep_time (int): Maximum allowable sleep time.
+        CONFIG_SCHEMA (dict): Validation schema for configuration keys.
+
+    Methods:
+        validate(key, value):
+            Validates a configuration value against its schema.
+        _save_config(key, value):
+            Saves a configuration value to the JSON file.
+        update_config(key, value, temporary):
+            Updates a configuration value, either temporarily or permanently.
+    """
+
     def __init__(self, config_path: str) -> None:
+        """
+        Initializes the Config object by loading values from the given JSON file.
+
+        Args:
+            config_path (str): Path to the configuration JSON file.
+
+        Raises:
+            FileNotFoundError: If the configuration file does not exist.
+            json.JSONDecodeError: If the configuration file is not valid JSON.
+        """
+
         self.config_file = config_path
         # parses json & assigns data to variables
         with open(self.config_file, "r") as f:
@@ -37,6 +97,7 @@ class Config:
         self.normal_micro_temp: int = json_data["normal_micro_temp"]
         self.normal_charge_current: float = json_data["normal_charge_current"]
         self.normal_battery_voltage: float = json_data["normal_battery_voltage"]
+        self.degraded_battery_voltage: float = json_data["degraded_battery_voltage"]
         self.critical_battery_voltage: float = json_data["critical_battery_voltage"]
         self.reboot_time: int = json_data["reboot_time"]
         self.turbo_clock: bool = json_data["turbo_clock"]
@@ -52,6 +113,7 @@ class Config:
             "repeat_code": {"type": bytes, "min": 1, "max": 4},
             "normal_charge_current": {"type": float, "min": 0.0, "max": 2000.0},
             "normal_battery_voltage": {"type": float, "min": 6.0, "max": 8.4},
+            "degraded_battery_voltage": {"type": float, "min": 5.4, "max": 8.0},
             "critical_battery_voltage": {"type": float, "min": 5.4, "max": 7.2},
             "sleep_duration": {"type": int, "min": 1, "max": 86400},
             "normal_temp": {"type": int, "min": 5, "max": 40},
@@ -68,6 +130,18 @@ class Config:
 
     # validates values from input
     def validate(self, key: str, value) -> None:
+        """
+        Validates a configuration value against its schema.
+
+        Args:
+            key (str): The configuration key to validate.
+            value: The value to validate.
+
+        Raises:
+            TypeError: If the value is not of the expected type.
+            ValueError: If the value is out of the allowed range or length.
+        """
+
         if key in self.CONFIG_SCHEMA:
             schema = self.CONFIG_SCHEMA[key]
             expected_type = schema["type"]
@@ -95,6 +169,14 @@ class Config:
 
     # permanently updates values
     def _save_config(self, key: str, value) -> None:
+        """
+        Saves a configuration value to the JSON file.
+
+        Args:
+            key (str): The configuration key to save.
+            value: The value to save.
+        """
+
         with open(self.config_file, "r") as f:
             json_data = json.loads(f.read())
 
@@ -105,6 +187,19 @@ class Config:
 
     # handles temp or permanent updates
     def update_config(self, key: str, value, temporary: bool) -> None:
+        """
+        Updates a configuration value, either temporarily (RAM only) or permanently (persisted to file).
+
+        Args:
+            key (str): The configuration key to update.
+            value: The new value to set.
+            temporary (bool): If True, update only in RAM; if False, persist to file.
+
+        Raises:
+            TypeError: If the value is not of the expected type.
+            ValueError: If the value is out of the allowed range or length.
+        """
+
         # validates key and value and should raise error if any
         if key in self.CONFIG_SCHEMA:
             self.validate(key, value)
