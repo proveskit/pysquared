@@ -36,6 +36,7 @@ dev = [
     "mkdocs-section-index==0.3.10",
     "mkdocs-git-revision-date-localized-plugin==1.4.7",
     "mkdocs-minify-plugin==0.7.1",
+    "mkdocs-llmstxt==0.2.0",
 ]
 
 [tool.setuptools]

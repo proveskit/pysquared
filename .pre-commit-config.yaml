@@ -17,7 +17,6 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
-        # args: [--ignore-words-list=docs,README.md,CONTRIBUTING.md,CHANGELOG.md,LICENSE,setup.cfg,pyproject.toml]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.6

@@ -19,7 +19,7 @@ Using the Git Bash terminal, you should now be able to run the `make` command in
 
 ### A note on `make install-flight-software`
 
-`make install-flight-software` is a command that can be used to quickly install the code you're working on onto the board. In Git Bash your mount point will be the letter of the drive location in windows. For example, if the board is mounted at `D:\` then your install command will look like:
+`make install-flight-software` is a command that can be used to quickly install the code you're working on onto the board.
 ```sh
 make install-flight-software BOARD_MOUNT_POINT=/d/
 ```
@@ -40,11 +40,7 @@ Windows Subsystem for Linux (WSL) is a nice way to have a POSIX compatible works
 
 ### A note on `make install-flight-software`
 
-`make install-flight-software` is a command that can be used to quickly install the code you're working on onto the board. In WSL your mount point will be the letter of the drive location in windows. For example, if the board is mounted at `D:\` then you must first mount the disk in WSL:
-```sh
-mkdir /mnt/d
-sudo mount -t drvfs D: /mnt/d
-```
+`make install-flight-software` is a command that can be used to quickly install the code you're working on onto the board.
 
 And your install command will look like:
 ```sh
@@ -53,6 +49,3 @@ make install-flight-software BOARD_MOUNT_POINT=/mnt/d/
 
 ## Accessing the Serial Console
 To see streaming logs and use the on-board repl you must access the Circuit Python serial console. For information on how to access the serial console, visit the [Circuit Python Serial Console documentation](https://learn.adafruit.com/welcome-to-circuitpython/advanced-serial-console-on-windows).
-
-[connect-usb]: https://learn.microsoft.com/en-us/windows/wsl/connect-usb "How to Connect USB to WSL"
-[mount-disk]: https://learn.microsoft.com/en-us/windows/wsl/wsl2-mount-disk "How to Mount a Disk to WSL"

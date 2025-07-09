@@ -1,7 +1,7 @@
 # Contributing Guide
 Welcome to the contributing guide for PySquared! This guide will help you set up your development environment and get you started with contributing to the repository.
 
-#### CircuitPython
+## CircuitPython
 If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview) to help you get started!
 
 ## OS Specific Guides
@@ -17,8 +17,6 @@ make
 ```
 
 ## Manually testing code on a board
-We are working on improving our automated testing but right now the best way to test your code is to run it on the board.
-
 Your board must be connected to your computer, the correct board repository cloned, and you must have installed the latest CircuitPython Firmware.
 
 Firmware can be installed by placing the board in Bootloader mode (by pressing both of the buttons simultaneously) and running the following command:

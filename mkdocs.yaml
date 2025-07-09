@@ -25,17 +25,17 @@ nav:
 theme:
   name: material
   features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.top
-    - navigation.path
-    - toc.integrate
-    - search.suggest
-    - search.highlight
-    - content.tabs.link
-    - header.autohide
-    - content.code.copy
-    - content.code.select
+  - content.action.edit
+  - content.code.copy
+  - content.code.select
+  - content.tabs.link
+  - header.autohide
+  - navigation.sections
+  - navigation.tabs
+  - navigation.top
+  - search.highlight
+  - search.suggest
+  - toc.follow
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
@@ -66,7 +66,17 @@ plugins:
   - search  # To have search functionality on the document
   - autorefs
   - section-index
-  # - llmstxt # Investigate using https://github.com/pawamoy/mkdocs-llmstxt to help llms understand the repository
+  - llmstxt:
+      full_output: llms-full.txt
+      sections:
+        Getting Started:
+        - getting-started.md
+        - contributing.md
+        - contributing-linux.md
+        - contributing-macos.md
+        - contributing-windows.md
+        API:
+        - api.md
   - mkdocstrings:
         handlers:
           python:
