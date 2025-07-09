@@ -1,4 +1,4 @@
-# Development Guide for MacOS
+# Contributing Guide for MacOS
 
 ## Setup
 

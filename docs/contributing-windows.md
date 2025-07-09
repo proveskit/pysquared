@@ -1,5 +1,5 @@
-# Development Guide for Windows
-Welcome to the Windows Development Guide for our project! This guide will help you set up your development environment on a Windows machine and get you started with contributing to the repository.
+# Contributing Guide for Windows
+Welcome to the Windows Contributing Guide for our project! This guide will help you set up your development environment on a Windows machine and get you started with contributing to the repository.
 
 Follow the instructions below for either a native Windows setup or using the Windows Subsystem for Linux (WSL).
 

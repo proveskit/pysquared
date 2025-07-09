@@ -1,5 +1,5 @@
-# Development Guide
-Welcome to the development guide for our project! This guide will help you set up your development environment and get you started with contributing to the repository.
+# Contributing Guide
+Welcome to the contributing guide for PySquared! This guide will help you set up your development environment and get you started with contributing to the repository.
 
 #### CircuitPython
 If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview) to help you get started!
@@ -7,9 +7,9 @@ If this is your first time using CircuitPython, it is highly recommended that yo
 ## OS Specific Guides
 We suggest you get started with the development guide for your operating system:
 
-- [Windows](dev-guide-windows.md)
-- [MacOS](dev-guide-macos.md)
-- [Linux](dev-guide-linux.md)
+- [Windows](ttps://proveskit.github.io/pysquared/contributing-windows)
+- [MacOS](ttps://proveskit.github.io/pysquared/contributing-macos)
+- [Linux](ttps://proveskit.github.io/pysquared/contributing-linux)
 
 Once you have your development environment set up, you should be able to run the following command to finish the setup:
 ```sh
@@ -28,12 +28,12 @@ make install-firmware
 
 In the board repository, you can run the following command to install code on the board:
 ```sh
-make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
+make install-flight-software BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
 ```
 
 If you need to install a specific version of the `pysquared` library, you can do so by running:
 ```sh
-PYSQUARED_VERSION=VERSION/BRANCH make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
+PYSQUARED_VERSION=VERSION/BRANCH make install-flight-software BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
 ```
 
 There is more information in the OS specific guides on how to find your board's mount point.

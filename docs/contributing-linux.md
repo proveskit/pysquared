@@ -1,4 +1,4 @@
-# Development Guide for Linux
+# Contributing Guide for Linux
 
 ## Setup
 

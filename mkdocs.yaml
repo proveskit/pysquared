@@ -4,7 +4,7 @@ site_url: https://docs.proveskit.space/
 repo_url: https://github.com/proveskit/pysquared
 repo_name: proveskit/pysquared
 site_dir: site
-watch: [mkdocs.yaml, README.md, docs/, pysquared/]
+watch: [mkdocs.yaml, README.md, CONTRIBUTING.md, docs/, pysquared/]
 
 validation:
   omitted_files: warn
@@ -13,11 +13,11 @@ validation:
 
 nav:
   - Home: index.md
-  - Getting Started:
-      - Introduction: dev-guide.md
-      - Linux: dev-guide-linux.md
-      - Mac: dev-guide-macos.md
-      - Windows: dev-guide-windows.md
+  - Contributing Guide:
+      - Introduction: contributing.md
+      - Linux: contributing-linux.md
+      - Mac: contributing-macos.md
+      - Windows: contributing-windows.md
   - API Reference: api.md
   - License: license.md
 
