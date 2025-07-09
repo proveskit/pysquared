@@ -62,6 +62,7 @@ class TestZSolarPanelManager:
         assert manager is not None
         assert hasattr(manager, "get_temperature")
         assert hasattr(manager, "get_light_level")
+        assert hasattr(manager, "get_all_data")
         assert hasattr(manager, "drive_torque_coils")
 
     def test_get_temperature_success(
@@ -241,6 +242,121 @@ class TestZSolarPanelManager:
         assert "light" in call_args[0][0].lower()  # Error message should mention light
         assert call_args[1]["err"] is not None  # Should have err parameter
 
+    def test_get_all_data_success(
+        self, z_solar_panel_manager, mock_temperature_sensor, mock_light_sensor
+    ):
+        """Test successful retrieval of all sensor data."""
+        expected_temp = 30.2
+        expected_light = 1200.0
+        mock_temperature_sensor.get_temperature.return_value = expected_temp
+        mock_light_sensor.get_light_level.return_value = expected_light
+
+        result = z_solar_panel_manager.get_all_data()
+
+        assert result == (expected_temp, expected_light)
+        mock_temperature_sensor.get_temperature.assert_called_once()
+        mock_light_sensor.get_light_level.assert_called_once()
+
+    def test_get_all_data_temperature_failure(
+        self,
+        z_solar_panel_manager,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_logger,
+    ):
+        """Test get_all_data when temperature sensor fails."""
+        expected_light = 1200.0
+        mock_temperature_sensor.get_temperature.side_effect = Exception(
+            "Temperature sensor error"
+        )
+        mock_light_sensor.get_light_level.return_value = expected_light
+
+        result = z_solar_panel_manager.get_all_data()
+
+        assert result == (None, expected_light)
+        mock_logger.error.assert_called_once()
+
+    def test_get_all_data_light_failure(
+        self,
+        z_solar_panel_manager,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_logger,
+    ):
+        """Test get_all_data when light sensor fails."""
+        expected_temp = 30.2
+        mock_temperature_sensor.get_temperature.return_value = expected_temp
+        mock_light_sensor.get_light_level.side_effect = Exception("Light sensor error")
+
+        result = z_solar_panel_manager.get_all_data()
+
+        assert result == (expected_temp, None)
+        mock_logger.error.assert_called_once()
+
+    def test_get_all_data_both_sensors_failure(
+        self,
+        z_solar_panel_manager,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_logger,
+    ):
+        """Test get_all_data when both sensors fail."""
+        mock_temperature_sensor.get_temperature.side_effect = Exception(
+            "Temperature sensor error"
+        )
+        mock_light_sensor.get_light_level.side_effect = Exception("Light sensor error")
+
+        result = z_solar_panel_manager.get_all_data()
+
+        assert result == (None, None)
+        assert mock_logger.error.call_count == 2
+
+    def test_get_all_data_temperature_sensor_none(
+        self, mock_logger, mock_light_sensor, mock_torque_coils
+    ):
+        """Test get_all_data when temperature sensor is None."""
+        manager = ZSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=None,
+            light_sensor=mock_light_sensor,
+            torque_coils=mock_torque_coils,
+        )
+
+        expected_light = 1200.0
+        mock_light_sensor.get_light_level.return_value = expected_light
+
+        result = manager.get_all_data()
+        assert result == (None, expected_light)
+
+    def test_get_all_data_light_sensor_none(
+        self, mock_logger, mock_temperature_sensor, mock_torque_coils
+    ):
+        """Test get_all_data when light sensor is None."""
+        manager = ZSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=mock_temperature_sensor,
+            light_sensor=None,
+            torque_coils=mock_torque_coils,
+        )
+
+        expected_temp = 30.2
+        mock_temperature_sensor.get_temperature.return_value = expected_temp
+
+        result = manager.get_all_data()
+        assert result == (expected_temp, None)
+
+    def test_get_all_data_both_sensors_none(self, mock_logger, mock_torque_coils):
+        """Test get_all_data when both sensors are None."""
+        manager = ZSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=None,
+            light_sensor=None,
+            torque_coils=mock_torque_coils,
+        )
+
+        result = manager.get_all_data()
+        assert result == (None, None)
+
     def test_multiple_torque_coil_operations(
         self, z_solar_panel_manager, mock_torque_coils
     ):
@@ -274,3 +390,53 @@ class TestZSolarPanelManager:
         result = manager.get_temperature()
         assert result is None
         mock_logger.error.assert_called_once()
+
+    def test_get_sensor_states_success(
+        self, z_solar_panel_manager, mock_temperature_sensor, mock_light_sensor
+    ):
+        """Test get_sensor_states returns correct sensor states."""
+        mock_temperature_sensor.get_state.return_value = "OK"
+        mock_light_sensor.get_state.return_value = "OK"
+        z_solar_panel_manager._sensor_states = {"temperature": "OK", "light": "OK"}
+        result = z_solar_panel_manager.get_sensor_states()
+        assert result == {"temperature": "OK", "light": "OK"}
+
+    def test_get_sensor_states_with_error(self, z_solar_panel_manager):
+        """Test get_sensor_states returns error state if set."""
+        z_solar_panel_manager._sensor_states = {"temperature": "ERROR", "light": "OK"}
+        result = z_solar_panel_manager.get_sensor_states()
+        assert result["temperature"] == "ERROR"
+        assert result["light"] == "OK"
+
+    def test_error_tracking_and_last_error(
+        self, z_solar_panel_manager, mock_temperature_sensor, mock_logger
+    ):
+        """Test error is counted and last error is stored when sensor fails."""
+        mock_temperature_sensor.get_temperature.side_effect = Exception(
+            "Temp sensor fail"
+        )
+        # Should log error, increment error count, and set last error
+        result = z_solar_panel_manager.get_temperature()
+        assert result is None
+        assert z_solar_panel_manager.get_error_count() == 1
+        assert "Temp sensor fail" in z_solar_panel_manager.get_last_error()
+        mock_logger.error.assert_called_once()
+
+    def test_multiple_errors_accumulate(
+        self, z_solar_panel_manager, mock_temperature_sensor, mock_logger
+    ):
+        """Test multiple errors are counted and last error is updated."""
+        mock_temperature_sensor.get_temperature.side_effect = Exception("First error")
+        z_solar_panel_manager.get_temperature()
+        mock_temperature_sensor.get_temperature.side_effect = Exception("Second error")
+        z_solar_panel_manager.get_temperature()
+        assert z_solar_panel_manager.get_error_count() == 2
+        assert "Second error" in z_solar_panel_manager.get_last_error()
+
+    def test_get_last_error_none_initially(self, z_solar_panel_manager):
+        """Test get_last_error returns None before any error occurs."""
+        assert z_solar_panel_manager.get_last_error() is None
+
+    def test_get_error_count_zero_initially(self, z_solar_panel_manager):
+        """Test get_error_count returns 0 before any error occurs."""
+        assert z_solar_panel_manager.get_error_count() == 0
