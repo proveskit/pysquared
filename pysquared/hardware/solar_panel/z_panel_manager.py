@@ -28,7 +28,7 @@ z_panel = ZSolarPanelManager(
 # Control power
 z_panel.enable_load()
 temp = z_panel.get_temperature()
-light = z_panel.get_light_level()
+light = z_panel.light()
 """
 
 from ...logger import Logger
@@ -73,7 +73,7 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             "light": "OK" if light_sensor else "NOT_AVAILABLE",
         }
 
-    def get_temperature(self) -> float:
+    def get_temperature(self) -> float | None:
         """Gets the current temperature of the solar panel.
 
         :return: The current temperature of the solar panel or None if sensor unavailable/failed
@@ -88,7 +88,7 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             return None
 
         try:
-            temperature = self._temperature_sensor.get_temperature()
+            temperature = self._temperature_sensor.temperature()
             self._sensor_states["temperature"] = "OK"
             return temperature
         except Exception as e:
@@ -98,7 +98,7 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             self._log.error("Failed to read Z solar panel temperature", err=e)
             return None
 
-    def get_light_level(self) -> float:
+    def get_light_level(self) -> float | None:
         """Gets the current light level of the solar panel.
 
         :return: The current light level of the solar panel or None if sensor unavailable/failed
@@ -113,7 +113,7 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             return None
 
         try:
-            light_level = self._light_sensor.get_light_level()
+            light_level = self._light_sensor.light()
             self._sensor_states["light"] = "OK"
             return light_level
         except Exception as e:
@@ -123,11 +123,11 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             self._log.error("Failed to read Z solar panel light level", err=e)
             return None
 
-    def get_all_data(self) -> tuple[float, float]:
+    def get_all_data(self) -> tuple[float | None, float | None]:
         """Gets all the data from the solar panel.
 
         :return: A tuple containing the temperature and light level of the solar panel
-        :rtype: tuple[float, float]
+        :rtype: tuple[float | None, float | None]
 
         :raises NotPowered: If the load switch is disabled.
         """

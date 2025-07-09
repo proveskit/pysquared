@@ -82,18 +82,18 @@ class TestZSolarPanelManager:
     ):
         """Test successful temperature reading."""
         expected_temp = 30.2
-        mock_temperature_sensor.get_temperature.return_value = expected_temp
+        mock_temperature_sensor.temperature.return_value = expected_temp
 
         result = z_solar_panel_manager.get_temperature()
 
         assert result == expected_temp
-        mock_temperature_sensor.get_temperature.assert_called_once()
+        mock_temperature_sensor.temperature.assert_called_once()
 
     def test_get_temperature_failure(
         self, z_solar_panel_manager, mock_temperature_sensor, mock_logger
     ):
         """Test temperature reading failure."""
-        mock_temperature_sensor.get_temperature.side_effect = Exception("Sensor error")
+        mock_temperature_sensor.temperature.side_effect = Exception("Sensor error")
 
         result = z_solar_panel_manager.get_temperature()
 
@@ -103,18 +103,18 @@ class TestZSolarPanelManager:
     def test_get_light_level_success(self, z_solar_panel_manager, mock_light_sensor):
         """Test successful light level reading."""
         expected_light = 1200.0
-        mock_light_sensor.get_light_level.return_value = expected_light
+        mock_light_sensor.light.return_value = expected_light
 
         result = z_solar_panel_manager.get_light_level()
 
         assert result == expected_light
-        mock_light_sensor.get_light_level.assert_called_once()
+        mock_light_sensor.light.assert_called_once()
 
     def test_get_light_level_failure(
         self, z_solar_panel_manager, mock_light_sensor, mock_logger
     ):
         """Test light level reading failure."""
-        mock_light_sensor.get_light_level.side_effect = Exception("Sensor error")
+        mock_light_sensor.light.side_effect = Exception("Sensor error")
 
         result = z_solar_panel_manager.get_light_level()
 
@@ -207,12 +207,12 @@ class TestZSolarPanelManager:
     ):
         """Test temperature reading within expected range."""
         # Test normal temperature range
-        mock_temperature_sensor.get_temperature.return_value = 15.0
+        mock_temperature_sensor.temperature.return_value = 15.0
         result = z_solar_panel_manager.get_temperature()
         assert -50.0 <= result <= 100.0
 
         # Test extreme temperatures
-        mock_temperature_sensor.get_temperature.return_value = 110.0
+        mock_temperature_sensor.temperature.return_value = 110.0
         result = z_solar_panel_manager.get_temperature()
         assert result == 110.0  # Should still return the value even if extreme
 
@@ -221,12 +221,12 @@ class TestZSolarPanelManager:
     ):
         """Test light level reading within expected range."""
         # Test normal light level range
-        mock_light_sensor.get_light_level.return_value = 800.0
+        mock_light_sensor.light.return_value = 800.0
         result = z_solar_panel_manager.get_light_level()
         assert 0.0 <= result <= 2000.0
 
         # Test extreme light levels
-        mock_light_sensor.get_light_level.return_value = -100.0
+        mock_light_sensor.light.return_value = -100.0
         result = z_solar_panel_manager.get_light_level()
         assert result == -100.0  # Should still return the value even if extreme
 
@@ -234,23 +234,23 @@ class TestZSolarPanelManager:
         self, z_solar_panel_manager, mock_temperature_sensor, mock_light_sensor
     ):
         """Test concurrent access to temperature and light sensors."""
-        mock_temperature_sensor.get_temperature.return_value = 35.0
-        mock_light_sensor.get_light_level.return_value = 900.0
+        mock_temperature_sensor.temperature.return_value = 35.0
+        mock_light_sensor.light.return_value = 900.0
 
         temp_result = z_solar_panel_manager.get_temperature()
         light_result = z_solar_panel_manager.get_light_level()
 
         assert temp_result == 35.0
         assert light_result == 900.0
-        mock_temperature_sensor.get_temperature.assert_called_once()
-        mock_light_sensor.get_light_level.assert_called_once()
+        mock_temperature_sensor.temperature.assert_called_once()
+        mock_light_sensor.light.assert_called_once()
 
     def test_error_logging_format(
         self, z_solar_panel_manager, mock_light_sensor, mock_logger
     ):
         """Test that errors are logged with proper format."""
         error_msg = "Light sensor communication failed"
-        mock_light_sensor.get_light_level.side_effect = Exception(error_msg)
+        mock_light_sensor.light.side_effect = Exception(error_msg)
 
         z_solar_panel_manager.get_light_level()
 
@@ -266,14 +266,14 @@ class TestZSolarPanelManager:
         """Test successful retrieval of all sensor data."""
         expected_temp = 30.2
         expected_light = 1200.0
-        mock_temperature_sensor.get_temperature.return_value = expected_temp
-        mock_light_sensor.get_light_level.return_value = expected_light
+        mock_temperature_sensor.temperature.return_value = expected_temp
+        mock_light_sensor.light.return_value = expected_light
 
         result = z_solar_panel_manager.get_all_data()
 
         assert result == (expected_temp, expected_light)
-        mock_temperature_sensor.get_temperature.assert_called_once()
-        mock_light_sensor.get_light_level.assert_called_once()
+        mock_temperature_sensor.temperature.assert_called_once()
+        mock_light_sensor.light.assert_called_once()
 
     def test_get_all_data_temperature_failure(
         self,
@@ -284,10 +284,10 @@ class TestZSolarPanelManager:
     ):
         """Test get_all_data when temperature sensor fails."""
         expected_light = 1200.0
-        mock_temperature_sensor.get_temperature.side_effect = Exception(
+        mock_temperature_sensor.temperature.side_effect = Exception(
             "Temperature sensor error"
         )
-        mock_light_sensor.get_light_level.return_value = expected_light
+        mock_light_sensor.light.return_value = expected_light
 
         result = z_solar_panel_manager.get_all_data()
 
@@ -303,8 +303,8 @@ class TestZSolarPanelManager:
     ):
         """Test get_all_data when light sensor fails."""
         expected_temp = 30.2
-        mock_temperature_sensor.get_temperature.return_value = expected_temp
-        mock_light_sensor.get_light_level.side_effect = Exception("Light sensor error")
+        mock_temperature_sensor.temperature.return_value = expected_temp
+        mock_light_sensor.light.side_effect = Exception("Light sensor error")
 
         result = z_solar_panel_manager.get_all_data()
 
@@ -319,10 +319,10 @@ class TestZSolarPanelManager:
         mock_logger,
     ):
         """Test get_all_data when both sensors fail."""
-        mock_temperature_sensor.get_temperature.side_effect = Exception(
+        mock_temperature_sensor.temperature.side_effect = Exception(
             "Temperature sensor error"
         )
-        mock_light_sensor.get_light_level.side_effect = Exception("Light sensor error")
+        mock_light_sensor.light.side_effect = Exception("Light sensor error")
 
         result = z_solar_panel_manager.get_all_data()
 
@@ -343,7 +343,7 @@ class TestZSolarPanelManager:
         manager.enable_load()
 
         expected_light = 1200.0
-        mock_light_sensor.get_light_level.return_value = expected_light
+        mock_light_sensor.light.return_value = expected_light
 
         result = manager.get_all_data()
         assert result == (None, expected_light)
@@ -362,7 +362,7 @@ class TestZSolarPanelManager:
         manager.enable_load()
 
         expected_temp = 30.2
-        mock_temperature_sensor.get_temperature.return_value = expected_temp
+        mock_temperature_sensor.temperature.return_value = expected_temp
 
         result = manager.get_all_data()
         assert result == (expected_temp, None)
@@ -400,7 +400,7 @@ class TestZSolarPanelManager:
 
     def test_sensor_initialization_failure(self, mock_logger, mock_temperature_sensor):
         """Test behavior when sensor initialization fails."""
-        mock_temperature_sensor.get_temperature.side_effect = RuntimeError(
+        mock_temperature_sensor.temperature.side_effect = RuntimeError(
             "Initialization failed"
         )
 
@@ -438,9 +438,7 @@ class TestZSolarPanelManager:
         self, z_solar_panel_manager, mock_temperature_sensor, mock_logger
     ):
         """Test error is counted and last error is stored when sensor fails."""
-        mock_temperature_sensor.get_temperature.side_effect = Exception(
-            "Temp sensor fail"
-        )
+        mock_temperature_sensor.temperature.side_effect = Exception("Temp sensor fail")
         # Should log error, increment error count, and set last error
         result = z_solar_panel_manager.get_temperature()
         assert result is None
@@ -452,9 +450,9 @@ class TestZSolarPanelManager:
         self, z_solar_panel_manager, mock_temperature_sensor, mock_logger
     ):
         """Test multiple errors are counted and last error is updated."""
-        mock_temperature_sensor.get_temperature.side_effect = Exception("First error")
+        mock_temperature_sensor.temperature.side_effect = Exception("First error")
         z_solar_panel_manager.get_temperature()
-        mock_temperature_sensor.get_temperature.side_effect = Exception("Second error")
+        mock_temperature_sensor.temperature.side_effect = Exception("Second error")
         z_solar_panel_manager.get_temperature()
         assert z_solar_panel_manager.get_error_count() == 2
         assert "Second error" in z_solar_panel_manager.get_last_error()
@@ -529,8 +527,8 @@ class TestZSolarPanelManager:
     ):
         """Test sensor operations work normally when load switch is enabled."""
         z_solar_panel_manager.enable_load()
-        mock_temperature_sensor.get_temperature.return_value = 30.2
-        mock_light_sensor.get_light_level.return_value = 1200.0
+        mock_temperature_sensor.temperature.return_value = 30.2
+        mock_light_sensor.light.return_value = 1200.0
 
         temp_result = z_solar_panel_manager.get_temperature()
         light_result = z_solar_panel_manager.get_light_level()
