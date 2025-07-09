@@ -50,7 +50,7 @@ This repo has a continuous integration system using Github Actions. Anytime you 
 Here are some common build failures you might see and how to fix them:
 
 #### Lint Failure
-Everytime you make a change in git, it's called a commit. We have a tool called a pre-commit hook that will run before you make each commit to ensure your code is safe and formatted correctly. If you experience a lint failure you can run the following to fix it for you or tell you what's wrong.
+Every time you make a change in git, it's called a commit. We have a tool called a pre-commit hook that will run before you make each commit to ensure your code is safe and formatted correctly. If you experience a lint failure you can run the following to fix it for you or tell you what's wrong.
 ```sh
 make fmt
 ```

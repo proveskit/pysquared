@@ -167,7 +167,7 @@ def test_burn_keyboard_interrupt(burnwire_manager):
         assert result is False
         # Check that the log contains the interruption message from burn()
         found = any(
-            "Burn Attempt Interupted after" in str(call[0][0])
+            "Burn Attempt Interrupted after" in str(call[0][0])
             for call in burnwire_manager._log.debug.call_args_list
         )
         assert found

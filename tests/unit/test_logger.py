@@ -126,14 +126,12 @@ def test_error_log(capsys, logger):
     logger.error(
         "This is an error message",
         OSError("Manually creating an OS Error for testing"),
-        hee="haa",
         pleiades="five",
         please="work",
     )
     captured = capsys.readouterr()
     assert "ERROR" in captured.out
     assert "This is an error message" in captured.out
-    assert '"hee": "haa"' in captured.out
     assert '"pleiades": "five"' in captured.out
     assert '"please": "work"' in captured.out
     assert "OSError: Manually creating an OS Error for testing" in captured.out
@@ -220,7 +218,6 @@ def test_error_log_color(capsys, logger_color):
     """
     logger_color.error(
         "This is an error message",
-        hee="haa",
         pleiades="five",
         please="work",
         err=OSError("Manually creating an OS Error"),
@@ -228,7 +225,6 @@ def test_error_log_color(capsys, logger_color):
     captured = capsys.readouterr()
     assert _color(msg="ERROR", color="pink") in captured.out
     assert "This is an error message" in captured.out
-    assert '"hee": "haa"' in captured.out
     assert '"pleiades": "five"' in captured.out
     assert '"please": "work"' in captured.out
 

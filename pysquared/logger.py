@@ -121,7 +121,7 @@ class Logger:
 
     def _log(self, level: str, level_value: int, message: str, **kwargs) -> None:
         """
-        Log a message with a given severity level and any addional key/values.
+        Log a message with a given severity level and any additional key/values.
 
         Args:
             level (str): The severity level as a string.

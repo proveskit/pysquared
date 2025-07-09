@@ -17,11 +17,11 @@ To set up your development environment on Windows, follow these steps:
 
 Using the Git Bash terminal, you should now be able to run the `make` command in the root of the repo to get started.
 
-### A note on `make install`
+### A note on `make install-flight-software`
 
-`make install` is a command that can be used to quickly install the code you're working on onto the board. In Git Bash your mount point will be the letter of the drive location in windows. For example, if the board is mounted at `D:\` then your install command will look like:
+`make install-flight-software` is a command that can be used to quickly install the code you're working on onto the board. In Git Bash your mount point will be the letter of the drive location in windows. For example, if the board is mounted at `D:\` then your install command will look like:
 ```sh
-make install BOARD_MOUNT_POINT=/d/
+make install-flight-software BOARD_MOUNT_POINT=/d/
 ```
 
 ## WSL Setup
@@ -38,9 +38,9 @@ Windows Subsystem for Linux (WSL) is a nice way to have a POSIX compatible works
 1. If you have Satellite hardware, [connect][connect-usb] and [mount][mount-disk] it in WSL.
 1. Continue with our [Linux Development Guide](dev-guide-linux.md).
 
-### A note on `make install`
+### A note on `make install-flight-software`
 
-`make install` is a command that can be used to quickly install the code you're working on onto the board. In WSL your mount point will be the letter of the drive location in windows. For example, if the board is mounted at `D:\` then you must first mount the disk in WSL:
+`make install-flight-software` is a command that can be used to quickly install the code you're working on onto the board. In WSL your mount point will be the letter of the drive location in windows. For example, if the board is mounted at `D:\` then you must first mount the disk in WSL:
 ```sh
 mkdir /mnt/d
 sudo mount -t drvfs D: /mnt/d
@@ -48,7 +48,7 @@ sudo mount -t drvfs D: /mnt/d
 
 And your install command will look like:
 ```sh
-make install BOARD_MOUNT_POINT=/mnt/d/
+make install-flight-software BOARD_MOUNT_POINT=/mnt/d/
 ```
 
 ## Accessing the Serial Console

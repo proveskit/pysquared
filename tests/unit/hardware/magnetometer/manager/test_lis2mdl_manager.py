@@ -119,7 +119,7 @@ def test_get_vector_failure(
     """
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
 
-    # Confgure the mock to raise an exception when accessing the magnetic property
+    # Configure the mock to raise an exception when accessing the magnetic property
     mock_mag_instance = MagicMock(spec=LIS2MDL)
     magnetometer._magnetometer = mock_mag_instance
     mock_magnetic_property = PropertyMock(

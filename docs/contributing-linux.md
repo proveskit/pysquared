@@ -11,8 +11,8 @@ To set up your development environment on Linux, follow these steps:
 
 You should now be able to run the `make` command in the root of the repo to get started.
 
-### A note on `make install`
-`make install` is a command that can be used to quickly install the code you're working on onto the board. On linux you can use the `findmnt` command to locate your board's mount point.
+### A note on `make install-flight-software`
+`make install-flight-software` is a command that can be used to quickly install the code you're working on onto the board. On linux you can use the `findmnt` command to locate your board's mount point.
 ```sh
 findmnt
 ...
@@ -21,7 +21,7 @@ findmnt
 
 For example, if the board is mounted at `/media/username/SOME-VALUE` then your install command will look like:
 ```sh
-make install BOARD_MOUNT_POINT=/media/username/SOME-VALUE/
+make install-flight-software BOARD_MOUNT_POINT=/media/username/SOME-VALUE/
 ```
 
 ## Accessing the Serial Console

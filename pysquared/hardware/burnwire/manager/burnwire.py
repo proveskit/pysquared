@@ -70,7 +70,7 @@ class BurnwireManager(BurnwireProto):
 
         except KeyboardInterrupt:
             self._log.debug(
-                f"Burn Attempt Interupted after {time.monotonic() - _start_time:.2f} seconds"
+                f"Burn Attempt Interrupted after {time.monotonic() - _start_time:.2f} seconds"
             )
             return False
 
