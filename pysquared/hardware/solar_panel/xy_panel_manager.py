@@ -46,6 +46,8 @@ class XYSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         temperature_sensor=None,
         light_sensor=None,
         torque_coils=None,
+        load_switch_pin=None,
+        enable_high=True,
     ) -> None:
         """
         Initializes the XY solar panel manager.
@@ -54,11 +56,17 @@ class XYSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :param temperature_sensor: Temperature sensor instance (can be None).
         :param light_sensor: Light sensor instance (can be None).
         :param torque_coils: Torque coils instance (can be None).
+        :param load_switch_pin: GPIO pin for controlling the load switch (can be None).
+        :param enable_high: If True, load switch enables when pin is HIGH. If False, enables when LOW.
         """
         self._log: Logger = logger
         self._temperature_sensor = temperature_sensor
         self._light_sensor = light_sensor
         self._torque_coils = torque_coils
+        self._load_switch_pin = load_switch_pin
+        # Store the pin values directly
+        self._enable_pin_value = enable_high
+        self._disable_pin_value = not enable_high
 
         # Load switch state (initially disabled for safety)
         self._load_enabled = False
@@ -195,7 +203,12 @@ class XYSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :rtype: bool
         """
         try:
-            # Implementation would depend on the specific load switch hardware
+            if self._load_switch_pin is not None:
+                self._load_switch_pin.value = self._enable_pin_value
+                self._log.debug(
+                    f"XY solar panel load switch pin set to {self._enable_pin_value}"
+                )
+
             self._load_enabled = True
             self._log.debug("XY solar panel load switch enabled")
             return True
@@ -210,7 +223,12 @@ class XYSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :rtype: bool
         """
         try:
-            # Implementation would depend on the specific load switch hardware
+            if self._load_switch_pin is not None:
+                self._load_switch_pin.value = self._disable_pin_value
+                self._log.debug(
+                    f"XY solar panel load switch pin set to {self._disable_pin_value}"
+                )
+
             self._load_enabled = False
             self._log.debug("XY solar panel load switch disabled")
             return True
@@ -225,7 +243,13 @@ class XYSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :rtype: bool
         """
         try:
-            # Reset typically disables the load for safety
+            if self._load_switch_pin is not None:
+                # Reset typically disables the load for safety
+                self._load_switch_pin.value = self._disable_pin_value
+                self._log.debug(
+                    f"XY solar panel load switch pin reset to {self._disable_pin_value}"
+                )
+
             self._load_enabled = False
             self._log.debug("XY solar panel load switch reset")
             return True

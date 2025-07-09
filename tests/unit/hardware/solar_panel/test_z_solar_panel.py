@@ -38,8 +38,18 @@ class TestZSolarPanelManager:
         return Mock()
 
     @pytest.fixture
+    def mock_load_switch_pin(self):
+        """Create a mock load switch pin for testing."""
+        return Mock()
+
+    @pytest.fixture
     def z_solar_panel_manager(
-        self, mock_logger, mock_temperature_sensor, mock_light_sensor, mock_torque_coils
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_torque_coils,
+        mock_load_switch_pin,
     ):
         """Create a ZSolarPanelManager instance for testing."""
         manager = ZSolarPanelManager(
@@ -47,13 +57,19 @@ class TestZSolarPanelManager:
             temperature_sensor=mock_temperature_sensor,
             light_sensor=mock_light_sensor,
             torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
         )
         # Enable load switch for testing
         manager.enable_load()
         return manager
 
     def test_initialization(
-        self, mock_logger, mock_temperature_sensor, mock_light_sensor, mock_torque_coils
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_torque_coils,
+        mock_load_switch_pin,
     ):
         """Test ZSolarPanelManager initialization."""
         manager = ZSolarPanelManager(
@@ -61,6 +77,7 @@ class TestZSolarPanelManager:
             temperature_sensor=mock_temperature_sensor,
             light_sensor=mock_light_sensor,
             torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
         )
 
         assert manager is not None
@@ -154,7 +171,11 @@ class TestZSolarPanelManager:
         mock_torque_coils.drive.assert_called_once_with(**test_params)
 
     def test_drive_torque_coils_not_implemented(
-        self, mock_logger, mock_temperature_sensor, mock_light_sensor
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_load_switch_pin,
     ):
         """Test torque coil driving when not implemented."""
         # Create manager without torque coils
@@ -163,6 +184,7 @@ class TestZSolarPanelManager:
             temperature_sensor=mock_temperature_sensor,
             light_sensor=mock_light_sensor,
             torque_coils=None,
+            load_switch_pin=mock_load_switch_pin,
         )
         # Enable load switch for testing
         manager.enable_load()
@@ -171,7 +193,7 @@ class TestZSolarPanelManager:
             manager.drive_torque_coils()
 
     def test_temperature_sensor_none(
-        self, mock_logger, mock_light_sensor, mock_torque_coils
+        self, mock_logger, mock_light_sensor, mock_torque_coils, mock_load_switch_pin
     ):
         """Test behavior when temperature sensor is None."""
         manager = ZSolarPanelManager(
@@ -179,6 +201,7 @@ class TestZSolarPanelManager:
             temperature_sensor=None,
             light_sensor=mock_light_sensor,
             torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
         )
         # Enable load switch for testing
         manager.enable_load()
@@ -187,7 +210,11 @@ class TestZSolarPanelManager:
         assert result is None
 
     def test_light_sensor_none(
-        self, mock_logger, mock_temperature_sensor, mock_torque_coils
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_torque_coils,
+        mock_load_switch_pin,
     ):
         """Test behavior when light sensor is None."""
         manager = ZSolarPanelManager(
@@ -195,6 +222,7 @@ class TestZSolarPanelManager:
             temperature_sensor=mock_temperature_sensor,
             light_sensor=None,
             torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
         )
         # Enable load switch for testing
         manager.enable_load()
@@ -330,7 +358,7 @@ class TestZSolarPanelManager:
         assert mock_logger.error.call_count == 2
 
     def test_get_all_data_temperature_sensor_none(
-        self, mock_logger, mock_light_sensor, mock_torque_coils
+        self, mock_logger, mock_light_sensor, mock_torque_coils, mock_load_switch_pin
     ):
         """Test get_all_data when temperature sensor is None."""
         manager = ZSolarPanelManager(
@@ -338,6 +366,7 @@ class TestZSolarPanelManager:
             temperature_sensor=None,
             light_sensor=mock_light_sensor,
             torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
         )
         # Enable load switch for testing
         manager.enable_load()
@@ -349,7 +378,11 @@ class TestZSolarPanelManager:
         assert result == (None, expected_light)
 
     def test_get_all_data_light_sensor_none(
-        self, mock_logger, mock_temperature_sensor, mock_torque_coils
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_torque_coils,
+        mock_load_switch_pin,
     ):
         """Test get_all_data when light sensor is None."""
         manager = ZSolarPanelManager(
@@ -357,6 +390,7 @@ class TestZSolarPanelManager:
             temperature_sensor=mock_temperature_sensor,
             light_sensor=None,
             torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
         )
         # Enable load switch for testing
         manager.enable_load()
@@ -367,13 +401,16 @@ class TestZSolarPanelManager:
         result = manager.get_all_data()
         assert result == (expected_temp, None)
 
-    def test_get_all_data_both_sensors_none(self, mock_logger, mock_torque_coils):
+    def test_get_all_data_both_sensors_none(
+        self, mock_logger, mock_torque_coils, mock_load_switch_pin
+    ):
         """Test get_all_data when both sensors are None."""
         manager = ZSolarPanelManager(
             logger=mock_logger,
             temperature_sensor=None,
             light_sensor=None,
             torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
         )
         # Enable load switch for testing
         manager.enable_load()
@@ -398,7 +435,9 @@ class TestZSolarPanelManager:
         # Verify both calls were made
         assert mock_torque_coils.drive.call_count == 2
 
-    def test_sensor_initialization_failure(self, mock_logger, mock_temperature_sensor):
+    def test_sensor_initialization_failure(
+        self, mock_logger, mock_temperature_sensor, mock_load_switch_pin
+    ):
         """Test behavior when sensor initialization fails."""
         mock_temperature_sensor.temperature.side_effect = RuntimeError(
             "Initialization failed"
@@ -409,6 +448,7 @@ class TestZSolarPanelManager:
             temperature_sensor=mock_temperature_sensor,
             light_sensor=None,
             torque_coils=None,
+            load_switch_pin=mock_load_switch_pin,
         )
         # Enable load switch for testing
         manager.enable_load()
@@ -553,3 +593,128 @@ class TestZSolarPanelManager:
         # This test verifies the current behavior
         result = z_solar_panel_manager.disable_load()
         assert result is True
+
+    def test_enable_load_with_gpio_pin_high(
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_torque_coils,
+        mock_load_switch_pin,
+    ):
+        """Test enable_load sets GPIO pin correctly for enable_high=True."""
+        manager = ZSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=mock_temperature_sensor,
+            light_sensor=mock_light_sensor,
+            torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
+            enable_high=True,
+        )
+
+        result = manager.enable_load()
+
+        assert result is True
+        assert manager.get_load_state() is True
+        assert mock_load_switch_pin.value is True
+        # Check that both debug messages were called
+        mock_logger.debug.assert_any_call("Z solar panel load switch pin set to True")
+        mock_logger.debug.assert_any_call("Z solar panel load switch enabled")
+
+    def test_enable_load_with_gpio_pin_low(
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_torque_coils,
+        mock_load_switch_pin,
+    ):
+        """Test enable_load sets GPIO pin correctly for enable_high=False."""
+        manager = ZSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=mock_temperature_sensor,
+            light_sensor=mock_light_sensor,
+            torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
+            enable_high=False,
+        )
+
+        result = manager.enable_load()
+
+        assert result is True
+        assert manager.get_load_state() is True
+        assert mock_load_switch_pin.value is False
+        # Check that both debug messages were called
+        mock_logger.debug.assert_any_call("Z solar panel load switch pin set to False")
+        mock_logger.debug.assert_any_call("Z solar panel load switch enabled")
+
+    def test_disable_load_with_gpio_pin_high(
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_torque_coils,
+        mock_load_switch_pin,
+    ):
+        """Test disable_load sets GPIO pin correctly for enable_high=True."""
+        manager = ZSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=mock_temperature_sensor,
+            light_sensor=mock_light_sensor,
+            torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
+            enable_high=True,
+        )
+
+        result = manager.disable_load()
+
+        assert result is True
+        assert manager.get_load_state() is False
+        assert mock_load_switch_pin.value is False
+        # Check that both debug messages were called
+        mock_logger.debug.assert_any_call("Z solar panel load switch pin set to False")
+        mock_logger.debug.assert_any_call("Z solar panel load switch disabled")
+
+    def test_disable_load_with_gpio_pin_low(
+        self,
+        mock_logger,
+        mock_temperature_sensor,
+        mock_light_sensor,
+        mock_torque_coils,
+        mock_load_switch_pin,
+    ):
+        """Test disable_load sets GPIO pin correctly for enable_high=False."""
+        manager = ZSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=mock_temperature_sensor,
+            light_sensor=mock_light_sensor,
+            torque_coils=mock_torque_coils,
+            load_switch_pin=mock_load_switch_pin,
+            enable_high=False,
+        )
+
+        result = manager.disable_load()
+
+        assert result is True
+        assert manager.get_load_state() is False
+        assert mock_load_switch_pin.value is True
+        # Check that both debug messages were called
+        mock_logger.debug.assert_any_call("Z solar panel load switch pin set to True")
+        mock_logger.debug.assert_any_call("Z solar panel load switch disabled")
+
+    def test_enable_load_without_gpio_pin(
+        self, mock_logger, mock_temperature_sensor, mock_light_sensor, mock_torque_coils
+    ):
+        """Test enable_load works without GPIO pin."""
+        manager = ZSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=mock_temperature_sensor,
+            light_sensor=mock_light_sensor,
+            torque_coils=mock_torque_coils,
+            load_switch_pin=None,
+        )
+
+        result = manager.enable_load()
+
+        assert result is True
+        assert manager.get_load_state() is True
