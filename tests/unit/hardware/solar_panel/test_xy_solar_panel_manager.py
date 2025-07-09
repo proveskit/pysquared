@@ -670,7 +670,7 @@ class TestXYSolarPanelManager:
     def test_enable_load_without_gpio_pin(
         self, mock_logger, mock_temperature_sensor, mock_light_sensor, mock_torque_coils
     ):
-        """Test enable_load works without GPIO pin."""
+        """Test enable_load raises NotImplementedError without GPIO pin."""
         manager = XYSolarPanelManager(
             logger=mock_logger,
             temperature_sensor=mock_temperature_sensor,
@@ -679,7 +679,41 @@ class TestXYSolarPanelManager:
             load_switch_pin=None,
         )
 
-        result = manager.enable_load()
+        with pytest.raises(
+            NotImplementedError, match="Load switch pin is required for XY solar panel"
+        ):
+            manager.enable_load()
 
-        assert result is True
-        assert manager.get_load_state() is True
+    def test_disable_load_without_gpio_pin(
+        self, mock_logger, mock_temperature_sensor, mock_light_sensor, mock_torque_coils
+    ):
+        """Test disable_load raises NotImplementedError without GPIO pin."""
+        manager = XYSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=mock_temperature_sensor,
+            light_sensor=mock_light_sensor,
+            torque_coils=mock_torque_coils,
+            load_switch_pin=None,
+        )
+
+        with pytest.raises(
+            NotImplementedError, match="Load switch pin is required for XY solar panel"
+        ):
+            manager.disable_load()
+
+    def test_reset_load_without_gpio_pin(
+        self, mock_logger, mock_temperature_sensor, mock_light_sensor, mock_torque_coils
+    ):
+        """Test reset_load raises NotImplementedError without GPIO pin."""
+        manager = XYSolarPanelManager(
+            logger=mock_logger,
+            temperature_sensor=mock_temperature_sensor,
+            light_sensor=mock_light_sensor,
+            torque_coils=mock_torque_coils,
+            load_switch_pin=None,
+        )
+
+        with pytest.raises(
+            NotImplementedError, match="Load switch pin is required for XY solar panel"
+        ):
+            manager.reset_load()

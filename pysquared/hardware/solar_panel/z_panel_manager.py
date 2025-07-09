@@ -201,13 +201,17 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
 
         :return: A Boolean indicating whether the enable command was successful
         :rtype: bool
+
+        :raises NotImplementedError: If no load switch pin is provided.
         """
+        if self._load_switch_pin is None:
+            raise NotImplementedError("Load switch pin is required for Z solar panel")
+
         try:
-            if self._load_switch_pin is not None:
-                self._load_switch_pin.value = self._enable_pin_value
-                self._log.debug(
-                    f"Z solar panel load switch pin set to {self._enable_pin_value}"
-                )
+            self._load_switch_pin.value = self._enable_pin_value
+            self._log.debug(
+                f"Z solar panel load switch pin set to {self._enable_pin_value}"
+            )
 
             self._load_enabled = True
             self._log.debug("Z solar panel load switch enabled")
@@ -221,13 +225,17 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
 
         :return: A Boolean indicating whether the disable command was successful
         :rtype: bool
+
+        :raises NotImplementedError: If no load switch pin is provided.
         """
+        if self._load_switch_pin is None:
+            raise NotImplementedError("Load switch pin is required for Z solar panel")
+
         try:
-            if self._load_switch_pin is not None:
-                self._load_switch_pin.value = self._disable_pin_value
-                self._log.debug(
-                    f"Z solar panel load switch pin set to {self._disable_pin_value}"
-                )
+            self._load_switch_pin.value = self._disable_pin_value
+            self._log.debug(
+                f"Z solar panel load switch pin set to {self._disable_pin_value}"
+            )
 
             self._load_enabled = False
             self._log.debug("Z solar panel load switch disabled")
@@ -241,14 +249,18 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
 
         :return: A Boolean indicating whether the reset command was successful
         :rtype: bool
+
+        :raises NotImplementedError: If no load switch pin is provided.
         """
+        if self._load_switch_pin is None:
+            raise NotImplementedError("Load switch pin is required for Z solar panel")
+
         try:
-            if self._load_switch_pin is not None:
-                # Reset typically disables the load for safety
-                self._load_switch_pin.value = self._disable_pin_value
-                self._log.debug(
-                    f"Z solar panel load switch pin set to {self._disable_pin_value}"
-                )
+            # Reset typically disables the load for safety
+            self._load_switch_pin.value = self._disable_pin_value
+            self._log.debug(
+                f"Z solar panel load switch pin set to {self._disable_pin_value}"
+            )
 
             self._load_enabled = False
             self._log.debug("Z solar panel load switch reset")
