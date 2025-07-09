@@ -9,6 +9,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from pysquared.hardware.exception import NotPowered
 from pysquared.hardware.solar_panel.z_panel_manager import ZSolarPanelManager
 from pysquared.logger import Logger
 
@@ -64,6 +65,14 @@ class TestZSolarPanelManager:
         assert hasattr(manager, "get_light_level")
         assert hasattr(manager, "get_all_data")
         assert hasattr(manager, "drive_torque_coils")
+        assert hasattr(manager, "get_sensor_states")
+        assert hasattr(manager, "get_last_error")
+        assert hasattr(manager, "get_error_count")
+        # Load switch methods
+        assert hasattr(manager, "enable_load")
+        assert hasattr(manager, "disable_load")
+        assert hasattr(manager, "reset_load")
+        assert hasattr(manager, "get_load_state")
 
     def test_get_temperature_success(
         self, z_solar_panel_manager, mock_temperature_sensor
@@ -440,3 +449,87 @@ class TestZSolarPanelManager:
     def test_get_error_count_zero_initially(self, z_solar_panel_manager):
         """Test get_error_count returns 0 before any error occurs."""
         assert z_solar_panel_manager.get_error_count() == 0
+
+    # Load Switch Tests
+    def test_enable_load_success(self, z_solar_panel_manager, mock_logger):
+        """Test successful load switch enable."""
+        result = z_solar_panel_manager.enable_load()
+        assert result is True
+        assert z_solar_panel_manager.get_load_state() is True
+
+    def test_disable_load_success(self, z_solar_panel_manager, mock_logger):
+        """Test successful load switch disable."""
+        # First enable, then disable
+        z_solar_panel_manager.enable_load()
+        result = z_solar_panel_manager.disable_load()
+        assert result is True
+        assert z_solar_panel_manager.get_load_state() is False
+
+    def test_reset_load_success(self, z_solar_panel_manager, mock_logger):
+        """Test successful load switch reset."""
+        result = z_solar_panel_manager.reset_load()
+        assert result is True
+        # Reset should typically disable the load
+        assert z_solar_panel_manager.get_load_state() is False
+
+    def test_get_load_state_initial(self, z_solar_panel_manager):
+        """Test initial load state."""
+        # Initial state should be disabled for safety
+        assert z_solar_panel_manager.get_load_state() is False
+
+    # NotPowered Error Tests
+    def test_temperature_not_powered_error(
+        self, z_solar_panel_manager, mock_temperature_sensor
+    ):
+        """Test NotPowered error when load switch is disabled for temperature reading."""
+        z_solar_panel_manager.disable_load()
+        with pytest.raises(NotPowered):
+            z_solar_panel_manager.get_temperature()
+
+    def test_light_level_not_powered_error(
+        self, z_solar_panel_manager, mock_light_sensor
+    ):
+        """Test NotPowered error when load switch is disabled for light reading."""
+        z_solar_panel_manager.disable_load()
+        with pytest.raises(NotPowered):
+            z_solar_panel_manager.get_light_level()
+
+    def test_get_all_data_not_powered_error(self, z_solar_panel_manager):
+        """Test NotPowered error when load switch is disabled for get_all_data."""
+        z_solar_panel_manager.disable_load()
+        with pytest.raises(NotPowered):
+            z_solar_panel_manager.get_all_data()
+
+    def test_drive_torque_coils_not_powered_error(self, z_solar_panel_manager):
+        """Test NotPowered error when load switch is disabled for torque coils."""
+        z_solar_panel_manager.disable_load()
+        with pytest.raises(NotPowered):
+            z_solar_panel_manager.drive_torque_coils()
+
+    def test_sensor_operations_work_when_powered(
+        self, z_solar_panel_manager, mock_temperature_sensor, mock_light_sensor
+    ):
+        """Test sensor operations work normally when load switch is enabled."""
+        z_solar_panel_manager.enable_load()
+        mock_temperature_sensor.get_temperature.return_value = 30.2
+        mock_light_sensor.get_light_level.return_value = 1200.0
+
+        temp_result = z_solar_panel_manager.get_temperature()
+        light_result = z_solar_panel_manager.get_light_level()
+
+        assert temp_result == 30.2
+        assert light_result == 1200.0
+
+    def test_load_switch_enable_failure(self, z_solar_panel_manager, mock_logger):
+        """Test load switch enable failure."""
+        # Mock the enable operation to fail
+        z_solar_panel_manager._enable_load_switch = lambda: False
+        result = z_solar_panel_manager.enable_load()
+        assert result is False
+
+    def test_load_switch_disable_failure(self, z_solar_panel_manager, mock_logger):
+        """Test load switch disable failure."""
+        # Mock the disable operation to fail
+        z_solar_panel_manager._disable_load_switch = lambda: False
+        result = z_solar_panel_manager.disable_load()
+        assert result is False

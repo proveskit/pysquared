@@ -3,7 +3,7 @@ Protocol defining the interface for a load switch controller.
 """
 
 
-class LoadSwtichProto:
+class LoadSwitchProto:
     def enable_load(self) -> bool:
         """Enables the load switch
 
