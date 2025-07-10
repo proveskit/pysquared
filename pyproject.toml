@@ -50,6 +50,7 @@ packages = [
     "pysquared.hardware.power_monitor.manager",
     "pysquared.hardware.burnwire",
     "pysquared.hardware.burnwire.manager",
+    "pysquared.hardware.solar_panel",
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.rtc",
