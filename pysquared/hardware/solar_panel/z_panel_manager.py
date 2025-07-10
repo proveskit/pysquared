@@ -96,7 +96,7 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             return None
 
         try:
-            temperature = self._temperature_sensor.temperature()
+            temperature = self._temperature_sensor.temperature
             self._sensor_states["temperature"] = "OK"
             return temperature
         except Exception as e:
@@ -121,7 +121,7 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             return None
 
         try:
-            light_level = self._light_sensor.light()
+            light_level = self._light_sensor.light
             self._sensor_states["light"] = "OK"
             return light_level
         except Exception as e:
