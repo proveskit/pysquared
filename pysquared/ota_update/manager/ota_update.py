@@ -108,6 +108,82 @@ class OTAUpdateManager(OTAUpdateProto):
         _walk_recursive(base_path)
         return file_paths
 
+    def _create_md5_checksum_adafruit(self, file_path: str, timeout: float) -> str:
+        """Create MD5 checksum using adafruit_hashlib.
+
+        :param str file_path: The path to the file to checksum.
+        :param float timeout: Maximum time to allow for reading the file.
+        :return: The MD5 checksum as a hexadecimal string.
+        :raises TimeoutError: If reading the file takes longer than the timeout.
+        """
+        import time
+
+        import adafruit_hashlib  # type: ignore[import]
+
+        hash_md5 = adafruit_hashlib.new("md5")
+        with open(file_path, "rb") as f:
+            start_time = time.monotonic()
+            while True:
+                if time.monotonic() - start_time > timeout:
+                    raise TimeoutError(
+                        f"File read operation timed out after {timeout} seconds"
+                    )
+                chunk = f.read(4096)
+                if not chunk:  # Empty chunk means end of file
+                    break
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+
+    def _create_md5_checksum_hashlib(self, file_path: str, timeout: float) -> str:
+        """Create MD5 checksum using standard hashlib.
+
+        :param str file_path: The path to the file to checksum.
+        :param float timeout: Maximum time to allow for reading the file.
+        :return: The MD5 checksum as a hexadecimal string.
+        :raises TimeoutError: If reading the file takes longer than the timeout.
+        """
+        import hashlib
+        import time
+
+        hash_md5 = hashlib.md5()
+        with open(file_path, "rb") as f:
+            start_time = time.monotonic()
+            while True:
+                if time.monotonic() - start_time > timeout:
+                    raise TimeoutError(
+                        f"File read operation timed out after {timeout} seconds"
+                    )
+                chunk = f.read(4096)
+                if not chunk:  # Empty chunk means end of file
+                    break
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+
+    def _create_simple_checksum(self, file_path: str, timeout: float) -> str:
+        """Create a simple 16-bit checksum as fallback.
+
+        :param str file_path: The path to the file to checksum.
+        :param float timeout: Maximum time to allow for reading the file.
+        :return: The simple checksum as a hexadecimal string.
+        :raises TimeoutError: If reading the file takes longer than the timeout.
+        """
+        import time
+
+        checksum = 0
+        with open(file_path, "rb") as f:
+            start_time = time.monotonic()
+            while True:
+                if time.monotonic() - start_time > timeout:
+                    raise TimeoutError(
+                        f"File read operation timed out after {timeout} seconds"
+                    )
+                chunk = f.read(4096)
+                if not chunk:  # Empty chunk means end of file
+                    break
+                for byte in chunk:
+                    checksum = (checksum + byte) & 0xFFFF  # 16-bit checksum
+        return f"{checksum:04x}"
+
     def create_file_checksum(self, file_path: str, timeout: float = 5.0) -> str:
         """Create a checksum for a single file.
 
@@ -118,63 +194,20 @@ class OTAUpdateManager(OTAUpdateProto):
         :raises Exception: If there is an error reading the file or creating the checksum.
         :raises TimeoutError: If reading the file takes longer than the timeout.
         """
-        import time
-
         try:
             if not self._file_exists(file_path):
                 raise Exception(f"File not found: {file_path}")
 
             # Try to use adafruit_hashlib first (CircuitPython)
             try:
-                import adafruit_hashlib  # type: ignore[import]
-
-                hash_md5 = adafruit_hashlib.new("md5")
-                with open(file_path, "rb") as f:
-                    start_time = time.monotonic()
-                    while True:
-                        if time.monotonic() - start_time > timeout:
-                            raise TimeoutError(
-                                f"File read operation timed out after {timeout} seconds"
-                            )
-                        chunk = f.read(4096)
-                        if not chunk:  # Empty chunk means end of file
-                            break
-                        hash_md5.update(chunk)
-                checksum_str = hash_md5.hexdigest()
+                checksum_str = self._create_md5_checksum_adafruit(file_path, timeout)
             except ImportError:
                 # Fallback to standard hashlib
                 try:
-                    import hashlib
-
-                    hash_md5 = hashlib.md5()
-                    with open(file_path, "rb") as f:
-                        start_time = time.monotonic()
-                        while True:
-                            if time.monotonic() - start_time > timeout:
-                                raise TimeoutError(
-                                    f"File read operation timed out after {timeout} seconds"
-                                )
-                            chunk = f.read(4096)
-                            if not chunk:  # Empty chunk means end of file
-                                break
-                            hash_md5.update(chunk)
-                    checksum_str = hash_md5.hexdigest()
+                    checksum_str = self._create_md5_checksum_hashlib(file_path, timeout)
                 except ImportError:
                     # Fallback: simple checksum
-                    checksum = 0
-                    with open(file_path, "rb") as f:
-                        start_time = time.monotonic()
-                        while True:
-                            if time.monotonic() - start_time > timeout:
-                                raise TimeoutError(
-                                    f"File read operation timed out after {timeout} seconds"
-                                )
-                            chunk = f.read(4096)
-                            if not chunk:  # Empty chunk means end of file
-                                break
-                            for byte in chunk:
-                                checksum = (checksum + byte) & 0xFFFF  # 16-bit checksum
-                    checksum_str = f"{checksum:04x}"
+                    checksum_str = self._create_simple_checksum(file_path, timeout)
 
             self._log.debug(
                 "Created checksum for file", file_path=file_path, checksum=checksum_str
@@ -198,6 +231,34 @@ class OTAUpdateManager(OTAUpdateProto):
             self._log.error("Error creating file checksum", err=e, file_path=file_path)
             raise
 
+    def _process_single_file_checksum(
+        self, base_path: str, relative_path: str
+    ) -> "Optional[str]":
+        """Process a single file to create its checksum.
+
+        :param str base_path: The base directory path.
+        :param str relative_path: The relative path of the file.
+        :return: The checksum if successful, None if failed.
+        """
+        import gc
+
+        # Construct full path
+        full_path = base_path + "/" + relative_path if base_path else relative_path
+
+        try:
+            checksum = self.create_file_checksum(full_path)
+            return checksum
+        except Exception as e:
+            self._log.warning(
+                "Failed to create checksum for file",
+                file_path=relative_path,
+                err=e,
+            )
+            return None
+        finally:
+            # Force garbage collection after each file to prevent memory buildup
+            gc.collect()
+
     def create_codebase_checksum(
         self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
     ) -> "Dict[str, str]":
@@ -219,21 +280,11 @@ class OTAUpdateManager(OTAUpdateProto):
             # Get all files in the directory tree
             file_paths = self._walk_directory(base_path, exclude_patterns)
 
+            # Process each file
             for relative_path in file_paths:
-                # Construct full path
-                full_path = (
-                    base_path + "/" + relative_path if base_path else relative_path
-                )
-
-                try:
-                    checksum = self.create_file_checksum(full_path)
+                checksum = self._process_single_file_checksum(base_path, relative_path)
+                if checksum is not None:
                     checksums[relative_path] = checksum
-                except Exception as e:
-                    self._log.warning(
-                        "Failed to create checksum for file",
-                        file_path=relative_path,
-                        err=e,
-                    )
 
             self._log.info(
                 "Created checksums for codebase",
