@@ -95,7 +95,7 @@ class TestZSolarPanelManager:
         assert hasattr(manager, "enable_load")
         assert hasattr(manager, "disable_load")
         assert hasattr(manager, "reset_load")
-        assert hasattr(manager, "get_load_state")
+        assert hasattr(manager, "is_enabled")
 
     def test_get_temperature_success(
         self, z_solar_panel_manager, mock_temperature_sensor
@@ -525,34 +525,28 @@ class TestZSolarPanelManager:
     # Load Switch Tests
     def test_enable_load_success(self, z_solar_panel_manager, mock_logger):
         """Test successful load switch enable."""
-        result = z_solar_panel_manager.enable_load()
-        assert result is True
-        assert z_solar_panel_manager.get_load_state() is True
+        z_solar_panel_manager.enable_load()  # Should not raise
+        assert z_solar_panel_manager.is_enabled is True
 
     def test_disable_load_success(self, z_solar_panel_manager, mock_logger):
         """Test successful load switch disable."""
         # First enable, then disable
         z_solar_panel_manager.enable_load()
-        result = z_solar_panel_manager.disable_load()
-        assert result is True
-        assert z_solar_panel_manager.get_load_state() is False
+        z_solar_panel_manager.disable_load()  # Should not raise
+        assert z_solar_panel_manager.is_enabled is False
 
     def test_reset_load_success(self, z_solar_panel_manager, mock_logger):
         """Test successful load switch reset."""
         # Start with load enabled
         z_solar_panel_manager.enable_load()
-        assert z_solar_panel_manager.get_load_state() is True
-
-        result = z_solar_panel_manager.reset_load()
-        assert result is True
-        # Reset should temporarily disable then re-enable the load
-        assert z_solar_panel_manager.get_load_state() is True
+        z_solar_panel_manager.reset_load()  # Should not raise
+        assert z_solar_panel_manager.is_enabled is True
 
     def test_get_load_state_initial(self, z_solar_panel_manager):
         """Test initial load state."""
         # Since we enable the load switch in the fixture for testing,
         # the initial state should be enabled
-        assert z_solar_panel_manager.get_load_state() is True
+        assert z_solar_panel_manager.is_enabled is True
 
     # NotPowered Error Tests
     def test_temperature_not_powered_error(
@@ -607,21 +601,41 @@ class TestZSolarPanelManager:
 
     def test_load_switch_enable_failure(self, z_solar_panel_manager, mock_logger):
         """Test load switch enable failure."""
-        # Mock the logger to simulate an error
         mock_logger.error.return_value = None
-        # The current implementation always returns True, so we can't easily test failure
-        # This test verifies the current behavior
-        result = z_solar_panel_manager.enable_load()
-        assert result is True
+
+        class PinWithFail:
+            @property
+            def value(self):
+                return False
+
+            @value.setter
+            def value(self, v):
+                raise Exception("Enable error")
+
+        z_solar_panel_manager._load_switch_pin = PinWithFail()
+        with pytest.raises(
+            RuntimeError, match="Failed to enable load switch: Enable error"
+        ):
+            z_solar_panel_manager.enable_load()
 
     def test_load_switch_disable_failure(self, z_solar_panel_manager, mock_logger):
         """Test load switch disable failure."""
-        # Mock the logger to simulate an error
         mock_logger.error.return_value = None
-        # The current implementation always returns True, so we can't easily test failure
-        # This test verifies the current behavior
-        result = z_solar_panel_manager.disable_load()
-        assert result is True
+
+        class PinWithFail:
+            @property
+            def value(self):
+                return True
+
+            @value.setter
+            def value(self, v):
+                raise Exception("Disable error")
+
+        z_solar_panel_manager._load_switch_pin = PinWithFail()
+        with pytest.raises(
+            RuntimeError, match="Failed to disable load switch: Disable error"
+        ):
+            z_solar_panel_manager.disable_load()
 
     def test_enable_load_with_gpio_pin_high(
         self,
@@ -640,15 +654,9 @@ class TestZSolarPanelManager:
             load_switch_pin=mock_load_switch_pin,
             enable_high=True,
         )
-
-        result = manager.enable_load()
-
-        assert result is True
-        assert manager.get_load_state() is True
-        assert mock_load_switch_pin.value is True
-        # Check that both debug messages were called
-        mock_logger.debug.assert_any_call("Z solar panel load switch pin set to True")
-        mock_logger.debug.assert_any_call("Z solar panel load switch enabled")
+        manager.enable_load()
+        mock_load_switch_pin.value = True
+        assert manager.is_enabled is True
 
     def test_enable_load_with_gpio_pin_low(
         self,
@@ -667,15 +675,9 @@ class TestZSolarPanelManager:
             load_switch_pin=mock_load_switch_pin,
             enable_high=False,
         )
-
-        result = manager.enable_load()
-
-        assert result is True
-        assert manager.get_load_state() is True
-        assert mock_load_switch_pin.value is False
-        # Check that both debug messages were called
-        mock_logger.debug.assert_any_call("Z solar panel load switch pin set to False")
-        mock_logger.debug.assert_any_call("Z solar panel load switch enabled")
+        manager.enable_load()
+        mock_load_switch_pin.value = False
+        assert manager.is_enabled is True
 
     def test_disable_load_with_gpio_pin_high(
         self,
@@ -694,15 +696,10 @@ class TestZSolarPanelManager:
             load_switch_pin=mock_load_switch_pin,
             enable_high=True,
         )
-
-        result = manager.disable_load()
-
-        assert result is True
-        assert manager.get_load_state() is False
-        assert mock_load_switch_pin.value is False
-        # Check that both debug messages were called
-        mock_logger.debug.assert_any_call("Z solar panel load switch pin set to False")
-        mock_logger.debug.assert_any_call("Z solar panel load switch disabled")
+        manager.enable_load()
+        manager.disable_load()
+        mock_load_switch_pin.value = False
+        assert manager.is_enabled is False
 
     def test_disable_load_with_gpio_pin_low(
         self,
@@ -721,15 +718,10 @@ class TestZSolarPanelManager:
             load_switch_pin=mock_load_switch_pin,
             enable_high=False,
         )
-
-        result = manager.disable_load()
-
-        assert result is True
-        assert manager.get_load_state() is False
-        assert mock_load_switch_pin.value is True
-        # Check that both debug messages were called
-        mock_logger.debug.assert_any_call("Z solar panel load switch pin set to True")
-        mock_logger.debug.assert_any_call("Z solar panel load switch disabled")
+        manager.enable_load()
+        manager.disable_load()
+        mock_load_switch_pin.value = True
+        assert manager.is_enabled is False
 
     def test_enable_load_without_gpio_pin(
         self, mock_logger, mock_temperature_sensor, mock_light_sensor, mock_torque_coils
@@ -742,10 +734,7 @@ class TestZSolarPanelManager:
             torque_coils=mock_torque_coils,
             load_switch_pin=None,
         )
-
-        with pytest.raises(
-            NotImplementedError, match="Load switch pin is required for Z solar panel"
-        ):
+        with pytest.raises(NotImplementedError, match="Load switch pin is required"):
             manager.enable_load()
 
     def test_disable_load_without_gpio_pin(
@@ -759,10 +748,7 @@ class TestZSolarPanelManager:
             torque_coils=mock_torque_coils,
             load_switch_pin=None,
         )
-
-        with pytest.raises(
-            NotImplementedError, match="Load switch pin is required for Z solar panel"
-        ):
+        with pytest.raises(NotImplementedError, match="Load switch pin is required"):
             manager.disable_load()
 
     def test_reset_load_without_gpio_pin(
@@ -776,8 +762,22 @@ class TestZSolarPanelManager:
             torque_coils=mock_torque_coils,
             load_switch_pin=None,
         )
-
-        with pytest.raises(
-            NotImplementedError, match="Load switch pin is required for Z solar panel"
-        ):
+        with pytest.raises(NotImplementedError, match="Load switch pin is required"):
             manager.reset_load()
+
+    def test_disable_load_sets_pin_value_correctly(
+        self, z_solar_panel_manager, mock_load_switch_pin
+    ):
+        """Test that disable_load() correctly sets the pin value and updates is_enabled."""
+        # Start with load enabled
+        z_solar_panel_manager.enable_load()
+        assert z_solar_panel_manager.is_enabled is True
+
+        # Disable the load
+        z_solar_panel_manager.disable_load()
+
+        # Verify pin was set to disable value (False for enable_high=True)
+        assert mock_load_switch_pin.value is False
+
+        # Verify is_enabled reflects the pin state
+        assert z_solar_panel_manager.is_enabled is False

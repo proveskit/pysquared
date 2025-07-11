@@ -1,49 +1,45 @@
-"""
-Protocol defining the interface for a load switch controller.
-"""
+"""Load switch manager protocol for solar panel systems."""
+
+from typing import Protocol
 
 
-class LoadSwitchProto:
-    def enable_load(self) -> bool:
-        """Enables the load switch
+class LoadSwitchManagerProto(Protocol):
+    """Protocol for load switch management in solar panel systems.
 
-        :return: A Boolean indicating whether the enable or disable command was successful
-        :rtype: bool
+    This protocol defines the interface for managing load switches that control
+    power to solar panel components. Load switches can be enabled, disabled,
+    and reset with momentary power cycling.
+    """
 
-        :raises Exception: If there is an error enabling the load switch.
-        :raises NotImplementedError: If not implemented by subclass.
+    def enable_load(self) -> None:
+        """Enable the load switch to provide power to the solar panel.
+
+        :raises RuntimeError: If the load switch cannot be enabled due to hardware issues
         """
         ...
 
-    def disable_load(self) -> bool:
-        """Disables the load switch
+    def disable_load(self) -> None:
+        """Disable the load switch to cut power to the solar panel.
 
-        :return: A Boolean indicating whether the enable or disable command was successful
-        :rtype: bool
-
-        :raises Exception: If there is an error disabling the load switch.
-        :raises NotImplementedError: If not implemented by subclass.
+        :raises RuntimeError: If the load switch cannot be disabled due to hardware issues
         """
         ...
 
-    def reset_load(self) -> bool:
-        """Resets the load switch
+    def reset_load(self) -> None:
+        """Reset the load switch by momentarily disabling then re-enabling it.
 
-        :return: A Boolean indicating whether the reset command was successful
-        :rtype: bool
+        This method performs a momentary power cycle (0.1s) to reset the load switch
+        and any connected components. Errors from underlying drivers are reraised.
 
-        :raises Exception: If there is an error resetting the load switch.
-        :raises NotImplementedError: If not implemented by subclass.
+        :raises RuntimeError: If the load switch cannot be reset due to hardware issues
         """
         ...
 
-    def get_load_state(self) -> bool:
-        """Gets the current state of the load switch
+    @property
+    def is_enabled(self) -> bool:
+        """Check if the load switch is currently enabled.
 
-        :return: A Boolean indicating whether the load is enabled
-        :rtype: bool
-
-        :raises Exception: If there is an error reading the load switch state.
-        :raises NotImplementedError: If not implemented by subclass.
+        :raises RuntimeError: If the load switch state cannot be read due to hardware issues
+        :return: True if the load switch is enabled, False otherwise
         """
         ...

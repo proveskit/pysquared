@@ -5,15 +5,13 @@ Base Solar Panel Manager
 This module provides a base class for solar panel managers to eliminate code duplication.
 """
 
-import time
-
 from ...logger import Logger
-from ...protos.loadswitch import LoadSwitchProto
 from ...protos.solar_panel import SolarPanelProto
 from ..exception import NotPowered
+from .loadswitch_manager import LoadSwitchManager
 
 
-class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
+class BaseSolarPanelManager(SolarPanelProto, LoadSwitchManager):
     """Base class for solar panel managers to eliminate code duplication."""
 
     def __init__(
@@ -37,18 +35,14 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :param load_switch_pin: GPIO pin for controlling the load switch (can be None).
         :param enable_high: If True, load switch enables when pin is HIGH. If False, enables when LOW.
         """
+        # Initialize the load switch manager
+        super().__init__(load_switch_pin, enable_high)
+
         self._log: Logger = logger
         self._panel_name = panel_name
         self._temperature_sensor = temperature_sensor
         self._light_sensor = light_sensor
         self._torque_coils = torque_coils
-        self._load_switch_pin = load_switch_pin
-        # Store the pin values directly
-        self._enable_pin_value = enable_high
-        self._disable_pin_value = not enable_high
-
-        # Load switch state (initially disabled for safety)
-        self._load_enabled = False
 
         # Error tracking
         self._error_count = 0
@@ -68,7 +62,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :raises NotPowered: If the load switch is disabled.
         :raises Exception: Any exception from the underlying temperature sensor driver will be reraised.
         """
-        if not self._load_enabled:
+        if not self.is_enabled:
             raise NotPowered(f"{self._panel_name} solar panel is not powered")
 
         if self._temperature_sensor is None:
@@ -95,7 +89,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :raises NotPowered: If the load switch is disabled.
         :raises Exception: Any exception from the underlying light sensor driver will be reraised.
         """
-        if not self._load_enabled:
+        if not self.is_enabled:
             raise NotPowered(f"{self._panel_name} solar panel is not powered")
 
         if self._light_sensor is None:
@@ -122,7 +116,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :raises NotPowered: If the load switch is disabled.
         :raises Exception: Any exception from the underlying sensor drivers will be reraised.
         """
-        if not self._load_enabled:
+        if not self.is_enabled:
             raise NotPowered(f"{self._panel_name} solar panel is not powered")
 
         temp = self.get_temperature()
@@ -140,7 +134,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :raises NotImplementedError: If torque coils are not available.
         :raises Exception: Any exception from the underlying torque coil driver will be reraised.
         """
-        if not self._load_enabled:
+        if not self.is_enabled:
             raise NotPowered(f"{self._panel_name} solar panel is not powered")
 
         if self._torque_coils is None:
@@ -167,119 +161,9 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         return self._sensor_states.copy()
 
     def get_error_count(self) -> int:
-        """Gets the number of errors that have occurred on the solar panel since the last rese
+        """Gets the number of errors that have occurred on the solar panel since the last reset.
 
         :return: The number of errors that have occurred on the solar panel since the last reset
         :rtype: int
         """
         return self._error_count
-
-    # Load Switch Methods
-    def enable_load(self) -> bool:
-        """Enables the load switch.
-
-        :return: A Boolean indicating whether the enable command was successful
-        :rtype: bool
-
-        :raises NotImplementedError: If no load switch pin is provided.
-        """
-        if self._load_switch_pin is None:
-            raise NotImplementedError(
-                f"Load switch pin is required for {self._panel_name} solar panel"
-            )
-
-        try:
-            self._load_switch_pin.value = self._enable_pin_value
-            self._log.debug(
-                f"{self._panel_name} solar panel load switch pin set to {self._enable_pin_value}"
-            )
-
-            self._load_enabled = True
-            self._log.debug(f"{self._panel_name} solar panel load switch enabled")
-            return True
-        except Exception as e:
-            self._log.error(
-                f"Failed to enable {self._panel_name} solar panel load switch", err=e
-            )
-            return False
-
-    def disable_load(self) -> bool:
-        """Disables the load switch.
-
-        :return: A Boolean indicating whether the disable command was successful
-        :rtype: bool
-
-        :raises NotImplementedError: If no load switch pin is provided.
-        """
-        if self._load_switch_pin is None:
-            raise NotImplementedError(
-                f"Load switch pin is required for {self._panel_name} solar panel"
-            )
-
-        try:
-            self._load_switch_pin.value = self._disable_pin_value
-            self._log.debug(
-                f"{self._panel_name} solar panel load switch pin set to {self._disable_pin_value}"
-            )
-
-            self._load_enabled = False
-            self._log.debug(f"{self._panel_name} solar panel load switch disabled")
-            return True
-        except Exception as e:
-            self._log.error(
-                f"Failed to disable {self._panel_name} solar panel load switch", err=e
-            )
-            return False
-
-    def reset_load(self) -> bool:
-        """Resets the load switch by temporarily disabling it for 0.1 seconds then re-enabling it.
-
-        :return: A Boolean indicating whether the reset command was successful
-        :rtype: bool
-
-        :raises NotImplementedError: If no load switch pin is provided.
-        """
-        if self._load_switch_pin is None:
-            raise NotImplementedError(
-                f"Load switch pin is required for {self._panel_name} solar panel"
-            )
-
-        try:
-            # Store the current state
-            was_enabled = self._load_enabled
-
-            # Temporarily disable the load switch
-            self._load_switch_pin.value = self._disable_pin_value
-            self._log.debug(
-                f"{self._panel_name} solar panel load switch pin temporarily set to {self._disable_pin_value}"
-            )
-            self._load_enabled = False
-
-            # Wait for 0.1 seconds
-            time.sleep(0.1)
-
-            # Re-enable the load switch if it was previously enabled
-            if was_enabled:
-                self._load_switch_pin.value = self._enable_pin_value
-                self._log.debug(
-                    f"{self._panel_name} solar panel load switch pin re-enabled to {self._enable_pin_value}"
-                )
-                self._load_enabled = True
-
-            self._log.debug(
-                f"{self._panel_name} solar panel load switch reset completed"
-            )
-            return True
-        except Exception as e:
-            self._log.error(
-                f"Failed to reset {self._panel_name} solar panel load switch", err=e
-            )
-            return False
-
-    def get_load_state(self) -> bool:
-        """Gets the current state of the load switch.
-
-        :return: A Boolean indicating whether the load is enabled
-        :rtype: bool
-        """
-        return self._load_enabled
