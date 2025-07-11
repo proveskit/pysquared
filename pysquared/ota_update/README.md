@@ -14,7 +14,7 @@ The OTA update system consists of:
 ## Features
 
 ### File Checksum Creation
-- Create MD5 checksums for individual files
+- Create simple checksums for individual files (CircuitPython compatible)
 - Generate checksums for entire codebases
 - Support for exclusion patterns to skip certain files/directories
 
@@ -122,14 +122,26 @@ The OTA update system is designed to be compatible with CircuitPython:
 - Uses standard Python libraries available in CircuitPython
 - Implements proper error handling and logging
 - Follows the existing codebase patterns and conventions
-- Uses MD5 for checksums (available in CircuitPython's `hashlib`)
+- Uses a simple checksum algorithm (sum of bytes mod 65536) that's compatible with CircuitPython's limited hashlib
+
+## Checksum Algorithm
+
+The system uses a simple 16-bit checksum algorithm:
+- Sums all bytes in the file
+- Applies modulo 65536 (0xFFFF) to keep it within 16 bits
+- Returns a 4-character hexadecimal string
+
+This algorithm is:
+- Fast and memory-efficient
+- Compatible with CircuitPython's limited libraries
+- Sufficient for detecting file corruption in most cases
+- Deterministic and reproducible
 
 ## Error Handling
 
 The system provides comprehensive error handling:
 
-- `FileNotFoundError`: Raised when files or directories don't exist
-- `Exception`: Raised for other errors with detailed logging
+- `Exception`: Raised when files or directories don't exist
 - All errors are logged with context information
 - Graceful handling of individual file failures during batch operations
 
@@ -162,7 +174,7 @@ This system provides the foundation for a complete OTA update protocol:
 
 Potential enhancements for the OTA update system:
 
-- Support for different checksum algorithms (SHA-256, etc.)
+- Support for different checksum algorithms (SHA-256, etc.) when available
 - Incremental update support
 - Compression of file manifests
 - Integration with radio communication for remote updates

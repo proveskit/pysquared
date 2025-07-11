@@ -1,114 +1,156 @@
+#!/usr/bin/env python3
 """
-Example script demonstrating OTA Update functionality.
+OTA Update System Example
 
-This script shows how to use the OTA update system to create checksums,
-validate file integrity, and assess codebase completeness.
+This example demonstrates the OTA update system functionality including:
+- Creating checksums for files and codebases
+- Validating file integrity
+- Assessing codebase completeness
 """
 
 import os
 import sys
+import tempfile
+import types
 
-# Add the parent directory to the path so we can import pysquared modules
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+# Add the pysquared directory to the path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-try:
-    from pysquared.logger import Logger
-    from pysquared.nvm.counter import Counter
-    from pysquared.ota_update.manager.ota_update import OTAUpdateManager
-except ImportError as e:
-    print(f"Import error: {e}")
-    print(
-        "Make sure you're running this from the correct directory and all dependencies are available."
-    )
-    sys.exit(1)
+
+# Mock the CircuitPython modules for this example
+mock_micro = types.ModuleType("microcontroller")
+setattr(
+    mock_micro,
+    "nvm",
+    type(
+        "nvm",
+        (),
+        {
+            "__getitem__": lambda self, idx: 0,
+            "__setitem__": lambda self, idx, val: None,
+        },
+    )(),
+)  # type: ignore
+sys.modules["microcontroller"] = mock_micro
+
+from pysquared.logger import Logger  # noqa: E402
+from pysquared.nvm.counter import Counter  # noqa: E402
+from pysquared.ota_update.manager.ota_update import OTAUpdateManager  # noqa: E402
+
+
+def create_test_files(base_dir: str) -> None:
+    """Create test files for demonstration."""
+    # Create some test files
+    test_files = {
+        "main.py": "print('Hello, World!')\n",
+        "config.json": '{"debug": true, "version": "1.0.0"}\n',
+        "lib/utils.py": "def helper():\n    return 'helper function'\n",
+        "data/test.txt": "This is test data\n",
+    }
+
+    for file_path, content in test_files.items():
+        full_path = os.path.join(base_dir, file_path)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, "w") as f:
+            f.write(content)
+
+    print(f"Created test files in {base_dir}")
 
 
 def main():
-    """Main function demonstrating OTA update functionality."""
-    # Initialize logger and OTA update manager
-    error_counter = Counter(0)
-    logger = Logger(error_counter, colorized=True)
+    """Main example function."""
+    print("OTA Update System Example")
+    print("=" * 50)
+
+    # Initialize the system
+    error_counter = Counter(0)  # Use index 0 for this example
+    logger = Logger(error_counter)
     ota_manager = OTAUpdateManager(logger)
 
-    # Example: Create checksums for the current directory
-    current_dir = os.getcwd()
-    logger.info("Starting OTA update example", current_directory=current_dir)
+    # Create a temporary directory for testing
+    with tempfile.TemporaryDirectory() as temp_dir:
+        print(f"Using temporary directory: {temp_dir}")
 
-    try:
-        # Create checksums for all files in the current directory
-        logger.info("Creating checksums for codebase...")
+        # Create test files
+        create_test_files(temp_dir)
+
+        # Example 1: Create checksum for a single file
+        print("\n1. Creating checksum for a single file:")
+        main_py_path = os.path.join(temp_dir, "main.py")
+        checksum = ota_manager.create_file_checksum(main_py_path)
+        print(f"   main.py checksum: {checksum}")
+
+        # Example 2: Create checksums for entire codebase
+        print("\n2. Creating checksums for entire codebase:")
         checksums = ota_manager.create_codebase_checksum(
-            current_dir, exclude_patterns=[".git", "__pycache__", ".pyc", ".DS_Store"]
+            temp_dir, exclude_patterns=["__pycache__", ".pyc"]
         )
+        print(f"   Found {len(checksums)} files:")
+        for file_path, file_checksum in checksums.items():
+            print(f"     {file_path}: {file_checksum}")
 
-        logger.info(
-            "Checksums created successfully",
-            total_files=len(checksums),
-            sample_files=list(checksums.keys())[:5],
-        )  # Show first 5 files
+        # Example 3: Validate file integrity
+        print("\n3. Validating file integrity:")
+        is_valid = ota_manager.validate_file_integrity(main_py_path, checksum)
+        print(f"   main.py integrity check: {'PASS' if is_valid else 'FAIL'}")
 
-        # Display some sample checksums
-        print("\nSample file checksums:")
-        for i, (file_path, checksum) in enumerate(checksums.items()):
-            if i >= 5:  # Only show first 5
-                break
-            print(f"  {file_path}: {checksum}")
+        # Example 4: Validate with wrong checksum
+        print("\n4. Validating with wrong checksum:")
+        is_valid = ota_manager.validate_file_integrity(main_py_path, "0000")
+        print(f"   main.py with wrong checksum: {'PASS' if is_valid else 'FAIL'}")
 
-        # Validate the integrity of a specific file
-        if checksums:
-            sample_file = list(checksums.keys())[0]
-            sample_checksum = checksums[sample_file]
-            full_path = os.path.join(current_dir, sample_file)
+        # Example 5: Get file size
+        print("\n5. Getting file sizes:")
+        file_size = ota_manager.get_file_size(main_py_path)
+        print(f"   main.py size: {file_size} bytes")
 
-            logger.info("Validating file integrity", file=sample_file)
-            is_valid = ota_manager.validate_file_integrity(full_path, sample_checksum)
-            logger.info(
-                "File integrity validation result", file=sample_file, is_valid=is_valid
-            )
+        # Example 6: Get codebase size
+        print("\n6. Getting codebase size:")
+        total_size = ota_manager.get_codebase_size(temp_dir)
+        print(f"   Total codebase size: {total_size} bytes")
 
-        # Assess codebase completeness
-        logger.info("Assessing codebase completeness...")
-        assessment = ota_manager.assess_codebase_completeness(current_dir, checksums)
+        # Example 7: Assess codebase completeness
+        print("\n7. Assessing codebase completeness:")
+        assessment = ota_manager.assess_codebase_completeness(temp_dir, checksums)
+        print(f"   Is complete: {assessment['is_complete']}")
+        print(f"   Is valid: {assessment['is_valid']}")
+        print(f"   Total files: {assessment['total_files']}")
+        print(f"   Valid files: {assessment['valid_files']}")
+        print(f"   Missing files: {len(assessment['missing_files'])}")
+        print(f"   Extra files: {len(assessment['extra_files'])}")
+        print(f"   Corrupted files: {len(assessment['corrupted_files'])}")
 
-        print("\nCodebase Assessment Results:")
-        print(f"  Complete: {assessment['is_complete']}")
-        print(f"  Valid: {assessment['is_valid']}")
-        print(f"  Total files: {assessment['total_files']}")
-        print(f"  Valid files: {assessment['valid_files']}")
-        print(f"  Missing files: {len(assessment['missing_files'])}")
-        print(f"  Extra files: {len(assessment['extra_files'])}")
-        print(f"  Corrupted files: {len(assessment['corrupted_files'])}")
+        # Example 8: Test with missing files
+        print("\n8. Testing with missing files:")
+        expected_files = list(checksums.keys()) + ["missing_file.py"]
+        missing_files = ota_manager.get_missing_files(temp_dir, expected_files)
+        print(f"   Missing files: {missing_files}")
 
-        # Get codebase size
-        total_size = ota_manager.get_codebase_size(
-            current_dir, exclude_patterns=[".git", "__pycache__", ".pyc", ".DS_Store"]
-        )
-        logger.info("Codebase size calculated", total_size_bytes=total_size)
-        print(f"  Total size: {total_size} bytes ({total_size / 1024:.2f} KB)")
+        # Example 9: Test with extra files
+        print("\n9. Testing with extra files:")
+        expected_files = ["main.py"]  # Only expect main.py
+        extra_files = ota_manager.get_extra_files(temp_dir, expected_files)
+        print(f"   Extra files: {extra_files}")
 
-        # Demonstrate missing file detection
-        logger.info("Demonstrating missing file detection...")
-        fake_expected_files = list(checksums.keys())[:3] + ["nonexistent_file.txt"]
-        missing_files = ota_manager.get_missing_files(current_dir, fake_expected_files)
-        logger.info("Missing files identified", missing_files=missing_files)
-        print(f"  Missing files: {missing_files}")
+        # Example 10: Demonstrate checksum algorithm
+        print("\n10. Checksum algorithm demonstration:")
+        test_content = b"Hello, World!"
+        manual_checksum = sum(test_content) & 0xFFFF
+        print(f"   Content: {test_content}")
+        print(f"   Manual checksum: {manual_checksum:04x}")
 
-        # Demonstrate extra file detection
-        logger.info("Demonstrating extra file detection...")
-        partial_expected_files = list(checksums.keys())[:2]  # Only expect first 2 files
-        extra_files = ota_manager.get_extra_files(current_dir, partial_expected_files)
-        logger.info(
-            "Extra files identified", extra_files=extra_files[:5]
-        )  # Show first 5
-        print(f"  Extra files (first 5): {extra_files[:5]}")
+        # Create a temporary file with this content
+        test_file = os.path.join(temp_dir, "test_checksum.txt")
+        with open(test_file, "wb") as f:
+            f.write(test_content)
 
-    except Exception as e:
-        logger.error("Error during OTA update example", err=e)
-        return 1
+        file_checksum = ota_manager.create_file_checksum(test_file)
+        print(f"   File checksum: {file_checksum}")
+        print(f"   Match: {file_checksum == format(manual_checksum, '04x')}")
 
-    logger.info("OTA update example completed successfully")
-    return 0
+    print("\nExample completed successfully!")
+    print(f"Total errors logged: {logger.get_error_count()}")
 
 
 if __name__ == "__main__":
-    exit(main())
+    main()
