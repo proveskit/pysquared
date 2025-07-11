@@ -539,10 +539,14 @@ class TestZSolarPanelManager:
 
     def test_reset_load_success(self, z_solar_panel_manager, mock_logger):
         """Test successful load switch reset."""
+        # Start with load enabled
+        z_solar_panel_manager.enable_load()
+        assert z_solar_panel_manager.get_load_state() is True
+
         result = z_solar_panel_manager.reset_load()
         assert result is True
-        # Reset should typically disable the load
-        assert z_solar_panel_manager.get_load_state() is False
+        # Reset should temporarily disable then re-enable the load
+        assert z_solar_panel_manager.get_load_state() is True
 
     def test_get_load_state_initial(self, z_solar_panel_manager):
         """Test initial load state."""

@@ -5,6 +5,8 @@ Base Solar Panel Manager
 This module provides a base class for solar panel managers to eliminate code duplication.
 """
 
+import time
+
 from ...logger import Logger
 from ...protos.loadswitch import LoadSwitchProto
 from ...protos.solar_panel import SolarPanelProto
@@ -64,6 +66,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :rtype: float | None
 
         :raises NotPowered: If the load switch is disabled.
+        :raises Exception: Any exception from the underlying temperature sensor driver will be reraised.
         """
         if not self._load_enabled:
             raise NotPowered(f"{self._panel_name} solar panel is not powered")
@@ -90,6 +93,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :rtype: float | None
 
         :raises NotPowered: If the load switch is disabled.
+        :raises Exception: Any exception from the underlying light sensor driver will be reraised.
         """
         if not self._load_enabled:
             raise NotPowered(f"{self._panel_name} solar panel is not powered")
@@ -116,6 +120,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :rtype: tuple[float | None, float | None]
 
         :raises NotPowered: If the load switch is disabled.
+        :raises Exception: Any exception from the underlying sensor drivers will be reraised.
         """
         if not self._load_enabled:
             raise NotPowered(f"{self._panel_name} solar panel is not powered")
@@ -133,6 +138,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
 
         :raises NotPowered: If the load switch is disabled.
         :raises NotImplementedError: If torque coils are not available.
+        :raises Exception: Any exception from the underlying torque coil driver will be reraised.
         """
         if not self._load_enabled:
             raise NotPowered(f"{self._panel_name} solar panel is not powered")
@@ -161,7 +167,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         return self._sensor_states.copy()
 
     def get_error_count(self) -> int:
-        """Gets the number of errors that have occurred on the solar panel since the last reset.
+        """Gets the number of errors that have occurred on the solar panel since the last rese
 
         :return: The number of errors that have occurred on the solar panel since the last reset
         :rtype: int
@@ -226,7 +232,7 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             return False
 
     def reset_load(self) -> bool:
-        """Resets the load switch.
+        """Resets the load switch by temporarily disabling it for 0.1 seconds then re-enabling it.
 
         :return: A Boolean indicating whether the reset command was successful
         :rtype: bool
@@ -239,14 +245,30 @@ class BaseSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             )
 
         try:
-            # Reset typically disables the load for safety
+            # Store the current state
+            was_enabled = self._load_enabled
+
+            # Temporarily disable the load switch
             self._load_switch_pin.value = self._disable_pin_value
             self._log.debug(
-                f"{self._panel_name} solar panel load switch pin set to {self._disable_pin_value}"
+                f"{self._panel_name} solar panel load switch pin temporarily set to {self._disable_pin_value}"
             )
-
             self._load_enabled = False
-            self._log.debug(f"{self._panel_name} solar panel load switch reset")
+
+            # Wait for 0.1 seconds
+            time.sleep(0.1)
+
+            # Re-enable the load switch if it was previously enabled
+            if was_enabled:
+                self._load_switch_pin.value = self._enable_pin_value
+                self._log.debug(
+                    f"{self._panel_name} solar panel load switch pin re-enabled to {self._enable_pin_value}"
+                )
+                self._load_enabled = True
+
+            self._log.debug(
+                f"{self._panel_name} solar panel load switch reset completed"
+            )
             return True
         except Exception as e:
             self._log.error(

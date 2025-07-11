@@ -529,10 +529,14 @@ class TestXYSolarPanelManager:
 
     def test_reset_load_success(self, xy_solar_panel_manager, mock_logger):
         """Test successful load switch reset."""
+        # Start with load enabled
+        xy_solar_panel_manager.enable_load()
+        assert xy_solar_panel_manager.get_load_state() is True
+
         result = xy_solar_panel_manager.reset_load()
         assert result is True
-        # Reset should typically disable the load
-        assert xy_solar_panel_manager.get_load_state() is False
+        # Reset should temporarily disable then re-enable the load
+        assert xy_solar_panel_manager.get_load_state() is True
 
     def test_get_load_state_initial(self, xy_solar_panel_manager):
         """Test initial load state."""
