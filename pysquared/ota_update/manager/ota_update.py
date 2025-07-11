@@ -108,20 +108,6 @@ class OTAUpdateManager(OTAUpdateProto):
         _walk_recursive(base_path)
         return file_paths
 
-    def _get_hashlib_md5(self):
-        """Return a CircuitPython-compatible md5 constructor if available, else None."""
-        try:
-            import adafruit_hashlib  # type: ignore[import]
-
-            return lambda: adafruit_hashlib.new("md5")
-        except ImportError:
-            try:
-                import hashlib
-
-                return lambda: hashlib.md5()
-            except ImportError:
-                return None
-
     def create_file_checksum(self, file_path: str) -> str:
         """Create a checksum for a single file.
 
@@ -134,21 +120,33 @@ class OTAUpdateManager(OTAUpdateProto):
             if not self._file_exists(file_path):
                 raise Exception(f"File not found: {file_path}")
 
-            md5_constructor = self._get_hashlib_md5()
-            if md5_constructor is not None:
-                hash_md5 = md5_constructor()
+            # Try to use adafruit_hashlib first (CircuitPython)
+            try:
+                import adafruit_hashlib  # type: ignore[import]
+
+                hash_md5 = adafruit_hashlib.new("md5")
                 with open(file_path, "rb") as f:
                     for chunk in iter(lambda: f.read(4096), b""):
                         hash_md5.update(chunk)
                 checksum_str = hash_md5.hexdigest()
-            else:
-                # Fallback: simple checksum
-                checksum = 0
-                with open(file_path, "rb") as f:
-                    for chunk in iter(lambda: f.read(4096), b""):
-                        for byte in chunk:
-                            checksum = (checksum + byte) & 0xFFFF  # 16-bit checksum
-                checksum_str = f"{checksum:04x}"
+            except ImportError:
+                # Fallback to standard hashlib
+                try:
+                    import hashlib
+
+                    hash_md5 = hashlib.md5()
+                    with open(file_path, "rb") as f:
+                        for chunk in iter(lambda: f.read(4096), b""):
+                            hash_md5.update(chunk)
+                    checksum_str = hash_md5.hexdigest()
+                except ImportError:
+                    # Fallback: simple checksum
+                    checksum = 0
+                    with open(file_path, "rb") as f:
+                        for chunk in iter(lambda: f.read(4096), b""):
+                            for byte in chunk:
+                                checksum = (checksum + byte) & 0xFFFF  # 16-bit checksum
+                    checksum_str = f"{checksum:04x}"
 
             self._log.debug(
                 "Created checksum for file", file_path=file_path, checksum=checksum_str
