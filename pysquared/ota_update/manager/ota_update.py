@@ -7,10 +7,13 @@ for creating checksums, validating file integrity, and assessing codebase comple
 
 import hashlib
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from ...logger import Logger
 from ...protos.ota_update import OTAUpdateProto
+
+if TYPE_CHECKING:
+    from typing import Any, Dict, List, Optional, Tuple
 
 
 class OTAUpdateManager(OTAUpdateProto):
@@ -60,8 +63,8 @@ class OTAUpdateManager(OTAUpdateProto):
             raise
 
     def create_codebase_checksum(
-        self, base_path: str, exclude_patterns: Optional[List[str]] = None
-    ) -> Dict[str, str]:
+        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
+    ) -> "Dict[str, str]":
         """Create checksums for all files in the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -158,8 +161,8 @@ class OTAUpdateManager(OTAUpdateProto):
             raise
 
     def validate_codebase_integrity(
-        self, base_path: str, expected_checksums: Dict[str, str]
-    ) -> Tuple[bool, List[str]]:
+        self, base_path: str, expected_checksums: "Dict[str, str]"
+    ) -> "Tuple[bool, List[str]]":
         """Validate the integrity of all files in the codebase against expected checksums.
 
         :param str base_path: The base directory path to scan for files.
@@ -208,7 +211,9 @@ class OTAUpdateManager(OTAUpdateProto):
             )
             raise
 
-    def get_missing_files(self, base_path: str, expected_files: List[str]) -> List[str]:
+    def get_missing_files(
+        self, base_path: str, expected_files: "List[str]"
+    ) -> "List[str]":
         """Get a list of files that are expected but missing from the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -240,7 +245,9 @@ class OTAUpdateManager(OTAUpdateProto):
             )
             raise
 
-    def get_extra_files(self, base_path: str, expected_files: List[str]) -> List[str]:
+    def get_extra_files(
+        self, base_path: str, expected_files: "List[str]"
+    ) -> "List[str]":
         """Get a list of files that exist but are not in the expected file list.
 
         :param str base_path: The base directory path to scan for files.
@@ -274,8 +281,8 @@ class OTAUpdateManager(OTAUpdateProto):
             raise
 
     def assess_codebase_completeness(
-        self, base_path: str, expected_checksums: Dict[str, str]
-    ) -> Dict[str, Any]:
+        self, base_path: str, expected_checksums: "Dict[str, str]"
+    ) -> "Dict[str, Any]":
         """Assess the completeness and integrity of the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -288,7 +295,7 @@ class OTAUpdateManager(OTAUpdateProto):
                  - corrupted_files: List[str] - List of files with incorrect checksums
                  - total_files: int - Total number of files checked
                  - valid_files: int - Number of files with correct checksums
-        :rtype: Dict[str, any]
+        :rtype: Dict[str, Any]
         :raises Exception: If there is an error during assessment.
         """
         try:
@@ -371,7 +378,7 @@ class OTAUpdateManager(OTAUpdateProto):
             raise
 
     def get_codebase_size(
-        self, base_path: str, exclude_patterns: Optional[List[str]] = None
+        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
     ) -> int:
         """Get the total size of all files in the codebase.
 

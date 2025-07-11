@@ -11,9 +11,16 @@ import sys
 # Add the parent directory to the path so we can import pysquared modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from pysquared.logger import Logger
-from pysquared.nvm.counter import Counter
-from pysquared.ota_update.manager.ota_update import OTAUpdateManager
+try:
+    from pysquared.logger import Logger
+    from pysquared.nvm.counter import Counter
+    from pysquared.ota_update.manager.ota_update import OTAUpdateManager
+except ImportError as e:
+    print(f"Import error: {e}")
+    print(
+        "Make sure you're running this from the correct directory and all dependencies are available."
+    )
+    sys.exit(1)
 
 
 def main():

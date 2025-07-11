@@ -4,11 +4,10 @@ This protocol provides methods for creating checksums, validating file integrity
 and managing the update process for CircuitPython applications.
 """
 
-# Type hinting only
-try:
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple
-except ImportError:
-    pass
 
 
 class OTAUpdateProto:
@@ -26,8 +25,8 @@ class OTAUpdateProto:
         ...
 
     def create_codebase_checksum(
-        self, base_path: str, exclude_patterns: Optional[List[str]] = None
-    ) -> Dict[str, str]:
+        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
+    ) -> "Dict[str, str]":
         """Create checksums for all files in the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -51,8 +50,8 @@ class OTAUpdateProto:
         ...
 
     def validate_codebase_integrity(
-        self, base_path: str, expected_checksums: Dict[str, str]
-    ) -> Tuple[bool, List[str]]:
+        self, base_path: str, expected_checksums: "Dict[str, str]"
+    ) -> "Tuple[bool, List[str]]":
         """Validate the integrity of all files in the codebase against expected checksums.
 
         :param str base_path: The base directory path to scan for files.
@@ -63,7 +62,9 @@ class OTAUpdateProto:
         """
         ...
 
-    def get_missing_files(self, base_path: str, expected_files: List[str]) -> List[str]:
+    def get_missing_files(
+        self, base_path: str, expected_files: "List[str]"
+    ) -> "List[str]":
         """Get a list of files that are expected but missing from the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -74,7 +75,9 @@ class OTAUpdateProto:
         """
         ...
 
-    def get_extra_files(self, base_path: str, expected_files: List[str]) -> List[str]:
+    def get_extra_files(
+        self, base_path: str, expected_files: "List[str]"
+    ) -> "List[str]":
         """Get a list of files that exist but are not in the expected file list.
 
         :param str base_path: The base directory path to scan for files.
@@ -86,8 +89,8 @@ class OTAUpdateProto:
         ...
 
     def assess_codebase_completeness(
-        self, base_path: str, expected_checksums: Dict[str, str]
-    ) -> Dict[str, Any]:
+        self, base_path: str, expected_checksums: "Dict[str, str]"
+    ) -> "Dict[str, Any]":
         """Assess the completeness and integrity of the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -117,7 +120,7 @@ class OTAUpdateProto:
         ...
 
     def get_codebase_size(
-        self, base_path: str, exclude_patterns: Optional[List[str]] = None
+        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
     ) -> int:
         """Get the total size of all files in the codebase.
 
