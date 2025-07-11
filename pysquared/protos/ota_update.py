@@ -4,7 +4,10 @@ This protocol provides methods for creating checksums, validating file integrity
 and managing the update process for CircuitPython applications.
 """
 
-from typing import TYPE_CHECKING
+try:
+    from typing import TYPE_CHECKING
+except ImportError:
+    TYPE_CHECKING = False
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple
