@@ -7,7 +7,11 @@ for creating checksums, validating file integrity, and assessing codebase comple
 
 import hashlib
 import os
-from typing import TYPE_CHECKING
+
+try:
+    from typing import TYPE_CHECKING
+except ImportError:
+    TYPE_CHECKING = False
 
 from ...logger import Logger
 from ...protos.ota_update import OTAUpdateProto
