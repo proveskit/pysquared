@@ -8,12 +8,25 @@ from ....protos.burnwire import BurnwireProto
 """
 Usage Example:
 
-from lib.pysquared.hardware.burnwire.manager.burnwire import BurnwireManager
-...
+from pysquared.hardware.burnwire.manager.burnwire import BurnwireManager
+from pysquared.hardware.digitalio import initialize_pin
 
-antenna_deployment = BurnwireManager(logger, board.FIRE_DEPLOY1A, board.FIRE_DEPLOY1B, enable_logic = False)
+# Initialize pins
+enable_pin = initialize_pin(logger, board.FIRE_DEPLOY1A, Direction.OUTPUT, False)
+fire_pin = initialize_pin(logger, board.FIRE_DEPLOY1B, Direction.OUTPUT, False)
 
-antenna_deployment.burn()
+# Create burnwire manager
+antenna_deployment = BurnwireManager(logger, enable_pin, fire_pin, enable_logic=False)
+
+# Fire the burnwire with error handling
+try:
+    success = antenna_deployment.burn(timeout_duration=5.0)
+    if success:
+        logger.info("Burnwire fired successfully")
+    else:
+        logger.error("Burnwire failed to fire")
+except RuntimeError as e:
+    logger.error("Hardware error during burnwire operation", err=e)
 """
 
 
