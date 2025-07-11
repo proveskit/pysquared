@@ -31,6 +31,70 @@ class OTAUpdateManager(OTAUpdateProto):
         self._log = logger
         self._log.debug("Initializing OTA Update Manager")
 
+    def _file_exists(self, file_path: str) -> bool:
+        """Check if a file exists (CircuitPython compatible).
+
+        :param str file_path: The path to the file to check.
+        :return: True if the file exists, False otherwise.
+        """
+        try:
+            os.stat(file_path)
+            return True
+        except OSError:
+            return False
+
+    def _get_file_size(self, file_path: str) -> int:
+        """Get file size (CircuitPython compatible).
+
+        :param str file_path: The path to the file.
+        :return: The size of the file in bytes.
+        """
+        try:
+            stat = os.stat(file_path)
+            return stat[6]  # st_size is at index 6 in CircuitPython
+        except OSError:
+            return 0
+
+    def _walk_directory(
+        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
+    ) -> "List[str]":
+        """Walk directory recursively and return all file paths (CircuitPython compatible).
+
+        :param str base_path: The base directory to walk.
+        :param List[str] exclude_patterns: Patterns to exclude.
+        :return: List of file paths relative to base_path.
+        """
+        exclude_patterns = exclude_patterns or []
+        file_paths = []
+
+        def _walk_recursive(current_path: str, relative_path: str = "") -> None:
+            try:
+                items = os.listdir(current_path)
+                for item in items:
+                    item_path = current_path + "/" + item if current_path else item
+                    item_relative = (
+                        relative_path + "/" + item if relative_path else item
+                    )
+
+                    # Check if this path should be excluded
+                    if any(pattern in item_relative for pattern in exclude_patterns):
+                        continue
+
+                    # Check if it's a directory by trying to list it
+                    try:
+                        os.listdir(item_path)
+                        # It's a directory, recurse
+                        _walk_recursive(item_path, item_relative)
+                    except OSError:
+                        # It's a file, add to list
+                        file_paths.append(item_relative)
+            except OSError:
+                # Directory doesn't exist or can't be read
+                pass
+
+        _walk_recursive(base_path)
+        return file_paths
+
     def create_file_checksum(self, file_path: str) -> str:
         """Create a checksum for a single file.
 
@@ -41,7 +105,7 @@ class OTAUpdateManager(OTAUpdateProto):
         :raises Exception: If there is an error reading the file or creating the checksum.
         """
         try:
-            if not os.path.exists(file_path):
+            if not self._file_exists(file_path):
                 raise FileNotFoundError(f"File not found: {file_path}")
 
             hash_md5 = hashlib.md5()
@@ -78,39 +142,30 @@ class OTAUpdateManager(OTAUpdateProto):
         :raises Exception: If there is an error scanning the directory or creating checksums.
         """
         try:
-            if not os.path.exists(base_path):
+            if not self._file_exists(base_path):
                 raise FileNotFoundError(f"Base path not found: {base_path}")
 
             checksums = {}
             exclude_patterns = exclude_patterns or []
 
-            for root, dirs, files in os.walk(base_path):
-                # Skip directories that match exclude patterns
-                dirs[:] = [
-                    d
-                    for d in dirs
-                    if not any(
-                        pattern in os.path.join(root, d) for pattern in exclude_patterns
+            # Get all files in the directory tree
+            file_paths = self._walk_directory(base_path, exclude_patterns)
+
+            for relative_path in file_paths:
+                # Construct full path
+                full_path = (
+                    base_path + "/" + relative_path if base_path else relative_path
+                )
+
+                try:
+                    checksum = self.create_file_checksum(full_path)
+                    checksums[relative_path] = checksum
+                except Exception as e:
+                    self._log.warning(
+                        "Failed to create checksum for file",
+                        file_path=relative_path,
+                        err=e,
                     )
-                ]
-
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(file_path, base_path)
-
-                    # Skip files that match exclude patterns
-                    if any(pattern in relative_path for pattern in exclude_patterns):
-                        continue
-
-                    try:
-                        checksum = self.create_file_checksum(file_path)
-                        checksums[relative_path] = checksum
-                    except Exception as e:
-                        self._log.warning(
-                            "Failed to create checksum for file",
-                            file_path=relative_path,
-                            err=e,
-                        )
 
             self._log.info(
                 "Created checksums for codebase",
@@ -181,7 +236,8 @@ class OTAUpdateManager(OTAUpdateProto):
             validated_files = 0
 
             for file_path, expected_checksum in expected_checksums.items():
-                full_path = os.path.join(base_path, file_path)
+                # Construct full path
+                full_path = base_path + "/" + file_path if base_path else file_path
 
                 try:
                     if self.validate_file_integrity(full_path, expected_checksum):
@@ -230,8 +286,8 @@ class OTAUpdateManager(OTAUpdateProto):
             missing_files = []
 
             for file_path in expected_files:
-                full_path = os.path.join(base_path, file_path)
-                if not os.path.exists(full_path):
+                full_path = base_path + "/" + file_path if base_path else file_path
+                if not self._file_exists(full_path):
                     missing_files.append(file_path)
 
             self._log.debug(
@@ -264,13 +320,12 @@ class OTAUpdateManager(OTAUpdateProto):
             extra_files = []
             expected_set = set(expected_files)
 
-            for root, dirs, files in os.walk(base_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(file_path, base_path)
+            # Get all files in the directory tree
+            all_files = self._walk_directory(base_path)
 
-                    if relative_path not in expected_set:
-                        extra_files.append(relative_path)
+            for file_path in all_files:
+                if file_path not in expected_set:
+                    extra_files.append(file_path)
 
             self._log.debug(
                 "Identified extra files",
@@ -361,10 +416,10 @@ class OTAUpdateManager(OTAUpdateProto):
         :raises Exception: If there is an error accessing the file.
         """
         try:
-            if not os.path.exists(file_path):
+            if not self._file_exists(file_path):
                 raise FileNotFoundError(f"File not found: {file_path}")
 
-            file_size = os.path.getsize(file_path)
+            file_size = self._get_file_size(file_path)
             self._log.debug(
                 "Retrieved file size", file_path=file_path, size_bytes=file_size
             )
@@ -393,39 +448,26 @@ class OTAUpdateManager(OTAUpdateProto):
         :raises Exception: If there is an error scanning the directory.
         """
         try:
-            if not os.path.exists(base_path):
+            if not self._file_exists(base_path):
                 raise FileNotFoundError(f"Base path not found: {base_path}")
 
             total_size = 0
             exclude_patterns = exclude_patterns or []
 
-            for root, dirs, files in os.walk(base_path):
-                # Skip directories that match exclude patterns
-                dirs[:] = [
-                    d
-                    for d in dirs
-                    if not any(
-                        pattern in os.path.join(root, d) for pattern in exclude_patterns
+            # Get all files in the directory tree
+            file_paths = self._walk_directory(base_path, exclude_patterns)
+
+            for relative_path in file_paths:
+                full_path = (
+                    base_path + "/" + relative_path if base_path else relative_path
+                )
+                try:
+                    file_size = self.get_file_size(full_path)
+                    total_size += file_size
+                except Exception as e:
+                    self._log.warning(
+                        "Failed to get size for file", file_path=relative_path, err=e
                     )
-                ]
-
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(file_path, base_path)
-
-                    # Skip files that match exclude patterns
-                    if any(pattern in relative_path for pattern in exclude_patterns):
-                        continue
-
-                    try:
-                        file_size = self.get_file_size(file_path)
-                        total_size += file_size
-                    except Exception as e:
-                        self._log.warning(
-                            "Failed to get size for file",
-                            file_path=relative_path,
-                            err=e,
-                        )
 
             self._log.info(
                 "Calculated codebase size",
