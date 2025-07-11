@@ -257,6 +257,7 @@ class OTAUpdateManager(OTAUpdateProto):
             return None
         finally:
             # Force garbage collection after each file to prevent memory buildup
+            print(f"Garbage collecting: {gc.mem_free()}")
             gc.collect()
 
     def create_codebase_checksum(
