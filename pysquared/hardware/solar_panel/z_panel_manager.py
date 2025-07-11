@@ -73,7 +73,6 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
 
         # Error tracking
         self._error_count = 0
-        self._last_error = None
 
         # Sensor states
         self._sensor_states = {
@@ -102,9 +101,8 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         except Exception as e:
             self._sensor_states["temperature"] = "ERROR"
             self._error_count += 1
-            self._last_error = str(e)
             self._log.error("Failed to read Z solar panel temperature", err=e)
-            return None
+            raise e
 
     def get_light_level(self) -> float | None:
         """Gets the current light level of the solar panel.
@@ -127,9 +125,8 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         except Exception as e:
             self._sensor_states["light"] = "ERROR"
             self._error_count += 1
-            self._last_error = str(e)
             self._log.error("Failed to read Z solar panel light level", err=e)
-            return None
+            raise e
 
     def get_all_data(self) -> tuple[float | None, float | None]:
         """Gets all the data from the solar panel.
@@ -167,9 +164,8 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
             return result
         except Exception as e:
             self._error_count += 1
-            self._last_error = str(e)
             self._log.error("Failed to drive Z solar panel torque coils", err=e)
-            return False
+            raise e
 
     def get_sensor_states(self) -> dict:
         """Gets the current state of the sensors on the solar panel.
@@ -178,14 +174,6 @@ class ZSolarPanelManager(SolarPanelProto, LoadSwitchProto):
         :rtype: dict
         """
         return self._sensor_states.copy()
-
-    def get_last_error(self) -> str | None:
-        """Gets the last error that occurred on the solar panel.
-
-        :return: The last error that occurred on the solar panel or None if no error has occurred
-        :rtype: str | None
-        """
-        return self._last_error
 
     def get_error_count(self) -> int:
         """Gets the number of errors that have occurred on the solar panel since the last reset.

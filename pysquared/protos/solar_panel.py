@@ -46,14 +46,6 @@ class SolarPanelProto:
         """
         ...
 
-    def get_last_error(self) -> str | None:
-        """Gets the last error that occurred on the solar panel
-
-        :return: The last error that occurred on the solar panel or None if no error has occurred
-        :rtype: str | None
-        """
-        ...
-
     def get_error_count(self) -> int:
         """Gets the number of errors that have occurred on the solar panel since the last reset
 

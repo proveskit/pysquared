@@ -90,7 +90,6 @@ class TestZSolarPanelManager:
         assert hasattr(manager, "get_all_data")
         assert hasattr(manager, "drive_torque_coils")
         assert hasattr(manager, "get_sensor_states")
-        assert hasattr(manager, "get_last_error")
         assert hasattr(manager, "get_error_count")
         # Load switch methods
         assert hasattr(manager, "enable_load")
@@ -116,8 +115,8 @@ class TestZSolarPanelManager:
             type(mock_temperature_sensor), "temperature", new_callable=PropertyMock
         ) as mock_temp:
             mock_temp.side_effect = Exception("Sensor error")
-            result = z_solar_panel_manager.get_temperature()
-            assert result is None
+            with pytest.raises(Exception, match="Sensor error"):
+                z_solar_panel_manager.get_temperature()
             mock_logger.error.assert_called_once()
 
     def test_get_light_level_success(self, z_solar_panel_manager, mock_light_sensor):
@@ -136,8 +135,8 @@ class TestZSolarPanelManager:
             type(mock_light_sensor), "light", new_callable=PropertyMock
         ) as mock_light:
             mock_light.side_effect = Exception("Sensor error")
-            result = z_solar_panel_manager.get_light_level()
-            assert result is None
+            with pytest.raises(Exception, match="Sensor error"):
+                z_solar_panel_manager.get_light_level()
             mock_logger.error.assert_called_once()
 
     def test_drive_torque_coils_success(self, z_solar_panel_manager, mock_torque_coils):
@@ -155,9 +154,9 @@ class TestZSolarPanelManager:
         """Test torque coil driving failure."""
         mock_torque_coils.drive.side_effect = Exception("Coil error")
 
-        result = z_solar_panel_manager.drive_torque_coils()
+        with pytest.raises(Exception, match="Coil error"):
+            z_solar_panel_manager.drive_torque_coils()
 
-        assert result is False
         mock_logger.error.assert_called_once()
 
     def test_drive_torque_coils_with_parameters(
@@ -284,7 +283,8 @@ class TestZSolarPanelManager:
             type(mock_light_sensor), "light", new_callable=PropertyMock
         ) as mock_light:
             mock_light.side_effect = Exception(error_msg)
-            z_solar_panel_manager.get_light_level()
+            with pytest.raises(Exception, match=error_msg):
+                z_solar_panel_manager.get_light_level()
             mock_logger.error.assert_called_once()
             call_args = mock_logger.error.call_args
             assert "light" in call_args[0][0].lower()
@@ -326,8 +326,8 @@ class TestZSolarPanelManager:
         ):
             mock_temp.side_effect = Exception("Temperature sensor error")
             mock_light.return_value = expected_light
-            result = z_solar_panel_manager.get_all_data()
-            assert result == (None, expected_light)
+            with pytest.raises(Exception, match="Temperature sensor error"):
+                z_solar_panel_manager.get_all_data()
             mock_logger.error.assert_called_once()
 
     def test_get_all_data_light_failure(
@@ -348,8 +348,8 @@ class TestZSolarPanelManager:
         ):
             mock_temp.return_value = expected_temp
             mock_light.side_effect = Exception("Light sensor error")
-            result = z_solar_panel_manager.get_all_data()
-            assert result == (expected_temp, None)
+            with pytest.raises(Exception, match="Light sensor error"):
+                z_solar_panel_manager.get_all_data()
             mock_logger.error.assert_called_once()
 
     def test_get_all_data_both_sensors_failure(
@@ -369,9 +369,9 @@ class TestZSolarPanelManager:
         ):
             mock_temp.side_effect = Exception("Temperature sensor error")
             mock_light.side_effect = Exception("Light sensor error")
-            result = z_solar_panel_manager.get_all_data()
-            assert result == (None, None)
-            assert mock_logger.error.call_count == 2
+            with pytest.raises(Exception, match="Temperature sensor error"):
+                z_solar_panel_manager.get_all_data()
+            assert mock_logger.error.call_count == 1
 
     def test_get_all_data_temperature_sensor_none(
         self, mock_logger, mock_light_sensor, mock_torque_coils, mock_load_switch_pin
@@ -468,8 +468,8 @@ class TestZSolarPanelManager:
             # Enable load switch for testing
             manager.enable_load()
 
-            result = manager.get_temperature()
-            assert result is None
+            with pytest.raises(RuntimeError, match="Initialization failed"):
+                manager.get_temperature()
         mock_logger.error.assert_called_once()
 
     def test_get_sensor_states_success(
@@ -489,40 +489,36 @@ class TestZSolarPanelManager:
         assert result["temperature"] == "ERROR"
         assert result["light"] == "OK"
 
-    def test_error_tracking_and_last_error(
+    def test_error_tracking_and_logging(
         self, z_solar_panel_manager, mock_temperature_sensor, mock_logger
     ):
-        """Test error is counted and last error is stored when sensor fails."""
+        """Test error is counted and logged when sensor fails."""
         with patch.object(
             type(mock_temperature_sensor), "temperature", new_callable=PropertyMock
         ) as mock_temp:
             mock_temp.side_effect = Exception("Temp sensor fail")
-            # Should log error, increment error count, and set last error
-            result = z_solar_panel_manager.get_temperature()
-            assert result is None
+            # Should log error, increment error count, and reraise
+            with pytest.raises(Exception, match="Temp sensor fail"):
+                z_solar_panel_manager.get_temperature()
         assert z_solar_panel_manager.get_error_count() == 1
-        assert "Temp sensor fail" in z_solar_panel_manager.get_last_error()
         mock_logger.error.assert_called_once()
 
     def test_multiple_errors_accumulate(
         self, z_solar_panel_manager, mock_temperature_sensor, mock_logger
     ):
-        """Test multiple errors are counted and last error is updated."""
+        """Test multiple errors are counted and logged."""
         with patch.object(
             type(mock_temperature_sensor), "temperature", new_callable=PropertyMock
         ) as mock_temp:
             mock_temp.side_effect = Exception("First error")
-            z_solar_panel_manager.get_temperature()
+            with pytest.raises(Exception, match="First error"):
+                z_solar_panel_manager.get_temperature()
             mock_temp.side_effect = Exception("Second error")
-            z_solar_panel_manager.get_temperature()
+            with pytest.raises(Exception, match="Second error"):
+                z_solar_panel_manager.get_temperature()
             assert z_solar_panel_manager.get_error_count() == 2
-        assert "Second error" in z_solar_panel_manager.get_last_error()
 
-    def test_get_last_error_none_initially(self, z_solar_panel_manager):
-        """Test get_last_error returns None before any error occurs."""
-        assert z_solar_panel_manager.get_last_error() is None
-
-    def test_get_error_count_zero_initially(self, z_solar_panel_manager):
+    def test_error_count_zero_initially(self, z_solar_panel_manager):
         """Test get_error_count returns 0 before any error occurs."""
         assert z_solar_panel_manager.get_error_count() == 0
 
