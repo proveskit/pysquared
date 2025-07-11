@@ -108,14 +108,18 @@ class OTAUpdateManager(OTAUpdateProto):
         _walk_recursive(base_path)
         return file_paths
 
-    def create_file_checksum(self, file_path: str) -> str:
+    def create_file_checksum(self, file_path: str, timeout: float = 5.0) -> str:
         """Create a checksum for a single file.
 
         :param str file_path: The path to the file to checksum.
+        :param float timeout: Maximum time (in seconds) to allow for reading the file. Default is 5 seconds.
         :return: The checksum of the file as a hexadecimal string.
         :rtype: str
         :raises Exception: If there is an error reading the file or creating the checksum.
+        :raises TimeoutError: If reading the file takes longer than the timeout.
         """
+        import time
+
         try:
             if not self._file_exists(file_path):
                 raise Exception(f"File not found: {file_path}")
@@ -126,7 +130,15 @@ class OTAUpdateManager(OTAUpdateProto):
 
                 hash_md5 = adafruit_hashlib.new("md5")
                 with open(file_path, "rb") as f:
-                    for chunk in iter(lambda: f.read(4096), b""):
+                    start_time = time.monotonic()
+                    while True:
+                        if time.monotonic() - start_time > timeout:
+                            raise TimeoutError(
+                                f"File read operation timed out after {timeout} seconds"
+                            )
+                        chunk = f.read(4096)
+                        if not chunk:  # Empty chunk means end of file
+                            break
                         hash_md5.update(chunk)
                 checksum_str = hash_md5.hexdigest()
             except ImportError:
@@ -136,14 +148,30 @@ class OTAUpdateManager(OTAUpdateProto):
 
                     hash_md5 = hashlib.md5()
                     with open(file_path, "rb") as f:
-                        for chunk in iter(lambda: f.read(4096), b""):
+                        start_time = time.monotonic()
+                        while True:
+                            if time.monotonic() - start_time > timeout:
+                                raise TimeoutError(
+                                    f"File read operation timed out after {timeout} seconds"
+                                )
+                            chunk = f.read(4096)
+                            if not chunk:  # Empty chunk means end of file
+                                break
                             hash_md5.update(chunk)
                     checksum_str = hash_md5.hexdigest()
                 except ImportError:
                     # Fallback: simple checksum
                     checksum = 0
                     with open(file_path, "rb") as f:
-                        for chunk in iter(lambda: f.read(4096), b""):
+                        start_time = time.monotonic()
+                        while True:
+                            if time.monotonic() - start_time > timeout:
+                                raise TimeoutError(
+                                    f"File read operation timed out after {timeout} seconds"
+                                )
+                            chunk = f.read(4096)
+                            if not chunk:  # Empty chunk means end of file
+                                break
                             for byte in chunk:
                                 checksum = (checksum + byte) & 0xFFFF  # 16-bit checksum
                     checksum_str = f"{checksum:04x}"
