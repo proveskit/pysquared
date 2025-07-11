@@ -7,28 +7,53 @@ The manager handles temperature and light sensors, torque coils, and load switch
 
 Usage Example:
 
-from lib.pysquared.hardware.solar_panel.z_panel_manager import ZSolarPanelManager
-from lib.pysquared.hardware.temperature_sensor import TemperatureSensor
-from lib.pysquared.hardware.light_sensor import LightSensor
-from lib.pysquared.hardware.torque_coils import TorqueCoils
+from pysquared.hardware.solar_panel.z_panel_manager import ZSolarPanelManager
+from pysquared.hardware.digitalio import initialize_pin
+from pysquared.hardware.temperature_sensor import TemperatureSensor
+from pysquared.hardware.light_sensor import LightSensor
+from pysquared.hardware.torque_coils import TorqueCoils
 
 # Initialize sensors and components externally
 temp_sensor = TemperatureSensor(i2c, address=0x48)
 light_sensor = LightSensor(i2c, address=0x10)
 torque_coils = TorqueCoils(pin1, pin2, pin3)
+load_switch_pin = initialize_pin(logger, board.LOAD_SWITCH_Z, Direction.OUTPUT, False)
 
 # Create the manager
 z_panel = ZSolarPanelManager(
     logger=logger,
     temperature_sensor=temp_sensor,
     light_sensor=light_sensor,
-    torque_coils=torque_coils
+    torque_coils=torque_coils,
+    load_switch_pin=load_switch_pin,
+    enable_high=True
 )
 
-# Control power
-z_panel.enable_load()
-temp = z_panel.get_temperature()
-light = z_panel.light()
+# Control power and read sensors
+try:
+    z_panel.enable_load()  # Raises RuntimeError on hardware failure
+
+    # Check if load is enabled
+    if z_panel.is_enabled:
+        temp = z_panel.get_temperature()  # Returns float or None
+        light = z_panel.get_light_level()  # Returns float or None
+
+        # Get all sensor data at once
+        temp, light = z_panel.get_all_data()
+
+        # Drive torque coils if available
+        z_panel.drive_torque_coils(duration=5.0, intensity=0.8)
+
+    # Reset load switch (momentary power cycle)
+    z_panel.reset_load()
+
+    # Disable power
+    z_panel.disable_load()
+
+except RuntimeError as e:
+    logger.error("Hardware error occurred", err=e)
+except NotImplementedError as e:
+    logger.error("Feature not available", err=e)
 """
 
 from .base_manager import BaseSolarPanelManager
