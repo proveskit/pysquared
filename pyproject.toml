@@ -51,6 +51,8 @@ packages = [
     "pysquared.hardware.burnwire",
     "pysquared.hardware.burnwire.manager",
     "pysquared.hardware.solar_panel",
+    "pysquared.hardware.solar_panel.loadswitch_manager",
+    "pysquared.hardware.solar_panel.base_manager",
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.rtc",
