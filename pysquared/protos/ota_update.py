@@ -22,7 +22,6 @@ class OTAUpdateProto:
         :param str file_path: The path to the file to checksum.
         :return: The checksum of the file as a hexadecimal string.
         :rtype: str
-        :raises FileNotFoundError: If the file does not exist.
         :raises Exception: If there is an error reading the file or creating the checksum.
         """
         ...
@@ -47,7 +46,6 @@ class OTAUpdateProto:
         :param str expected_checksum: The expected checksum to compare against.
         :return: True if the file checksum matches the expected checksum, False otherwise.
         :rtype: bool
-        :raises FileNotFoundError: If the file does not exist.
         :raises Exception: If there is an error reading the file or creating the checksum.
         """
         ...
@@ -117,7 +115,6 @@ class OTAUpdateProto:
         :param str file_path: The path to the file.
         :return: The size of the file in bytes.
         :rtype: int
-        :raises FileNotFoundError: If the file does not exist.
         :raises Exception: If there is an error accessing the file.
         """
         ...

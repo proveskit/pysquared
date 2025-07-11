@@ -101,12 +101,11 @@ class OTAUpdateManager(OTAUpdateProto):
         :param str file_path: The path to the file to checksum.
         :return: The checksum of the file as a hexadecimal string.
         :rtype: str
-        :raises FileNotFoundError: If the file does not exist.
         :raises Exception: If there is an error reading the file or creating the checksum.
         """
         try:
             if not self._file_exists(file_path):
-                raise FileNotFoundError(f"File not found: {file_path}")
+                raise Exception(f"File not found: {file_path}")
 
             hash_md5 = hashlib.md5()
             with open(file_path, "rb") as f:
@@ -119,13 +118,19 @@ class OTAUpdateManager(OTAUpdateProto):
             )
             return checksum
 
-        except FileNotFoundError:
-            self._log.error(
-                "File not found during checksum creation",
-                file_path=file_path,
-                err=Exception("File not found"),
-            )
-            raise
+        except OSError as e:
+            if "No such file" in str(e) or "File not found" in str(e):
+                self._log.error(
+                    "File not found during checksum creation",
+                    file_path=file_path,
+                    err=Exception("File not found"),
+                )
+                raise Exception(f"File not found: {file_path}") from e
+            else:
+                self._log.error(
+                    "OS error during checksum creation", err=e, file_path=file_path
+                )
+                raise
         except Exception as e:
             self._log.error("Error creating file checksum", err=e, file_path=file_path)
             raise
@@ -143,7 +148,7 @@ class OTAUpdateManager(OTAUpdateProto):
         """
         try:
             if not self._file_exists(base_path):
-                raise FileNotFoundError(f"Base path not found: {base_path}")
+                raise Exception(f"Base path not found: {base_path}")
 
             checksums = {}
             exclude_patterns = exclude_patterns or []
@@ -187,7 +192,6 @@ class OTAUpdateManager(OTAUpdateProto):
         :param str expected_checksum: The expected checksum to compare against.
         :return: True if the file checksum matches the expected checksum, False otherwise.
         :rtype: bool
-        :raises FileNotFoundError: If the file does not exist.
         :raises Exception: If there is an error reading the file or creating the checksum.
         """
         try:
@@ -206,18 +210,19 @@ class OTAUpdateManager(OTAUpdateProto):
 
             return is_valid
 
-        except FileNotFoundError:
-            self._log.error(
-                "File not found during integrity validation",
-                file_path=file_path,
-                err=Exception("File not found"),
-            )
-            raise
         except Exception as e:
-            self._log.error(
-                "Error during file integrity validation", err=e, file_path=file_path
-            )
-            raise
+            if "File not found" in str(e):
+                self._log.error(
+                    "File not found during integrity validation",
+                    file_path=file_path,
+                    err=Exception("File not found"),
+                )
+                raise
+            else:
+                self._log.error(
+                    "Error during file integrity validation", err=e, file_path=file_path
+                )
+                raise
 
     def validate_codebase_integrity(
         self, base_path: str, expected_checksums: "Dict[str, str]"
@@ -244,13 +249,14 @@ class OTAUpdateManager(OTAUpdateProto):
                         validated_files += 1
                     else:
                         failed_files.append(file_path)
-                except FileNotFoundError:
-                    failed_files.append(file_path)
                 except Exception as e:
-                    self._log.warning(
-                        "Error validating file", file_path=file_path, err=e
-                    )
-                    failed_files.append(file_path)
+                    if "File not found" in str(e):
+                        failed_files.append(file_path)
+                    else:
+                        self._log.warning(
+                            "Error validating file", file_path=file_path, err=e
+                        )
+                        failed_files.append(file_path)
 
             is_valid = len(failed_files) == 0
 
@@ -412,12 +418,11 @@ class OTAUpdateManager(OTAUpdateProto):
         :param str file_path: The path to the file.
         :return: The size of the file in bytes.
         :rtype: int
-        :raises FileNotFoundError: If the file does not exist.
         :raises Exception: If there is an error accessing the file.
         """
         try:
             if not self._file_exists(file_path):
-                raise FileNotFoundError(f"File not found: {file_path}")
+                raise Exception(f"File not found: {file_path}")
 
             file_size = self._get_file_size(file_path)
             self._log.debug(
@@ -425,16 +430,17 @@ class OTAUpdateManager(OTAUpdateProto):
             )
             return file_size
 
-        except FileNotFoundError:
-            self._log.error(
-                "File not found when getting size",
-                file_path=file_path,
-                err=Exception("File not found"),
-            )
-            raise
         except Exception as e:
-            self._log.error("Error getting file size", err=e, file_path=file_path)
-            raise
+            if "File not found" in str(e):
+                self._log.error(
+                    "File not found when getting size",
+                    file_path=file_path,
+                    err=Exception("File not found"),
+                )
+                raise
+            else:
+                self._log.error("Error getting file size", err=e, file_path=file_path)
+                raise
 
     def get_codebase_size(
         self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
@@ -449,7 +455,7 @@ class OTAUpdateManager(OTAUpdateProto):
         """
         try:
             if not self._file_exists(base_path):
-                raise FileNotFoundError(f"Base path not found: {base_path}")
+                raise Exception(f"Base path not found: {base_path}")
 
             total_size = 0
             exclude_patterns = exclude_patterns or []
