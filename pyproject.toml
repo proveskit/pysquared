@@ -53,7 +53,9 @@ packages = [
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.rtc",
-    "pysquared.rtc.manager"
+    "pysquared.rtc.manager",
+    "pysquared.ota_update",
+    "pysquared.ota_update.manager"
 ]
 
 [tool.ruff.format]
