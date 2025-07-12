@@ -1,7 +1,4 @@
-"""
-Config module for PySquared.
-
-This module provides the `Config` class, which encapsulates the configuration
+"""This module provides the Config, which encapsulates the configuration
 logic for the PySquared project. It loads, validates, and updates configuration
 values from a JSON file, and distributes these values across the application.
 
@@ -9,14 +6,11 @@ Classes:
     Config: Handles loading, validating, and updating configuration values,
         including radio settings.
 
-Usage:
-    Instantiate the `Config` class with the path to the configuration JSON file.
-    Use the `update_config` method to update configuration values, either
-    temporarily (RAM only) or permanently (persisted to file).
-
-Example:
-    config = Config("config.json")
-    config.update_config("cubesat_name", "Cube1", temporary=False)
+**Usage:**
+```python
+config = Config("config.json")
+config.update_config("cubesat_name", "Cube1", temporary=False)
+```
 """
 
 import json

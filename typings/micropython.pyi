@@ -77,7 +77,7 @@ def mem_info() -> None:
     """
 
 @overload
-def mem_info(verbose: Any, /) -> None:
+def mem_info(verbose: int, /) -> None:
     """
     Print information about currently used memory.  If the *verbose* argument
     is given then extra information is printed.

@@ -1,3 +1,11 @@
+"""Unit tests for the PowerHealth class.
+
+This module contains unit tests for the `PowerHealth` class, which assesses the
+health of the power system based on voltage and current readings. The tests cover
+various scenarios, including nominal, degraded, and critical states, as well as
+error handling during sensor readings.
+"""
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -10,11 +18,13 @@ from pysquared.protos.power_monitor import PowerMonitorProto
 
 @pytest.fixture
 def mock_logger():
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
 def mock_config():
+    """Mocks the Config class with predefined power thresholds."""
     config = MagicMock(spec=Config)
     config.normal_charge_current = 100.0
     config.normal_battery_voltage = 7.2
@@ -25,11 +35,13 @@ def mock_config():
 
 @pytest.fixture
 def mock_power_monitor():
+    """Mocks the PowerMonitorProto class."""
     return MagicMock(spec=PowerMonitorProto)
 
 
 @pytest.fixture
 def power_health(mock_logger, mock_config, mock_power_monitor):
+    """Provides a PowerHealth instance for testing."""
     return PowerHealth(
         logger=mock_logger,
         config=mock_config,
@@ -40,14 +52,25 @@ def power_health(mock_logger, mock_config, mock_power_monitor):
 def test_power_health_initialization(
     power_health, mock_logger, mock_config, mock_power_monitor
 ):
-    """Test that PowerHealth initializes correctly"""
+    """Tests that PowerHealth initializes correctly.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+        mock_logger: Mocked Logger instance.
+        mock_config: Mocked Config instance.
+        mock_power_monitor: Mocked PowerMonitorProto instance.
+    """
     assert power_health.logger == mock_logger
     assert power_health.config == mock_config
     assert power_health._power_monitor == mock_power_monitor
 
 
 def test_get_nominal_state(power_health):
-    """Test that get() returns NOMINAL when all readings are within normal range"""
+    """Tests that get() returns NOMINAL when all readings are within normal range.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     # Mock normal readings
     power_health._power_monitor.get_bus_voltage.return_value = 7.2  # Normal voltage
     power_health._power_monitor.get_current.return_value = 100.0  # Normal current
@@ -59,7 +82,11 @@ def test_get_nominal_state(power_health):
 
 
 def test_get_critical_state_low_voltage(power_health):
-    """Test that get() returns CRITICAL when battery voltage is at/below critical threshold"""
+    """Tests that get() returns CRITICAL when battery voltage is at/below critical threshold.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     # Mock critical voltage reading
     power_health._power_monitor.get_bus_voltage.return_value = (
         5.8  # Below critical (6.0)
@@ -75,7 +102,11 @@ def test_get_critical_state_low_voltage(power_health):
 
 
 def test_get_critical_state_exactly_critical_voltage(power_health):
-    """Test that get() returns CRITICAL when battery voltage is exactly at critical threshold"""
+    """Tests that get() returns CRITICAL when battery voltage is exactly at critical threshold.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     # Mock exactly critical voltage reading
     power_health._power_monitor.get_bus_voltage.return_value = 6.0  # Exactly critical
     power_health._power_monitor.get_current.return_value = 100.0
@@ -89,7 +120,11 @@ def test_get_critical_state_exactly_critical_voltage(power_health):
 
 
 def test_get_degraded_state_current_deviation(power_health):
-    """Test that get() returns DEGRADED when current is outside normal range"""
+    """Tests that get() returns DEGRADED when current is outside normal range.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     # Mock readings with current deviation
     power_health._power_monitor.get_bus_voltage.return_value = 7.2  # Normal voltage
     power_health._power_monitor.get_current.return_value = (
@@ -106,7 +141,11 @@ def test_get_degraded_state_current_deviation(power_health):
 
 
 def test_get_degraded_state_voltage_deviation(power_health):
-    """Test that get() returns DEGRADED when voltage is at or below degraded threshold but not critical"""
+    """Tests that get() returns DEGRADED when voltage is at or below degraded threshold but not critical.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     power_health._power_monitor.get_bus_voltage.return_value = (
         6.8  # Below degraded threshold (7.0) but above critical (6.0)
     )
@@ -122,7 +161,11 @@ def test_get_degraded_state_voltage_deviation(power_health):
 
 
 def test_get_nominal_with_minor_voltage_deviation(power_health):
-    """Test that get() returns NOMINAL when voltage is above degraded threshold"""
+    """Tests that get() returns NOMINAL when voltage is above degraded threshold.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     power_health._power_monitor.get_bus_voltage.return_value = (
         7.1  # Above degraded threshold (7.0)
     )
@@ -135,7 +178,11 @@ def test_get_nominal_with_minor_voltage_deviation(power_health):
 
 
 def test_avg_reading_normal_operation(power_health):
-    """Test _avg_reading() with normal sensor readings"""
+    """Tests _avg_reading() with normal sensor readings.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     mock_func = MagicMock(return_value=7.5)
 
     result = power_health._avg_reading(mock_func, num_readings=10)
@@ -145,7 +192,11 @@ def test_avg_reading_normal_operation(power_health):
 
 
 def test_avg_reading_with_none_values(power_health):
-    """Test _avg_reading() when sensor returns None"""
+    """Tests _avg_reading() when sensor returns None.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     mock_func = MagicMock(return_value=None)
     mock_func.__name__ = "test_sensor_function"
 
@@ -157,7 +208,11 @@ def test_avg_reading_with_none_values(power_health):
 
 
 def test_avg_reading_with_varying_values(power_health):
-    """Test _avg_reading() with varying sensor readings"""
+    """Tests _avg_reading() with varying sensor readings.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     mock_func = MagicMock(side_effect=[7.0, 7.2, 7.4, 7.6, 7.8])
 
     result = power_health._avg_reading(mock_func, num_readings=5)
@@ -168,7 +223,11 @@ def test_avg_reading_with_varying_values(power_health):
 
 
 def test_avg_reading_default_num_readings(power_health):
-    """Test _avg_reading() uses default of 50 readings"""
+    """Tests _avg_reading() uses default of 50 readings.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     mock_func = MagicMock(return_value=7.0)
 
     result = power_health._avg_reading(mock_func)
@@ -178,7 +237,11 @@ def test_avg_reading_default_num_readings(power_health):
 
 
 def test_get_with_none_voltage_reading(power_health):
-    """Test get() when voltage reading returns None"""
+    """Tests get() when voltage reading returns None.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     power_health._power_monitor.get_bus_voltage.return_value = None
     power_health._power_monitor.get_current.return_value = 100.0
 
@@ -194,7 +257,11 @@ def test_get_with_none_voltage_reading(power_health):
 
 
 def test_get_with_none_current_reading(power_health):
-    """Test get() when current reading returns None"""
+    """Tests get() when current reading returns None.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     power_health._power_monitor.get_bus_voltage.return_value = 7.2
     power_health._power_monitor.get_current.return_value = None
 
@@ -210,7 +277,11 @@ def test_get_with_none_current_reading(power_health):
 
 
 def test_get_with_exception_during_voltage_reading(power_health):
-    """Test get() when exception occurs during voltage reading"""
+    """Tests get() when exception occurs during voltage reading.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     # Mock _avg_reading to raise an exception on first call (voltage)
     test_exception = RuntimeError("Sensor communication error")
     power_health._avg_reading = MagicMock(side_effect=test_exception)
@@ -225,7 +296,11 @@ def test_get_with_exception_during_voltage_reading(power_health):
 
 
 def test_get_with_exception_during_current_reading(power_health):
-    """Test get() when exception occurs during current reading"""
+    """Tests get() when exception occurs during current reading.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     # Mock _avg_reading to return normal voltage, then raise exception for current
     test_exception = RuntimeError("Current sensor failed")
     power_health._avg_reading = MagicMock(side_effect=[7.2, test_exception])
@@ -240,7 +315,11 @@ def test_get_with_exception_during_current_reading(power_health):
 
 
 def test_get_with_sensor_method_exception(power_health):
-    """Test get() when the sensor method itself raises an exception"""
+    """Tests get() when the sensor method itself raises an exception.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     # Make the sensor method raise an exception directly
     test_exception = OSError("I2C communication failed")
     power_health._power_monitor.get_bus_voltage.side_effect = test_exception
@@ -255,7 +334,11 @@ def test_get_with_sensor_method_exception(power_health):
 
 
 def test_get_logs_sensor_debug_info(power_health):
-    """Test that get() logs debug information about the sensor"""
+    """Tests that get() logs debug information about the sensor.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     power_health._power_monitor.get_bus_voltage.return_value = 7.2
     power_health._power_monitor.get_current.return_value = 100.0
 
@@ -267,7 +350,11 @@ def test_get_logs_sensor_debug_info(power_health):
 
 
 def test_degraded_vs_critical_voltage_boundaries(power_health):
-    """Test boundary conditions between degraded and critical voltage thresholds"""
+    """Tests boundary conditions between degraded and critical voltage thresholds.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     # Test voltage just above critical but below degraded
     power_health._power_monitor.get_bus_voltage.return_value = (
         6.5  # Above critical (6.0) but below degraded (7.0)
@@ -284,8 +371,12 @@ def test_degraded_vs_critical_voltage_boundaries(power_health):
 
 
 def test_current_deviation_threshold(power_health):
-    """Test current deviation uses normal_charge_current as threshold"""
-    # normal_charge_current = 100.0, so deviation > 100.0 should trigger error
+    """Tests current deviation uses normal_charge_current as threshold.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
+    # normal_charge_current = 100.0, so deviation = 150 > 100 should trigger error
     power_health._power_monitor.get_bus_voltage.return_value = 7.2
     power_health._power_monitor.get_current.return_value = (
         250.0  # deviation = 150 > 100
@@ -301,7 +392,11 @@ def test_current_deviation_threshold(power_health):
 
 
 def test_degraded_battery_voltage_threshold(power_health):
-    """Test that get() returns DEGRADED when voltage is exactly at degraded threshold"""
+    """Tests that get() returns DEGRADED when voltage is exactly at degraded threshold.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     power_health._power_monitor.get_bus_voltage.return_value = (
         7.0  # Exactly at degraded threshold
     )
@@ -317,7 +412,11 @@ def test_degraded_battery_voltage_threshold(power_health):
 
 
 def test_voltage_just_above_degraded_threshold(power_health):
-    """Test that get() returns NOMINAL when voltage is just above degraded threshold"""
+    """Tests that get() returns NOMINAL when voltage is just above degraded threshold.
+
+    Args:
+        power_health: PowerHealth instance for testing.
+    """
     power_health._power_monitor.get_bus_voltage.return_value = (
         7.01  # Just above degraded threshold (7.0)
     )

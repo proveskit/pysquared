@@ -1,12 +1,18 @@
-"""
-Mock for Circuit Python microcontroller
-https://docs.circuitpython.org/en/latest/shared-bindings/busio/index.html
+"""Mock for the CircuitPython microcontroller module.
+
+This module provides a mock implementation of the CircuitPython microcontroller module
+for testing purposes. It allows for simulating the behavior of the microcontroller
+module without the need for actual hardware.
 """
 
 
 class Pin:
+    """A mock Pin."""
+
     pass
 
 
 class Processor:
+    """A mock Processor."""
+
     temperature = 35.0

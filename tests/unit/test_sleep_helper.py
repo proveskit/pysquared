@@ -1,3 +1,10 @@
+"""Unit tests for the SleepHelper class.
+
+This module contains unit tests for the `SleepHelper` class, which provides
+functionality for safe sleep operations, including watchdog petting and handling
+of sleep duration limits.
+"""
+
 import sys
 from unittest.mock import MagicMock, patch
 
@@ -20,11 +27,13 @@ from pysquared.sleep_helper import SleepHelper  # noqa: E402
 
 @pytest.fixture
 def mock_logger() -> MagicMock:
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
 def mock_config() -> MagicMock:
+    """Mocks the Config class with a predefined longest allowable sleep time."""
     config = MagicMock(spec=Config)
     config.longest_allowable_sleep_time = 100
     return config
@@ -32,20 +41,32 @@ def mock_config() -> MagicMock:
 
 @pytest.fixture
 def mock_watchdog() -> MagicMock:
+    """Mocks the Watchdog class."""
     return MagicMock(spec=Watchdog)
 
 
 @pytest.fixture
 def sleep_helper(
-    mock_logger: MagicMock, mock_config: MagicMock, mock_watchdog: MagicMock
+    mock_logger: MagicMock,
+    mock_config: MagicMock,
+    mock_watchdog: MagicMock,
 ) -> SleepHelper:
+    """Provides a SleepHelper instance for testing."""
     return SleepHelper(mock_logger, mock_config, mock_watchdog)
 
 
 def test_init(
-    mock_logger: MagicMock, mock_config: MagicMock, mock_watchdog: MagicMock
+    mock_logger: MagicMock,
+    mock_config: MagicMock,
+    mock_watchdog: MagicMock,
 ) -> None:
-    """Test SleepHelper initialization."""
+    """Tests SleepHelper initialization.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_config: Mocked Config instance.
+        mock_watchdog: Mocked Watchdog instance.
+    """
     sleep_helper = SleepHelper(mock_logger, mock_config, mock_watchdog)
 
     assert sleep_helper.logger is mock_logger
@@ -60,7 +81,14 @@ def test_safe_sleep_within_limit(
     mock_logger: MagicMock,
     mock_watchdog: MagicMock,
 ) -> None:
-    """Test safe_sleep with duration within the allowable limit."""
+    """Tests safe_sleep with duration within the allowable limit.
+
+    Args:
+        mock_time: Mocked time module.
+        sleep_helper: SleepHelper instance for testing.
+        mock_logger: Mocked Logger instance.
+        mock_watchdog: Mocked Watchdog instance.
+    """
     # Reset mocks
     mock_alarm.reset_mock()
     mock_time_alarm.reset_mock()
@@ -95,7 +123,15 @@ def test_safe_sleep_exceeds_limit(
     mock_config: MagicMock,
     mock_watchdog: MagicMock,
 ) -> None:
-    """Test safe_sleep with duration exceeding the allowable limit."""
+    """Tests safe_sleep with duration exceeding the allowable limit.
+
+    Args:
+        mock_time: Mocked time module.
+        sleep_helper: SleepHelper instance for testing.
+        mock_logger: Mocked Logger instance.
+        mock_config: Mocked Config instance.
+        mock_watchdog: Mocked Watchdog instance.
+    """
     # Reset mocks
     mock_alarm.reset_mock()
     mock_time_alarm.reset_mock()
@@ -129,9 +165,17 @@ def test_safe_sleep_exceeds_limit(
 
 @patch("pysquared.sleep_helper.time")
 def test_safe_sleep_multiple_watchdog_pets(
-    mock_time: MagicMock, sleep_helper: SleepHelper, mock_watchdog: MagicMock
+    mock_time: MagicMock,
+    sleep_helper: SleepHelper,
+    mock_watchdog: MagicMock,
 ) -> None:
-    """Test safe_sleep with multiple watchdog pets during longer sleep."""
+    """Tests safe_sleep with multiple watchdog pets during longer sleep.
+
+    Args:
+        mock_time: Mocked time module.
+        sleep_helper: SleepHelper instance for testing.
+        mock_watchdog: Mocked Watchdog instance.
+    """
     # Reset mocks
     mock_alarm.reset_mock()
     mock_time_alarm.reset_mock()

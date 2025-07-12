@@ -1,8 +1,4 @@
-"""
-detumble Module
-===============
-
-This module provides functions for satellite detumbling using magnetorquers.
+"""This module provides functions for satellite detumbling using magnetorquers.
 Includes vector math utilities and the main dipole calculation for attitude control.
 """
 
@@ -39,7 +35,7 @@ def x_product(vector1: tuple, vector2: tuple) -> list:
     ]
 
 
-def gain_func():
+def gain_func() -> float:
     """
     Returns the gain value for the detumble control law.
 

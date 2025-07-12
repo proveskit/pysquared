@@ -1,0 +1,21 @@
+{
+  "containerEnv": {
+    "BLINKA_FORCEBOARD": "GENERIC_LINUX_PC",
+    "BLINKA_FORCECHIP": "GENERIC_X86"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.isort",
+        "ms-python.debugpy",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  },
+  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "name": "pysquared-dev",
+  "postCreateCommand": "make .venv pre-commit-install"
+}

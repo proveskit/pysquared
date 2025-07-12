@@ -1,9 +1,11 @@
-"""
-Protocol defining the interface for a Real Time Clock (RTC).
+"""This protocol specifies the interface that any Real-Time Clock (RTC) implementation
+must adhere to, ensuring consistent behavior across different RTC hardware.
 """
 
 
 class RTCProto:
+    """Protocol defining the interface for a Real Time Clock (RTC)."""
+
     def set_time(
         self,
         year: int,
@@ -14,16 +16,18 @@ class RTCProto:
         second: int,
         weekday: int,
     ) -> None:
-        """Set the time on the real time clock.
+        """Sets the time on the real-time clock.
 
-        :param year: The year value (0-9999)
-        :param month: The month value (1-12)
-        :param date: The date value (1-31)
-        :param hour: The hour value (0-23)
-        :param minute: The minute value (0-59)
-        :param second: The second value (0-59)
-        :param weekday: The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday
+        Args:
+            year: The year value (0-9999).
+            month: The month value (1-12).
+            date: The date value (1-31).
+            hour: The hour value (0-23).
+            minute: The minute value (0-59).
+            second: The second value (0-59).
+            weekday: The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday.
 
-        :raises Exception: If there is an error setting the values.
+        Raises:
+            Exception: If there is an error setting the values.
         """
         ...

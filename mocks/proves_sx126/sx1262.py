@@ -1,6 +1,8 @@
-"""
-Mock for PROVES SX126
-https://github.com/proveskit/micropySX126X/blob/master/proves_sx126/sx1262.py
+"""Mock for the PROVES SX1262 radio module.
+
+This module provides a mock implementation of the PROVES SX1262 radio module for
+testing purposes. It allows for simulating the behavior of the SX1262 without the
+need for actual hardware.
 """
 
 from busio import SPI
@@ -19,6 +21,8 @@ except ImportError:
 
 
 class SX1262:
+    """A mock SX1262 radio module."""
+
     radio_modulation: str = "FSK"
 
     def __init__(
@@ -28,7 +32,17 @@ class SX1262:
         irq: DigitalInOut,
         rst: DigitalInOut,
         gpio: DigitalInOut,
-    ) -> None: ...
+    ) -> None:
+        """Initializes the mock SX1262.
+
+        Args:
+            spi: The SPI bus to use.
+            cs: The chip select pin.
+            irq: The interrupt request pin.
+            rst: The reset pin.
+            gpio: The GPIO pin.
+        """
+        ...
 
     def begin(
         self,
@@ -48,7 +62,9 @@ class SX1262:
         tcxoVoltage=1.6,
         useRegulatorLDO=False,
         blocking=True,
-    ): ...
+    ):
+        """Initializes the radio in LoRa mode."""
+        ...
 
     def beginFSK(
         self,
@@ -76,10 +92,16 @@ class SX1262:
         tcxoVoltage=1.6,
         useRegulatorLDO=False,
         blocking=True,
-    ): ...
+    ):
+        """Initializes the radio in FSK mode."""
+        ...
 
-    def send(self, data) -> tuple[Literal[0], int] | tuple[int, int]: ...
+    def send(self, data) -> tuple[Literal[0], int] | tuple[int, int]:
+        """Sends data over the radio."""
+        ...
 
     def recv(
         self, len=0, timeout_en=False, timeout_ms=0
-    ) -> tuple[bytes, int] | tuple[Literal[b""], int]: ...
+    ) -> tuple[bytes, int] | tuple[Literal[b""], int]:
+        """Receives data from the radio."""
+        ...

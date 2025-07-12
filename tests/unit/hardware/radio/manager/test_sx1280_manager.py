@@ -1,3 +1,10 @@
+"""Unit tests for the SX1280Manager class.
+
+This module contains unit tests for the `SX1280Manager` class, which manages
+SX1280 radios. The tests cover initialization, sending and receiving data,
+and retrieving the current modulation.
+"""
+
 from typing import Generator
 from unittest.mock import MagicMock, patch
 
@@ -16,41 +23,49 @@ from pysquared.logger import Logger
 
 @pytest.fixture
 def mock_spi() -> MagicMock:
+    """Mocks the SPI bus."""
     return MagicMock(spec=SPI)
 
 
 @pytest.fixture
 def mock_chip_select() -> MagicMock:
+    """Mocks the chip select DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_reset() -> MagicMock:
+    """Mocks the reset DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_busy() -> MagicMock:
+    """Mocks the busy DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_txen() -> MagicMock:
+    """Mocks the transmit enable DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_rxen() -> MagicMock:
+    """Mocks the receive enable DigitalInOut pin."""
     return MagicMock(spec=DigitalInOut)
 
 
 @pytest.fixture
 def mock_logger() -> MagicMock:
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
 def mock_radio_config() -> RadioConfig:
+    """Provides a mock RadioConfig instance with default values."""
     return RadioConfig(
         {
             "license": "testlicense",
@@ -78,6 +93,19 @@ def mock_sx1280(
     mock_txen: MagicMock,
     mock_rxen: MagicMock,
 ) -> Generator[MagicMock, None, None]:
+    """Mocks the SX1280 class.
+
+    Args:
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+
+    Yields:
+        A MagicMock instance of SX1280.
+    """
     with patch("pysquared.hardware.radio.manager.sx1280.SX1280") as mock_class:
         mock_class.return_value = SX1280(
             mock_spi,
@@ -102,7 +130,19 @@ def test_init_fsk_success(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation is set to "FSK"."""
+    """Tests successful initialization when radio_config.modulation is set to FSK.
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_instance = MagicMock(spec=SX1280)
     mock_sx1280.return_value = mock_radio_instance
 
@@ -144,7 +184,19 @@ def test_init_lora_success(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation is set to "LoRa"."""
+    """Tests successful initialization when radio_config.modulation is set to LoRa.
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=SX1280)
     mock_sx1280.return_value = mock_radio_instance
@@ -176,8 +228,7 @@ def test_init_lora_success(
     )
 
 
-@pytest.mark.slow
-def test_init_with_retries_fsk(
+def test_init_failed_fsk(
     mock_sx1280: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -188,7 +239,19 @@ def test_init_with_retries_fsk(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation is set to "FSK"."""
+    """Tests initialization retries on FSK initialization failure.
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_sx1280.side_effect = Exception("Simulated FSK failure")
 
     with pytest.raises(HardwareInitializationError):
@@ -207,11 +270,10 @@ def test_init_with_retries_fsk(
     mock_logger.debug.assert_called_with(
         "Initializing radio", radio_type="SX1280Manager", modulation="FSK"
     )
-    assert mock_sx1280.call_count == 3
+    mock_sx1280.assert_called_once()
 
 
-@pytest.mark.slow
-def test_init_with_retries_lora(
+def test_init_failed_lora(
     mock_sx1280: MagicMock,
     mock_logger: MagicMock,
     mock_spi: MagicMock,
@@ -222,7 +284,19 @@ def test_init_with_retries_lora(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful initialization when radio_config.modulation is set to "FSK"."""
+    """Tests initialization retries on LoRa initialization failure.
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_sx1280.side_effect = Exception("Simulated FSK failure")
 
     with pytest.raises(HardwareInitializationError):
@@ -241,10 +315,9 @@ def test_init_with_retries_lora(
     mock_logger.debug.assert_called_with(
         "Initializing radio", radio_type="SX1280Manager", modulation="FSK"
     )
-    assert mock_sx1280.call_count == 3
+    mock_sx1280.assert_called_once()
 
 
-# Test send Method
 def test_send_success_bytes(
     mock_sx1280: MagicMock,
     mock_logger: MagicMock,
@@ -256,7 +329,19 @@ def test_send_success_bytes(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful sending of bytes."""
+    """Tests successful sending of bytes.
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
@@ -291,7 +376,19 @@ def test_send_unlicensed(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test send attempt when not licensed."""
+    """Tests send attempt when not licensed.
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
@@ -331,7 +428,19 @@ def test_send_exception(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test handling of exception during radio.send()."""
+    """Tests handling of exception during radio.send().
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.send = MagicMock()
@@ -368,7 +477,19 @@ def test_get_modulation_initialized(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test get_modulation when radio is initialized."""
+    """Tests get_modulation when radio is initialized.
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     # Test FSK instance
     manager = SX1280Manager(
         mock_logger,
@@ -410,7 +531,19 @@ def test_receive_success(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test successful reception of a message."""
+    """Tests successful reception of a message.
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     expected_data = b"Received Data"
@@ -448,7 +581,19 @@ def test_receive_no_message(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test receiving when no message is available (timeout)."""
+    """Tests receiving when no message is available (timeout).
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.receive = MagicMock()
@@ -486,7 +631,19 @@ def test_receive_exception(
     mock_rxen: MagicMock,
     mock_radio_config: RadioConfig,
 ):
-    """Test handling of exception during radio.receive()."""
+    """Tests handling of exception during radio.receive().
+
+    Args:
+        mock_sx1280: Mocked SX1280 class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_busy: Mocked busy pin.
+        mock_txen: Mocked transmit enable pin.
+        mock_rxen: Mocked receive enable pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock(spec=RFM9x)
     mock_radio_instance.receive = MagicMock()

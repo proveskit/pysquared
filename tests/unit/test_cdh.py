@@ -1,3 +1,10 @@
+"""Unit tests for the CommandDataHandler class.
+
+This module contains unit tests for the `CommandDataHandler` class, which is
+responsible for processing commands received by the satellite. The tests cover
+initialization, command parsing, and execution of various commands.
+"""
+
 import json
 from unittest.mock import MagicMock, patch
 
@@ -11,16 +18,19 @@ from pysquared.logger import Logger
 
 @pytest.fixture
 def mock_logger() -> MagicMock:
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
 def mock_packet_manager() -> MagicMock:
+    """Mocks the PacketManager class."""
     return MagicMock(spec=PacketManager)
 
 
 @pytest.fixture
 def mock_config() -> MagicMock:
+    """Mocks the Config class."""
     config = MagicMock(spec=Config)
     config.super_secret_code = "test_password"
     config.cubesat_name = "test_satellite"
@@ -30,6 +40,7 @@ def mock_config() -> MagicMock:
 
 @pytest.fixture
 def cdh(mock_logger, mock_config, mock_packet_manager) -> CommandDataHandler:
+    """Provides a CommandDataHandler instance for testing."""
     return CommandDataHandler(
         logger=mock_logger,
         config=mock_config,
@@ -38,7 +49,13 @@ def cdh(mock_logger, mock_config, mock_packet_manager) -> CommandDataHandler:
 
 
 def test_cdh_init(mock_logger, mock_config, mock_packet_manager):
-    """Test CommandDataHandler initialization."""
+    """Tests CommandDataHandler initialization.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_config: Mocked Config instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     cdh = CommandDataHandler(mock_logger, mock_config, mock_packet_manager)
 
     assert cdh._log is mock_logger
@@ -47,7 +64,12 @@ def test_cdh_init(mock_logger, mock_config, mock_packet_manager):
 
 
 def test_listen_for_commands_no_message(cdh, mock_packet_manager):
-    """Test listen_for_commands when no message is received."""
+    """Tests listen_for_commands when no message is received.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     mock_packet_manager.listen.return_value = None
 
     cdh.listen_for_commands(30)
@@ -57,7 +79,13 @@ def test_listen_for_commands_no_message(cdh, mock_packet_manager):
 
 
 def test_listen_for_commands_invalid_password(cdh, mock_packet_manager, mock_logger):
-    """Test listen_for_commands with invalid password."""
+    """Tests listen_for_commands with invalid password.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     # Create a message with wrong password
     message = {"password": "wrong_password", "command": "send_joke", "args": []}
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
@@ -69,7 +97,13 @@ def test_listen_for_commands_invalid_password(cdh, mock_packet_manager, mock_log
 
 
 def test_listen_for_commands_invalid_name(cdh, mock_packet_manager, mock_logger):
-    """Test listen_for_commands with missing command field."""
+    """Tests listen_for_commands with missing command field.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     # Create a message with valid password and satellite name but no command
     message = {"password": "test_password", "name": "wrong_name", "args": []}
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
@@ -81,7 +115,13 @@ def test_listen_for_commands_invalid_name(cdh, mock_packet_manager, mock_logger)
 
 
 def test_listen_for_commands_missing_command(cdh, mock_packet_manager, mock_logger):
-    """Test listen_for_commands with missing command field."""
+    """Tests listen_for_commands with missing command field.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     # Create a message with valid password but no command
     message = {"password": "test_password", "name": "test_satellite", "args": []}
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
@@ -93,7 +133,13 @@ def test_listen_for_commands_missing_command(cdh, mock_packet_manager, mock_logg
 
 
 def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger):
-    """Test listen_for_commands with missing command field."""
+    """Tests listen_for_commands with missing command field.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     # Create a message with valid password but no command
     message = {
         "password": "test_password",
@@ -112,7 +158,13 @@ def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger)
 
 
 def test_listen_for_commands_invalid_json(cdh, mock_packet_manager, mock_logger):
-    """Test listen_for_commands with invalid JSON."""
+    """Tests listen_for_commands with invalid JSON.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     message = b"this is not valid json"
     mock_packet_manager.listen.return_value = message
 
@@ -125,7 +177,14 @@ def test_listen_for_commands_invalid_json(cdh, mock_packet_manager, mock_logger)
 
 @patch("random.choice")
 def test_send_joke(mock_random_choice, cdh, mock_packet_manager, mock_config):
-    """Test the send_joke method."""
+    """Tests the send_joke method.
+
+    Args:
+        mock_random_choice: Mocked random.choice function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_config: Mocked Config instance.
+    """
     mock_random_choice.return_value = mock_config.jokes[0]
 
     cdh.send_joke()
@@ -137,7 +196,13 @@ def test_send_joke(mock_random_choice, cdh, mock_packet_manager, mock_config):
 
 
 def test_change_radio_modulation_success(cdh, mock_config, mock_logger):
-    """Test change_radio_modulation with valid modulation value."""
+    """Tests change_radio_modulation with valid modulation value.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_config: Mocked Config instance.
+        mock_logger: Mocked Logger instance.
+    """
     modulation = ["FSK"]
 
     cdh.change_radio_modulation(modulation)
@@ -151,7 +216,14 @@ def test_change_radio_modulation_success(cdh, mock_config, mock_logger):
 def test_change_radio_modulation_failure(
     cdh, mock_config, mock_logger, mock_packet_manager
 ):
-    """Test change_radio_modulation with an error case."""
+    """Tests change_radio_modulation with an error case.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_config: Mocked Config instance.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     modulation = ["INVALID"]
     mock_config.update_config.side_effect = ValueError("Invalid modulation")
 
@@ -164,7 +236,13 @@ def test_change_radio_modulation_failure(
 
 
 def test_change_radio_modulation_no_modulation(cdh, mock_logger, mock_packet_manager):
-    """Test change_radio_modulation when no modulation is specified."""
+    """Tests change_radio_modulation when no modulation is specified.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     # Call the method with an empty list
     cdh.change_radio_modulation([])
 
@@ -182,7 +260,13 @@ def test_change_radio_modulation_no_modulation(cdh, mock_logger, mock_packet_man
 
 @patch("pysquared.cdh.microcontroller")
 def test_reset(mock_microcontroller, cdh, mock_logger):
-    """Test the reset method."""
+    """Tests the reset method.
+
+    Args:
+        mock_microcontroller: Mocked microcontroller module.
+        cdh: CommandDataHandler instance.
+        mock_logger: Mocked Logger instance.
+    """
     mock_microcontroller.reset = MagicMock()
     mock_microcontroller.on_next_reset = MagicMock()
     mock_microcontroller.RunMode = MagicMock()
@@ -199,7 +283,13 @@ def test_reset(mock_microcontroller, cdh, mock_logger):
 
 @patch("pysquared.cdh.microcontroller")
 def test_listen_for_commands_reset(mock_microcontroller, cdh, mock_packet_manager):
-    """Test listen_for_commands with reset command."""
+    """Tests listen_for_commands with reset command.
+
+    Args:
+        mock_microcontroller: Mocked microcontroller module.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
     # Set up mocked attributes
     mock_microcontroller.reset = MagicMock()
     mock_microcontroller.on_next_reset = MagicMock()
@@ -224,7 +314,14 @@ def test_listen_for_commands_reset(mock_microcontroller, cdh, mock_packet_manage
 def test_listen_for_commands_send_joke(
     mock_random_choice, cdh, mock_packet_manager, mock_config
 ):
-    """Test listen_for_commands with send_joke command."""
+    """Tests listen_for_commands with send_joke command.
+
+    Args:
+        mock_random_choice: Mocked random.choice function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_config: Mocked Config instance.
+    """
     message = {
         "password": "test_password",
         "name": "test_satellite",
@@ -244,7 +341,13 @@ def test_listen_for_commands_send_joke(
 def test_listen_for_commands_change_radio_modulation(
     cdh, mock_packet_manager, mock_config
 ):
-    """Test listen_for_commands with change_radio_modulation command."""
+    """Tests listen_for_commands with change_radio_modulation command.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_config: Mocked Config instance.
+    """
     message = {
         "password": "test_password",
         "name": "test_satellite",
@@ -261,7 +364,13 @@ def test_listen_for_commands_change_radio_modulation(
 
 
 def test_listen_for_commands_unknown_command(cdh, mock_packet_manager, mock_logger):
-    """Test listen_for_commands with an unknown command."""
+    """Tests listen_for_commands with an unknown command.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
     message = {
         "password": "test_password",
         "name": "test_satellite",

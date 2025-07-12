@@ -1,10 +1,5 @@
-"""
-flag Module
-===========
-
-This module provides the Flag class for managing boolean flags stored in
+"""This module provides the Flag class for managing boolean flags stored in
 non-volatile memory (NVM) on CircuitPython devices.
-
 """
 
 import microcontroller
