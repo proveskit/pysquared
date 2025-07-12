@@ -5,30 +5,98 @@ PySquared is a flight software library designed for building and deploying satel
 
 This guide will help you set up your development environment and get you started with building a satellite using the PySquared Flight Software.
 
-## CircuitPython
-If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview) to help you get started!
+## Setting Up Your Computer
+Set up your development environment by following the instructions in your OS specific guide.
 
-## Installing CircuitPython
-// TODO(nateinaction): Make this more complete...
-Once you have a CircuitPython-compatible board, you can start using PySquared. The first step is to install the latest CircuitPython firmware on your board. If you have a PROVES Kit, use [these instructions](https://docs.proveskit.space/en/latest/quick_start/proves_quick_start/#flashing-firmware) to install the firmware.
+??? note "Linux Guide"
 
-## Installing PySquared
-Now that you have CircuitPython installed, you are ready to create your own repository to host your satellite's software. You can use one of the PySquared template repositories to get started quickly. Find your board version below, visit the repository, and click "Fork" to create your own copy of the repository.
+    Update your package list and install the necessary packages:
+    ```sh
+    sudo apt update && sudo apt install make screen zip
+    ```
 
-| Board Version | Proves Repo                          |
-|---------------|--------------------------------------|
+??? note "MacOS Guide"
+
+    1. **Install Xcode Command Line Tools**: These tools are necessary for compiling and building software.
+        ```sh
+        xcode-select --install
+        ```
+    1. **Install Homebrew**: Homebrew is a package manager for MacOS. Follow the instructions on [brew.sh](https://brew.sh/) to install it.
+    1. **Install Required Packages**: Open a terminal and run the following command to install required packages:
+        ```sh
+        brew install screen
+        ```
+
+??? note "Windows Guide"
+
+    1. **Install Git**: Download and install Git from [git-scm.com](https://git-scm.com/downloads). Make sure to also install the Git Bash terminal during the setup process.
+    1. **Install Putty**: Download and install Putty from [putty.org](https://putty.org/).
+    1. **Install Chocolatey**: Chocolatey is a package manager for Windows. Follow the instructions on [chocolatey.org](https://chocolatey.org/install) to install it.
+    1. **Install Required Packages**: Open a command prompt or Git Bash terminal and run the following command to install required packages:
+        ```sh
+        choco install make rsync zip
+        ```
+
+    Keep in mind that the rest of this guide expects that you are using Git Bash.
+
+??? note "WSL Guide"
+    Follow the steps in the Linux Guide
+
+## Cloning Your Repository
+
+Let's start by creating your own repository to host your satellite's software. You can use one of the PySquared template repositories to get started quickly. Find your board version below, visit the repository, and click "Fork" to create your own copy of the repository.
+
+| Board Version | Proves Repo |
+|---------------|-------------|
 | v4            | [proveskit/CircuitPython_RP2040_v4](https://github.com/proveskit/CircuitPython_RP2040_v4) |
 | v5            | [proveskit/CircuitPython_RP2040_v5](https://github.com/proveskit/CircuitPython_RP2040_v5) |
 | v5a           | [proveskit/CircuitPython_RP2350_v5a](https://github.com/proveskit/CircuitPython_RP2350_v5a) |
 | v5b           | [proveskit/CircuitPython_RP2350_v5b](https://github.com/proveskit/CircuitPython_RP2350_v5b) |
-
-### Cloning Your Repository
 
 Then you can clone your repository to your local machine using the following command:
 
 ```sh
 git clone https://github.com/your-username/your-repository.git
 ```
+
+??? tip "Learn how to use the git command line"
+    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/HVsySz-h9r4?si=FK8cPwJk1IJ_huGd" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+Next, <u>c</u>hange <u>d</u>irectory (`cd`) into the repo directory:
+
+```sh
+cd your-repository
+```
+
+You are now in your repo directory. This is where you'll write code that makes its way onto your satellite!
+
+## Installing CircuitPython
+Next, we need to install the latest CircuitPython firmware on your board. CircuitPython is a Python runtime for microcontrollers like the one on your board.
+
+First you must find your board's TTY port. You can find the TTY port by plugging in your board and running the following command:
+
+```sh
+make list-tty
+```
+
+Example output:
+```sh
+TTY ports:
+/dev/cu.usbmodem3101
+```
+
+In this example, the TTY port is `/dev/cu.usbmodem3101`. This is the port you will use to communicate with your board.
+
+??? note "Seeing more than one TTY port?"
+    If you see more than one TTY port listed, you may need to unplug your board and run the command again to see which one is created when you plug it in. The new port is likely the one you want.
+
+Now you can install CircuitPython by running the following command:
+
+```sh
+make install-circuit-python BOARD_TTY_PORT=<tty_port>
+```
+
+## Installing PySquared
 
 ### Finding Your Board's Mount Point
 
@@ -46,9 +114,9 @@ Next, make sure your PROVES flight control board is plugged in and we'll find it
 
 
 ??? note "MacOS Guide"
-    On Mac, you can find the location of your mount by looking for a mount named `PYSQUARED` in your `/Volumes` directory
+    On Mac, you can find the location of your mount by looking for a mount named `PYSQUARED`, `PROVESKIT` or `CIRCUITPYTHON` in your `/Volumes` directory
     ```sh
-    ls -lah /Volumes | grep PYSQUARED
+    ls -lah /Volumes
     ...
     drwx------@  1 nate  staff    16K Jan  9 08:09 PYSQUARED/
     ```
@@ -75,28 +143,12 @@ Replace `<path_to_your_board>` with the mount point discovered in the previous s
 ## Accessing the Serial Console
 To see streaming logs and use the on-board repl you must access the Circuit Python serial console.
 
-??? note "Linux Guide"
-    Accessing the serial console starts with finding the tty port for the board. The easiest way to do that is by plugging in your board and running:
-    ```sh
-    ls -lah /dev
-    ```
+Remember the TTY port you found earlier? You will use that to connect to the board's serial console. The serial console allows you to interact with the board and see output from your code. If you don't remember the TTY port, you can run the `make list-tty` command again to find it.
 
-    Look for the file that was created around the same time that you plugged in the board. For Linux users the port typically looks like `/dev/ttyACM0`. You can then connect to the board using the `screen` command:
+??? note "Linux & MacOS Guide"
+    You can then connect to the board using the `screen` command:
     ```sh
-    screen /dev/ttyACM0
-    ```
-
-    For more information visit the [Circuit Python Serial Console documentation](https://learn.adafruit.com/welcome-to-circuitpython/advanced-serial-console-on-linux).
-
-??? note "MacOS Guide"
-    Accessing the serial console starts with finding the tty port for the board. The easiest way to do that is by plugging in your board and running:
-    ```sh
-    ls -lah /dev
-    ```
-
-    Look for the file that was created around the same time that you plugged in the board. For Mac users the port typically looks like `/dev/tty.usbmodem101`. You can then connect to the board using the `screen` command:
-    ```sh
-    screen /dev/tty.usbmodem101
+    screen /dev/cu.usbmodem3101
     ```
 
     For more information visit the [Circuit Python Serial Console documentation](https://learn.adafruit.com/welcome-to-circuitpython/advanced-serial-console-on-mac-and-linux).
@@ -115,9 +167,11 @@ To see streaming logs and use the on-board repl you must access the Circuit Pyth
 You have successfully installed PySquared and have started a serial console session to view the output from your flight control board! Now you can start your journey of building and launching satellites using CircuitPython and PySquared.
 
 ## Next Steps
-Now that you have your development environment set up, you can start [exploring the PySquared library](api.md) and building on the repo you cloned earlier in this guide.
+Now that you have your development environment set up, you can start [exploring the PySquared library](api.md) and building on the repo you forked and cloned earlier in this guide.
 
-// TODO(nateinaction): Finish this documentation
-Here are some resources to help you get started:
-- Setting up your code editor: [Code Editor Setup](code-editor-setup.md) // maybe use a dev container?
-- PySquared API documentation: [PySquared API](api.md)
+Here are some additional resources to help you get started:
+
+<!-- - Want to test the radios? Check out the [Radio Testing Guide]() COMING SOON. -->
+- Are you interested in contributing to PySquared? Check out our [Contributing Guide](contributing.md).
+- Learn more about PROVES hardware with the [PROVES Kit documentation](https://docs.proveskit.space/en/latest/).
+- Learn more about CircuitPython with the [Welcome to CircuitPython guide](https://learn.adafruit.com/welcome-to-circuitpython/overview).
