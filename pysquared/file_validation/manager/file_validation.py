@@ -71,7 +71,7 @@ class FileValidationManager(FileValidationProto):
     def _walk_directory(
         self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
     ) -> "List[str]":
-        """Walk directory recursively and return all file paths (CircuitPython compatible).
+        """Walk directory iteratively and return all file paths (CircuitPython compatible).
 
         :param str base_path: The base directory to walk.
         :param List[str] exclude_patterns: Patterns to exclude.
@@ -80,7 +80,13 @@ class FileValidationManager(FileValidationProto):
         exclude_patterns = exclude_patterns or []
         file_paths = []
 
-        def _walk_recursive(current_path: str, relative_path: str = "") -> None:
+        # Stack to keep track of directories to process
+        # Each item is a tuple of (current_path, relative_path)
+        stack = [(base_path, "")]
+
+        while stack:
+            current_path, relative_path = stack.pop()
+
             try:
                 items = os.listdir(current_path)
                 for item in items:
@@ -96,8 +102,8 @@ class FileValidationManager(FileValidationProto):
                     # Check if it's a directory by trying to list it
                     try:
                         os.listdir(item_path)
-                        # It's a directory, recurse
-                        _walk_recursive(item_path, item_relative)
+                        # It's a directory, add to stack for later processing
+                        stack.append((item_path, item_relative))
                     except OSError:
                         # It's a file, add to list
                         file_paths.append(item_relative)
@@ -105,7 +111,6 @@ class FileValidationManager(FileValidationProto):
                 # Directory doesn't exist or can't be read
                 pass
 
-        _walk_recursive(base_path)
         return file_paths
 
     def _create_md5_checksum_adafruit(self, file_path: str, timeout: float) -> str:
