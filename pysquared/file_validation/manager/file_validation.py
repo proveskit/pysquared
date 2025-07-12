@@ -113,19 +113,19 @@ class FileValidationManager(FileValidationProto):
 
         return file_paths
 
-    def _create_md5_checksum_adafruit(self, file_path: str, timeout: float) -> str:
-        """Create MD5 checksum using adafruit_hashlib.
+    def _create_sha256_checksum_adafruit(self, file_path: str, timeout: float) -> str:
+        """Create SHA256 checksum using adafruit_hashlib.
 
         :param str file_path: The path to the file to checksum.
         :param float timeout: Maximum time to allow for reading the file.
-        :return: The MD5 checksum as a hexadecimal string.
+        :return: The SHA256 checksum as a hexadecimal string.
         :raises TimeoutError: If reading the file takes longer than the timeout.
         """
         import time
 
         import adafruit_hashlib  # type: ignore[import]
 
-        hash_md5 = adafruit_hashlib.new("md5")
+        hash_sha256 = adafruit_hashlib.new("sha256")
         with open(file_path, "rb") as f:
             start_time = time.monotonic()
             while True:
@@ -136,21 +136,21 @@ class FileValidationManager(FileValidationProto):
                 chunk = f.read(4096)
                 if not chunk:  # Empty chunk means end of file
                     break
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()
+                hash_sha256.update(chunk)
+        return hash_sha256.hexdigest()
 
-    def _create_md5_checksum_hashlib(self, file_path: str, timeout: float) -> str:
-        """Create MD5 checksum using standard hashlib.
+    def _create_sha256_checksum_hashlib(self, file_path: str, timeout: float) -> str:
+        """Create SHA256 checksum using standard hashlib.
 
         :param str file_path: The path to the file to checksum.
         :param float timeout: Maximum time to allow for reading the file.
-        :return: The MD5 checksum as a hexadecimal string.
+        :return: The SHA256 checksum as a hexadecimal string.
         :raises TimeoutError: If reading the file takes longer than the timeout.
         """
         import hashlib
         import time
 
-        hash_md5 = hashlib.md5()
+        hash_sha256 = hashlib.sha256()
         with open(file_path, "rb") as f:
             start_time = time.monotonic()
             while True:
@@ -161,8 +161,8 @@ class FileValidationManager(FileValidationProto):
                 chunk = f.read(4096)
                 if not chunk:  # Empty chunk means end of file
                     break
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()
+                hash_sha256.update(chunk)
+        return hash_sha256.hexdigest()
 
     def create_file_checksum(self, file_path: str, timeout: float = 5.0) -> str:
         """Create a checksum for a single file.
@@ -180,10 +180,10 @@ class FileValidationManager(FileValidationProto):
 
             # Try to use adafruit_hashlib first (CircuitPython)
             try:
-                checksum_str = self._create_md5_checksum_adafruit(file_path, timeout)
+                checksum_str = self._create_sha256_checksum_adafruit(file_path, timeout)
             except ImportError:
                 # Fallback to standard hashlib
-                checksum_str = self._create_md5_checksum_hashlib(file_path, timeout)
+                checksum_str = self._create_sha256_checksum_hashlib(file_path, timeout)
 
             self._log.debug(
                 "Created checksum for file", file_path=file_path, checksum=checksum_str

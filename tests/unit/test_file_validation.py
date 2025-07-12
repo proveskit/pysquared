@@ -18,8 +18,10 @@ class TestFileValidationManager(unittest.TestCase):
     def test_create_file_checksum_success(self):
         """Test successful file checksum creation."""
         test_content = b"Hello, World!"
-        # MD5 checksum of 'Hello, World!' is 65a8e27d8879283831b664bd8b7f0ad4
-        expected_checksum = "65a8e27d8879283831b664bd8b7f0ad4"
+        # SHA256 checksum of 'Hello, World!' is dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f
+        expected_checksum = (
+            "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f"
+        )
 
         with patch("builtins.open", mock_open(read_data=test_content)):
             with patch.object(self.file_validator, "_file_exists", return_value=True):
