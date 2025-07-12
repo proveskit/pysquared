@@ -54,20 +54,7 @@ class FileValidationManager(FileValidationProto):
         except OSError:
             return 0
 
-    def _calculate_checksum(self, data: bytes) -> str:
-        """Calculate a simple checksum for data (CircuitPython compatible).
-
-        :param bytes data: The data to calculate checksum for.
-        :return: A hexadecimal string representing the checksum.
-        """
-        # Simple checksum algorithm: sum of all bytes with overflow handling
-        checksum = 0
-        for byte in data:
-            checksum = (checksum + byte) & 0xFFFF  # 16-bit checksum
-
-        # Convert to 4-character hex string
-        return f"{checksum:04x}"
-
+# Removed the unused _calculate_checksum method to eliminate dead code.
     def _walk_directory(
         self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
     ) -> "List[str]":
