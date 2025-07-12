@@ -1,7 +1,7 @@
 """
-OTA Update Manager implementation.
+File Validation Manager implementation.
 
-This module provides a concrete implementation of the OTAUpdateProto interface
+This module provides a concrete implementation of the FileValidationProto interface
 for creating checksums, validating file integrity, and assessing codebase completeness.
 """
 
@@ -13,22 +13,22 @@ except ImportError:
     TYPE_CHECKING = False
 
 from ...logger import Logger
-from ...protos.ota_update import OTAUpdateProto
+from ...protos.file_validation import FileValidationProto
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple
 
 
-class OTAUpdateManager(OTAUpdateProto):
-    """Concrete implementation of OTA update functionality."""
+class FileValidationManager(FileValidationProto):
+    """Concrete implementation of file validation functionality."""
 
     def __init__(self, logger: Logger) -> None:
-        """Initialize the OTA Update Manager.
+        """Initialize the File Validation Manager.
 
         :param Logger logger: Logger instance for logging messages.
         """
         self._log = logger
-        self._log.debug("Initializing OTA Update Manager")
+        self._log.debug("Initializing File Validation Manager")
 
     def _file_exists(self, file_path: str) -> bool:
         """Check if a file exists (CircuitPython compatible).
@@ -159,31 +159,6 @@ class OTAUpdateManager(OTAUpdateProto):
                 hash_md5.update(chunk)
         return hash_md5.hexdigest()
 
-    def _create_simple_checksum(self, file_path: str, timeout: float) -> str:
-        """Create a simple 16-bit checksum as fallback.
-
-        :param str file_path: The path to the file to checksum.
-        :param float timeout: Maximum time to allow for reading the file.
-        :return: The simple checksum as a hexadecimal string.
-        :raises TimeoutError: If reading the file takes longer than the timeout.
-        """
-        import time
-
-        checksum = 0
-        with open(file_path, "rb") as f:
-            start_time = time.monotonic()
-            while True:
-                if time.monotonic() - start_time > timeout:
-                    raise TimeoutError(
-                        f"File read operation timed out after {timeout} seconds"
-                    )
-                chunk = f.read(4096)
-                if not chunk:  # Empty chunk means end of file
-                    break
-                for byte in chunk:
-                    checksum = (checksum + byte) & 0xFFFF  # 16-bit checksum
-        return f"{checksum:04x}"
-
     def create_file_checksum(self, file_path: str, timeout: float = 5.0) -> str:
         """Create a checksum for a single file.
 
@@ -203,11 +178,7 @@ class OTAUpdateManager(OTAUpdateProto):
                 checksum_str = self._create_md5_checksum_adafruit(file_path, timeout)
             except ImportError:
                 # Fallback to standard hashlib
-                try:
-                    checksum_str = self._create_md5_checksum_hashlib(file_path, timeout)
-                except ImportError:
-                    # Fallback: simple checksum
-                    checksum_str = self._create_simple_checksum(file_path, timeout)
+                checksum_str = self._create_md5_checksum_hashlib(file_path, timeout)
 
             self._log.debug(
                 "Created checksum for file", file_path=file_path, checksum=checksum_str
@@ -257,7 +228,6 @@ class OTAUpdateManager(OTAUpdateProto):
             return None
         finally:
             # Force garbage collection after each file to prevent memory buildup
-            print(f"Garbage collecting: {gc.mem_free()}")
             gc.collect()
 
     def create_codebase_checksum(

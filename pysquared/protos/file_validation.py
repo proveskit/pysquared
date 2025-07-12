@@ -1,7 +1,7 @@
 """
-Protocol defining the interface for Over-The-Air (OTA) update functionality.
+Protocol defining the interface for file validation functionality.
 This protocol provides methods for creating checksums, validating file integrity,
-and managing the update process for CircuitPython applications.
+and managing file validation for CircuitPython applications.
 """
 
 try:
@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple
 
 
-class OTAUpdateProto:
-    """Protocol defining the interface for OTA update operations."""
+class FileValidationProto:
+    """Protocol defining the interface for file validation operations."""
 
     def create_file_checksum(self, file_path: str) -> str:
         """Create a checksum for a single file.
