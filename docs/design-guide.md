@@ -36,7 +36,7 @@ We do not accept changes with lines that are ignored the type checker i.e. `# ty
 
 ## Protocols
 
-Protocols are a way to define a set of methods that a class must implement. They are similar to interfaces in other programming languages or header files in C. Protocols allow us to define a contract for classes to follow, ensuring that they implement the required methods. CircuitPython does not support Protocols, so we use base classes to define our protocols where all required methods return `NotImplementedError`. All classes that implement the protocol must override these methods. Protocols can be found in `pysquared/protos/`.
+Protocols are a way to define a set of methods that a class must implement. They are similar to interfaces in other programming languages or header files in C. Protocols allow us to define a contract for classes to follow, ensuring that they implement the required methods. CircuitPython does not support Protocols, so we use base classes to define our protocols where all required methods are implemented with `...` (Ellipsis). All classes that implement the protocol must override these methods. Protocols can be found in `pysquared/protos/`.
 
 ## Testing
 
@@ -86,6 +86,8 @@ print(reading.timestamp, reading.acceleration)  # Output: 2024-06-01T12:00:00Z (
 ~~~
 """
 ```
+
+TODO(nateinaction): double check that we can use `~~~` for code blocks in mkdocs.
 
 ### Function/Method Documentation
 
@@ -166,13 +168,46 @@ We use [`ruff`](https://docs.astral.sh/ruff/) for linting and formatting our cod
 By default `ruff`, enforces the [`black`](https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html) style with [a few deviations](https://docs.astral.sh/ruff/formatter/#style-guide) decided by `ruff` for formatting our code. Code formatting ensures that our code is consistent and easy to read.
 
 ## Error Handling
-TODO(nateinaction): Add error handling section
+
+Error handling in PySquared is designed to be robust and predictable. We use standard `try...except` blocks to catch exceptions. When an exception is caught, it should be logged with the `logger.error()` or `logger.critical()` method. This ensures that we have a record of the error and can diagnose it later.
+
+```python
+try:
+    # Code that may raise an exception
+except Exception as e:
+    logger.error("An error occurred", err=e)
+```
+
+Custom exceptions should be used to represent specific error conditions in your code. This allows us to handle different types of errors in a more granular way. Custom exceptions should inherit from the built-in `Exception` class and should be named using the `Error` suffix.
+
+```python
+class CustomError(Exception):
+    """Custom exception for specific error conditions."""
+    pass
+
+try:
+    # Code that may raise a CustomError
+except CustomError as e:
+    logger.error("A custom error occurred", err=e)
+```
+
+When raising exceptions, always provide a clear and descriptive error message. This will help us understand the context of the error when it is logged.
+
+```python
+raise CustomError("This is a custom error message")
+```
+
 
 ## Logging
 
 The syntax for our logging module `logger` is based off the popular Python logger [`Loguru`](https://loguru.readthedocs.io/en/stable/). We use the `logger` module to log messages at different levels (`debug`, `info`, `warning`, `error`, `critical`) throughout our code. This allows us to track the flow of execution and diagnose issues when they arise.
 
+Logs are structured as JSON, which makes them easy to parse and analyze. When logging, you can include additional key-value pairs to provide context.
+
+```python
+logger.info("User logged in", user_id=123)
+```
+
 Code that raises an exception should log at the `error` level. Code that failed but is recoverable should log at the `warning` level. The `debug` level should be used to understand the flow of the program during development and debugging. The `info` level should be used for general information about the program's execution, such as startup, shutdown, and other important updates. `critical` should be used for serious errors that may prevent the satellite from continuing operation, requiring a restart.
 
 TODO(nateinaction): Check circuitpython design guide again for anything else we should add to the doc.
-TODO(nateinaction): Grammarly, ask ai to improve this doc.
