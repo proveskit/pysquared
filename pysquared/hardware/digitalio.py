@@ -5,12 +5,12 @@ satellite hardware. Includes retry logic for robust hardware initialization and 
 from digitalio import DigitalInOut, Direction
 from microcontroller import Pin
 
-from ..logger import Logger
+from ..logger.logger_proto import LoggerProto
 from .exception import HardwareInitializationError
 
 
 def initialize_pin(
-    logger: Logger, pin: Pin, direction: Direction, initial_value: bool
+    logger: LoggerProto, pin: Pin, direction: Direction, initial_value: bool
 ) -> DigitalInOut:
     """
     Initializes a DigitalInOut pin with the specified direction and initial value.

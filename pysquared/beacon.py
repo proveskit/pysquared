@@ -24,7 +24,7 @@ except ImportError:
     from microcontroller import Processor
 
 from .hardware.radio.packetizer.packet_manager import PacketManager
-from .logger import Logger
+from .logger.logger_proto import LoggerProto
 from .nvm.counter import Counter
 from .nvm.flag import Flag
 from .protos.imu import IMUProto
@@ -43,7 +43,7 @@ class Beacon:
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         name: str,
         packet_manager: PacketManager,
         boot_time: float,
@@ -64,7 +64,7 @@ class Beacon:
             boot_time: The time the system booted.
             *args: A list of sensors and other components to include in the beacon.
         """
-        self._log: Logger = logger
+        self._log: LoggerProto = logger
         self._name: str = name
         self._packet_manager: PacketManager = packet_manager
         self._boot_time: float = boot_time

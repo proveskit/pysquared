@@ -17,7 +17,7 @@ received_data = packet_manager.listen()
 import math
 import time
 
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ....nvm.counter import Counter
 from ....protos.radio import RadioProto
 
@@ -32,7 +32,7 @@ class PacketManager:
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         radio: RadioProto,
         license: str,
         message_counter: Counter,
@@ -46,7 +46,7 @@ class PacketManager:
             license: The license key for sending data.
             send_delay: The delay between sending packets.
         """
-        self._logger: Logger = logger
+        self._logger: LoggerProto = logger
         self._radio: RadioProto = radio
         self._send_delay: float = send_delay
         self._license: str = license

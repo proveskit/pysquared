@@ -15,7 +15,7 @@ health_status = power_health.get()
 """
 
 from .config.config import Config
-from .logger import Logger
+from .logger.logger_proto import LoggerProto
 from .protos.power_monitor import PowerMonitorProto
 
 try:
@@ -60,7 +60,7 @@ class PowerHealth:
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         config: Config,
         power_monitor: PowerMonitorProto,
     ) -> None:
@@ -71,7 +71,7 @@ class PowerHealth:
             config: The configuration to use.
             power_monitor: The power monitor to use.
         """
-        self.logger: Logger = logger
+        self.logger: LoggerProto = logger
         self.config: Config = config
         self._power_monitor: PowerMonitorProto = power_monitor
 

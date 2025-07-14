@@ -10,7 +10,7 @@ import alarm
 from alarm.time import TimeAlarm
 
 from .config.config import Config
-from .logger import Logger
+from .logger.logger_proto import LoggerProto
 from .watchdog import Watchdog
 
 
@@ -25,7 +25,7 @@ class SleepHelper:
         config (Config): Configuration object.
     """
 
-    def __init__(self, logger: Logger, config: Config, watchdog: Watchdog) -> None:
+    def __init__(self, logger: LoggerProto, config: Config, watchdog: Watchdog) -> None:
         """
         Creates a SleepHelper object.
 
@@ -34,7 +34,7 @@ class SleepHelper:
             watchdog (Watchdog): Watchdog instance for system safety.
             config (Config): Configuration object.
         """
-        self.logger: Logger = logger
+        self.logger: LoggerProto = logger
         self.config: Config = config
         self.watchdog: Watchdog = watchdog
 
