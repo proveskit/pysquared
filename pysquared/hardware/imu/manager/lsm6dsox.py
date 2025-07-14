@@ -16,7 +16,7 @@ temp_data = imu.get_temperature()
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from busio import I2C
 
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ....protos.imu import IMUProto
 from ....protos.temperature_sensor import TemperatureSensorProto
 from ...exception import HardwareInitializationError
@@ -27,7 +27,7 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         i2c: I2C,
         address: int,
     ) -> None:
@@ -41,7 +41,7 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
         Raises:
             HardwareInitializationError: If the IMU fails to initialize.
         """
-        self._log: Logger = logger
+        self._log: LoggerProto = logger
 
         try:
             self._log.debug("Initializing IMU")

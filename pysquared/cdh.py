@@ -24,7 +24,7 @@ import microcontroller
 
 from .config.config import Config
 from .hardware.radio.packetizer.packet_manager import PacketManager
-from .logger import Logger
+from .logger.logger_proto import LoggerProto
 
 
 class CommandDataHandler:
@@ -36,7 +36,7 @@ class CommandDataHandler:
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         config: Config,
         packet_manager: PacketManager,
         send_delay: float = 0.2,
@@ -49,7 +49,7 @@ class CommandDataHandler:
             packet_manager: The packet manager to use for sending and receiving data.
             send_delay: The delay between sending an acknowledgement and the response.
         """
-        self._log: Logger = logger
+        self._log: LoggerProto = logger
         self._config: Config = config
         self._packet_manager: PacketManager = packet_manager
         self._send_delay: float = send_delay

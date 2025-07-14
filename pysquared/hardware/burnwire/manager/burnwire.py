@@ -17,7 +17,7 @@ import time
 
 from digitalio import DigitalInOut
 
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ....protos.burnwire import BurnwireProto
 
 
@@ -26,7 +26,7 @@ class BurnwireManager(BurnwireProto):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         enable_burn: DigitalInOut,
         fire_burn: DigitalInOut,
         enable_logic: bool = True,
@@ -39,7 +39,7 @@ class BurnwireManager(BurnwireProto):
             fire_burn: The pin used to fire the burnwire.
             enable_logic: The logic level to enable the burnwire.
         """
-        self._log: Logger = logger
+        self._log: LoggerProto = logger
         self._enable_logic: bool = enable_logic
 
         self._enable_burn: DigitalInOut = enable_burn

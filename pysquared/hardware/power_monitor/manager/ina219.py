@@ -16,7 +16,7 @@ current = power_monitor.get_current()
 from adafruit_ina219 import INA219
 from busio import I2C
 
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ....protos.power_monitor import PowerMonitorProto
 from ...exception import HardwareInitializationError
 
@@ -26,7 +26,7 @@ class INA219Manager(PowerMonitorProto):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         i2c: I2C,
         addr: int,
     ) -> None:
@@ -40,7 +40,7 @@ class INA219Manager(PowerMonitorProto):
         Raises:
             HardwareInitializationError: If the INA219 fails to initialize.
         """
-        self._log: Logger = logger
+        self._log: LoggerProto = logger
         try:
             logger.debug("Initializing INA219 power monitor")
             self._ina219: INA219 = INA219(i2c, addr)
