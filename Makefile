@@ -27,11 +27,7 @@ typecheck: .venv ## Run type check
 
 .PHONY: test
 test: .venv ## Run tests
-ifeq ($(TEST_SELECT),ALL)
 	$(UV) run coverage run --rcfile=pyproject.toml -m pytest tests/unit
-else
-	$(UV) run coverage run --rcfile=pyproject.toml -m pytest -m "not slow" tests/unit
-endif
 	@$(UV) run coverage html --rcfile=pyproject.toml > /dev/null
 	@$(UV) run coverage xml --rcfile=pyproject.toml > /dev/null
 
@@ -115,8 +111,8 @@ endef
 
 .PHONY: docs
 docs: uv
-	@$(UV) run mkdocs serve
+	@$(UV) run --group docs mkdocs serve
 
 .PHONY: docs-deploy
 docs-deploy: uv
-	@$(UV) run mkdocs gh-deploy --config-file mkdocs.yaml --force
+	@$(UV) run --group docs mkdocs gh-deploy --config-file mkdocs.yaml --force

@@ -1013,15 +1013,17 @@ dev = [
     { name = "circuitpython-stubs" },
     { name = "coverage" },
     { name = "freezegun" },
+    { name = "pre-commit" },
+    { name = "pyright", extra = ["nodejs"] },
+    { name = "pytest" },
+]
+docs = [
     { name = "mkdocs-git-revision-date-localized-plugin" },
     { name = "mkdocs-llmstxt" },
     { name = "mkdocs-material" },
     { name = "mkdocs-minify-plugin" },
     { name = "mkdocs-section-index" },
     { name = "mkdocstrings", extra = ["python"] },
-    { name = "pre-commit" },
-    { name = "pyright", extra = ["nodejs"] },
-    { name = "pytest" },
 ]
 
 [package.metadata]
@@ -1049,15 +1051,17 @@ dev = [
     { name = "circuitpython-stubs", specifier = "==9.2.8" },
     { name = "coverage", specifier = "==7.9.1" },
     { name = "freezegun", specifier = ">=1.5.2" },
+    { name = "pre-commit", specifier = "==4.2.0" },
+    { name = "pyright", extras = ["nodejs"], specifier = "==1.1.402" },
+    { name = "pytest", specifier = "==8.4.1" },
+]
+docs = [
     { name = "mkdocs-git-revision-date-localized-plugin", specifier = "==1.4.7" },
     { name = "mkdocs-llmstxt", specifier = "==0.2.0" },
     { name = "mkdocs-material", specifier = "==9.6.14" },
     { name = "mkdocs-minify-plugin", specifier = "==0.7.1" },
     { name = "mkdocs-section-index", specifier = "==0.3.10" },
     { name = "mkdocstrings", extras = ["python"], specifier = "==0.29.1" },
-    { name = "pre-commit", specifier = "==4.2.0" },
-    { name = "pyright", extras = ["nodejs"], specifier = "==1.1.402" },
-    { name = "pytest", specifier = "==8.4.1" },
 ]
 
 [[package]]

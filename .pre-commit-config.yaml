@@ -13,19 +13,27 @@ repos:
     #- id: mixed-line-ending
     #  args: [ --fix=lf ]
 
+  - repo: local
+    hooks:
+      - id: prevent-type-ignore
+        name: prevent type ignore annotations
+        description: 'Enforce that no `# type: ignore` annotations exist in the codebase.'
+        entry: '# type:? *ignore'
+        language: pygrep
+        types: [python]
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
       - id: codespell
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
+    rev: v0.12.3
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
-      - id: ruff
+      - id: ruff-check
         args: [--fix, --select, I] # import sorting
-      - id: ruff-format
 
   # Move back to econchick/interrogate once
   # https://github.com/econchick/interrogate/issues/187 has been resolved

@@ -31,6 +31,8 @@ dev = [
     "pre-commit==4.2.0",
     "pyright[nodejs]==1.1.402",
     "pytest==8.4.1",
+]
+docs = [
     "mkdocs-material==9.6.14",
     "mkdocstrings[python]==0.29.1",
     "mkdocs-section-index==0.3.10",
@@ -67,9 +69,6 @@ line-ending = "lf"
 
 [tool.pytest.ini_options]
 pythonpath = "."
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-]
 
 [tool.coverage.run]
 branch = true

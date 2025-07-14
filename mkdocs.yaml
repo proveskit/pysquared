@@ -14,6 +14,7 @@ validation:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Design Guide: design-guide.md
   - Contributing Guide: contributing.md
   - API Reference: api.md
   - License: license.md
@@ -66,14 +67,18 @@ plugins:
   - llmstxt:
       full_output: llms-full.txt
       sections:
+        Home:
+          - index.md
         Getting Started:
-        - getting-started.md
-        - contributing.md
-        - contributing-linux.md
-        - contributing-macos.md
-        - contributing-windows.md
-        API:
-        - api.md
+          - getting-started.md
+        Design Guide:
+          - design-guide.md
+        Contributing Guide:
+          - contributing.md
+        API Reference:
+          - api.md
+        License:
+          - license.md
   - mkdocstrings:
         handlers:
           python:
