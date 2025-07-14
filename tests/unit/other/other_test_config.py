@@ -278,9 +278,9 @@ def test_field_types(config_data):
     list_fields = ["jokes"]
     for field in list_fields:
         assert isinstance(config_data[field], list), f"{field} must be a list"
-        assert all(
-            isinstance(item, str) for item in config_data[field]
-        ), f"All items in {field} must be strings"
+        assert all(isinstance(item, str) for item in config_data[field]), (
+            f"All items in {field} must be strings"
+        )
 
     # Test radio config
     assert isinstance(config_data["radio"], dict), "radio must be a dictionary"
@@ -291,28 +291,28 @@ def test_field_types(config_data):
         "start_time": int,
     }
     for field, expected_type in radio_basic_fields.items():
-        assert isinstance(
-            config_data["radio"][field], expected_type
-        ), f"radio.{field} must be a {expected_type.__name__}"
+        assert isinstance(config_data["radio"][field], expected_type), (
+            f"radio.{field} must be a {expected_type.__name__}"
+        )
 
     # Test FSK fields
-    assert isinstance(
-        config_data["radio"]["fsk"], dict
-    ), "radio.fsk must be a dictionary"
+    assert isinstance(config_data["radio"]["fsk"], dict), (
+        "radio.fsk must be a dictionary"
+    )
     fsk_fields = {
         "broadcast_address": int,
         "node_address": int,
         "modulation_type": int,
     }
     for field, expected_type in fsk_fields.items():
-        assert isinstance(
-            config_data["radio"]["fsk"][field], expected_type
-        ), f"radio.fsk.{field} must be a {expected_type.__name__}"
+        assert isinstance(config_data["radio"]["fsk"][field], expected_type), (
+            f"radio.fsk.{field} must be a {expected_type.__name__}"
+        )
 
     # Test LoRa fields
-    assert isinstance(
-        config_data["radio"]["lora"], dict
-    ), "radio.lora must be a dictionary"
+    assert isinstance(config_data["radio"]["lora"], dict), (
+        "radio.lora must be a dictionary"
+    )
     lora_fields = {
         "ack_delay": float,
         "coding_rate": int,
@@ -321,9 +321,9 @@ def test_field_types(config_data):
         "transmit_power": int,
     }
     for field, expected_type in lora_fields.items():
-        assert isinstance(
-            config_data["radio"]["lora"][field], expected_type
-        ), f"radio.lora.{field} must be a {expected_type.__name__}"
+        assert isinstance(config_data["radio"]["lora"][field], expected_type), (
+            f"radio.lora.{field} must be a {expected_type.__name__}"
+        )
 
 
 def test_voltage_ranges(config_data):
@@ -380,6 +380,6 @@ def test_lists_not_empty(config_data):
     all its elements are strings, ensuring valid content for this field.
     """
     assert len(config_data["jokes"]) > 0, "jokes list cannot be empty"
-    assert all(
-        isinstance(joke, str) for joke in config_data["jokes"]
-    ), "All jokes must be strings"
+    assert all(isinstance(joke, str) for joke in config_data["jokes"]), (
+        "All jokes must be strings"
+    )

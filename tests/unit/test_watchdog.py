@@ -86,6 +86,6 @@ def test_watchdog_pet(
 
     mock_sleep.assert_called_once_with(0.01)
     assert value_during_sleep, "Watchdog pin value should be True when sleep is called"
-    assert (
-        mock_digital_in_out.value is False
-    ), "Watchdog pin value should be False after pet() finishes"
+    assert mock_digital_in_out.value is False, (
+        "Watchdog pin value should be False after pet() finishes"
+    )

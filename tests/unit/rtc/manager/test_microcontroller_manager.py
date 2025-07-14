@@ -31,9 +31,9 @@ def test_init():
 
     mrtc: MockRTC = MockRTC()
     assert mrtc.datetime is not None, "Mock RTC datetime should be set"
-    assert isinstance(
-        mrtc.datetime, time.struct_time
-    ), "Mock RTC datetime should be a time.struct_time instance"
+    assert isinstance(mrtc.datetime, time.struct_time), (
+        "Mock RTC datetime should be a time.struct_time instance"
+    )
 
 
 def test_set_time():
@@ -58,9 +58,9 @@ def test_set_time():
     # Get the mock RTC instance and check its datetime
     mrtc: MockRTC = MockRTC()
     assert mrtc.datetime is not None, "Mock RTC datetime should be set"
-    assert isinstance(
-        mrtc.datetime, time.struct_time
-    ), "Mock RTC datetime should be a time.struct_time instance"
+    assert isinstance(mrtc.datetime, time.struct_time), (
+        "Mock RTC datetime should be a time.struct_time instance"
+    )
 
     assert mrtc.datetime.tm_year == year, "Year should match"
     assert mrtc.datetime.tm_mon == month, "Month should match"
