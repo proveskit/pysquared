@@ -54,7 +54,7 @@ class FileValidationManager(FileValidationProto):
         except OSError:
             return 0
 
-# Removed the unused _calculate_checksum method to eliminate dead code.
+    # Removed the unused _calculate_checksum method to eliminate dead code.
     def _walk_directory(
         self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
     ) -> "List[str]":
