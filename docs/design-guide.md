@@ -189,7 +189,6 @@ When raising exceptions, always provide a clear and descriptive error message. T
 raise CustomError("This is a custom error message")
 ```
 
-
 ## Logging
 
 The syntax for our logging module `logger` is based off the popular Python logger [`Loguru`](https://loguru.readthedocs.io/en/stable/). We use the `logger` module to log messages at different levels (`debug`, `info`, `warning`, `error`, `critical`) throughout our code. This allows us to track the flow of execution and diagnose issues when they arise.
@@ -204,9 +203,49 @@ Code that raises an exception should log at the `error` level. Code that failed 
 
 ## Configuration
 
+Configuration management in PySquared is centralized in the `Config` class. This class is responsible for loading, validating, and providing access to all configuration settings, which are stored in a JSON file.
+
+### Loading and Accessing Configuration
+
+The `Config` class is initialized with the path to the configuration file. It parses the JSON and exposes the settings as attributes.
+
+**Usage:**
+```python
+from pysquared.config import Config
+
+# Initialize the config with the path to your settings file
+config = Config("config.json")
+
+# Access configuration values directly
+print(f"Satellite Name: {config.cubesat_name}")
+print(f"Sleep Duration: {config.sleep_duration} seconds")
+```
+
+### Updating Configuration
+
+The `update_config` method allows for both temporary (in-memory) and permanent (persisted to the JSON file) changes to the configuration.
+
+- **Temporary Updates:** Changes are only applied to the `Config` object in memory and will be lost on restart.
+- **Permanent Updates:** Changes are written back to the configuration file.
+
+```python
+# Temporarily update the sleep duration
+config.update_config("sleep_duration", 120, temporary=True)
+
+# Permanently update the satellite's name
+config.update_config("cubesat_name", "PyCubed", temporary=False)
+```
+
+### Validation
+
+The `Config` class includes a validation schema to ensure that all configuration values are within expected ranges and of the correct type. Any attempt to set an invalid value will raise a `TypeError` or `ValueError`. This helps prevent runtime errors due to misconfiguration.
+
+### Radio Configuration
+
+Radio-specific settings are managed by the `RadioConfig` class, which is a nested object within the main `Config` class.
 
 ## Imports
-We use relative imports for all of our modules. This allows us to easily move modules around without breaking imports. For example, if we have a module `pysquared.sensors.temperature`, we can import it in another module using:
+We use relative imports for all of our modules. This allows us to easily import pysquared into downstream libraries like our board specific repos. For example, if we have a module `pysquared.sensors.temperature`, we can import it in another module using:
 
 ```python
 from .sensors.temperature import TemperatureSensor
