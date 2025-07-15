@@ -8,7 +8,7 @@ This module provides a base class for solar panel managers to eliminate code dup
 from ...logger import Logger
 from ...protos.solar_panel import SolarPanelProto
 from ..exception import NotPowered
-from .loadswitch_manager import LoadSwitchManager
+from ..load_switch.manager.loadswitch_manager import LoadSwitchManager
 
 
 class BaseSolarPanelManager(SolarPanelProto, LoadSwitchManager):
