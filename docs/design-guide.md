@@ -90,8 +90,8 @@ Include a description, argument details, return values, and any exceptions raise
 Validate a sensor reading and convert it to SI units.
 
 Args:
-    reading (dict): Raw sensor reading with keys 'value' and 'unit'.
-    sensor_type (str): Type of sensor (e.g., 'acceleration', 'temperature').
+    reading: Raw sensor reading with keys 'value' and 'unit'.
+    sensor_type: Type of sensor (e.g., 'acceleration', 'temperature').
 
 Returns:
     float: The validated reading in SI units.
