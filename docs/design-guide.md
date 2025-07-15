@@ -250,3 +250,6 @@ We use relative imports for all of our modules. This allows us to easily import 
 ```python
 from .sensors.temperature import TemperatureSensor
 ```
+
+## Non-Volatile Memory (NVM)
+We use the `pysquared.nvm` module to manage non-volatile memory (NVM) on the flight control board. This module provides a way to store persistent data across reboots, such as error counters and other important state information. The NVM module includes a `Counter` class for counting events and a `Flag` class for storing boolean flags.
