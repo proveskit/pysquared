@@ -137,7 +137,7 @@ class CommandDataHandler:
         """Changes the radio modulation.
 
         Args:
-            args: A list of arguments, where the first argument is the new modulation.
+            args: A list of arguments, the first item must be the new modulation. All other items in the args list are ignored.
         """
         modulation = "UNSET"
 
