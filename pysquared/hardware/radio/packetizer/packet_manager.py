@@ -172,10 +172,10 @@ class PacketManager:
 
         return b"".join(self._get_payload(packet) for packet in sorted_packets)
 
-    def _get_header(self, packet: bytes) -> tuple[str, int, int, int]:
+    def _get_header(self, packet: bytes) -> tuple[int, int, int, int]:
         """Returns the sequence number and total packets stored in the header."""
         return (
-            int.from_bytes(packet[0:1], "big"),
+            int.from_bytes(packet[0:1], "big"),  # packet identifier
             int.from_bytes(packet[1:3], "big"),  # sequence number
             int.from_bytes(packet[3:5], "big"),  # total packets
             -int.from_bytes(packet[5:6], "big"),  # RSSI
