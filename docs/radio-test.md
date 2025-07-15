@@ -7,7 +7,7 @@ When receiving a PROVES device, most teams want to set up a radio test to ensure
 
 ## Setting Up the Radio Test
 
-Just like in the [Getting Started Guide](getting-started.md), you will need to clone your board specific repository and make sure that [CircuitPython is installed](https://proveskit.github.io/pysquared/getting-started/#installing-circuitpython) on both boards.
+Just like in the [Getting Started Guide](getting-started.md), you will need to clone your board specific repository and make sure that [CircuitPython is installed](getting-started.md#installing-circuitpython) on both boards.
 
 ### Setting Up the Configuration
 
@@ -21,7 +21,7 @@ In the root of your board specific repository, you will find a `config.json`. Ch
 }
 ```
 
-Next, you will need to install the flight control software on one board and the ground station software on the other. To do this, you'll need to [know your board's mount point](https://proveskit.github.io/pysquared/getting-started/#finding-your-boards-mount-point).
+Next, you will need to install the flight control software on one board and the ground station software on the other. To do this, you'll need to [know your board's mount point](getting-started.md#finding-your-boards-mount-point).
 
 ### Flight Control Software Installation
 
@@ -41,4 +41,4 @@ make install-ground-station BOARD_MOUNT_POINT=<path_to_your_board>
 
 ### Running the Radio Test
 
-Now, [open the serial console](https://proveskit.github.io/pysquared/getting-started/#accessing-the-serial-console) for both boards. On the ground station board, use the console to send or receive messages to verify communication with the flight control board.
+Now, [open the serial console](getting-started.md#accessing-the-serial-console) for both boards. On the ground station board, use the console to send or receive messages to verify communication with the flight control board.

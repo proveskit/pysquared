@@ -3,9 +3,50 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://proveskit.github.io/pysquared/license/)
 ![CI](https://github.com/proveskit/pysquared/actions/workflows/ci.yaml/badge.svg)
 
-CircuitPython based Flight Software Library for the PROVES Kit. This repo contains all of the core manager components, protocols, and libraries used by the PROVES Kit.
+**PySquared** is a CircuitPython-based flight software library for the PROVES Kit with [flight](https://space.skyrocket.de/doc_sdat/pleiades-orpheus.htm) [heritage](https://docs.proveskit.space/en/latest/#trials-and-tribulations-in-cubesats). It provides robust, modular components for spacecraft control, telemetry, configuration, and hardware management.
 
-# Development Getting Started
-We welcome contributions, so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
+## Features
 
-Please visit our [docs](https://proveskit.github.io/pysquared/) to get started!
+- Modular architecture for easy extension and customization
+- Type-checked protocols and sensor interfaces
+- Robust error handling and JSON-structured logging
+- Configuration management with validation
+- 100% test coverage with pytest
+- Designed for microcontroller resource constraints
+
+## Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/proveskit/pysquared.git
+   cd pysquared
+   ```
+
+2. Install dependencies using `uv`:
+   ```bash
+   make
+   ```
+
+3. Run tests:
+   ```bash
+   make test
+   ```
+
+4. See [Getting Started](https://proveskit.github.io/pysquared/getting-started/) for more details.
+
+## Documentation
+
+- [Design Guide](https://proveskit.github.io/pysquared/design-guide/)
+- [Configuration](https://proveskit.github.io/pysquared/api/#pysquared.config)
+- [Error Handling & Logging](https://proveskit.github.io/pysquared/api/#pysquared.logger)
+- [API Reference](https://proveskit.github.io/pysquared/api/)
+- [Contributing](https://proveskit.github.io/pysquared/contributing/)
+
+## Supported Platforms
+
+- [PROVES Kit hardware](https://docs.proveskit.space/en/latest/)
+- Devices [supported by CircuitPython](https://circuitpython.org/downloads)
+
+## Contributing
+
+We welcome contributions! Please read our [contributing guide](https://proveskit.github.io/pysquared/contributing/) and [design guide](https://proveskit.github.io/pysquared/design-guide/) before submitting changes. If you have questions, open an issue or discussion.
