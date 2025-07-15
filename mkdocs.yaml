@@ -14,6 +14,7 @@ validation:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Radio Test: radio-test.md
   - Design Guide: design-guide.md
   - Contributing Guide: contributing.md
   - API Reference: api.md
@@ -71,6 +72,8 @@ plugins:
           - index.md
         Getting Started:
           - getting-started.md
+        Radio Test:
+          - radio-test.md
         Design Guide:
           - design-guide.md
         Contributing Guide:
