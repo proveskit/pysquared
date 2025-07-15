@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://proveskit.github.io/pysquared/license/)
 ![CI](https://github.com/proveskit/pysquared/actions/workflows/ci.yaml/badge.svg)
 
-**PySquared** is a CircuitPython-based flight software library for the PROVES Kit with [flight](https://space.skyrocket.de/doc_sdat/pleiades-orpheus.htm) [heritage](https://docs.proveskit.space/en/latest/#trials-and-tribulations-in-cubesats). It provides robust, modular components for spacecraft control, telemetry, configuration, and hardware management.
+**PySquared** is a CircuitPython-based CubeSat flight software library with [flight](https://space.skyrocket.de/doc_sdat/pleiades-orpheus.htm) [heritage](https://docs.proveskit.space/en/latest/#trials-and-tribulations-in-cubesats). It provides robust, modular components for spacecraft control, telemetry, configuration, and hardware management.
 
 ## Features
 
