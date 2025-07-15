@@ -71,6 +71,10 @@ cd your-repository
 You are now in your repo directory. This is where you'll write code that makes its way onto your satellite!
 
 ## Installing CircuitPython
+
+??? note "CircuitPython May Already Be Installed"
+    If you already have CircuitPython installed on your board, you can skip this section. You can check if CircuitPython is installed by plugging in your board and [trying to access the serial console](#accessing-the-serial-console).
+
 Next, we need to install the latest CircuitPython firmware on your board. CircuitPython is a Python runtime for microcontrollers like the one on your board.
 
 First you must find your board's TTY port. You can find the TTY port by plugging in your board and running the following command:
