@@ -13,6 +13,7 @@ PySquared is built on top of CircuitPython, which is a version of Python designe
 - [Differences between CircuitPython and MicroPython](https://docs.circuitpython.org/en/latest/README.html#differences-from-micropython)
 - [CircuitPython Shared Bindings Documentation](https://docs.circuitpython.org/en/latest/shared-bindings/index.html)
 - [CircuitPython Standard Libraries Documentation](https://docs.circuitpython.org/en/latest/docs/library/index.html)
+- [CircuitPython Design Guide](https://docs.circuitpython.org/en/latest/docs/design_guide.html)
 
 ## Types and Type Checking
 
@@ -44,14 +45,7 @@ We use [pytest](https://docs.pytest.org/en/stable/) for unit testing our code. W
 
 ## Documentation
 
-We use [MkDocs](https://www.mkdocs.org/) to build our documentation. We write our documentation in Markdown, which is a lightweight markup language that is easy to read and write. We document our code using docstrings, which are special comments that describe the purpose and usage of a function or class. We also use type hints in our docstrings to provide additional information about the expected types of parameters and return values.
-
-When documenting your code, use clear and concise examples that demonstrate real-world usage. Here are improved templates for module, class, and function documentation:
-
-TODO(nateinaction): Look at ruff's docstring formatting: https://docs.astral.sh/ruff/formatter/#docstring-formatting
-https://spec.commonmark.org/0.30/#fenced-code-blocks
-https://spec.commonmark.org/0.30/#fenced-code-blocks
-
+We use [MkDocs](https://www.mkdocs.org/) to build our documentation. We write our documentation in Markdown, which is a lightweight markup language that is easy to read and write. We document our code using docstrings, which are special comments that describe the purpose and usage of a function or class. We also use type hints in our docstrings to provide additional information about the expected types of parameters and return values. Where it makes sense, add usage examples following [CommonMark fenced code blocks](https://spec.commonmark.org/0.30/#fenced-code-blocks) to document how to use your code.
 
 ### Module Documentation
 
@@ -76,7 +70,7 @@ TelemetryParser handles packet decoding, error checking, and conversion to SI un
 for use in spacecraft flight software where reliable sensor data is critical.
 
 **Usage:**
-~~~
+~~~python
 from pysquared.telemetry import TelemetryParser
 
 parser = TelemetryParser()
@@ -86,8 +80,6 @@ print(reading.timestamp, reading.acceleration)  # Output: 2024-06-01T12:00:00Z (
 ~~~
 """
 ```
-
-TODO(nateinaction): double check that we can use `~~~` for code blocks in mkdocs.
 
 ### Function/Method Documentation
 
@@ -210,4 +202,12 @@ logger.info("User logged in", user_id=123)
 
 Code that raises an exception should log at the `error` level. Code that failed but is recoverable should log at the `warning` level. The `debug` level should be used to understand the flow of the program during development and debugging. The `info` level should be used for general information about the program's execution, such as startup, shutdown, and other important updates. `critical` should be used for serious errors that may prevent the satellite from continuing operation, requiring a restart.
 
-TODO(nateinaction): Check circuitpython design guide again for anything else we should add to the doc.
+## Configuration
+
+
+## Imports
+We use relative imports for all of our modules. This allows us to easily move modules around without breaking imports. For example, if we have a module `pysquared.sensors.temperature`, we can import it in another module using:
+
+```python
+from .sensors.temperature import TemperatureSensor
+```

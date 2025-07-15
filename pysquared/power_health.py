@@ -14,9 +14,9 @@ health_status = power_health.get()
 ```
 """
 
-from pysquared.config.config import Config
-from pysquared.logger import Logger
-from pysquared.protos.power_monitor import PowerMonitorProto
+from .config.config import Config
+from .logger import Logger
+from .protos.power_monitor import PowerMonitorProto
 
 try:
     from typing import Callable, List
