@@ -284,7 +284,8 @@ def test_receive_timeout(mock_time, mock_logger, mock_radio, mock_message_counte
     # 1. Initial start_time
     # 2. Time check for timeout condition
     # 3. Time for calculating elapsed time in the log message
-    mock_time.side_effect = [10.0, 21.0, 21.0]  # Simulate a timeout after 11 seconds
+    # Simulate a timeout after 11 seconds
+    mock_time.side_effect = [10.0, 21.0, 21.0]
 
     # Configure radio to return a packet (this doesn't matter for timeout test)
     mock_radio.receive.return_value = None
@@ -358,3 +359,42 @@ def test_get_packet_identifier(mock_logger, mock_radio, mock_message_counter):
 
     # Verify that the result is the value from the counter
     assert result == mock_message_counter.get()
+
+
+@patch("time.time")
+def test_listen_ignores_mismatched_packet_ids(
+    mock_time, mock_logger, mock_radio, mock_message_counter
+):
+    """Test that listen ignores packets with mismatched packet identifiers."""
+    packet_manager = PacketManager(mock_logger, mock_radio, "", mock_message_counter)
+
+    # Set up mock time to control the flow
+    mock_time.side_effect = [10.0, 10.1, 10.2, 21.0, 21.0]
+
+    # Create two packets with different packet identifiers
+    packet1 = (
+        (1).to_bytes(1, "big")
+        + (0).to_bytes(2, "big")
+        + (2).to_bytes(2, "big")
+        + (70).to_bytes(1, "big")
+        + b"first"
+    )
+    packet2 = (
+        (2).to_bytes(1, "big")
+        + (0).to_bytes(2, "big")
+        + (1).to_bytes(2, "big")
+        + (70).to_bytes(1, "big")
+        + b"second"
+    )
+
+    # Configure mock_radio.receive to return the two packets
+    mock_radio.receive.side_effect = [packet1, packet2]
+
+    # Call the listen method
+    result = packet_manager.listen()
+
+    # Assert that the result is None, as the second packet should be ignored
+    assert result is None
+
+    # Verify that the timeout message was logged
+    mock_logger.debug.assert_any_call("Listen timeout reached", elapsed=11.0)
