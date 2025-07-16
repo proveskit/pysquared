@@ -105,7 +105,9 @@ class PowerHealth:
         # Critical check first - if battery voltage is below critical threshold
         if bus_voltage <= self.config.critical_battery_voltage:
             self.logger.warning(
-                f"CRITICAL: Battery voltage {bus_voltage:.1f}V is at or below critical threshold {self.config.critical_battery_voltage}V"
+                "Power health is CRITICAL, battery voltage is at or below critical threshold",
+                battery_voltage=bus_voltage,
+                critical_threshold=self.config.critical_battery_voltage,
             )
             return CRITICAL()
 
@@ -125,8 +127,8 @@ class PowerHealth:
             )
 
         if len(errors) > 0:
-            self.logger.info(
-                "Power health is NOMINAL with minor deviations", errors=errors
+            self.logger.warning(
+                "Power health is DEGRADED with minor deviations", errors=errors
             )
             return DEGRADED()
         else:
