@@ -43,7 +43,7 @@ def mock_message_counter() -> MagicMock:
     return counter
 
 
-def test_packet_manager_init(mock_logger, mock_radio):
+def test_packet_manager_init(mock_logger, mock_radio, mock_message_counter):
     """Tests PacketManager initialization.
 
     Args:
