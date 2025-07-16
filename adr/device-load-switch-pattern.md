@@ -48,3 +48,11 @@ Previously in v1.0.0 of the PySquared codebase devices would be directly turned 
 ```
 
 This worked *alright* but had a significant drawback in that it would seriously clutter the runtime with repetative checks to see whether or not hardware devices were currently activated before making any function calls. Additionally, by requiring the developer to manually implement checks in the `main` sequence on every function call there is a significant risk that a activation check is forgotten and the runtime attempts to call a deactivated sensor. This can easily lead to unhandled exceptions or software hangs that would crash the flight software. 
+
+### Current State
+Currently, enabling and disabling devices must be manually handled in runtime. There was an initial attempt at solving this issue in [#267 Vibecoded Load Switch Manager](https://github.com/proveskit/pysquared/pull/267). That PR created a unique load switch manager component that would bundle all of the enable pins into a single manager object that could be called from the device managers as a service. This approach was abandoned as it creates some logical confusion and still has the issue of the device managers being unable to determine their own state without an external service.
+
+## Proposal
+
+### A Load Switch Proto Inheritied by Device Managers
+We propose adding a `LoadSwitchManager` proto that can be inherited by individual device managers.
