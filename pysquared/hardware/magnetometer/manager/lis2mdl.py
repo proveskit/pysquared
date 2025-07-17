@@ -14,7 +14,7 @@ mag_data = magnetometer.get_vector()
 from adafruit_lis2mdl import LIS2MDL
 from busio import I2C
 
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ....protos.magnetometer import MagnetometerProto
 from ...exception import HardwareInitializationError
 
@@ -24,7 +24,7 @@ class LIS2MDLManager(MagnetometerProto):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         i2c: I2C,
     ) -> None:
         """Initializes the LIS2MDLManager.
@@ -36,7 +36,7 @@ class LIS2MDLManager(MagnetometerProto):
         Raises:
             HardwareInitializationError: If the magnetometer fails to initialize.
         """
-        self._log: Logger = logger
+        self._log: LoggerProto = logger
 
         try:
             self._log.debug("Initializing magnetometer")

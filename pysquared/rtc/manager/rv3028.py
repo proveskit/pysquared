@@ -17,7 +17,7 @@ from busio import I2C
 from rv3028.rv3028 import RV3028
 
 from ...hardware.exception import HardwareInitializationError
-from ...logger import Logger
+from ...logger.logger_proto import LoggerProto
 from ...protos.rtc import RTCProto
 
 
@@ -26,7 +26,7 @@ class RV3028Manager(RTCProto):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         i2c: I2C,
     ) -> None:
         """Initializes the RV3028Manager.
@@ -38,7 +38,7 @@ class RV3028Manager(RTCProto):
         Raises:
             HardwareInitializationError: If the RTC fails to initialize.
         """
-        self._log: Logger = logger
+        self._log: LoggerProto = logger
 
         try:
             self._log.debug("Initializing RTC")

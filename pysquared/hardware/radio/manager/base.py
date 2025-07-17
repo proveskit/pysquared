@@ -6,7 +6,7 @@ ensures that all radio managers adhere to a consistent interface.
 """
 
 from ....config.radio import RadioConfig
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ....protos.radio import RadioProto
 from ...exception import HardwareInitializationError
 from ..modulation import FSK, LoRa, RadioModulation
@@ -23,7 +23,7 @@ class BaseRadioManager(RadioProto):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         radio_config: RadioConfig,
         **kwargs: object,
     ) -> None:
