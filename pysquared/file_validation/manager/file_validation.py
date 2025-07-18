@@ -212,7 +212,7 @@ class FileValidationManager:
         return hash_obj.hexdigest()
 
     def create_file_checksum(
-        self, file_path: str, timeout: float = 5.0, algorithm: str = "md5"
+        self, file_path: str, timeout: float = 10.0, algorithm: str = "md5"
     ) -> str:
         """Create a checksum for a single file.
 

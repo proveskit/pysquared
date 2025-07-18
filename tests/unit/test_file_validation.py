@@ -256,6 +256,28 @@ class TestFileValidationManager(unittest.TestCase):
                             "test.txt", timeout=5.0
                         )
 
+    def test_create_checksum_memory_error_chunk_reduction(self):
+        """Test memory error handling with chunk size reduction."""
+        with patch("builtins.open", mock_open(read_data=b"test")):
+            with patch.object(self.file_validator, "_file_exists", return_value=True):
+                with patch(
+                    "pysquared.file_validation.manager.file_validation.adafruit_hashlib.new"
+                ) as mock_hash:
+                    mock_hash_obj = Mock()
+                    # First call raises MemoryError, second succeeds
+                    mock_hash_obj.update.side_effect = [
+                        MemoryError("Out of memory"),
+                        None,
+                    ]
+                    mock_hash_obj.hexdigest.return_value = "test_checksum"
+                    mock_hash.return_value = mock_hash_obj
+
+                    # Should succeed after chunk size reduction
+                    result = self.file_validator._create_checksum(
+                        "test.txt", "md5", 10.0
+                    )
+                    self.assertEqual(result, "test_checksum")
+
     def test_walk_directory_with_hidden_files(self):
         """Test directory walking with hidden files."""
         with patch("os.listdir") as mock_listdir:
