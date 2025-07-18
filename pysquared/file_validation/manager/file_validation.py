@@ -17,6 +17,7 @@ Usage Example:
     file_validator = FileValidationManager(logger)
 
     # Create checksum for a single file (MD5 by default for speed)
+    # Memory usage is automatically optimized for constrained devices like RP2040
     checksum = file_validator.create_file_checksum("main.py")
     print(f"main.py checksum: {checksum}")
 
@@ -49,6 +50,7 @@ Usage Example:
     ```
 """
 
+import gc
 import os
 import time
 
@@ -151,19 +153,55 @@ class FileValidationManager:
         :param float timeout: Maximum time to allow for reading the file.
         :return: The checksum as a hexadecimal string.
         :raises TimeoutError: If reading the file takes longer than the timeout.
+        :raises MemoryError: If there is insufficient memory to process the file.
         """
         hash_obj = adafruit_hashlib.new(algorithm)
-        with open(file_path, "rb") as f:
-            start_time = time.monotonic()
-            while True:
-                if time.monotonic() - start_time > timeout:
-                    raise TimeoutError(
-                        f"File read operation timed out after {timeout} seconds"
-                    )
-                chunk = f.read(4096)
-                if not chunk:  # Empty chunk means end of file
-                    break
-                hash_obj.update(chunk)
+
+        # Use smaller chunk size for memory-constrained devices like RP2040
+        chunk_size = 512  # Reduced from 4096 to 512 bytes
+
+        try:
+            with open(file_path, "rb") as f:
+                start_time = time.monotonic()
+                while True:
+                    if time.monotonic() - start_time > timeout:
+                        raise TimeoutError(
+                            f"File read operation timed out after {timeout} seconds"
+                        )
+
+                    try:
+                        chunk = f.read(chunk_size)
+                        if not chunk:  # Empty chunk means end of file
+                            break
+                        hash_obj.update(chunk)
+
+                        # Force garbage collection after each chunk to free memory
+                        gc.collect()
+
+                    except MemoryError:
+                        # If we run out of memory, try with an even smaller chunk
+                        if chunk_size > 64:
+                            chunk_size = chunk_size // 2
+                            self._log.warning(
+                                "Memory error, reducing chunk size",
+                                file_path=file_path,
+                                new_chunk_size=chunk_size,
+                            )
+                            continue
+                        else:
+                            raise MemoryError(
+                                f"Insufficient memory to process file: {file_path}. "
+                                f"Required: {chunk_size} bytes"
+                            )
+
+        except MemoryError as e:
+            self._log.error(
+                "Memory error during checksum creation",
+                file_path=file_path,
+                err=e,
+            )
+            raise
+
         return hash_obj.hexdigest()
 
     def create_file_checksum(
@@ -206,6 +244,13 @@ class FileValidationManager:
                     "OS error during checksum creation", err=e, file_path=file_path
                 )
                 raise
+        except MemoryError as e:
+            self._log.error(
+                "Memory error during checksum creation",
+                file_path=file_path,
+                err=e,
+            )
+            raise
         except Exception as e:
             self._log.error("Error creating file checksum", err=e, file_path=file_path)
             raise
