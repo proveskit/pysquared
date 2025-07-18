@@ -1,8 +1,8 @@
 """
 File Validation Manager implementation.
 
-This module provides a concrete implementation of the FileValidationProto interface
-for creating checksums, validating file integrity, and assessing codebase completeness.
+This module provides file validation functionality for creating checksums,
+validating file integrity, and assessing codebase completeness in CircuitPython.
 """
 
 import os
@@ -11,11 +11,10 @@ import time
 import adafruit_hashlib
 
 from ...logger import Logger
-from ...protos.file_validation import FileValidationProto
 
 
-class FileValidationManager(FileValidationProto):
-    """Concrete implementation of file validation functionality."""
+class FileValidationManager:
+    """File validation functionality for CircuitPython applications."""
 
     def __init__(self, logger: Logger) -> None:
         """Initialize the File Validation Manager.
