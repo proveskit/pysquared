@@ -58,6 +58,10 @@ import adafruit_hashlib
 
 from ...logger import Logger
 
+# Constants for error messages
+FILE_NOT_FOUND_MSG = "File not found"
+NO_SUCH_FILE_MSG = "No such file"
+
 
 class FileValidationManager:
     """File validation functionality for CircuitPython applications."""
@@ -226,7 +230,7 @@ class FileValidationManager:
         """
         try:
             if not self._file_exists(file_path):
-                raise FileNotFoundError(f"File not found: {file_path}")
+                raise FileNotFoundError(f"{FILE_NOT_FOUND_MSG}: {file_path}")
 
             checksum_str = self._create_checksum(file_path, algorithm, timeout)
 
@@ -239,13 +243,13 @@ class FileValidationManager:
             return checksum_str
 
         except OSError as e:
-            if "No such file" in str(e) or "File not found" in str(e):
+            if NO_SUCH_FILE_MSG in str(e) or FILE_NOT_FOUND_MSG in str(e):
                 self._log.error(
-                    "File not found during checksum creation",
+                    f"{FILE_NOT_FOUND_MSG} during checksum creation",
                     file_path=file_path,
-                    err=FileNotFoundError("File not found"),
+                    err=FileNotFoundError(FILE_NOT_FOUND_MSG),
                 )
-                raise FileNotFoundError(f"File not found: {file_path}") from e
+                raise FileNotFoundError(f"{FILE_NOT_FOUND_MSG}: {file_path}") from e
             else:
                 self._log.error(
                     "OS error during checksum creation", err=e, file_path=file_path
@@ -399,7 +403,7 @@ class FileValidationManager:
                     else:
                         failed_files.append(file_path)
                 except Exception as e:
-                    if "File not found" in str(e):
+                    if FILE_NOT_FOUND_MSG in str(e):
                         failed_files.append(file_path)
                     else:
                         self._log.warning(
@@ -570,7 +574,7 @@ class FileValidationManager:
         """
         try:
             if not self._file_exists(file_path):
-                raise FileNotFoundError(f"File not found: {file_path}")
+                raise FileNotFoundError(f"{FILE_NOT_FOUND_MSG}: {file_path}")
 
             file_size = self._get_file_size(file_path)
             self._log.debug(
