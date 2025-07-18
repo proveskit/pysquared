@@ -49,7 +49,7 @@ class TestLoadSwitchManager:
 
         assert result is True
         assert load_switch_manager.switch_states["radio"] is True
-        mock_switches["radio"].value = True
+        assert mock_switches["radio"].value is True
 
     def test_turn_off_switch(self, load_switch_manager, mock_switches):
         """Test turning off a specific switch."""
@@ -167,4 +167,4 @@ class TestLoadSwitchManager:
         assert result is True
         assert manager.switch_states["radio"] is True
         # With enable_logic=False, the pin should be set to False to turn on
-        mock_switches["radio"].value = False
+        assert mock_switches["radio"].value is False
