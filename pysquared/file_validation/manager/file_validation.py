@@ -3,6 +3,49 @@ File Validation Manager implementation.
 
 This module provides file validation functionality for creating checksums,
 validating file integrity, and assessing codebase completeness in CircuitPython.
+
+Usage Example:
+    ```python
+    import board
+    from pysquared.logger import Logger
+    from pysquared.file_validation.manager.file_validation import FileValidationManager
+
+    # Initialize logger
+    logger = Logger("file_validation")
+
+    # Create file validation manager
+    file_validator = FileValidationManager(logger)
+
+    # Create checksum for a single file (MD5 by default for speed)
+    checksum = file_validator.create_file_checksum("main.py")
+    print(f"main.py checksum: {checksum}")
+
+    # Create checksum with specific algorithm
+    sha256_checksum = file_validator.create_file_checksum("config.py", algorithm="sha256")
+    print(f"config.py SHA256: {sha256_checksum}")
+
+    # Validate file integrity
+    expected_checksum = "d41d8cd98f00b204e9800998ecf8427e"
+    is_valid = file_validator.validate_file_integrity("main.py", expected_checksum)
+    print(f"File integrity: {'PASS' if is_valid else 'FAIL'}")
+
+    # Create checksums for entire codebase
+    checksums = file_validator.create_codebase_checksum("/", exclude_patterns=["__pycache__", ".pyc"])
+    print(f"Codebase has {len(checksums)} files")
+
+    # Assess codebase completeness
+    assessment = file_validator.assess_codebase_completeness("/", checksums)
+    print(f"Codebase complete: {assessment['is_complete']}")
+    print(f"Codebase valid: {assessment['is_valid']}")
+    print(f"Missing files: {assessment['missing_files']}")
+    print(f"Extra files: {assessment['extra_files']}")
+
+    # Get file and codebase sizes
+    file_size = file_validator.get_file_size("main.py")
+    codebase_size = file_validator.get_codebase_size("/")
+    print(f"main.py size: {file_size} bytes")
+    print(f"Codebase size: {codebase_size} bytes")
+    ```
 """
 
 import os
