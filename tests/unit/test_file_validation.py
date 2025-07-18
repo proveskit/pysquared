@@ -46,7 +46,7 @@ class TestFileValidationManager(unittest.TestCase):
     def test_create_file_checksum_file_not_found(self):
         """Test file checksum creation when file doesn't exist."""
         with patch.object(self.file_validator, "_file_exists", return_value=False):
-            with self.assertRaises(Exception) as context:
+            with self.assertRaises(FileNotFoundError) as context:
                 self.file_validator.create_file_checksum("nonexistent.txt")
 
         self.assertIn("File not found", str(context.exception))
@@ -55,7 +55,7 @@ class TestFileValidationManager(unittest.TestCase):
         """Test file checksum creation with OSError."""
         with patch("builtins.open", side_effect=OSError("No such file")):
             with patch.object(self.file_validator, "_file_exists", return_value=True):
-                with self.assertRaises(Exception) as context:
+                with self.assertRaises(FileNotFoundError) as context:
                     self.file_validator.create_file_checksum("test.txt")
 
         self.assertIn("File not found", str(context.exception))
@@ -81,7 +81,7 @@ class TestFileValidationManager(unittest.TestCase):
     def test_create_codebase_checksum_base_path_not_found(self):
         """Test codebase checksum creation when base path doesn't exist."""
         with patch.object(self.file_validator, "_file_exists", return_value=False):
-            with self.assertRaises(Exception) as context:
+            with self.assertRaises(ValueError) as context:
                 self.file_validator.create_codebase_checksum("/nonexistent")
 
         self.assertIn("Base path not found", str(context.exception))
@@ -113,9 +113,9 @@ class TestFileValidationManager(unittest.TestCase):
         with patch.object(
             self.file_validator,
             "create_file_checksum",
-            side_effect=Exception("File not found"),
+            side_effect=FileNotFoundError("File not found"),
         ):
-            with self.assertRaises(Exception) as context:
+            with self.assertRaises(FileNotFoundError) as context:
                 self.file_validator.validate_file_integrity(
                     "nonexistent.txt", "test_checksum"
                 )
@@ -218,7 +218,7 @@ class TestFileValidationManager(unittest.TestCase):
     def test_get_file_size_file_not_found(self):
         """Test file size retrieval when file doesn't exist."""
         with patch.object(self.file_validator, "_file_exists", return_value=False):
-            with self.assertRaises(Exception) as context:
+            with self.assertRaises(FileNotFoundError) as context:
                 self.file_validator.get_file_size("nonexistent.txt")
 
         self.assertIn("File not found", str(context.exception))
@@ -241,7 +241,7 @@ class TestFileValidationManager(unittest.TestCase):
     def test_get_codebase_size_base_path_not_found(self):
         """Test codebase size calculation when base path doesn't exist."""
         with patch.object(self.file_validator, "_file_exists", return_value=False):
-            with self.assertRaises(Exception) as context:
+            with self.assertRaises(ValueError) as context:
                 self.file_validator.get_codebase_size("/nonexistent")
 
         self.assertIn("Base path not found", str(context.exception))
@@ -300,6 +300,20 @@ class TestFileValidationManager(unittest.TestCase):
         with patch("os.listdir", side_effect=OSError("Permission denied")):
             result = self.file_validator._walk_directory("/test")
             self.assertEqual(result, [])
+
+    def test_is_directory(self):
+        """Test directory detection."""
+        # Test directory
+        with patch("os.listdir", return_value=["file1.txt", "file2.txt"]):
+            self.assertTrue(self.file_validator._is_directory("/test"))
+
+        # Test file
+        with patch("os.listdir", side_effect=OSError("Not a directory")):
+            self.assertFalse(self.file_validator._is_directory("/test/file.txt"))
+
+        # Test non-existent path
+        with patch("os.listdir", side_effect=OSError("No such file")):
+            self.assertFalse(self.file_validator._is_directory("/nonexistent"))
 
     def test_process_single_file_checksum_success(self):
         """Test successful single file checksum processing."""
@@ -436,7 +450,7 @@ class TestFileValidationManager(unittest.TestCase):
                 "_get_file_size",
                 side_effect=OSError("Permission denied"),
             ):
-                with self.assertRaises(Exception):
+                with self.assertRaises(RuntimeError):
                     self.file_validator.get_file_size("test.txt")
 
     def test_get_codebase_size_with_file_errors(self):
@@ -544,7 +558,7 @@ class TestFileValidationManager(unittest.TestCase):
             "create_file_checksum",
             side_effect=Exception("Some error"),
         ):
-            with self.assertRaises(Exception):
+            with self.assertRaises(RuntimeError):
                 self.file_validator.validate_file_integrity("test.txt", "test_checksum")
 
     def test_assess_codebase_completeness_with_exception(self):
@@ -556,7 +570,7 @@ class TestFileValidationManager(unittest.TestCase):
             "get_missing_files",
             side_effect=Exception("Assessment error"),
         ):
-            with self.assertRaises(Exception):
+            with self.assertRaises(RuntimeError):
                 self.file_validator.assess_codebase_completeness(
                     "/test", expected_checksums
                 )
