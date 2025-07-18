@@ -30,6 +30,7 @@ Usage Example:
     print(f"File integrity: {'PASS' if is_valid else 'FAIL'}")
 
     # Create checksums for entire codebase
+    # Hidden files (starting with .) are automatically ignored
     checksums = file_validator.create_codebase_checksum("/", exclude_patterns=["__pycache__", ".pyc"])
     print(f"Codebase has {len(checksums)} files")
 
@@ -100,6 +101,7 @@ class FileValidationManager:
         :param str base_path: The base directory to walk.
         :param List[str] exclude_patterns: Patterns to exclude.
         :return: List of file paths relative to base_path.
+        :note: Hidden files (starting with .) are automatically excluded.
         """
         exclude_patterns = exclude_patterns or []
         file_paths = []
@@ -114,6 +116,10 @@ class FileValidationManager:
             try:
                 items = os.listdir(current_path)
                 for item in items:
+                    # Automatically exclude hidden files (starting with .)
+                    if item.startswith("."):
+                        continue
+
                     item_path = current_path + "/" + item if current_path else item
                     item_relative = (
                         relative_path + "/" + item if relative_path else item
