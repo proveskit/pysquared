@@ -2,16 +2,24 @@ from board_connection import FCBoard
 import pytest
 import time
 import threading
+import serial
+# import serial.tools.list_ports
+import os
 
 
 @pytest.fixture
 def GRstation():
-    ground_path = ""
-    ground_port = "/dev/serial/" #should probably not be hardcoded    
+    ground_path = "Volumes/CIRCUITPY/"
+    ground_port = "/dev/cu.usbmodem14201" #should not be hardcoded    
     #serial connect
     ground = FCBoard(ground_path, ground_port)
-    #get into repl (only for ground station, FC board will always be reading, not executing)
+
     ground.get_into_repl()
+
+    t = threading.Thread(target=telemetry_logger, args=(ground), daemon=True)           
+    t.start()
+
+    #time.sleep(10)
 
     yield ground
     #runs after the test is done
@@ -19,35 +27,68 @@ def GRstation():
     ground.ser.close()
 
 #currently logs to a file, but should be able to log to Github through Actions later.
-@pytest.fixture
-def telemetry_logger(fc):
-    with open("fc_telemetry.log", "a") as f:
+def telemetry_logger(fc, file:str="fc_telemetry.log"):
+    with open(file, "a") as f:
         while fc.reader_running:
                 msg = fc.get_message(block=True, timeout=1)
                 if msg:
                     f.write(msg + "\n")
 
-@pytest.fixture       
-def FC_Board():
-    board_path = "" 
-    board_port = "/dev/serial/" #should probably not be hardcoded
-    board = FCBoard(board_path, board_port)
+#commening out because I am just testing the ground station
+# @pytest.fixture       
+# def FC_Board():
+#     board_path = "" 
+#     board_port = "/dev/serial/" #should probably not be hardcoded
+#     board = FCBoard(board_path, board_port)
 
-    #start the telemetry logger thread.
-    t = threading.Thread(target=telemetry_logger, args=(board,), daemon=True)           
-    t.start()
-    yield board
-    board.stop_reader_thread()
-    board.ser.close()
-    t.join(timeout=2)
+#     #start the telemetry logger thread.
+#     t = threading.Thread(target=telemetry_logger, args=(board,), daemon=True)           
+#     t.start()
+#     yield board
+#     board.stop_reader_thread()
+#     board.ser.close()
+#     t.join(timeout=2)
+
+def test_connect_to_ground_station(GRstation):
+    time.sleep(1)
+    print(GRstation.get_all_messages()) # need to wait for past commands to be on board so we can clear them out
+    time.sleep(1) # need to wait for command to be on board
+    GRstation.get_message() # this should be print('Hello, World!') That I called above.
+    assert GRstation.get_message() == "Hello, World!"
 
 
-
-def test_beacon_format(self):
+def test_beacon_format():
     # Ground station sends a beacon
 
     # FC Board receieves 
 
+    #turn on the radio so it recer
+
     #assert that recieve is what you expect
     pass
 
+def test_command_reset_send_joke():
+    # Ground station sends a command to send a joke
+
+    # FC Board receives the command
+
+    #assert that the joke is sent
+    pass
+
+def test_command_reset_board():
+    # Ground station sends a command to reset the board
+
+    # FC Board receives the command
+
+    #assert that the board is reset
+    pass
+
+def test_command_change_radio_modulation():
+    # Ground station sends a command to change the radio modulation
+
+    # FC Board receives the command
+
+    #assert that the radio modulation is changed
+    pass
+
+    
