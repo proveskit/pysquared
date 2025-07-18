@@ -131,3 +131,11 @@ class SX1280Manager(BaseRadioManager):
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+
+    def get_rssi(self) -> float:
+        """Gets the RSSI of the radio.
+
+        Returns:
+            The RSSI of the radio.
+        """
+        return self._radio.rssi()
