@@ -1,3 +1,18 @@
+"""This module defines the `BurnwireManager` class, which provides a high-level interface
+for controlling burnwire circuits, which are commonly used for deployment mechanisms in
+satellites. It handles the timing and sequencing of the burnwire activation
+and provides error handling and logging.
+
+**Usage:**
+```python
+logger = Logger()
+enable_pin = DigitalInOut(board.D1)
+fire_pin = DigitalInOut(board.D2)
+burnwire = BurnwireManager(logger, enable_pin, fire_pin)
+burnwire.burn()
+```
+"""
+
 import time
 
 from digitalio import DigitalInOut
@@ -5,20 +20,9 @@ from digitalio import DigitalInOut
 from ....logger import Logger
 from ....protos.burnwire import BurnwireProto
 
-"""
-Usage Example:
-
-from lib.pysquared.hardware.burnwire.manager.burnwire import BurnwireManager
-...
-
-antenna_deployment = BurnwireManager(logger, board.FIRE_DEPLOY1A, board.FIRE_DEPLOY1B, enable_logic = False)
-
-antenna_deployment.burn()
-"""
-
 
 class BurnwireManager(BurnwireProto):
-    """Class for managing burnwire ports."""
+    """Manages the activation of a burnwire."""
 
     def __init__(
         self,
@@ -27,13 +31,13 @@ class BurnwireManager(BurnwireProto):
         fire_burn: DigitalInOut,
         enable_logic: bool = True,
     ) -> None:
-        """
-        Initializes the burnwire manager class.
+        """Initializes the burnwire manager.
 
-        :param Logger logger: Logger instance for logging messages.
-        :param Digitalio enable_burn: A pin used for enabling the initial stage of a burnwire circuit.
-        :param Digitalio fire_burn: A pin used for enabling a specific burnwire port.
-        :param bool enable_logic: Boolean defining whether the burnwire load switches are enabled when True or False. Defaults to `True`.
+        Args:
+            logger: The logger to use.
+            enable_burn: The pin used to enable the burnwire circuit.
+            fire_burn: The pin used to fire the burnwire.
+            enable_logic: The logic level to enable the burnwire.
         """
         self._log: Logger = logger
         self._enable_logic: bool = enable_logic
@@ -44,14 +48,16 @@ class BurnwireManager(BurnwireProto):
         self.number_of_attempts: int = 0
 
     def burn(self, timeout_duration: float = 5.0) -> bool:
-        """Fires the burnwire for a specified amount of time
+        """Fires the burnwire for a specified amount of time.
 
-        :param float timeout_duration: The max amount of time to keep the burnwire on for.
+        Args:
+            timeout_duration: The maximum amount of time to keep the burnwire on.
 
-        :return: A Boolean indicating whether the burn occurred successfully
-        :rtype: bool
+        Returns:
+            True if the burn was successful, False otherwise.
 
-        :raises Exception: If there is an error toggling the burnwire pins.
+        Raises:
+            Exception: If there is an error toggling the burnwire pins.
         """
         _start_time = time.monotonic()
 
@@ -64,7 +70,7 @@ class BurnwireManager(BurnwireProto):
 
         except KeyboardInterrupt:
             self._log.debug(
-                f"Burn Attempt Interupted after {time.monotonic() - _start_time:.2f} seconds"
+                f"Burn Attempt Interrupted after {time.monotonic() - _start_time:.2f} seconds"
             )
             return False
 
@@ -118,14 +124,13 @@ class BurnwireManager(BurnwireProto):
             raise RuntimeError("Failed to safe burnwire pins") from e
 
     def _attempt_burn(self, duration: float = 5.0) -> None:
-        """Private function for actuating the burnwire ports for a set period of time.
+        """Attempts to actuate the burnwire for a set period of time.
 
-        :param float duration: Defines how long the burnwire will remain on for. Defaults to 5s.
+        Args:
+            duration: The duration of the burn.
 
-        :return: None
-        :rtype: None
-
-        :raises RuntimeError: If there is an error toggling the burnwire pins.
+        Raises:
+            RuntimeError: If there is an error toggling the burnwire pins.
         """
         error = None
         try:

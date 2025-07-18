@@ -1,3 +1,10 @@
+"""Unit tests for the configuration validation logic.
+
+This module contains unit tests for the configuration validation functions,
+ensuring that the configuration data adheres to the defined schema and business
+rules. It covers type checking, range validation, and presence of required fields.
+"""
+
 import json
 from pathlib import Path
 from typing import Any, Dict
@@ -32,7 +39,15 @@ CONFIG_SCHEMA = {
 
 
 def validate_config(config: Dict[str, Any]) -> None:
-    """Validate config data against schema and business rules."""
+    """Validates config data against schema and business rules.
+
+    Args:
+        config: The configuration dictionary to validate.
+
+    Raises:
+        ValueError: If a required field is missing, a value is out of range, or a list is empty.
+        TypeError: If a field has an incorrect type.
+    """
     # Validate field presence and types
     for field, expected_type in CONFIG_SCHEMA.items():
         if field not in config:
@@ -139,7 +154,17 @@ def validate_config(config: Dict[str, Any]) -> None:
 
 
 def load_config(config_path: str) -> dict:
-    """Load and parse the config file."""
+    """Loads and parses the config file.
+
+    Args:
+        config_path: The path to the configuration file.
+
+    Returns:
+        A dictionary containing the loaded configuration.
+
+    Raises:
+        pytest.fail: If the JSON is invalid or the file is not found.
+    """
     try:
         with open(config_path, "r") as f:
             return json.load(f)
@@ -151,26 +176,49 @@ def load_config(config_path: str) -> dict:
 
 @pytest.fixture
 def config_data():
-    """Fixture to load the config data."""
+    """Fixture to load the config data from the default config.json.
+
+    Returns:
+        A dictionary containing the loaded configuration data.
+    """
     workspace_root = Path(__file__).parent.parent.parent
     config_path = workspace_root / "config.json"
     return load_config(str(config_path))
 
 
 def test_config_file_exists():
-    """Test that config.json exists."""
+    """Tests that config.json exists.
+
+    This test verifies that the `config.json` file is present in the expected
+    location within the project structure.
+    """
     workspace_root = Path(__file__).parent.parent.parent
     config_path = workspace_root / "config.json"
     assert config_path.exists(), "config.json file not found"
 
 
 def test_config_is_valid_json(config_data):
-    """Test that config.json is valid JSON."""
+    """Tests that config.json is valid JSON.
+
+    Args:
+        config_data: Fixture providing the loaded configuration data.
+
+    This test ensures that the content of `config.json` can be successfully
+    parsed as a JSON object.
+    """
     assert isinstance(config_data, dict), "Config file is not a valid JSON object"
 
 
 def test_config_validation(config_data):
-    """Test that config.json matches the expected schema and business rules."""
+    """Tests that config.json matches the expected schema and business rules.
+
+    Args:
+        config_data: Fixture providing the loaded configuration data.
+
+    This test calls the `validate_config` function to ensure that the loaded
+    configuration adheres to all defined validation rules, including field
+    presence, types, and ranges.
+    """
     try:
         validate_config(config_data)
     except (ValueError, TypeError) as e:
@@ -178,7 +226,15 @@ def test_config_validation(config_data):
 
 
 def test_field_types(config_data):
-    """Test that all fields have correct types."""
+    """Tests that all fields have correct types.
+
+    Args:
+        config_data: Fixture providing the loaded configuration data.
+
+    This test individually checks the data type of various fields within the
+    configuration to ensure they match the expected Python types (string, int,
+    float, bool, list, dict).
+    """
     # Test string fields
     string_fields = ["cubesat_name", "callsign", "super_secret_code", "repeat_code"]
     for field in string_fields:
@@ -222,9 +278,9 @@ def test_field_types(config_data):
     list_fields = ["jokes"]
     for field in list_fields:
         assert isinstance(config_data[field], list), f"{field} must be a list"
-        assert all(
-            isinstance(item, str) for item in config_data[field]
-        ), f"All items in {field} must be strings"
+        assert all(isinstance(item, str) for item in config_data[field]), (
+            f"All items in {field} must be strings"
+        )
 
     # Test radio config
     assert isinstance(config_data["radio"], dict), "radio must be a dictionary"
@@ -235,28 +291,28 @@ def test_field_types(config_data):
         "start_time": int,
     }
     for field, expected_type in radio_basic_fields.items():
-        assert isinstance(
-            config_data["radio"][field], expected_type
-        ), f"radio.{field} must be a {expected_type.__name__}"
+        assert isinstance(config_data["radio"][field], expected_type), (
+            f"radio.{field} must be a {expected_type.__name__}"
+        )
 
     # Test FSK fields
-    assert isinstance(
-        config_data["radio"]["fsk"], dict
-    ), "radio.fsk must be a dictionary"
+    assert isinstance(config_data["radio"]["fsk"], dict), (
+        "radio.fsk must be a dictionary"
+    )
     fsk_fields = {
         "broadcast_address": int,
         "node_address": int,
         "modulation_type": int,
     }
     for field, expected_type in fsk_fields.items():
-        assert isinstance(
-            config_data["radio"]["fsk"][field], expected_type
-        ), f"radio.fsk.{field} must be a {expected_type.__name__}"
+        assert isinstance(config_data["radio"]["fsk"][field], expected_type), (
+            f"radio.fsk.{field} must be a {expected_type.__name__}"
+        )
 
     # Test LoRa fields
-    assert isinstance(
-        config_data["radio"]["lora"], dict
-    ), "radio.lora must be a dictionary"
+    assert isinstance(config_data["radio"]["lora"], dict), (
+        "radio.lora must be a dictionary"
+    )
     lora_fields = {
         "ack_delay": float,
         "coding_rate": int,
@@ -265,13 +321,20 @@ def test_field_types(config_data):
         "transmit_power": int,
     }
     for field, expected_type in lora_fields.items():
-        assert isinstance(
-            config_data["radio"]["lora"][field], expected_type
-        ), f"radio.lora.{field} must be a {expected_type.__name__}"
+        assert isinstance(config_data["radio"]["lora"][field], expected_type), (
+            f"radio.lora.{field} must be a {expected_type.__name__}"
+        )
 
 
 def test_voltage_ranges(config_data):
-    """Test that voltage values are within expected ranges."""
+    """Tests that voltage values are within expected ranges.
+
+    Args:
+        config_data: Fixture providing the loaded configuration data.
+
+    This test verifies that battery-related voltage values fall within a
+    reasonable operational range (5.2V to 8.4V).
+    """
     voltage_fields = [
         "battery_voltage",
         "normal_battery_voltage",
@@ -283,19 +346,40 @@ def test_voltage_ranges(config_data):
 
 
 def test_time_values(config_data):
-    """Test that time values are positive."""
+    """Tests that time values are positive.
+
+    Args:
+        config_data: Fixture providing the loaded configuration data.
+
+    This test ensures that `sleep_duration` and `reboot_time` are positive
+    integers, as negative or zero values would be illogical for these settings.
+    """
     assert config_data["sleep_duration"] > 0, "sleep_duration must be positive"
     assert config_data["reboot_time"] > 0, "reboot_time must be positive"
 
 
 def test_current_draw_positive(config_data):
-    """Test that current draw is not negative."""
+    """Tests that current draw is not negative.
+
+    Args:
+        config_data: Fixture providing the loaded configuration data.
+
+    This test verifies that the `current_draw` value is non-negative, as a
+    negative current draw would imply an impossible scenario in this context.
+    """
     assert config_data["current_draw"] >= 0, "current_draw cannot be negative"
 
 
 def test_lists_not_empty(config_data):
-    """Test that list fields are not empty."""
+    """Tests that list fields are not empty.
+
+    Args:
+        config_data: Fixture providing the loaded configuration data.
+
+    This test specifically checks that the `jokes` list is not empty and that
+    all its elements are strings, ensuring valid content for this field.
+    """
     assert len(config_data["jokes"]) > 0, "jokes list cannot be empty"
-    assert all(
-        isinstance(joke, str) for joke in config_data["jokes"]
-    ), "All jokes must be strings"
+    assert all(isinstance(joke, str) for joke in config_data["jokes"]), (
+        "All jokes must be strings"
+    )

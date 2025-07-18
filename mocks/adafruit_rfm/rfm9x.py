@@ -1,6 +1,8 @@
-"""
-Mock for Adafruit RFM9x
-https://github.com/adafruit/Adafruit_CircuitPython_RFM/blob/8a55e345501e038996b2aa89e71d4e5e3ddbdebe/adafruit_rfm/rfm9x.py
+"""Mock for the Adafruit RFM9x LoRa radio module.
+
+This module provides a mock implementation of the Adafruit RFM9x LoRa radio module
+for testing purposes. It allows for simulating the behavior of the RFM9x without the
+need for actual hardware.
 """
 
 from .rfm_common import RFMSPI
@@ -13,6 +15,8 @@ except ImportError:
 
 
 class RFM9x(RFMSPI):
+    """A mock RFM9x LoRa radio module."""
+
     ack_delay: float | None = None
     enable_crc: bool
     spreading_factor: Literal[6, 7, 8, 9, 10, 11, 12]
@@ -24,4 +28,13 @@ class RFM9x(RFMSPI):
     tx_power: int
     radiohead: bool
 
-    def __init__(self, spi, cs, reset, frequency) -> None: ...
+    def __init__(self, spi, cs, reset, frequency) -> None:
+        """Initializes the mock RFM9x.
+
+        Args:
+            spi: The SPI bus to use.
+            cs: The chip select pin.
+            reset: The reset pin.
+            frequency: The frequency to operate on.
+        """
+        ...

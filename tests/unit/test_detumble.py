@@ -1,7 +1,9 @@
-# After following the necessary steps in README.md, you can use "make test" to run all tests in the unit_tests folder
-# To run this file specifically: cd Tests > cd unit_tests > pytest test_detumble.py
-# pytest test_detumble.py -v displays which tests ran and their respective results (fail or pass)
-# Note: If you encounter a ModuleNotFoundError, try: export PYTHONPATH=<path to this repo>
+"""Unit tests for the detumble module.
+
+This module contains unit tests for the `detumble` module, which provides
+functions for spacecraft detumbling. The tests cover dot product, cross product,
+and magnetorquer dipole calculations.
+"""
 
 import pytest
 
@@ -9,6 +11,7 @@ import pysquared.detumble as detumble
 
 
 def test_dot_product():
+    """Tests the dot_product function with positive values."""
     # dot_product is only ever called to give the square of mag_field
     mag_field_vector = (30.0, 45.0, 60.0)
     result = detumble.dot_product(mag_field_vector, mag_field_vector)
@@ -16,7 +19,7 @@ def test_dot_product():
 
 
 def test_dot_product_negatives():
-    # testing with negative vectors
+    """Tests the dot_product function with negative vectors."""
     vector1 = (-1, -2, -3)
     vector2 = (-4, -5, -6)
     result = detumble.dot_product(vector1, vector2)
@@ -24,7 +27,7 @@ def test_dot_product_negatives():
 
 
 def test_dot_product_large_val():
-    # testing with large value vectors
+    """Tests the dot_product function with large value vectors."""
     vector1 = (1e6, 1e6, 1e6)
     vector2 = (1e6, 1e6, 1e6)
     result = detumble.dot_product(vector1, vector2)
@@ -32,13 +35,14 @@ def test_dot_product_large_val():
 
 
 def test_dot_product_zero():
-    # testing with zero values
+    """Tests the dot_product function with zero values."""
     vector = (0.0, 0.0, 0.0)
     result = detumble.dot_product(vector, vector)
     assert result == 0.0
 
 
 def test_x_product():
+    """Tests the x_product (cross product) function."""
     mag_field_vector = (30.0, 45.0, 60.0)
     ang_vel_vector = (0.0, 0.02, 0.015)
     expected_result = [-0.525, 0.45, 0.6]
@@ -53,6 +57,7 @@ def test_x_product():
 
 
 def test_x_product_negatives():
+    """Tests the x_product function with negative values."""
     mag_field_vector = (-30.0, -45.0, -60.0)
     ang_vel_vector = (-0.02, -0.02, -0.015)
     expected_result = [-0.525, -0.75, -0.3]
@@ -63,6 +68,7 @@ def test_x_product_negatives():
 
 
 def test_x_product_large_val():
+    """Tests the x_product function with large values."""
     mag_field_vector = (1e6, 1e6, 1e6)
     ang_vel_vector = (1e6, 1e6, 1e6)  # cross product of parallel vector equals 0
     result = detumble.x_product(mag_field_vector, ang_vel_vector)
@@ -70,6 +76,7 @@ def test_x_product_large_val():
 
 
 def test_x_product_zero():
+    """Tests the x_product function with zero values."""
     mag_field_vector = (0.0, 0.0, 0.0)
     ang_vel_vector = (0.0, 0.02, 0.015)
     result = detumble.x_product(mag_field_vector, ang_vel_vector)
@@ -80,6 +87,7 @@ def test_x_product_zero():
 # mag_field: mag. field strength at x, y, & z axis (tuple) (magnetometer reading)
 # ang_vel: ang. vel. at x, y, z axis (tuple) (gyroscope reading)
 def test_magnetorquer_dipole():
+    """Tests the magnetorquer_dipole function with valid inputs."""
     mag_field = (30.0, -45.0, 60.0)
     ang_vel = (0.0, 0.02, 0.015)
     expected_result = [0.023211, -0.00557, -0.007426]
@@ -90,7 +98,7 @@ def test_magnetorquer_dipole():
 
 
 def test_magnetorquer_dipole_zero_mag_field():
-    # testing throwing of exception when mag_field = 0 (division by 0)
+    """Tests magnetorquer_dipole with a zero magnetic field, expecting ZeroDivisionError."""
     mag_field = (0.0, 0.0, 0.0)
     ang_vel = (0.0, 0.02, 0.015)
     with pytest.raises(ZeroDivisionError):
@@ -98,7 +106,7 @@ def test_magnetorquer_dipole_zero_mag_field():
 
 
 def test_magnetorquer_dipole_zero_ang_vel():
-    # testing ang_vel with zero value
+    """Tests magnetorquer_dipole with zero angular velocity."""
     mag_field = (30.0, -45.0, 60.0)
     ang_vel = (0.0, 0.0, 0.0)
     result = detumble.magnetorquer_dipole(mag_field, ang_vel)

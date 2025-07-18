@@ -32,7 +32,14 @@ dev = [
     "pre-commit==4.2.0",
     "pyright[nodejs]==1.1.402",
     "pytest==8.4.1",
+]
+docs = [
     "mkdocs-material==9.6.14",
+    "mkdocstrings[python]==0.29.1",
+    "mkdocs-section-index==0.3.10",
+    "mkdocs-git-revision-date-localized-plugin==1.4.7",
+    "mkdocs-minify-plugin==0.7.1",
+    "mkdocs-llmstxt==0.2.0",
 ]
 
 [tool.setuptools]
@@ -65,9 +72,6 @@ line-ending = "lf"
 
 [tool.pytest.ini_options]
 pythonpath = "."
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-]
 
 [tool.coverage.run]
 branch = true
@@ -96,3 +100,10 @@ exclude = [
 ]
 stubPath = "./typings"
 reportMissingModuleSource = false
+
+[tool.interrogate]
+ignore-init-method = true
+omit-covered-files = true
+fail-under = 100
+verbose = 2
+color = true

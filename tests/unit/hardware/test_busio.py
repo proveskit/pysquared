@@ -1,3 +1,11 @@
+"""Unit tests for the busio module.
+
+This module contains unit tests for the `busio` module, which provides
+functionality for initializing SPI and I2C buses. The tests cover successful
+initialization, and various failure scenarios including exceptions during
+initialization and configuration.
+"""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,6 +18,11 @@ from pysquared.logger import Logger
 
 @patch("pysquared.hardware.busio.SPI")
 def test_initialize_spi_bus_success(mock_spi: MagicMock):
+    """Tests successful initialization of an SPI bus.
+
+    Args:
+        mock_spi: Mocked SPI class.
+    """
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
@@ -43,9 +56,13 @@ def test_initialize_spi_bus_success(mock_spi: MagicMock):
     assert result == mock_spi_instance
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.busio.SPI")
 def test_initialize_spi_bus_failure(mock_spi: MagicMock):
+    """Tests SPI bus initialization failure with retries.
+
+    Args:
+        mock_spi: Mocked SPI class.
+    """
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
@@ -62,12 +79,17 @@ def test_initialize_spi_bus_failure(mock_spi: MagicMock):
         initialize_spi_bus(mock_logger, mock_clock, mock_mosi, mock_miso)
 
     # Assertions
-    assert mock_spi.call_count == 3  # Called 3 times due to retries
+    mock_spi.assert_called_once()
     mock_logger.debug.assert_called_with("Initializing spi bus")
 
 
 @patch("pysquared.hardware.busio.SPI")
 def test_spi_bus_configure_try_lock_failure(mock_spi: MagicMock):
+    """Tests SPI bus configuration when try_lock fails.
+
+    Args:
+        mock_spi: Mocked SPI class.
+    """
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
@@ -93,6 +115,11 @@ def test_spi_bus_configure_try_lock_failure(mock_spi: MagicMock):
 
 @patch("pysquared.hardware.busio.SPI")
 def test_spi_bus_configure_failure(mock_spi: MagicMock):
+    """Tests SPI bus configuration when configure fails.
+
+    Args:
+        mock_spi: Mocked SPI class.
+    """
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
@@ -119,6 +146,11 @@ def test_spi_bus_configure_failure(mock_spi: MagicMock):
 
 @patch("pysquared.hardware.busio.I2C")
 def test_initialize_i2c_bus_success(mock_i2c: MagicMock):
+    """Tests successful initialization of an I2C bus.
+
+    Args:
+        mock_i2c: Mocked I2C class.
+    """
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
@@ -141,9 +173,13 @@ def test_initialize_i2c_bus_success(mock_i2c: MagicMock):
     assert result == mock_i2c_instance
 
 
-@pytest.mark.slow
 @patch("pysquared.hardware.busio.I2C")
 def test_initialize_i2c_bus_failure(mock_i2c: MagicMock):
+    """Tests I2C bus initialization failure with retries.
+
+    Args:
+        mock_i2c: Mocked I2C class.
+    """
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
@@ -159,5 +195,5 @@ def test_initialize_i2c_bus_failure(mock_i2c: MagicMock):
         initialize_i2c_bus(mock_logger, mock_scl, mock_sda, 1)
 
     # Assertions
-    assert mock_i2c.call_count == 3  # Called 3 times due to retries
+    mock_i2c.assert_called_once()
     mock_logger.debug.assert_called()

@@ -1,11 +1,6 @@
-"""
-watchdog Module
-===============
-
-This module provides the Watchdog class for managing the hardware watchdog timer
+"""This module provides the Watchdog class for managing the hardware watchdog timer
 on the PySquared satellite. The watchdog helps ensure system reliability by
 requiring periodic "petting" to prevent system resets.
-
 """
 
 import time

@@ -1,22 +1,52 @@
 # PySquared
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://proveskit.github.io/pysquared/license/)
 ![CI](https://github.com/proveskit/pysquared/actions/workflows/ci.yaml/badge.svg)
 
-CircuitPython based Flight Software Library for the PROVES Kit. This repo contains all of the core manager components, protocols, and libraries used by the PROVES Kit.
+**PySquared** is a CircuitPython-based CubeSat flight software library with [flight](https://space.skyrocket.de/doc_sdat/pleiades-orpheus.htm) [heritage](https://docs.proveskit.space/en/latest/#trials-and-tribulations-in-cubesats). It provides robust, modular components for spacecraft control, telemetry, configuration, and hardware management.
 
-# Development Getting Started
-We welcome contributions, so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
+## Features
 
-You can find our Getting Started Guide [here](docs/dev-guide.md).
+- Modular architecture for easy extension and customization
+- Type-checked protocols and sensor interfaces
+- Robust error handling and JSON-structured logging
+- Configuration management with validation
+- 100% test coverage with pytest
+- Designed for microcontroller resource constraints
 
-# Pysquared MkDocs Documentation
-You can use `make docs` to startup and serve a local version of the site in the `docs` folder. Note that at this time these docs may be out of date.
+## Quick Start
 
-## Supported Boards
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/proveskit/pysquared.git
+   cd pysquared
+   ```
 
-| Board Version | Proves Repo                          | Firmware                     |
-|---------------|--------------------------------------|------------------------------|
-| v4            | [proveskit/CircuitPython_RP2040_v4](https://github.com/proveskit/CircuitPython_RP2040_v4) | [proveskit_rp2040_v4](https://circuitpython.org/board/proveskit_rp2040_v4/) |
-| v5            | [proveskit/CircuitPython_RP2040_v5](https://github.com/proveskit/CircuitPython_RP2040_v5) | [proveskit_rp2040_v5](https://drive.google.com/file/d/1S_xKkCfLgaMHhTQQ2uGI1fz-TgWfvwOZ/view?usp=drive_link/) |
-| v5a           | [proveskit/CircuitPython_RP2350_v5a](https://github.com/proveskit/CircuitPython_RP2350_v5a) | [proveskit_rp2350A_V5a](https://github.com/proveskit/flight_controller_board/blob/main/Firmware/FC_FIRM_v5a_V1.uf2) |
+2. Install dependencies using `uv`:
+   ```bash
+   make
+   ```
+
+3. Run tests:
+   ```bash
+   make test
+   ```
+
+4. See [Getting Started](https://proveskit.github.io/pysquared/getting-started/) for more details.
+
+## Documentation
+
+- [Design Guide](https://proveskit.github.io/pysquared/design-guide/)
+- [Configuration](https://proveskit.github.io/pysquared/api/#pysquared.config)
+- [Error Handling & Logging](https://proveskit.github.io/pysquared/api/#pysquared.logger)
+- [API Reference](https://proveskit.github.io/pysquared/api/)
+- [Contributing](https://proveskit.github.io/pysquared/contributing/)
+
+## Supported Platforms
+
+- [PROVES Kit hardware](https://docs.proveskit.space/en/latest/)
+- Devices [supported by CircuitPython](https://circuitpython.org/downloads)
+
+## Contributing
+
+We welcome contributions! Please read our [contributing guide](https://proveskit.github.io/pysquared/contributing/) and [design guide](https://proveskit.github.io/pysquared/design-guide/) before submitting changes. If you have questions, open an issue or discussion.

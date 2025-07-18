@@ -1,3 +1,9 @@
+"""Unit tests for the Watchdog class.
+
+This module contains unit tests for the `Watchdog` class, which provides
+functionality for petting a watchdog timer to prevent system resets.
+"""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,11 +16,13 @@ from pysquared.watchdog import Watchdog
 
 @pytest.fixture
 def mock_pin() -> MagicMock:
+    """Mocks a microcontroller Pin."""
     return MagicMock(spec=Pin)
 
 
 @pytest.fixture
 def mock_logger() -> MagicMock:
+    """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
@@ -22,7 +30,13 @@ def mock_logger() -> MagicMock:
 def test_watchdog_init(
     mock_initialize_pin: MagicMock, mock_logger: MagicMock, mock_pin: MagicMock
 ) -> None:
-    """Test Watchdog initialization."""
+    """Tests Watchdog initialization.
+
+    Args:
+        mock_initialize_pin: Mocked initialize_pin function.
+        mock_logger: Mocked Logger instance.
+        mock_pin: Mocked Pin instance.
+    """
     mock_digital_in_out = MagicMock(spec=DigitalInOut)
     mock_initialize_pin.return_value = mock_digital_in_out
 
@@ -45,7 +59,14 @@ def test_watchdog_pet(
     mock_logger: MagicMock,
     mock_pin: MagicMock,
 ) -> None:
-    """Test Watchdog pet method using side_effect on sleep."""
+    """Tests Watchdog pet method using side_effect on sleep.
+
+    Args:
+        mock_initialize_pin: Mocked initialize_pin function.
+        mock_sleep: Mocked time.sleep function.
+        mock_logger: Mocked Logger instance.
+        mock_pin: Mocked Pin instance.
+    """
     mock_digital_in_out = MagicMock(spec=DigitalInOut)
     mock_initialize_pin.return_value = mock_digital_in_out
 
@@ -54,6 +75,7 @@ def test_watchdog_pet(
     value_during_sleep = None
 
     def check_value_and_sleep(_: float) -> None:
+        """Check the pin value and set it during sleep."""
         nonlocal value_during_sleep
         value_during_sleep = mock_digital_in_out.value
 
@@ -64,6 +86,6 @@ def test_watchdog_pet(
 
     mock_sleep.assert_called_once_with(0.01)
     assert value_during_sleep, "Watchdog pin value should be True when sleep is called"
-    assert (
-        mock_digital_in_out.value is False
-    ), "Watchdog pin value should be False after pet() finishes"
+    assert mock_digital_in_out.value is False, (
+        "Watchdog pin value should be False after pet() finishes"
+    )

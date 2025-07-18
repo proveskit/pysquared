@@ -1,3 +1,10 @@
+"""Unit tests for the Flag class in the NVM module.
+
+This module contains unit tests for the `Flag` class, which provides a persistent
+boolean flag stored in non-volatile memory (NVM). The tests cover flag
+initialization, getting and setting flag values, and handling of NVM availability.
+"""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,11 +15,18 @@ from pysquared.nvm.flag import Flag
 
 @pytest.fixture
 def setup_datastore():
+    """Sets up a mock datastore for NVM components."""
     return ByteArray(size=17)
 
 
 @patch("pysquared.nvm.flag.microcontroller")
 def test_init(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
+    """Tests Flag initialization.
+
+    Args:
+        mock_microcontroller: Mocked microcontroller module.
+        setup_datastore: Fixture providing the mock datastore.
+    """
     mock_microcontroller.nvm = (
         setup_datastore  # Mock the nvm module to use the ByteArray
     )
@@ -24,6 +38,12 @@ def test_init(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
 
 @patch("pysquared.nvm.flag.microcontroller")
 def test_get(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
+    """Tests getting the flag value.
+
+    Args:
+        mock_microcontroller: Mocked microcontroller module.
+        setup_datastore: Fixture providing the mock datastore.
+    """
     mock_microcontroller.nvm = (
         setup_datastore  # Mock the nvm module to use the ByteArray
     )
@@ -37,6 +57,12 @@ def test_get(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
 
 @patch("pysquared.nvm.flag.microcontroller")
 def test_toggle(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
+    """Tests toggling the flag value.
+
+    Args:
+        mock_microcontroller: Mocked microcontroller module.
+        setup_datastore: Fixture providing the mock datastore.
+    """
     mock_microcontroller.nvm = (
         setup_datastore  # Mock the nvm module to use the ByteArray
     )
@@ -61,6 +87,12 @@ def test_toggle(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
 
 @patch("pysquared.nvm.flag.microcontroller")
 def test_edge_cases(mock_microcontroller: MagicMock, setup_datastore: ByteArray):
+    """Tests edge cases for flag manipulation.
+
+    Args:
+        mock_microcontroller: Mocked microcontroller module.
+        setup_datastore: Fixture providing the mock datastore.
+    """
     mock_microcontroller.nvm = (
         setup_datastore  # Mock the nvm module to use the ByteArray
     )
@@ -77,6 +109,11 @@ def test_edge_cases(mock_microcontroller: MagicMock, setup_datastore: ByteArray)
 
 @patch("pysquared.nvm.flag.microcontroller")
 def test_counter_raises_error_when_nvm_is_none(mock_microcontroller: MagicMock):
+    """Tests that the Flag raises a ValueError when NVM is not available.
+
+    Args:
+        mock_microcontroller: Mocked microcontroller module.
+    """
     mock_microcontroller.nvm = None
 
     with pytest.raises(ValueError, match="nvm is not available"):
@@ -85,6 +122,11 @@ def test_counter_raises_error_when_nvm_is_none(mock_microcontroller: MagicMock):
 
 @patch("pysquared.nvm.flag.microcontroller")
 def test_get_name(mock_microcontroller: MagicMock):
+    """Tests the get_name method of the Flag class.
+
+    Args:
+        mock_microcontroller: Mocked microcontroller module.
+    """
     mock_microcontroller.nvm = (
         setup_datastore  # Mock the nvm module to use the ByteArray
     )

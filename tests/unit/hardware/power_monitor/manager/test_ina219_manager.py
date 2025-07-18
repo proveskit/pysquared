@@ -1,3 +1,10 @@
+"""Unit tests for the INA219Manager class.
+
+This module contains unit tests for the `INA219Manager` class, which manages
+the INA219 power monitor. The tests cover initialization, successful data
+retrieval, and error handling for bus voltage, shunt voltage, and current readings.
+"""
+
 from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
@@ -12,32 +19,53 @@ address: int = 123
 
 @pytest.fixture
 def mock_i2c():
+    """Fixture for mock I2C bus."""
     return MagicMock()
 
 
 @pytest.fixture
 def mock_logger():
+    """Fixture for mock Logger."""
     return MagicMock()
 
 
 @pytest.fixture
 def mock_ina219(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+    """Mocks the INA219 class.
+
+    Args:
+        mock_i2c: Mocked I2C bus.
+
+    Yields:
+        A MagicMock instance of INA219.
+    """
     with patch("pysquared.hardware.power_monitor.manager.ina219.INA219") as mock_class:
         mock_class.return_value = INA219(mock_i2c, address)
         yield mock_class
 
 
 def test_create_power_monitor(mock_ina219, mock_i2c, mock_logger):
-    """Test successful creation of an INA219 power monitor instance."""
+    """Tests successful creation of an INA219 power monitor instance.
+
+    Args:
+        mock_ina219: Mocked INA219 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     power_monitor = INA219Manager(mock_logger, mock_i2c, address)
 
     assert isinstance(power_monitor._ina219, INA219)
     mock_logger.debug.assert_called_once_with("Initializing INA219 power monitor")
 
 
-@pytest.mark.slow
-def test_create_with_retries(mock_ina219, mock_i2c, mock_logger):
-    """Test that initialization is retried when it fails."""
+def test_create_power_monitor_failed(mock_ina219, mock_i2c, mock_logger):
+    """Tests that initialization is retried when it fails.
+
+    Args:
+        mock_ina219: Mocked INA219 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     mock_ina219.side_effect = Exception("Simulated INA219 failure")
 
     # Verify that HardwareInitializationError is raised after retries
@@ -52,7 +80,13 @@ def test_create_with_retries(mock_ina219, mock_i2c, mock_logger):
 
 
 def test_get_bus_voltage_success(mock_ina219, mock_i2c, mock_logger):
-    """Test successful retrieval of the bus voltage."""
+    """Tests successful retrieval of the bus voltage.
+
+    Args:
+        mock_ina219: Mocked INA219 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     power_monitor = INA219Manager(mock_logger, mock_i2c, address)
     power_monitor._ina219 = MagicMock(spec=INA219)
     power_monitor._ina219.bus_voltage = MagicMock()
@@ -63,7 +97,13 @@ def test_get_bus_voltage_success(mock_ina219, mock_i2c, mock_logger):
 
 
 def test_get_bus_voltage_failure(mock_ina219, mock_i2c, mock_logger):
-    """Test handling of exceptions when retrieving the bus voltage."""
+    """Tests handling of exceptions when retrieving the bus voltage.
+
+    Args:
+        mock_ina219: Mocked INA219 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     power_monitor = INA219Manager(mock_logger, mock_i2c, address)
 
     # Configure the mock to raise an exception when accessing the bus_voltage property
@@ -79,7 +119,13 @@ def test_get_bus_voltage_failure(mock_ina219, mock_i2c, mock_logger):
 
 
 def test_get_shunt_voltage_success(mock_ina219, mock_i2c, mock_logger):
-    """Test successful retrieval of the shunt voltage."""
+    """Tests successful retrieval of the shunt voltage.
+
+    Args:
+        mock_ina219: Mocked INA219 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     power_monitor = INA219Manager(mock_logger, mock_i2c, address)
     power_monitor._ina219 = MagicMock(spec=INA219)
     power_monitor._ina219.shunt_voltage = MagicMock()
@@ -90,7 +136,13 @@ def test_get_shunt_voltage_success(mock_ina219, mock_i2c, mock_logger):
 
 
 def test_get_shunt_voltage_failure(mock_ina219, mock_i2c, mock_logger):
-    """Test handling of exceptions when retrieving the shunt voltage."""
+    """Tests handling of exceptions when retrieving the shunt voltage.
+
+    Args:
+        mock_ina219: Mocked INA219 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     power_monitor = INA219Manager(mock_logger, mock_i2c, address)
 
     # Configure the mock to raise an exception when accessing the shunt_voltage property
@@ -106,7 +158,13 @@ def test_get_shunt_voltage_failure(mock_ina219, mock_i2c, mock_logger):
 
 
 def test_get_current_success(mock_ina219, mock_i2c, mock_logger):
-    """Test successful retrieval of the current."""
+    """Tests successful retrieval of the current.
+
+    Args:
+        mock_ina219: Mocked INA219 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     power_monitor = INA219Manager(mock_logger, mock_i2c, address)
     power_monitor._ina219 = MagicMock(spec=INA219)
     power_monitor._ina219.current = MagicMock()
@@ -117,7 +175,13 @@ def test_get_current_success(mock_ina219, mock_i2c, mock_logger):
 
 
 def test_get_current_failure(mock_ina219, mock_i2c, mock_logger):
-    """Test handling of exceptions when retrieving the current."""
+    """Tests handling of exceptions when retrieving the current.
+
+    Args:
+        mock_ina219: Mocked INA219 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
     power_monitor = INA219Manager(mock_logger, mock_i2c, address)
 
     # Configure the mock to raise an exception when accessing the current property

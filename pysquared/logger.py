@@ -1,10 +1,15 @@
-"""
-logger Module
-=============
+"""This module provides a Logger class for handling logging messages.
 
-Logger class for handling logging messages with different severity levels.
-Logs can be output to standard output or saved to a file (functionality to be implemented).
-Includes colorized output and error counting.
+The Logger class supports different severity levels, colorized output, and error
+counting. Logs are formatted as JSON and can be output to the console.
+
+**Usage:**
+```python
+error_counter = Counter(nvm)
+logger = Logger(error_counter, log_level=LogLevel.INFO, colorized=True)
+logger.info("This is an informational message.")
+logger.error("This is an error message.", err=Exception("Something went wrong."))
+```
 """
 
 import json
@@ -69,14 +74,7 @@ class LogLevel:
 
 
 class Logger:
-    """
-    Logger class for handling logging messages with different severity levels.
-
-    Attributes:
-        _error_counter (Counter): Counter for error occurrences.
-        _log_level (int): Current log level.
-        colorized (bool): Whether to colorize output.
-    """
+    """Handles logging messages with different severity levels."""
 
     def __init__(
         self,
@@ -109,13 +107,21 @@ class Logger:
         return level_value >= self._log_level
 
     def _is_valid_json_type(self, object) -> bool:
+        """Checks if the object is a valid JSON type.
+
+        Args:
+            object: The object to check.
+
+        Returns:
+            True if the object is a valid JSON type, False otherwise.
+        """
         valid_types = {dict, list, tuple, str, int, float, bool, None}
 
         return type(object) in valid_types
 
     def _log(self, level: str, level_value: int, message: str, **kwargs) -> None:
         """
-        Log a message with a given severity level and any addional key/values.
+        Log a message with a given severity level and any additional key/values.
 
         Args:
             level (str): The severity level as a string.
@@ -165,7 +171,7 @@ class Logger:
                 )
             print(json_output)
 
-    def debug(self, message: str, **kwargs) -> None:
+    def debug(self, message: str, **kwargs: object) -> None:
         """
         Log a message with severity level DEBUG.
 
@@ -175,7 +181,7 @@ class Logger:
         """
         self._log("DEBUG", 1, message, **kwargs)
 
-    def info(self, message: str, **kwargs) -> None:
+    def info(self, message: str, **kwargs: object) -> None:
         """
         Log a message with severity level INFO.
 
@@ -185,7 +191,7 @@ class Logger:
         """
         self._log("INFO", 2, message, **kwargs)
 
-    def warning(self, message: str, **kwargs) -> None:
+    def warning(self, message: str, **kwargs: object) -> None:
         """
         Log a message with severity level WARNING.
 
@@ -195,7 +201,7 @@ class Logger:
         """
         self._log("WARNING", 3, message, **kwargs)
 
-    def error(self, message: str, err: Exception, **kwargs) -> None:
+    def error(self, message: str, err: Exception, **kwargs: object) -> None:
         """
         Log a message with severity level ERROR.
 
@@ -208,7 +214,7 @@ class Logger:
         self._error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
 
-    def critical(self, message: str, err: Exception, **kwargs) -> None:
+    def critical(self, message: str, err: Exception, **kwargs: object) -> None:
         """
         Log a message with severity level CRITICAL.
 
