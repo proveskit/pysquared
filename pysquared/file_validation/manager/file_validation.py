@@ -118,16 +118,14 @@ class FileValidationManager:
 
             try:
                 for item in os.listdir(current_path):
-                    # Skip hidden files
-                    if item.startswith("."):
-                        continue
-
                     # Build paths
                     item_path = f"{current_path}/{item}" if current_path else item
                     item_relative = f"{relative_path}/{item}" if relative_path else item
 
-                    # Skip excluded patterns
-                    if any(pattern in item_relative for pattern in exclude_patterns):
+                    # Skip hidden files and excluded patterns
+                    if item.startswith(".") or any(
+                        pattern in item_relative for pattern in exclude_patterns
+                    ):
                         continue
 
                     # Determine if item is directory or file
