@@ -6,17 +6,12 @@ for creating checksums, validating file integrity, and assessing codebase comple
 """
 
 import os
+import time
 
-try:
-    from typing import TYPE_CHECKING
-except ImportError:
-    TYPE_CHECKING = False
+import adafruit_hashlib
 
 from ...logger import Logger
 from ...protos.file_validation import FileValidationProto
-
-if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Tuple
 
 
 class FileValidationManager(FileValidationProto):
@@ -56,8 +51,8 @@ class FileValidationManager(FileValidationProto):
 
     # Removed the unused _calculate_checksum method to eliminate dead code.
     def _walk_directory(
-        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
-    ) -> "List[str]":
+        self, base_path: str, exclude_patterns: list | None = None
+    ) -> list:
         """Walk directory iteratively and return all file paths (CircuitPython compatible).
 
         :param str base_path: The base directory to walk.
@@ -100,19 +95,16 @@ class FileValidationManager(FileValidationProto):
 
         return file_paths
 
-    def _create_sha256_checksum_adafruit(self, file_path: str, timeout: float) -> str:
-        """Create SHA256 checksum using adafruit_hashlib.
+    def _create_checksum(self, file_path: str, algorithm: str, timeout: float) -> str:
+        """Create checksum using adafruit_hashlib.
 
         :param str file_path: The path to the file to checksum.
+        :param str algorithm: The hash algorithm to use.
         :param float timeout: Maximum time to allow for reading the file.
-        :return: The SHA256 checksum as a hexadecimal string.
+        :return: The checksum as a hexadecimal string.
         :raises TimeoutError: If reading the file takes longer than the timeout.
         """
-        import time
-
-        import adafruit_hashlib  # type: ignore[import]
-
-        hash_sha256 = adafruit_hashlib.new("sha256")
+        hash_obj = adafruit_hashlib.new(algorithm)
         with open(file_path, "rb") as f:
             start_time = time.monotonic()
             while True:
@@ -123,39 +115,17 @@ class FileValidationManager(FileValidationProto):
                 chunk = f.read(4096)
                 if not chunk:  # Empty chunk means end of file
                     break
-                hash_sha256.update(chunk)
-        return hash_sha256.hexdigest()
+                hash_obj.update(chunk)
+        return hash_obj.hexdigest()
 
-    def _create_sha256_checksum_hashlib(self, file_path: str, timeout: float) -> str:
-        """Create SHA256 checksum using standard hashlib.
-
-        :param str file_path: The path to the file to checksum.
-        :param float timeout: Maximum time to allow for reading the file.
-        :return: The SHA256 checksum as a hexadecimal string.
-        :raises TimeoutError: If reading the file takes longer than the timeout.
-        """
-        import hashlib
-        import time
-
-        hash_sha256 = hashlib.sha256()
-        with open(file_path, "rb") as f:
-            start_time = time.monotonic()
-            while True:
-                if time.monotonic() - start_time > timeout:
-                    raise TimeoutError(
-                        f"File read operation timed out after {timeout} seconds"
-                    )
-                chunk = f.read(4096)
-                if not chunk:  # Empty chunk means end of file
-                    break
-                hash_sha256.update(chunk)
-        return hash_sha256.hexdigest()
-
-    def create_file_checksum(self, file_path: str, timeout: float = 5.0) -> str:
+    def create_file_checksum(
+        self, file_path: str, timeout: float = 5.0, algorithm: str = "md5"
+    ) -> str:
         """Create a checksum for a single file.
 
         :param str file_path: The path to the file to checksum.
         :param float timeout: Maximum time (in seconds) to allow for reading the file. Default is 5 seconds.
+        :param str algorithm: Hash algorithm to use ('md5', 'sha1', 'sha224', 'sha256', 'sha512'). Default is 'md5' for speed.
         :return: The checksum of the file as a hexadecimal string.
         :rtype: str
         :raises Exception: If there is an error reading the file or creating the checksum.
@@ -165,15 +135,13 @@ class FileValidationManager(FileValidationProto):
             if not self._file_exists(file_path):
                 raise Exception(f"File not found: {file_path}")
 
-            # Try to use adafruit_hashlib first (CircuitPython)
-            try:
-                checksum_str = self._create_sha256_checksum_adafruit(file_path, timeout)
-            except ImportError:
-                # Fallback to standard hashlib
-                checksum_str = self._create_sha256_checksum_hashlib(file_path, timeout)
+            checksum_str = self._create_checksum(file_path, algorithm, timeout)
 
             self._log.debug(
-                "Created checksum for file", file_path=file_path, checksum=checksum_str
+                "Created checksum for file",
+                file_path=file_path,
+                checksum=checksum_str,
+                algorithm=algorithm,
             )
             return checksum_str
 
@@ -196,15 +164,13 @@ class FileValidationManager(FileValidationProto):
 
     def _process_single_file_checksum(
         self, base_path: str, relative_path: str
-    ) -> "Optional[str]":
+    ) -> str | None:
         """Process a single file to create its checksum.
 
         :param str base_path: The base directory path.
         :param str relative_path: The relative path of the file.
         :return: The checksum if successful, None if failed.
         """
-        import gc
-
         # Construct full path
         full_path = base_path + "/" + relative_path if base_path else relative_path
 
@@ -220,11 +186,17 @@ class FileValidationManager(FileValidationProto):
             return None
         finally:
             # Force garbage collection after each file to prevent memory buildup
-            gc.collect()
+            try:
+                import gc
+
+                gc.collect()
+            except ImportError:
+                # gc module not available in some CircuitPython environments
+                pass
 
     def create_codebase_checksum(
-        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
-    ) -> "Dict[str, str]":
+        self, base_path: str, exclude_patterns: list | None = None
+    ) -> dict:
         """Create checksums for all files in the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -302,8 +274,8 @@ class FileValidationManager(FileValidationProto):
                 raise
 
     def validate_codebase_integrity(
-        self, base_path: str, expected_checksums: "Dict[str, str]"
-    ) -> "Tuple[bool, List[str]]":
+        self, base_path: str, expected_checksums: dict
+    ) -> tuple:
         """Validate the integrity of all files in the codebase against expected checksums.
 
         :param str base_path: The base directory path to scan for files.
@@ -354,9 +326,7 @@ class FileValidationManager(FileValidationProto):
             )
             raise
 
-    def get_missing_files(
-        self, base_path: str, expected_files: "List[str]"
-    ) -> "List[str]":
+    def get_missing_files(self, base_path: str, expected_files: list) -> list:
         """Get a list of files that are expected but missing from the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -388,9 +358,7 @@ class FileValidationManager(FileValidationProto):
             )
             raise
 
-    def get_extra_files(
-        self, base_path: str, expected_files: "List[str]"
-    ) -> "List[str]":
+    def get_extra_files(self, base_path: str, expected_files: list) -> list:
         """Get a list of files that exist but are not in the expected file list.
 
         :param str base_path: The base directory path to scan for files.
@@ -423,8 +391,8 @@ class FileValidationManager(FileValidationProto):
             raise
 
     def assess_codebase_completeness(
-        self, base_path: str, expected_checksums: "Dict[str, str]"
-    ) -> "Dict[str, Any]":
+        self, base_path: str, expected_checksums: dict
+    ) -> dict:
         """Assess the completeness and integrity of the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -520,7 +488,7 @@ class FileValidationManager(FileValidationProto):
                 raise
 
     def get_codebase_size(
-        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
+        self, base_path: str, exclude_patterns: list | None = None
     ) -> int:
         """Get the total size of all files in the codebase.
 

@@ -10,25 +10,30 @@ except ImportError:
     TYPE_CHECKING = False
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Tuple
+    pass
 
 
 class FileValidationProto:
     """Protocol defining the interface for file validation operations."""
 
-    def create_file_checksum(self, file_path: str) -> str:
+    def create_file_checksum(
+        self, file_path: str, timeout: float = 5.0, algorithm: str = "md5"
+    ) -> str:
         """Create a checksum for a single file.
 
         :param str file_path: The path to the file to checksum.
+        :param float timeout: Maximum time (in seconds) to allow for reading the file. Default is 5 seconds.
+        :param str algorithm: Hash algorithm to use ('md5', 'sha1', 'sha224', 'sha256', 'sha512'). Default is 'md5' for speed.
         :return: The checksum of the file as a hexadecimal string.
         :rtype: str
         :raises Exception: If there is an error reading the file or creating the checksum.
+        :raises TimeoutError: If reading the file takes longer than the timeout.
         """
         ...
 
     def create_codebase_checksum(
-        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
-    ) -> "Dict[str, str]":
+        self, base_path: str, exclude_patterns: list | None = None
+    ) -> dict:
         """Create checksums for all files in the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -51,8 +56,8 @@ class FileValidationProto:
         ...
 
     def validate_codebase_integrity(
-        self, base_path: str, expected_checksums: "Dict[str, str]"
-    ) -> "Tuple[bool, List[str]]":
+        self, base_path: str, expected_checksums: dict
+    ) -> tuple:
         """Validate the integrity of all files in the codebase against expected checksums.
 
         :param str base_path: The base directory path to scan for files.
@@ -63,9 +68,7 @@ class FileValidationProto:
         """
         ...
 
-    def get_missing_files(
-        self, base_path: str, expected_files: "List[str]"
-    ) -> "List[str]":
+    def get_missing_files(self, base_path: str, expected_files: list) -> list:
         """Get a list of files that are expected but missing from the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -76,9 +79,7 @@ class FileValidationProto:
         """
         ...
 
-    def get_extra_files(
-        self, base_path: str, expected_files: "List[str]"
-    ) -> "List[str]":
+    def get_extra_files(self, base_path: str, expected_files: list) -> list:
         """Get a list of files that exist but are not in the expected file list.
 
         :param str base_path: The base directory path to scan for files.
@@ -90,8 +91,8 @@ class FileValidationProto:
         ...
 
     def assess_codebase_completeness(
-        self, base_path: str, expected_checksums: "Dict[str, str]"
-    ) -> "Dict[str, Any]":
+        self, base_path: str, expected_checksums: dict
+    ) -> dict:
         """Assess the completeness and integrity of the codebase.
 
         :param str base_path: The base directory path to scan for files.
@@ -120,7 +121,7 @@ class FileValidationProto:
         ...
 
     def get_codebase_size(
-        self, base_path: str, exclude_patterns: "Optional[List[str]]" = None
+        self, base_path: str, exclude_patterns: list | None = None
     ) -> int:
         """Get the total size of all files in the codebase.
 

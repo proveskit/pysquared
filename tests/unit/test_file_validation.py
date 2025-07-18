@@ -18,6 +18,18 @@ class TestFileValidationManager(unittest.TestCase):
     def test_create_file_checksum_success(self):
         """Test successful file checksum creation."""
         test_content = b"Hello, World!"
+        # MD5 checksum of 'Hello, World!' is 65a8e27d8879283831b664bd8b7f0ad4
+        expected_checksum = "65a8e27d8879283831b664bd8b7f0ad4"
+
+        with patch("builtins.open", mock_open(read_data=test_content)):
+            with patch.object(self.file_validator, "_file_exists", return_value=True):
+                checksum = self.file_validator.create_file_checksum("test.txt")
+
+        self.assertEqual(checksum, expected_checksum)
+
+    def test_create_file_checksum_sha256(self):
+        """Test SHA256 file checksum creation."""
+        test_content = b"Hello, World!"
         # SHA256 checksum of 'Hello, World!' is dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f
         expected_checksum = (
             "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f"
@@ -25,7 +37,9 @@ class TestFileValidationManager(unittest.TestCase):
 
         with patch("builtins.open", mock_open(read_data=test_content)):
             with patch.object(self.file_validator, "_file_exists", return_value=True):
-                checksum = self.file_validator.create_file_checksum("test.txt")
+                checksum = self.file_validator.create_file_checksum(
+                    "test.txt", algorithm="sha256"
+                )
 
         self.assertEqual(checksum, expected_checksum)
 
@@ -127,6 +141,7 @@ class TestFileValidationManager(unittest.TestCase):
         expected_checksums = {"file1.txt": "checksum1", "file2.txt": "checksum2"}
 
         def mock_validate(file_path, checksum):
+            """Mock validation function that only validates the first file."""
             return file_path.endswith("file1.txt")  # Only first file is valid
 
         with patch.object(
@@ -144,6 +159,7 @@ class TestFileValidationManager(unittest.TestCase):
         expected_files = ["file1.txt", "file2.txt", "file3.txt"]
 
         def mock_exists(file_path):
+            """Mock file existence function that only returns True for first two files."""
             return file_path.endswith("file1.txt") or file_path.endswith("file2.txt")
 
         with patch.object(self.file_validator, "_file_exists", side_effect=mock_exists):
