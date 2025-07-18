@@ -135,13 +135,15 @@ class FCBoard:
             self.ser.close()
             raise e
 
+
+
     
-    def reset_repl(self):
-        self.send_command_to_board('\04')
-        time.sleep(1)
+    def soft_reset(self):
         self.send_command_to_board('\03')
         time.sleep(1)
-        self.send_command_to_board('a')
+        self.send_command_to_board('\04')
+        time.sleep(1)
+
                 
 
 
