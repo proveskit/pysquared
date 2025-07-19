@@ -288,13 +288,7 @@ class FileValidationManager:
             return None
         finally:
             # Force garbage collection after each file to prevent memory buildup
-            try:
-                import gc
-
-                gc.collect()
-            except ImportError:
-                # gc module not available in some CircuitPython environments
-                pass
+            gc.collect()
 
     def create_codebase_checksum(
         self, base_path: str, exclude_patterns: list | None = None
