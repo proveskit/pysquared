@@ -29,9 +29,9 @@ Set up your development environment by following the instructions in your OS spe
 
 ??? note "Windows Guide"
 
-    1. **Install Git**: Download and install Git from [git-scm.com](https://git-scm.com/downloads). Make sure to also install the Git Bash terminal during the setup process.
-    1. **Install Putty**: Download and install Putty from [putty.org](https://putty.org/).
-    1. **Install Chocolatey**: Chocolatey is a package manager for Windows. Follow the instructions on [chocolatey.org](https://chocolatey.org/install) to install it.
+    1. **Install Git**: Download and install the version control system [Git](https://git-scm.com/downloads). Make sure to also install the Git Bash terminal during the setup process.
+    1. **Install Putty**: Download and install [Putty](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html).
+    1. **Install Chocolatey**: Download and install the Windows package manager [chocolatey](https://chocolatey.org/install).
     1. **Install Required Packages**: Open a command prompt or Git Bash terminal and run the following command to install required packages:
         ```sh
         choco install make rsync zip
