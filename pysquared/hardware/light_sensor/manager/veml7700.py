@@ -28,6 +28,7 @@ class VEML7700Manager(LightSensorProto):
         self,
         logger: Logger,
         i2c: I2C,
+        integration_time: int = VEML7700.ALS_25MS,
     ) -> None:
         """Initializes the VEML7700Manager.
 
@@ -44,7 +45,7 @@ class VEML7700Manager(LightSensorProto):
         try:
             self._log.debug("Initializing light sensor")
             self._light_sensor: VEML7700 = VEML7700(i2c)
-            self._light_sensor.light_integration_time = VEML7700.ALS_25MS
+            self._light_sensor.light_integration_time = integration_time
         except Exception as e:
             raise HardwareInitializationError(
                 "Failed to initialize light sensor"
