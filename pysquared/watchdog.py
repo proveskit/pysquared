@@ -9,7 +9,7 @@ from digitalio import DigitalInOut, Direction
 from microcontroller import Pin
 
 from .hardware.digitalio import initialize_pin
-from .logger import Logger
+from .logger.logger_proto import LoggerProto
 
 
 class Watchdog:
@@ -21,7 +21,7 @@ class Watchdog:
         _digital_in_out (DigitalInOut): Digital output for controlling the watchdog pin.
     """
 
-    def __init__(self, logger: Logger, pin: Pin) -> None:
+    def __init__(self, logger: LoggerProto, pin: Pin) -> None:
         """
         Initializes the Watchdog timer.
 

@@ -8,7 +8,7 @@ import time
 from busio import I2C, SPI
 from microcontroller import Pin
 
-from ..logger import Logger
+from ..logger.logger_proto import LoggerProto
 from .exception import HardwareInitializationError
 
 try:
@@ -18,7 +18,7 @@ except ImportError:
 
 
 def initialize_spi_bus(
-    logger: Logger,
+    logger: LoggerProto,
     clock: Pin,
     mosi: Optional[Pin] = None,
     miso: Optional[Pin] = None,
@@ -62,7 +62,7 @@ def initialize_spi_bus(
 
 
 def _spi_init(
-    logger: Logger,
+    logger: LoggerProto,
     clock: Pin,
     mosi: Optional[Pin] = None,
     miso: Optional[Pin] = None,
@@ -91,7 +91,7 @@ def _spi_init(
 
 
 def _spi_configure(
-    logger: Logger,
+    logger: LoggerProto,
     spi: SPI,
     baudrate: Optional[int],
     phase: Optional[int],
@@ -141,7 +141,7 @@ def _spi_configure(
 
 
 def initialize_i2c_bus(
-    logger: Logger,
+    logger: LoggerProto,
     scl: Pin,
     sda: Pin,
     frequency: Optional[int],

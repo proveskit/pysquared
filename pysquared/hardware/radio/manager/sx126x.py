@@ -26,7 +26,7 @@ from proves_sx126._sx126x import ERR_NONE
 from proves_sx126.sx1262 import SX1262
 
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
 
@@ -44,7 +44,7 @@ class SX126xManager(BaseRadioManager):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         radio_config: RadioConfig,
         spi: SPI,
         chip_select: DigitalInOut,

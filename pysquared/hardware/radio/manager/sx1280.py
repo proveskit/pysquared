@@ -25,7 +25,7 @@ from proves_sx1280.sx1280 import SX1280
 
 from pysquared.config.radio import RadioConfig
 
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ..modulation import LoRa, RadioModulation
 from .base import BaseRadioManager
 
@@ -43,7 +43,7 @@ class SX1280Manager(BaseRadioManager):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         radio_config: RadioConfig,
         spi: SPI,
         chip_select: DigitalInOut,

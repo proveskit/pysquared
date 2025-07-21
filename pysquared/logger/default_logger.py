@@ -1,84 +1,19 @@
-"""This module provides a Logger class for handling logging messages.
-
-The Logger class supports different severity levels, colorized output, and error
-counting. Logs are formatted as JSON and can be output to the console.
-
-**Usage:**
-```python
-error_counter = Counter(nvm)
-logger = Logger(error_counter, log_level=LogLevel.INFO, colorized=True)
-logger.info("This is an informational message.")
-logger.error("This is an error message.", err=Exception("Something went wrong."))
-```
-"""
+"""Default logger implementation."""
 
 import json
 import time
 import traceback
 from collections import OrderedDict
 
-from .nvm.counter import Counter
+from .log_level import LogLevel
+from .logger_proto import LoggerProto
 
 
-def _color(msg, color="gray", fmt="normal") -> str:
-    """
-    Returns a colorized string for terminal output.
-
-    Args:
-        msg (str): The message to colorize.
-        color (str): The color name.
-        fmt (str): The formatting style.
-
-    Returns:
-        str: The colorized message.
-    """
-    _h = "\033["
-    _e = "\033[0;39;49m"
-
-    _c = {
-        "red": "1",
-        "green": "2",
-        "orange": "3",
-        "blue": "4",
-        "pink": "5",
-        "teal": "6",
-        "white": "7",
-        "gray": "9",
-    }
-
-    _f = {"normal": "0", "bold": "1", "ulined": "4"}
-    return _h + _f[fmt] + ";3" + _c[color] + "m" + msg + _e
-
-
-LogColors = {
-    "NOTSET": "NOTSET",
-    "DEBUG": _color(msg="DEBUG", color="blue"),
-    "INFO": _color(msg="INFO", color="green"),
-    "WARNING": _color(msg="WARNING", color="orange"),
-    "ERROR": _color(msg="ERROR", color="pink"),
-    "CRITICAL": _color(msg="CRITICAL", color="red"),
-}
-
-
-class LogLevel:
-    """
-    Defines log level constants for Logger.
-    """
-
-    NOTSET = 0
-    DEBUG = 1
-    INFO = 2
-    WARNING = 3
-    ERROR = 4
-    CRITICAL = 5
-
-
-class Logger:
+class DefaultLogger(LoggerProto):
     """Handles logging messages with different severity levels."""
 
     def __init__(
         self,
-        error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
     ) -> None:
@@ -86,13 +21,44 @@ class Logger:
         Initializes the Logger instance.
 
         Args:
-            error_counter (Counter): Counter for error occurrences.
             log_level (int): Initial log level.
             colorized (bool): Whether to colorize output.
         """
-        self._error_counter: Counter = error_counter
         self._log_level: int = log_level
-        self.colorized: bool = colorized
+        self._colorized: bool = colorized
+
+    @staticmethod
+    def _color(msg, color="gray", fmt="normal") -> str:
+        """
+        Returns a colorized string for terminal output.
+
+        Args:
+            msg (str): The message to colorize.
+            color (str): The color name.
+            fmt (str): The formatting style.
+
+        Returns:
+            str: The colorized message.
+        """
+
+        _c = {
+            "red": "1",
+            "green": "2",
+            "orange": "3",
+            "blue": "4",
+            "gray": "9",
+        }
+
+        return "\033[0;3" + _c[color] + "m" + msg + "\033[0;39;49m"
+
+    log_colors = {
+        "NOTSET": "NOTSET",
+        "DEBUG": _color(msg="DEBUG", color="blue"),
+        "INFO": _color(msg="INFO", color="green"),
+        "WARNING": _color(msg="WARNING", color="orange"),
+        "ERROR": _color(msg="ERROR", color="pink"),
+        "CRITICAL": _color(msg="CRITICAL", color="red"),
+    }
 
     def _can_print_this_level(self, level_value: int) -> bool:
         """
@@ -165,9 +131,9 @@ class Logger:
             )
 
         if self._can_print_this_level(level_value):
-            if self.colorized:
+            if self._colorized:
                 json_output = json_output.replace(
-                    f'"level": "{level}"', f'"level": "{LogColors[level]}"'
+                    f'"level": "{level}"', f'"level": "{self.log_colors[level]}"'
                 )
             print(json_output)
 
@@ -211,7 +177,6 @@ class Logger:
             **kwargs: Additional key/value pairs to include in the log.
         """
         kwargs["err"] = traceback.format_exception(err)
-        self._error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
 
     def critical(self, message: str, err: Exception, **kwargs: object) -> None:
@@ -224,14 +189,4 @@ class Logger:
             **kwargs: Additional key/value pairs to include in the log.
         """
         kwargs["err"] = traceback.format_exception(err)
-        self._error_counter.increment()
         self._log("CRITICAL", 5, message, **kwargs)
-
-    def get_error_count(self) -> int:
-        """
-        Returns the current error count.
-
-        Returns:
-            int: The number of errors logged.
-        """
-        return self._error_counter.get()

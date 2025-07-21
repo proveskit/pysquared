@@ -27,7 +27,7 @@ except ImportError:
     from adafruit_rfm.rfm9xfsk import RFM9xFSK
 
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
-from ....logger import Logger
+from ....logger.logger_proto import LoggerProto
 from ....protos.temperature_sensor import TemperatureSensorProto
 from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
@@ -46,7 +46,7 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
 
     def __init__(
         self,
-        logger: Logger,
+        logger: LoggerProto,
         radio_config: RadioConfig,
         spi: SPI,
         chip_select: DigitalInOut,
