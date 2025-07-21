@@ -8,5 +8,6 @@
     "sonarlint.connectedMode.project": {
         "connectionId": "proves-kit",
         "projectKey": "proveskit_circuitpy_flight_software"
-    }
+    },
+    "makefile.configureOnOpen": false
 }
