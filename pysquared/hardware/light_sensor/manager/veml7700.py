@@ -94,21 +94,16 @@ class VEML7700Manager(LightSensorProto):
         Returns:
             True if the self-test passes, False otherwise.
         """
-        try:
-            # Attempt to read a value from the sensor
-            if self.get_auto_lux() == 0 or None:
-                self._log.warning("Light sensor self-test failed: No valid reading")
-                self.is_valid = False
-                return False
-            # If we can read a value, the sensor is likely functioning
-            self._log.debug("Light sensor self-test passed")
-            self.is_valid = True
-            return True
-
-        except Exception as e:
-            self._log.error("Light sensor self-test failed:", e)
+        # Attempt to read a value from the sensor
+        lux = self.get_auto_lux()
+        if lux is None or lux == 0:
+            self._log.warning("Light sensor self-test failed: No valid reading")
             self.is_valid = False
             return False
+        # If we can read a value, the sensor is likely functioning
+        self._log.debug("Light sensor self-test passed")
+        self.is_valid = True
+        return True
 
     def reset(self) -> None:
         """Resets the light sensor."""
