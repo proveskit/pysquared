@@ -1,6 +1,6 @@
 """This module defines the `VEML7700Manager` class, which provides a high-level interface
-for interacting with the LIS2MDL magnetometer. It handles the initialization of the sensor
-and provides a method for reading the magnetic field vector.
+for interacting with the VEML7700 light sensor. It handles the initialization of the sensor
+and provides methods for reading light levels in various formats.
 
 **Usage:**
 ```python
