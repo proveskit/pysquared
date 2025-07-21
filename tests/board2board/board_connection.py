@@ -1,3 +1,4 @@
+from this import d
 import serial
 import time
 import os
@@ -34,6 +35,8 @@ class FCBoard:
             # Start the reader thread
             self.start_reader_thread()
 
+            print("Reader thread started")
+
         except KeyboardInterrupt:
             print("\nExiting...")
 
@@ -47,6 +50,10 @@ class FCBoard:
             self.send_command_to_board('\03')
             time.sleep(1)
             self.send_command_to_board('a')
+
+    def send_control_c(self):
+            # need to send this to start the board
+            self.send_command_to_board('\03')
 
     
     def reader_worker(self):
@@ -136,6 +143,13 @@ class FCBoard:
             raise e
 
 
+    def enter_ground_station(self):
+        self.send_command_to_board('\03')
+        time.sleep(1)
+        self.send_command_to_board('\04')
+        time.sleep(1)
+        self.send_command_to_board('\n')
+        self.send_command_to_board('e')
 
     
     def soft_reset(self):
