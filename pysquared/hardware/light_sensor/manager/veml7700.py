@@ -35,6 +35,7 @@ class VEML7700Manager(LightSensorProto):
         Args:
             logger: The logger to use.
             i2c: The I2C bus connected to the chip.
+            integration_time: The integration time for the light sensor (default is 25ms).
 
         Raises:
             HardwareInitializationError: If the light sensor fails to initialize.
