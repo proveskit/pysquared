@@ -14,6 +14,11 @@ temperature = temp_sensor.get_temperature()
 from adafruit_mcp9808 import MCP9808
 from busio import I2C
 
+try:
+    from typing_extensions import Literal
+except ImportError:
+    pass
+
 from ....logger import Logger
 from ....protos.temperature_sensor import TemperatureSensorProto
 from ...exception import HardwareInitializationError
@@ -27,6 +32,7 @@ class MCP9808Manager(TemperatureSensorProto):
         logger: Logger,
         i2c: I2C,
         addr: int = 0x18,
+        resolution: Literal[0, 1, 2, 3] = 1,
     ) -> None:
         """Initializes the MCP9808Manager.
 
@@ -34,6 +40,15 @@ class MCP9808Manager(TemperatureSensorProto):
             logger: The logger to use.
             i2c: The I2C bus connected to the chip.
             addr: The I2C address of the MCP9808. Defaults to 0x18.
+            resolution: The resolution of the temperature sensor. Defaults to 1 which is 0.25 degrees celsius.
+            =======   ============   ==============
+            Value     Resolution     Reading Time
+            =======   ============   ==============
+            0          0.5°C            30 ms
+            1          0.25°C           65 ms
+            2         0.125°C          130 ms
+            3         0.0625°C         250 ms
+            =======   ============   ==============
 
         Raises:
             HardwareInitializationError: If the MCP9808 fails to initialize.
@@ -46,6 +61,8 @@ class MCP9808Manager(TemperatureSensorProto):
             raise HardwareInitializationError(
                 "Failed to initialize MCP9808 temperature sensor"
             ) from e
+
+        self._mcp9808.resolution = resolution
 
     def get_temperature(self) -> float | None:
         """Gets the temperature reading from the MCP9808.
