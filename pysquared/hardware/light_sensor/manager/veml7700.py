@@ -15,7 +15,6 @@ lux_data = light_sensor.get_lux()
 import time
 
 from adafruit_veml7700 import VEML7700
-from busio import I2C
 
 from ....logger import Logger
 from ....protos.light_sensor import LightSensorProto
@@ -28,7 +27,7 @@ class VEML7700Manager(LightSensorProto):
     def __init__(
         self,
         logger: Logger,
-        i2c: I2C | TCA9548A_Channel,
+        i2c,
         integration_time: int = VEML7700.ALS_25MS,
     ) -> None:
         """Initializes the VEML7700Manager.
