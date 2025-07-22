@@ -9,5 +9,5 @@
         "connectionId": "proves-kit",
         "projectKey": "proveskit_circuitpy_flight_software"
     },
-    "makefile.configureOnOpen": false
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
 }
