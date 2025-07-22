@@ -42,12 +42,14 @@ class VEML7700Manager(LightSensorProto):
         """
         self._log: Logger = logger
         self.is_valid: bool = False
+        self._i2c = i2c
 
         try:
             self._log.debug("Initializing light sensor")
             self._light_sensor: VEML7700 = VEML7700(i2c)
             self._light_sensor.light_integration_time = integration_time
         except Exception as e:
+            self._i2c.unlock()
             raise HardwareInitializationError(
                 "Failed to initialize light sensor"
             ) from e
@@ -62,6 +64,7 @@ class VEML7700Manager(LightSensorProto):
             return self._light_sensor.light
         except Exception as e:
             self._log.error("Failed to get light reading:", e)
+            self._i2c.unlock()
             return None
 
     def get_lux(self) -> float | None:
@@ -74,6 +77,7 @@ class VEML7700Manager(LightSensorProto):
             return self._light_sensor.lux
         except Exception as e:
             self._log.error("Failed to get lux reading:", e)
+            self._i2c.unlock()
             return None
 
     def get_auto_lux(self) -> float | None:
@@ -88,6 +92,7 @@ class VEML7700Manager(LightSensorProto):
             return self._light_sensor.autolux
         except Exception as e:
             self._log.error("Failed to get auto lux reading:", e)
+            self._i2c.unlock()
             return None
 
     def self_test(self) -> bool:
@@ -116,3 +121,4 @@ class VEML7700Manager(LightSensorProto):
             self._log.debug("Light sensor reset successfully")
         except Exception as e:
             self._log.error("Failed to reset light sensor:", e)
+            self._i2c.unlock()
