@@ -19,7 +19,7 @@ class LightSensorProto:
         Raises:
             SensorReadingValueError: If the reading returns an invalid value.
             SensorReadingTimeoutError: If the reading times out.
-            SensorReadingUnknownError: If an unknown error occurs while reading the magnetometer.
+            SensorReadingUnknownError: If an unknown error occurs while reading the light sensor.
         """
         ...
 
@@ -32,6 +32,6 @@ class LightSensorProto:
         Raises:
             SensorReadingValueError: If the reading returns an invalid value.
             SensorReadingTimeoutError: If the reading times out.
-            SensorReadingUnknownError: If an unknown error occurs while reading the magnetometer.
+            SensorReadingUnknownError: If an unknown error occurs while reading the light sensor.
         """
         ...

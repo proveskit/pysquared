@@ -130,8 +130,14 @@ class VEML7700Manager(LightSensorProto):
         return Lux(lux)
 
     @staticmethod
-    def _is_invalid_lux(lux):
-        """True if the lux reading is invalid or zero."""
+    def _is_invalid_lux(lux: float | None) -> bool:
+        """Determines if the given lux reading is invalid or zero.
+        Args:
+            lux (float | None): The lux reading to validate. It can be a float representing
+                the light level in SI lux, or None if no reading is available.
+        Returns:
+            bool: True if the lux reading is invalid (None or zero), False otherwise.
+        """
         return lux is None or lux == 0
 
     def reset(self) -> None:
