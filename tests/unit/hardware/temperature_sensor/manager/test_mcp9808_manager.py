@@ -9,6 +9,7 @@ from mocks.adafruit_mcp9808.mcp9808 import MCP9808
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.temperature_sensor.manager.mcp9808 import MCP9808Manager
 from pysquared.logger import Logger
+from pysquared.sensor_reading.error import SensorReadingUnknownError
 
 address: int = 123
 
@@ -115,7 +116,7 @@ def test_get_temperature_success(mock_mcp9808, mock_i2c, mock_logger):
     temp_sensor._mcp9808.temperature = 25.5
 
     temperature = temp_sensor.get_temperature()
-    assert temperature == pytest.approx(25.5, rel=1e-6)
+    assert temperature.value == pytest.approx(25.5, rel=1e-6)
 
 
 def test_get_temperature_negative_value(mock_mcp9808, mock_i2c, mock_logger):
@@ -131,7 +132,7 @@ def test_get_temperature_negative_value(mock_mcp9808, mock_i2c, mock_logger):
     temp_sensor._mcp9808.temperature = -10.5
 
     temperature = temp_sensor.get_temperature()
-    assert temperature == pytest.approx(-10.5, rel=1e-6)
+    assert temperature.value == pytest.approx(-10.5, rel=1e-6)
 
 
 def test_get_temperature_high_value(mock_mcp9808, mock_i2c, mock_logger):
@@ -147,7 +148,7 @@ def test_get_temperature_high_value(mock_mcp9808, mock_i2c, mock_logger):
     temp_sensor._mcp9808.temperature = 85.0
 
     temperature = temp_sensor.get_temperature()
-    assert temperature == pytest.approx(85.0, rel=1e-6)
+    assert temperature.value == pytest.approx(85.0, rel=1e-6)
 
 
 def test_get_temperature_failure(mock_mcp9808, mock_i2c, mock_logger):
@@ -168,6 +169,5 @@ def test_get_temperature_failure(mock_mcp9808, mock_i2c, mock_logger):
     )
     type(temp_sensor._mcp9808).temperature = mock_mcp9808_temperature_property
 
-    temperature = temp_sensor.get_temperature()
-    assert temperature is None
-    mock_logger.error.assert_called_once()
+    with pytest.raises(SensorReadingUnknownError):
+        temp_sensor.get_temperature()
