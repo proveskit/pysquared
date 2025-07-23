@@ -12,8 +12,8 @@ class Lux(Reading):
     def __init__(self, value: float) -> None:
         """Initialize the lux sensor reading.
 
-        :param value: The light level in SI lux
-        :type value: float
+        Args:
+            value: The light level in SI lux
         """
         super().__init__()
         self.value = value

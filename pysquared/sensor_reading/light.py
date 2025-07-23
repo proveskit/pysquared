@@ -12,8 +12,8 @@ class Light(Reading):
     def __init__(self, value: float) -> None:
         """Initialize the light sensor reading.
 
-        :param value: The light level (non-unit-specific)
-        :type value: float
+        Args:
+            value: The light level (non-unit-specific)
         """
         super().__init__()
         self.value = value
