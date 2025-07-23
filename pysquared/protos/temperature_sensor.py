@@ -18,6 +18,6 @@ class TemperatureSensorProto:
         Raises:
             SensorReadingValueError: If the reading returns an invalid value.
             SensorReadingTimeoutError: If the reading times out.
-            SensorReadingUnknownError: If an unknown error occurs while reading the light
+            SensorReadingUnknownError: If an unknown error occurs while reading the temperature
         """
         ...

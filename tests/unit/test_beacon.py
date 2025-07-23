@@ -25,6 +25,7 @@ from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
 from pysquared.protos.temperature_sensor import TemperatureSensorProto
+from pysquared.sensor_reading.temperature import Temperature
 
 
 @pytest.fixture
@@ -102,9 +103,9 @@ class MockPowerMonitor(PowerMonitorProto):
 class MockTemperatureSensor(TemperatureSensorProto):
     """Mocks the TemperatureSensorProto for testing."""
 
-    def get_temperature(self) -> float:
+    def get_temperature(self) -> Temperature:
         """Mocks the get_temperature method."""
-        return 22.5
+        return Temperature(22.5)
 
 
 class MockIMU(IMUProto):
@@ -228,6 +229,7 @@ def test_beacon_send_with_sensors(
 
     # temperature sensor
     assert pytest.approx(d["MockTemperatureSensor_5_temperature"], 0.01) == 22.5
+    assert d["MockTemperatureSensor_5_temperature_timestamp"] is not None
 
     # IMU sensor
     assert pytest.approx(d["MockIMU_6_gyroscope"][0], 0.1) == 0.1
