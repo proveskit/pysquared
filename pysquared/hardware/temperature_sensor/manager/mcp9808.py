@@ -31,7 +31,7 @@ class MCP9808Manager(TemperatureSensorProto):
         self,
         logger: Logger,
         i2c: I2C,
-        addr: int = 0x18,
+        addr: int,
         resolution: Literal[0, 1, 2, 3] = 1,
     ) -> None:
         """Initializes the MCP9808Manager.
