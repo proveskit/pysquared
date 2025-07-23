@@ -14,7 +14,9 @@ lux_data = light_sensor.get_lux()
 
 import time
 
+from adafruit_tca9548a import TCA9548A_Channel
 from adafruit_veml7700 import VEML7700
+from busio import I2C
 
 from ....logger import Logger
 from ....protos.light_sensor import LightSensorProto
@@ -38,7 +40,7 @@ class VEML7700Manager(LightSensorProto):
     def __init__(
         self,
         logger: Logger,
-        i2c,
+        i2c: I2C | TCA9548A_Channel,
         integration_time: Literal[0, 1, 2, 3, 8, 12] = 12,
     ) -> None:
         """Initializes the VEML7700Manager.
@@ -59,7 +61,7 @@ class VEML7700Manager(LightSensorProto):
             HardwareInitializationError: If the light sensor fails to initialize.
         """
         self._log: Logger = logger
-        self._i2c = i2c
+        self._i2c: I2C | TCA9548A_Channel = i2c
 
         try:
             self._log.debug("Initializing light sensor")
