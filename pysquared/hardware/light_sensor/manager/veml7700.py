@@ -97,12 +97,13 @@ class VEML7700Manager(LightSensorProto):
         """
         try:
             lux = self._light_sensor.lux
-            if lux is None or lux == 0:
-                raise SensorReadingValueError("Lux reading is invalid or zero")
-
-            return Lux(lux)
         except Exception as e:
             raise SensorReadingUnknownError("Failed to get lux reading") from e
+
+        if self._is_invalid_lux(lux):
+            raise SensorReadingValueError("Lux reading is invalid or zero")
+
+        return Lux(lux)
 
     def get_auto_lux(self) -> Lux:
         """Gets the auto lux reading of the sensor. This runs the sensor in auto mode
@@ -118,12 +119,18 @@ class VEML7700Manager(LightSensorProto):
         """
         try:
             lux = self._light_sensor.autolux
-            if lux is None or lux == 0:
-                raise SensorReadingValueError("Lux reading is invalid or zero")
-
-            return Lux(lux)
         except Exception as e:
             raise SensorReadingUnknownError("Failed to get auto lux reading") from e
+
+        if self._is_invalid_lux(lux):
+            raise SensorReadingValueError("Lux reading is invalid or zero")
+
+        return Lux(lux)
+
+    @staticmethod
+    def _is_invalid_lux(lux):
+        """True if the lux reading is invalid or zero."""
+        return lux is None or lux == 0
 
     def reset(self) -> None:
         """Resets the light sensor."""
