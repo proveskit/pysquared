@@ -12,6 +12,7 @@ temperature = temp_sensor.get_temperature()
 """
 
 from adafruit_mcp9808 import MCP9808
+from adafruit_tca9548a import TCA9548A_Channel
 from busio import I2C
 
 try:
@@ -32,7 +33,7 @@ class MCP9808Manager(TemperatureSensorProto):
     def __init__(
         self,
         logger: Logger,
-        i2c: I2C,
+        i2c: I2C | TCA9548A_Channel,
         addr: int,
         resolution: Literal[0, 1, 2, 3] = 1,
     ) -> None:
