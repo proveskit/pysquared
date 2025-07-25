@@ -53,7 +53,8 @@ class MCP9808Manager(TemperatureSensorProto):
         Raises:
             HardwareInitializationError: If the MCP9808 fails to initialize.
         """
-        if not i2c.try_lock():
+        locked = i2c.try_lock()
+        if not locked:
             raise HardwareInitializationError("Failed to lock I2C bus")
         self._log: Logger = logger
         try:
@@ -64,7 +65,8 @@ class MCP9808Manager(TemperatureSensorProto):
                 "Failed to initialize MCP9808 temperature sensor"
             ) from e
         finally:
-            i2c.unlock()
+            if locked:
+                i2c.unlock()
         self._mcp9808.resolution = resolution
 
     def get_temperature(self) -> float | None:
