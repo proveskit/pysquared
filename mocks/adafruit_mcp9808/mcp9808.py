@@ -5,11 +5,13 @@ testing purposes. It allows for simulating the behavior of the MCP9808 without t
 need for actual hardware.
 """
 
+from busio import I2C
+
 
 class MCP9808:
     """A mock MCP9808 temperature sensor."""
 
-    def __init__(self, i2c, addr) -> None:
+    def __init__(self, i2c: I2C, addr: int) -> None:
         """Initializes the mock MCP9808.
 
         Args:

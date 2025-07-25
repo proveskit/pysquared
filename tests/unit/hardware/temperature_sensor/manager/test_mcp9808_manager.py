@@ -1,6 +1,7 @@
 """Tests for the MCP9808Manager class."""
 
-from unittest.mock import MagicMock, patch
+from typing import Generator
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
@@ -8,6 +9,9 @@ from mocks.adafruit_mcp9808.mcp9808 import MCP9808
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.temperature_sensor.manager.mcp9808 import MCP9808Manager
 from pysquared.logger import Logger
+from pysquared.sensor_reading.error import SensorReadingUnknownError
+
+address: int = 123
 
 
 @pytest.fixture
@@ -30,231 +34,140 @@ def mock_i2c():
     return MagicMock()
 
 
-class MockMCP9808WithError(MCP9808):
-    """Mock MCP9808 that raises an exception when temperature is accessed."""
+@pytest.fixture
+def mock_mcp9808(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+    """Mocks the MCP9808 class.
 
-    def __init__(self, i2c, addr, error_to_raise):
-        """Initialize the mock with I2C bus and address."""
-        super().__init__(i2c, addr)
-        self._error_to_raise = error_to_raise
+    Args:
+        mock_i2c: Mocked I2C bus.
 
-    @property
-    def temperature(self):
-        """Raise the specified exception when accessed."""
-        raise self._error_to_raise
-
-
-class MockMCP9808WithTemperature(MCP9808):
-    """Mock MCP9808 with configurable temperature value."""
-
-    def __init__(self, i2c, addr, temperature_value):
-        """Initialize the mock with I2C bus, address and temperature value."""
-        super().__init__(i2c, addr)
-        self._temperature_value = temperature_value
-
-    @property
-    def temperature(self):
-        """Return the configured temperature value."""
-        return self._temperature_value
+    Yields:
+        A MagicMock instance of MCP9808.
+    """
+    with patch(
+        "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
+    ) as mock_class:
+        mock_class.return_value = MCP9808(mock_i2c, address)
+        yield mock_class
 
 
-class TestMCP9808Manager:
-    """Test cases for the MCP9808Manager class."""
+def test_create_temperature_sensor(mock_mcp9808, mock_i2c, mock_logger):
+    """Tests successful creation of an MCP9808 temperature sensor instance.
 
-    def test_init_success(
-        self,
-        mock_logger: MagicMock,
-        mock_i2c: MagicMock,
-    ):
-        """Tests successful initialization of MCP9808Manager.
+    Args:
+        mock_mcp9808: Mocked MCP9808 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
+    temp_sensor = MCP9808Manager(mock_logger, mock_i2c, address)
 
-        Args:
-            mock_logger: Mocked Logger instance.
-            mock_i2c: Mocked I2C bus.
-        """
-        with patch(
-            "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
-        ) as mock_mcp9808_class:
-            mock_mcp9808_instance = MCP9808(mock_i2c, 0x18)
-            mock_mcp9808_class.return_value = mock_mcp9808_instance
+    assert isinstance(temp_sensor._mcp9808, MCP9808)
+    mock_logger.debug.assert_called_once_with("Initializing MCP9808 temperature sensor")
 
-            manager = MCP9808Manager(mock_logger, mock_i2c, 0x18)
 
-            assert manager._log == mock_logger
-            assert manager._mcp9808 == mock_mcp9808_instance
-            mock_logger.debug.assert_called_once_with(
-                "Initializing MCP9808 temperature sensor"
-            )
-            mock_mcp9808_class.assert_called_once_with(mock_i2c, 0x18)
+def test_create_temperature_sensor_failed(mock_mcp9808, mock_i2c, mock_logger):
+    """Tests that initialization fails when MCP9808 cannot be created.
 
-    def test_init_default_address(
-        self,
-        mock_logger: MagicMock,
-        mock_i2c: MagicMock,
-    ):
-        """Tests initialization with default I2C address.
+    Args:
+        mock_mcp9808: Mocked MCP9808 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
+    mock_mcp9808.side_effect = Exception("Simulated MCP9808 failure")
 
-        Args:
-            mock_logger: Mocked Logger instance.
-            mock_i2c: Mocked I2C bus.
-        """
-        with patch(
-            "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
-        ) as mock_mcp9808_class:
-            mock_mcp9808_instance = MCP9808(mock_i2c, 0x18)
-            mock_mcp9808_class.return_value = mock_mcp9808_instance
+    # Verify that HardwareInitializationError is raised
+    with pytest.raises(HardwareInitializationError):
+        _ = MCP9808Manager(mock_logger, mock_i2c, address)
 
-            _ = MCP9808Manager(mock_logger, mock_i2c)
+    # Verify that the logger was called
+    mock_logger.debug.assert_called_with("Initializing MCP9808 temperature sensor")
 
-            mock_mcp9808_class.assert_called_once_with(mock_i2c, 0x18)
 
-    def test_init_failure(
-        self,
-        mock_logger: MagicMock,
-        mock_i2c: MagicMock,
-    ):
-        """Tests initialization failure handling.
+def test_create_temperature_sensor_with_custom_resolution(
+    mock_mcp9808, mock_i2c, mock_logger
+):
+    """Tests successful creation with custom resolution.
 
-        Args:
-            mock_logger: Mocked Logger instance.
-            mock_i2c: Mocked I2C bus.
-        """
-        with patch(
-            "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
-        ) as mock_mcp9808_class:
-            init_error = RuntimeError("I2C communication failed")
-            mock_mcp9808_class.side_effect = init_error
+    Args:
+        mock_mcp9808: Mocked MCP9808 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
+    mock_instance = MagicMock(spec=MCP9808)
+    mock_mcp9808.return_value = mock_instance
 
-            with pytest.raises(HardwareInitializationError) as exc_info:
-                MCP9808Manager(mock_logger, mock_i2c, 0x18)
+    temp_sensor = MCP9808Manager(mock_logger, mock_i2c, address, resolution=3)
 
-            assert "Failed to initialize MCP9808 temperature sensor" in str(
-                exc_info.value
-            )
-            assert exc_info.value.__cause__ == init_error
+    assert temp_sensor._mcp9808 == mock_instance
+    assert temp_sensor._mcp9808.resolution == 3
+    mock_logger.debug.assert_called_once_with("Initializing MCP9808 temperature sensor")
 
-    def test_get_temperature_success(
-        self,
-        mock_logger: MagicMock,
-        mock_i2c: MagicMock,
-    ):
-        """Tests successful temperature reading.
 
-        Args:
-            mock_logger: Mocked Logger instance.
-            mock_i2c: Mocked I2C bus.
-        """
-        expected_temperature = 25.5
+def test_get_temperature_success(mock_mcp9808, mock_i2c, mock_logger):
+    """Tests successful retrieval of the temperature.
 
-        with patch(
-            "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
-        ) as mock_mcp9808_class:
-            mock_mcp9808_instance = MCP9808(mock_i2c, 0x18)
-            mock_mcp9808_instance.temperature = expected_temperature
-            mock_mcp9808_class.return_value = mock_mcp9808_instance
+    Args:
+        mock_mcp9808: Mocked MCP9808 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
+    temp_sensor = MCP9808Manager(mock_logger, mock_i2c, address)
+    temp_sensor._mcp9808 = MagicMock(spec=MCP9808)
+    temp_sensor._mcp9808.temperature = 25.5
 
-            manager = MCP9808Manager(mock_logger, mock_i2c, 0x18)
-            temperature = manager.get_temperature()
+    temperature = temp_sensor.get_temperature()
+    assert temperature.value == pytest.approx(25.5, rel=1e-6)
 
-        assert temperature == expected_temperature
 
-    def test_get_temperature_exception(
-        self,
-        mock_logger: MagicMock,
-        mock_i2c: MagicMock,
-    ):
-        """Tests temperature reading exception handling.
+def test_get_temperature_negative_value(mock_mcp9808, mock_i2c, mock_logger):
+    """Tests successful retrieval of negative temperature.
 
-        Args:
-            mock_logger: Mocked Logger instance.
-            mock_i2c: Mocked I2C bus.
-        """
-        read_error = RuntimeError("Sensor read failed")
+    Args:
+        mock_mcp9808: Mocked MCP9808 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
+    temp_sensor = MCP9808Manager(mock_logger, mock_i2c, address)
+    temp_sensor._mcp9808 = MagicMock(spec=MCP9808)
+    temp_sensor._mcp9808.temperature = -10.5
 
-        with patch(
-            "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
-        ) as mock_mcp9808_class:
-            mock_mcp9808_instance = MockMCP9808WithError(mock_i2c, 0x18, read_error)
-            mock_mcp9808_class.return_value = mock_mcp9808_instance
+    temperature = temp_sensor.get_temperature()
+    assert temperature.value == pytest.approx(-10.5, rel=1e-6)
 
-            manager = MCP9808Manager(mock_logger, mock_i2c, 0x18)
-            temperature = manager.get_temperature()
 
-        assert temperature is None
-        mock_logger.error.assert_called_once_with(
-            "Error retrieving MCP9808 temperature sensor values", read_error
-        )
+def test_get_temperature_high_value(mock_mcp9808, mock_i2c, mock_logger):
+    """Tests successful retrieval of high temperature value.
 
-    def test_get_temperature_none_value(
-        self,
-        mock_logger: MagicMock,
-        mock_i2c: MagicMock,
-    ):
-        """Tests temperature reading when sensor returns None.
+    Args:
+        mock_mcp9808: Mocked MCP9808 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
+    temp_sensor = MCP9808Manager(mock_logger, mock_i2c, address)
+    temp_sensor._mcp9808 = MagicMock(spec=MCP9808)
+    temp_sensor._mcp9808.temperature = 85.0
 
-        Args:
-            mock_logger: Mocked Logger instance.
-            mock_i2c: Mocked I2C bus.
-        """
-        with patch(
-            "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
-        ) as mock_mcp9808_class:
-            mock_mcp9808_instance = MockMCP9808WithTemperature(mock_i2c, 0x18, None)
-            mock_mcp9808_class.return_value = mock_mcp9808_instance
+    temperature = temp_sensor.get_temperature()
+    assert temperature.value == pytest.approx(85.0, rel=1e-6)
 
-            manager = MCP9808Manager(mock_logger, mock_i2c, 0x18)
-            temperature = manager.get_temperature()
 
-        assert temperature is None
+def test_get_temperature_failure(mock_mcp9808, mock_i2c, mock_logger):
+    """Tests handling of exceptions when retrieving the temperature.
 
-    def test_get_temperature_negative_value(
-        self,
-        mock_logger: MagicMock,
-        mock_i2c: MagicMock,
-    ):
-        """Tests temperature reading with negative temperature value.
+    Args:
+        mock_mcp9808: Mocked MCP9808 class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
+    temp_sensor = MCP9808Manager(mock_logger, mock_i2c, address)
 
-        Args:
-            mock_logger: Mocked Logger instance.
-            mock_i2c: Mocked I2C bus.
-        """
-        expected_temperature = -10.5
+    # Configure the mock to raise an exception when accessing the temperature property
+    mock_mcp9808_instance = MagicMock(spec=MCP9808)
+    temp_sensor._mcp9808 = mock_mcp9808_instance
+    mock_mcp9808_temperature_property = PropertyMock(
+        side_effect=RuntimeError("Simulated retrieval error")
+    )
+    type(temp_sensor._mcp9808).temperature = mock_mcp9808_temperature_property
 
-        with patch(
-            "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
-        ) as mock_mcp9808_class:
-            mock_mcp9808_instance = MockMCP9808WithTemperature(
-                mock_i2c, 0x18, expected_temperature
-            )
-            mock_mcp9808_class.return_value = mock_mcp9808_instance
-
-            manager = MCP9808Manager(mock_logger, mock_i2c, 0x18)
-            temperature = manager.get_temperature()
-
-        assert temperature == expected_temperature
-
-    def test_get_temperature_high_value(
-        self,
-        mock_logger: MagicMock,
-        mock_i2c: MagicMock,
-    ):
-        """Tests temperature reading with high temperature value.
-
-        Args:
-            mock_logger: Mocked Logger instance.
-            mock_i2c: Mocked I2C bus.
-        """
-        expected_temperature = 85.0
-
-        with patch(
-            "pysquared.hardware.temperature_sensor.manager.mcp9808.MCP9808"
-        ) as mock_mcp9808_class:
-            mock_mcp9808_instance = MockMCP9808WithTemperature(
-                mock_i2c, 0x18, expected_temperature
-            )
-            mock_mcp9808_class.return_value = mock_mcp9808_instance
-
-            manager = MCP9808Manager(mock_logger, mock_i2c, 0x18)
-            temperature = manager.get_temperature()
-
-        assert temperature == expected_temperature
+    with pytest.raises(SensorReadingUnknownError):
+        temp_sensor.get_temperature()

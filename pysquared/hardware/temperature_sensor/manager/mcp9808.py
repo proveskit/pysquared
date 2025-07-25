@@ -12,15 +12,18 @@ temperature = temp_sensor.get_temperature()
 """
 
 from adafruit_mcp9808 import MCP9808
+from adafruit_tca9548a import TCA9548A_Channel
 from busio import I2C
 
 try:
-    from typing_extensions import Literal
+    from typing import Literal
 except ImportError:
     pass
 
 from ....logger import Logger
 from ....protos.temperature_sensor import TemperatureSensorProto
+from ....sensor_reading.error import SensorReadingUnknownError
+from ....sensor_reading.temperature import Temperature
 from ...exception import HardwareInitializationError
 
 
@@ -30,8 +33,8 @@ class MCP9808Manager(TemperatureSensorProto):
     def __init__(
         self,
         logger: Logger,
-        i2c: I2C,
-        addr: int = 0x18,
+        i2c: I2C | TCA9548A_Channel,
+        addr: int,
         resolution: Literal[0, 1, 2, 3] = 1,
     ) -> None:
         """Initializes the MCP9808Manager.
@@ -64,14 +67,18 @@ class MCP9808Manager(TemperatureSensorProto):
 
         self._mcp9808.resolution = resolution
 
-    def get_temperature(self) -> float | None:
+    def get_temperature(self) -> Temperature:
         """Gets the temperature reading from the MCP9808.
 
         Returns:
-            The temperature in degrees Celsius, or None if the data is not available.
+            A Temperature object containing the temperature in degrees Celsius.
+
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the temperature.
         """
         try:
-            return self._mcp9808.temperature
+            return Temperature(self._mcp9808.temperature)
         except Exception as e:
-            self._log.error("Error retrieving MCP9808 temperature sensor values", e)
-            return None
+            raise SensorReadingUnknownError(
+                "Failed to read temperature from MCP9808"
+            ) from e
