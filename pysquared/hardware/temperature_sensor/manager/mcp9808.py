@@ -61,7 +61,7 @@ class MCP9808Manager(TemperatureSensorProto):
             raise HardwareInitializationError(
                 "Failed to initialize MCP9808 temperature sensor"
             ) from e
-    
+
         self._mcp9808.resolution = resolution
 
     def get_temperature(self) -> float | None:
