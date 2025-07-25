@@ -3,8 +3,8 @@ must adhere to, ensuring consistent behavior across different light sensor
 hardware.
 """
 
-from ..sensor_reading.light import Light
-from ..sensor_reading.lux import Lux
+from ....sensor_reading.light import Light
+from ....sensor_reading.lux import Lux
 
 
 class LightSensorProto:
