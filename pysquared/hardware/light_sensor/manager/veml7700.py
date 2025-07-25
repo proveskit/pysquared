@@ -14,11 +14,24 @@ lux_data = light_sensor.get_lux()
 
 import time
 
+from adafruit_tca9548a import TCA9548A_Channel
 from adafruit_veml7700 import VEML7700
+from busio import I2C
 
 from ....logger import Logger
 from ....protos.light_sensor import LightSensorProto
+from ....sensor_reading.error import (
+    SensorReadingUnknownError,
+    SensorReadingValueError,
+)
+from ....sensor_reading.light import Light
+from ....sensor_reading.lux import Lux
 from ...exception import HardwareInitializationError
+
+try:
+    from typing import Literal
+except ImportError:
+    pass
 
 
 class VEML7700Manager(LightSensorProto):
@@ -27,8 +40,8 @@ class VEML7700Manager(LightSensorProto):
     def __init__(
         self,
         logger: Logger,
-        i2c,
-        integration_time: int = VEML7700.ALS_25MS,
+        i2c: I2C | TCA9548A_Channel,
+        integration_time: Literal[0, 1, 2, 3, 8, 12] = 12,
     ) -> None:
         """Initializes the VEML7700Manager.
 
@@ -36,13 +49,19 @@ class VEML7700Manager(LightSensorProto):
             logger: The logger to use.
             i2c: The I2C bus connected to the chip.
             integration_time: The integration time for the light sensor (default is 25ms).
+                Integration times can be one of the following:
+                - 12: 25ms
+                - 8: 50ms
+                - 0: 100ms
+                - 1: 200ms
+                - 2: 400ms
+                - 3: 800ms
 
         Raises:
             HardwareInitializationError: If the light sensor fails to initialize.
         """
         self._log: Logger = logger
-        self.is_valid: bool = False
-        self._i2c = i2c
+        self._i2c: I2C | TCA9548A_Channel = i2c
 
         try:
             self._log.debug("Initializing light sensor")
@@ -54,63 +73,72 @@ class VEML7700Manager(LightSensorProto):
                 "Failed to initialize light sensor"
             ) from e
 
-    def get_light(self) -> float | None:
+    def get_light(self) -> Light:
         """Gets the light reading of the sensor with default gain and integration time.
 
         Returns:
-            The raw light level measurement, or None if not available.
+            A Light object containing a non-unit-specific light level reading.
+
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the sensor.
         """
         try:
-            return self._light_sensor.light
+            return Light(self._light_sensor.light)
         except Exception as e:
-            self._log.error("Failed to get light reading:", e)
-            self._i2c.unlock()
-            return None
+            raise SensorReadingUnknownError("Failed to get light reading") from e
 
-    def get_lux(self) -> float | None:
+    def get_lux(self) -> Lux:
         """Gets the light reading of the sensor with default gain and integration time.
 
         Returns:
-            The light level in Lux, or None if not available.
+            A Lux object containing the light level in SI lux.
+
+        Raises:
+            SensorReadingValueError: If the reading returns an invalid value.
+            SensorReadingUnknownError: If an unknown error occurs while reading the sensor.
         """
         try:
-            return self._light_sensor.lux
+            lux = self._light_sensor.lux
         except Exception as e:
-            self._log.error("Failed to get lux reading:", e)
-            self._i2c.unlock()
-            return None
+            raise SensorReadingUnknownError("Failed to get lux reading") from e
 
-    def get_auto_lux(self) -> float | None:
+        if self._is_invalid_lux(lux):
+            raise SensorReadingValueError("Lux reading is invalid or zero")
+
+        return Lux(lux)
+
+    def get_auto_lux(self) -> Lux:
         """Gets the auto lux reading of the sensor. This runs the sensor in auto mode
         and returns the lux value by searching through the available gain and integration time
         combinations to find the best match.
 
         Returns:
-            The auto lux level, or None if not available.
+            A Lux object containing the light level in SI lux.
+
+        Raises:
+            SensorReadingValueError: If the reading returns an invalid value.
+            SensorReadingUnknownError: If an unknown error occurs while reading the sensor.
         """
         try:
-            return self._light_sensor.autolux
+            lux = self._light_sensor.autolux
         except Exception as e:
-            self._log.error("Failed to get auto lux reading:", e)
-            self._i2c.unlock()
-            return None
+            raise SensorReadingUnknownError("Failed to get auto lux reading") from e
 
-    def self_test(self) -> bool:
-        """Performs a self-test on the light sensor to ensure it is functioning correctly.
+        if self._is_invalid_lux(lux):
+            raise SensorReadingValueError("Lux reading is invalid or zero")
 
+        return Lux(lux)
+
+    @staticmethod
+    def _is_invalid_lux(lux: float | None) -> bool:
+        """Determines if the given lux reading is invalid or zero.
+        Args:
+            lux (float | None): The lux reading to validate. It can be a float representing
+                the light level in SI lux, or None if no reading is available.
         Returns:
-            True if the self-test passes, False otherwise.
+            bool: True if the lux reading is invalid (None or zero), False otherwise.
         """
-        # Attempt to read a value from the sensor
-        lux = self.get_auto_lux()
-        if lux is None or lux == 0:
-            self._log.warning("Light sensor self-test failed: No valid reading")
-            self.is_valid = False
-            return False
-        # If we can read a value, the sensor is likely functioning
-        self._log.debug("Light sensor self-test passed")
-        self.is_valid = True
-        return True
+        return lux is None or lux == 0
 
     def reset(self) -> None:
         """Resets the light sensor."""
