@@ -61,7 +61,8 @@ packages = [
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.rtc",
-    "pysquared.rtc.manager"
+    "pysquared.rtc.manager",
+    "pysquared.sensor_reading"
 ]
 
 [tool.ruff.format]
