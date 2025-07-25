@@ -19,6 +19,8 @@ from busio import I2C
 from ....logger import Logger
 from ....protos.imu import IMUProto
 from ....protos.temperature_sensor import TemperatureSensorProto
+from ....sensor_reading.error import SensorReadingUnknownError
+from ....sensor_reading.temperature import Temperature
 from ...exception import HardwareInitializationError
 
 
@@ -73,13 +75,18 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
         except Exception as e:
             self._log.error("Error retrieving IMU acceleration sensor values", e)
 
-    def get_temperature(self) -> float | None:
+    def get_temperature(self) -> Temperature:
         """Gets the temperature reading from the IMU.
 
         Returns:
-            The temperature in degrees Celsius, or None if the data is not available.
+            A Temperature object containing the temperature in degrees Celsius.
+
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the temperature.
         """
         try:
-            return self._imu.temperature
+            return Temperature(self._imu.temperature)
         except Exception as e:
-            self._log.error("Error retrieving IMU temperature sensor values", e)
+            raise SensorReadingUnknownError(
+                "Failed to read temperature from IMU"
+            ) from e
