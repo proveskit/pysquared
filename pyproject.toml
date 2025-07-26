@@ -55,6 +55,8 @@ packages = [
     "pysquared.hardware.radio.packetizer",
     "pysquared.hardware.power_monitor",
     "pysquared.hardware.power_monitor.manager",
+    "pysquared.hardware.temperature_sensor",
+    "pysquared.hardware.temperature_sensor.manager",
     "pysquared.hardware.burnwire",
     "pysquared.hardware.burnwire.manager",
     "pysquared.hardware.light_sensor.manager",
