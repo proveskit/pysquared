@@ -15,11 +15,6 @@ from adafruit_mcp9808 import MCP9808
 from adafruit_tca9548a import TCA9548A_Channel
 from busio import I2C
 
-try:
-    from typing import Literal
-except ImportError:
-    pass
-
 from ....logger import Logger
 from ....protos.temperature_sensor import TemperatureSensorProto
 from ....sensor_reading.error import SensorReadingUnknownError
@@ -35,7 +30,6 @@ class MCP9808Manager(TemperatureSensorProto):
         logger: Logger,
         i2c: I2C | TCA9548A_Channel,
         addr: int,
-        resolution: Literal[0, 1, 2, 3] = 1,
     ) -> None:
         """Initializes the MCP9808Manager.
 
@@ -64,8 +58,6 @@ class MCP9808Manager(TemperatureSensorProto):
             raise HardwareInitializationError(
                 "Failed to initialize MCP9808 temperature sensor"
             ) from e
-
-        self._mcp9808.resolution = resolution
 
     def get_temperature(self) -> Temperature:
         """Gets the temperature reading from the MCP9808.
