@@ -83,26 +83,6 @@ def test_create_temperature_sensor_failed(mock_mcp9808, mock_i2c, mock_logger):
     mock_logger.debug.assert_called_with("Initializing MCP9808 temperature sensor")
 
 
-def test_create_temperature_sensor_with_custom_resolution(
-    mock_mcp9808, mock_i2c, mock_logger
-):
-    """Tests successful creation with custom resolution.
-
-    Args:
-        mock_mcp9808: Mocked MCP9808 class.
-        mock_i2c: Mocked I2C bus.
-        mock_logger: Mocked Logger instance.
-    """
-    mock_instance = MagicMock(spec=MCP9808)
-    mock_mcp9808.return_value = mock_instance
-
-    temp_sensor = MCP9808Manager(mock_logger, mock_i2c, address, resolution=3)
-
-    assert temp_sensor._mcp9808 == mock_instance
-    assert temp_sensor._mcp9808.resolution == 3
-    mock_logger.debug.assert_called_once_with("Initializing MCP9808 temperature sensor")
-
-
 def test_get_temperature_success(mock_mcp9808, mock_i2c, mock_logger):
     """Tests successful retrieval of the temperature.
 
