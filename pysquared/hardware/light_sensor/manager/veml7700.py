@@ -68,7 +68,6 @@ class VEML7700Manager(LightSensorProto):
             self._light_sensor: VEML7700 = VEML7700(i2c)
             self._light_sensor.light_integration_time = integration_time
         except Exception as e:
-            self._i2c.unlock()
             raise HardwareInitializationError(
                 "Failed to initialize light sensor"
             ) from e
@@ -149,4 +148,3 @@ class VEML7700Manager(LightSensorProto):
             self._log.debug("Light sensor reset successfully")
         except Exception as e:
             self._log.error("Failed to reset light sensor:", e)
-            self._i2c.unlock()
