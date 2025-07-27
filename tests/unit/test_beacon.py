@@ -18,7 +18,7 @@ from mocks.circuitpython.microcontroller import Processor
 from pysquared.beacon import Beacon
 from pysquared.hardware.radio.modulation import LoRa, RadioModulation
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
-from pysquared.logger import Logger
+from pysquared.logger.logger_proto import LoggerProto
 from pysquared.nvm.counter import Counter
 from pysquared.nvm.flag import Flag
 from pysquared.protos.imu import IMUProto
@@ -30,7 +30,7 @@ from pysquared.protos.temperature_sensor import TemperatureSensorProto
 @pytest.fixture
 def mock_logger() -> MagicMock:
     """Mocks the Logger class."""
-    return MagicMock(spec=Logger)
+    return MagicMock(spec=LoggerProto)
 
 
 @pytest.fixture

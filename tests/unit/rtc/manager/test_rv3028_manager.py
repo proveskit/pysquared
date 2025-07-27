@@ -13,7 +13,7 @@ from busio import I2C
 
 from mocks.rv3028 import RV3028
 from pysquared.hardware.exception import HardwareInitializationError
-from pysquared.logger import Logger
+from pysquared.logger.logger_proto import LoggerProto
 from pysquared.rtc.manager.rv3028 import RV3028Manager
 
 
@@ -26,7 +26,7 @@ def mock_i2c() -> MagicMock:
 @pytest.fixture
 def mock_logger() -> MagicMock:
     """Fixture for mock Logger."""
-    return MagicMock(spec=Logger)
+    return MagicMock(spec=LoggerProto)
 
 
 @pytest.fixture

@@ -13,7 +13,7 @@ from microcontroller import Pin
 
 from pysquared.hardware.busio import initialize_i2c_bus, initialize_spi_bus
 from pysquared.hardware.exception import HardwareInitializationError
-from pysquared.logger import Logger
+from pysquared.logger.logger_proto import LoggerProto
 
 
 @patch("pysquared.hardware.busio.SPI")
@@ -24,7 +24,7 @@ def test_initialize_spi_bus_success(mock_spi: MagicMock):
         mock_spi: Mocked SPI class.
     """
     # Mock the logger
-    mock_logger = MagicMock(spec=Logger)
+    mock_logger = MagicMock(spec=LoggerProto)
 
     # Mock pins
     mock_clock = MagicMock(spec=Pin)
@@ -64,7 +64,7 @@ def test_initialize_spi_bus_failure(mock_spi: MagicMock):
         mock_spi: Mocked SPI class.
     """
     # Mock the logger
-    mock_logger = MagicMock(spec=Logger)
+    mock_logger = MagicMock(spec=LoggerProto)
 
     # Mock pins
     mock_clock = MagicMock(spec=Pin)
@@ -91,7 +91,7 @@ def test_spi_bus_configure_try_lock_failure(mock_spi: MagicMock):
         mock_spi: Mocked SPI class.
     """
     # Mock the logger
-    mock_logger = MagicMock(spec=Logger)
+    mock_logger = MagicMock(spec=LoggerProto)
 
     # Mock pins
     mock_clock = MagicMock(spec=Pin)
@@ -121,7 +121,7 @@ def test_spi_bus_configure_failure(mock_spi: MagicMock):
         mock_spi: Mocked SPI class.
     """
     # Mock the logger
-    mock_logger = MagicMock(spec=Logger)
+    mock_logger = MagicMock(spec=LoggerProto)
 
     # Mock pins
     mock_clock = MagicMock(spec=Pin)
@@ -152,7 +152,7 @@ def test_initialize_i2c_bus_success(mock_i2c: MagicMock):
         mock_i2c: Mocked I2C class.
     """
     # Mock the logger
-    mock_logger = MagicMock(spec=Logger)
+    mock_logger = MagicMock(spec=LoggerProto)
 
     # Mock pins
     mock_scl = MagicMock(spec=Pin)
@@ -181,7 +181,7 @@ def test_initialize_i2c_bus_failure(mock_i2c: MagicMock):
         mock_i2c: Mocked I2C class.
     """
     # Mock the logger
-    mock_logger = MagicMock(spec=Logger)
+    mock_logger = MagicMock(spec=LoggerProto)
 
     # Mock pins
     mock_scl = MagicMock(spec=Pin)

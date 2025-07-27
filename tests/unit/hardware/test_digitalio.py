@@ -12,7 +12,7 @@ from digitalio import Direction
 
 from pysquared.hardware.digitalio import initialize_pin
 from pysquared.hardware.exception import HardwareInitializationError
-from pysquared.logger import Logger
+from pysquared.logger.logger_proto import LoggerProto
 
 
 @patch("pysquared.hardware.digitalio.DigitalInOut")
@@ -25,7 +25,7 @@ def test_initialize_pin_success(mock_pin: MagicMock, mock_digital_in_out: MagicM
         mock_digital_in_out: Mocked DigitalInOut class.
     """
     # Mock the logger
-    mock_logger = MagicMock(spec=Logger)
+    mock_logger = MagicMock(spec=LoggerProto)
 
     # Mock pin and direction
     mock_pin = mock_pin()
@@ -55,7 +55,7 @@ def test_initialize_pin_failure(mock_pin: MagicMock, mock_digital_in_out: MagicM
         mock_digital_in_out: Mocked DigitalInOut class.
     """
     # Mock the logger
-    mock_logger = MagicMock(spec=Logger)
+    mock_logger = MagicMock(spec=LoggerProto)
 
     # Mock pin and direction
     mock_pin = mock_pin()

@@ -10,7 +10,7 @@ import pytest
 from digitalio import DigitalInOut, Direction
 from microcontroller import Pin
 
-from pysquared.logger import Logger
+from pysquared.logger.logger_proto import LoggerProto
 from pysquared.watchdog import Watchdog
 
 
@@ -23,7 +23,7 @@ def mock_pin() -> MagicMock:
 @pytest.fixture
 def mock_logger() -> MagicMock:
     """Mocks the Logger class."""
-    return MagicMock(spec=Logger)
+    return MagicMock(spec=LoggerProto)
 
 
 @patch("pysquared.watchdog.initialize_pin")

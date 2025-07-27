@@ -8,10 +8,10 @@ Usage:
 from .nvm.counter import Counter
 from .logger.default_logger import DefaultLogger
 from .logger.middleware.error_counter.error_counter import add_logger_middleware_error_counter
-c = Counter(0)
-l = DefaultLogger()
-l = add_logger_middleware_error_counter(c)(l)
-l.critical("Test critical error", err=Exception("Test exception"))
+count = Counter(0)
+logger = DefaultLogger()
+logger = add_logger_middleware_error_counter(count)(logger)
+logger.critical("Test critical error", err=Exception("Test exception"))
 ```
 """
 

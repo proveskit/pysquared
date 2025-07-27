@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pysquared.config.config import Config
-from pysquared.logger import Logger
+from pysquared.logger.logger_proto import LoggerProto
 from pysquared.watchdog import Watchdog
 
 # Create mock modules for alarm and alarm.time before importing SleepHelper
@@ -28,7 +28,7 @@ from pysquared.sleep_helper import SleepHelper  # noqa: E402
 @pytest.fixture
 def mock_logger() -> MagicMock:
     """Mocks the Logger class."""
-    return MagicMock(spec=Logger)
+    return MagicMock(spec=LoggerProto)
 
 
 @pytest.fixture

@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from pysquared.config.config import Config
-from pysquared.logger import Logger
+from pysquared.logger.logger_proto import LoggerProto
 from pysquared.power_health import CRITICAL, DEGRADED, NOMINAL, UNKNOWN, PowerHealth
 from pysquared.protos.power_monitor import PowerMonitorProto
 
@@ -19,7 +19,7 @@ from pysquared.protos.power_monitor import PowerMonitorProto
 @pytest.fixture
 def mock_logger():
     """Mocks the Logger class."""
-    return MagicMock(spec=Logger)
+    return MagicMock(spec=LoggerProto)
 
 
 @pytest.fixture

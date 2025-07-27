@@ -1,7 +1,7 @@
 """Unit tests for the Logger class.
 
 This module contains unit tests for the `Logger` class, which provides logging
-functionality with different severity levels, colorized output, and error counting.
+functionality with different severity levels, and colorized output.
 """
 
 from unittest.mock import MagicMock
@@ -9,22 +9,19 @@ from unittest.mock import MagicMock
 import pytest
 from microcontroller import Pin
 
-import pysquared.nvm.counter as counter
-from pysquared.logger import Logger, _color
+from pysquared.logger.default_logger import DefaultLogger
 
 
 @pytest.fixture
 def logger():
     """Provides a Logger instance for testing without colorization."""
-    count = MagicMock(spec=counter.Counter)
-    return Logger(count)
+    return DefaultLogger()
 
 
 @pytest.fixture
 def logger_color():
     """Provides a Logger instance for testing with colorization enabled."""
-    count = MagicMock(spec=counter.Counter)
-    return Logger(error_counter=count, colorized=True)
+    return DefaultLogger(colorized=True)
 
 
 def test_debug_log(capsys, logger):
@@ -172,7 +169,7 @@ def test_debug_log_color(capsys, logger_color):
     """
     logger_color.debug("This is a debug message", blake="jameson")
     captured = capsys.readouterr()
-    assert _color(msg="DEBUG", color="blue") in captured.out
+    assert DefaultLogger._color(msg="DEBUG", color="blue") in captured.out
     assert "This is a debug message" in captured.out
     assert '"blake": "jameson"' in captured.out
 
@@ -186,7 +183,7 @@ def test_info_log_color(capsys, logger_color):
     """
     logger_color.info("This is a info message!!", foo="bar")
     captured = capsys.readouterr()
-    assert _color(msg="INFO", color="green") in captured.out
+    assert DefaultLogger._color(msg="INFO", color="green") in captured.out
     assert "This is a info message!!" in captured.out
     assert '"foo": "bar"' in captured.out
 
@@ -202,7 +199,7 @@ def test_warning_log_color(capsys, logger_color):
         "This is a warning message!!??!", boo="bar", pleiades="maia", cube="sat"
     )
     captured = capsys.readouterr()
-    assert _color(msg="WARNING", color="orange") in captured.out
+    assert DefaultLogger._color(msg="WARNING", color="orange") in captured.out
     assert "This is a warning message!!??!" in captured.out
     assert '"boo": "bar"' in captured.out
     assert '"pleiades": "maia"' in captured.out
@@ -223,7 +220,7 @@ def test_error_log_color(capsys, logger_color):
         err=OSError("Manually creating an OS Error"),
     )
     captured = capsys.readouterr()
-    assert _color(msg="ERROR", color="pink") in captured.out
+    assert DefaultLogger._color(msg="ERROR", color="pink") in captured.out
     assert "This is an error message" in captured.out
     assert '"pleiades": "five"' in captured.out
     assert '"please": "work"' in captured.out
@@ -246,7 +243,7 @@ def test_critical_log_color(capsys, logger_color):
         err=OSError("Manually creating an OS Error"),
     )
     captured = capsys.readouterr()
-    assert _color(msg="CRITICAL", color="red") in captured.out
+    assert DefaultLogger._color(msg="CRITICAL", color="red") in captured.out
     assert "THIS IS VERY CRITICAL" in captured.out
     assert '"ad": "astra"' in captured.out
     assert '"space": "lab"' in captured.out
