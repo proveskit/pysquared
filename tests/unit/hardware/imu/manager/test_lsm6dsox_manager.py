@@ -16,6 +16,8 @@ from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
 from pysquared.logger.logger_proto import LoggerProto
+from pysquared.sensor_reading.error import SensorReadingUnknownError
+from pysquared.sensor_reading.temperature import Temperature
 
 address: int = 123
 
@@ -210,8 +212,8 @@ def test_get_temperature_success(
     imu_manager._imu.temperature = expected_temp
 
     temp = imu_manager.get_temperature()
-    assert temp is not None
-    assert math.isclose(temp, expected_temp, rel_tol=1e-9)
+    assert isinstance(temp, Temperature)
+    assert math.isclose(temp.value, expected_temp, rel_tol=1e-9)
 
 
 def test_get_temperature_failure(
@@ -235,11 +237,5 @@ def test_get_temperature_failure(
     )
     type(mock_imu_instance).temperature = mock_temp_property
 
-    temp = imu_manager.get_temperature()
-
-    assert temp is None
-    assert mock_logger.error.call_count == 1
-    call_args, _ = mock_logger.error.call_args
-    assert call_args[0] == "Error retrieving IMU temperature sensor values"
-    assert isinstance(call_args[1], RuntimeError)
-    assert str(call_args[1]) == "Simulated retrieval error"
+    with pytest.raises(SensorReadingUnknownError):
+        imu_manager.get_temperature()

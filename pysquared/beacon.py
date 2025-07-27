@@ -126,7 +126,11 @@ class Beacon:
                 )
             if isinstance(sensor, TemperatureSensorProto):
                 sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_temperature"] = sensor.get_temperature()
+                reading = sensor.get_temperature()
+                state[f"{sensor_name}_{index}_temperature"] = reading.value
+                state[f"{sensor_name}_{index}_temperature_timestamp"] = (
+                    reading.timestamp
+                )
 
         b = json.dumps(state, separators=(",", ":")).encode("utf-8")
         return self._packet_manager.send(b)

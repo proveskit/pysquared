@@ -21,6 +21,8 @@ from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.radio.manager.rfm9x import RFM9xManager
 from pysquared.hardware.radio.modulation import FSK, LoRa
 from pysquared.logger.logger_proto import LoggerProto
+from pysquared.sensor_reading.error import SensorReadingUnknownError
+from pysquared.sensor_reading.temperature import Temperature
 
 
 @pytest.fixture
@@ -536,10 +538,10 @@ def test_get_temperature_success(
 
     temp = manager.get_temperature()
 
-    assert isinstance(temp, float)
-    assert math.isclose(temp, expected_temperature, rel_tol=1e-9)
+    assert isinstance(temp, Temperature)
+    assert math.isclose(temp.value, expected_temperature, rel_tol=1e-9)
     mock_radio_instance.read_u8.assert_called_once_with(0x5B)
-    mock_logger.debug.assert_called_with("Radio temperature read", temp=temp)
+    mock_logger.debug.assert_called_with("Radio temperature read", temp=temp.value)
 
 
 def test_get_temperature_read_exception(
@@ -577,12 +579,8 @@ def test_get_temperature_read_exception(
     mock_radio_instance.read_u8 = MagicMock()
     mock_radio_instance.read_u8.side_effect = read_error
 
-    temp = manager.get_temperature()
-
-    assert math.isnan(temp)
-    mock_logger.error.assert_called_once_with(
-        "Error reading radio temperature", read_error
-    )
+    with pytest.raises(SensorReadingUnknownError):
+        manager.get_temperature()
 
 
 def test_receive_success(

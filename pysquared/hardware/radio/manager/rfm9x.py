@@ -29,6 +29,8 @@ except ImportError:
 from ....config.radio import FSKConfig, LORAConfig, RadioConfig
 from ....logger.logger_proto import LoggerProto
 from ....protos.temperature_sensor import TemperatureSensorProto
+from ....sensor_reading.error import SensorReadingUnknownError
+from ....sensor_reading.temperature import Temperature
 from ..modulation import FSK, LoRa, RadioModulation
 from .base import BaseRadioManager
 
@@ -154,11 +156,13 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
         """
         return FSK if self._radio.__class__.__name__ == "RFM9xFSK" else LoRa
 
-    def get_temperature(self) -> float:
+    def get_temperature(self) -> Temperature:
         """Gets the temperature reading from the radio sensor.
 
         Returns:
-            The temperature in degrees Celsius.
+            A Temperature object containing the temperature in degrees Celsius.
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the temperature.
         """
         try:
             raw_temp = self._radio.read_u8(0x5B)
@@ -172,10 +176,11 @@ class RFM9xManager(BaseRadioManager, TemperatureSensorProto):
             prescaler = 143.0  # Use float for calculation
             result = float(temp) + prescaler
             self._log.debug("Radio temperature read", temp=result)
-            return result
+            return Temperature(result)
         except Exception as e:
-            self._log.error("Error reading radio temperature", e)
-            return float("nan")
+            raise SensorReadingUnknownError(
+                "Failed to read temperature from radio"
+            ) from e
 
     @staticmethod
     def _create_fsk_radio(
