@@ -18,6 +18,7 @@ import traceback
 from collections import OrderedDict
 
 from .nvm.counter import Counter
+from .sd_card import SDCardManager
 
 
 def _color(msg, color="gray", fmt="normal") -> str:
@@ -79,6 +80,7 @@ class Logger:
     def __init__(
         self,
         error_counter: Counter,
+        sd_card: SDCardManager,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
     ) -> None:
@@ -91,6 +93,7 @@ class Logger:
             colorized (bool): Whether to colorize output.
         """
         self._error_counter: Counter = error_counter
+        self.sd_card: SDCardManager = sd_card
         self._log_level: int = log_level
         self.colorized: bool = colorized
 
@@ -169,6 +172,9 @@ class Logger:
                 json_output = json_output.replace(
                     f'"level": "{level}"', f'"level": "{LogColors[level]}"'
                 )
+            if self.sd_card.mounted:
+                with open("/sd/logs/log", "a") as f:
+                    f.write(json_output + "\n")
             print(json_output)
 
     def debug(self, message: str, **kwargs: object) -> None:
