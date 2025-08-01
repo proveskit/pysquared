@@ -12,8 +12,8 @@ class Temperature(Reading):
     def __init__(self, value: float) -> None:
         """Initialize the temperature sensor reading.
 
-        :param value: The temperature in degrees celsius.
-        :type value: float
+        Args:
+            value: Temperature in degrees Celsius.
         """
         super().__init__()
         self.value = value
