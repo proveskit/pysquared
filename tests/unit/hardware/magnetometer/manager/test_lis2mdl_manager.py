@@ -18,6 +18,7 @@ from pysquared.sensor_reading.error import (
     SensorReadingTimeoutError,
     SensorReadingUnknownError,
 )
+from pysquared.sensor_reading.magnetic import Magnetic
 
 
 @pytest.fixture
@@ -90,36 +91,35 @@ def test_create_magnetometer_failed(
     assert mock_i2c.call_count <= 3
 
 
-# def test_get_vector_success(
-#     mock_lis2mdl: MagicMock,
-#     mock_i2c: MagicMock,
-#     mock_logger: MagicMock,
-# ) -> None:
-#     """Tests successful retrieval of the magnetic field vector.
+def test_get_vector_success(
+    mock_lis2mdl: MagicMock,
+    mock_i2c: MagicMock,
+    mock_logger: MagicMock,
+) -> None:
+    """Tests successful retrieval of the magnetic field vector.
 
-#     Args:
-#         mock_lis2mdl: Mocked LIS2MDL class.
-#         mock_i2c: Mocked I2C bus.
-#         mock_logger: Mocked Logger instance.
-#     """
-#     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
-#     magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
+    Args:
+        mock_lis2mdl: Mocked LIS2MDL class.
+        mock_i2c: Mocked I2C bus.
+        mock_logger: Mocked Logger instance.
+    """
+    magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
+    magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
 
-#     # Create a mock coroutine
-#     mock_coro = MagicMock()
-#     mock_coro.__await__ = MagicMock(return_value=iter([(1.0, 2.0, 3.0)]))
+    async def mock_magnetic():
+        """Mock asynchronous magnetic field vector."""
+        return (1.0, 2.0, 3.0)
 
-#     # Set the coroutine directly as asyncio_magnetic
-#     magnetometer._magnetometer.asyncio_magnetic = mock_coro
+    magnetometer._magnetometer.asyncio_magnetic = mock_magnetic()
 
-#     # Run the async function
-#     vector = asyncio.run(magnetometer.get_vector())
+    # Run the async function
+    vector = asyncio.run(magnetometer.get_vector())
 
-#     # Verify the result
-#     assert isinstance(vector, Magnetic)
-#     assert vector.x == 1.0
-#     assert vector.y == 2.0
-#     assert vector.z == 3.0
+    # Verify the result
+    assert isinstance(vector, Magnetic)
+    assert vector.x == 1.0
+    assert vector.y == 2.0
+    assert vector.z == 3.0
 
 
 def test_get_vector_timeout(
@@ -176,20 +176,3 @@ def test_get_vector_unknown_error(
 
         # Verify the exception message
         assert "Unknown error while reading magnetometer data" in str(excinfo.value)
-
-    # # Create a mock coroutine that raises an exception when awaited
-    # mock_coro = MagicMock()
-    # mock_coro.__await__ = MagicMock(side_effect=RuntimeError("Simulated hardware error"))
-
-    # # Set the coroutine directly as asyncio_magnetic
-    # magnetometer._magnetometer.asyncio_magnetic = mock_coro
-
-    # # Run the async function and expect SensorReadingUnknownError
-    # with pytest.raises(SensorReadingUnknownError) as excinfo:
-    #     asyncio.run(magnetometer.get_vector())
-
-    # # Verify the exception message
-    # assert "Unknown error while reading magnetometer data" in str(excinfo.value)
-    # # Verify the original exception is preserved as the cause
-    # assert isinstance(excinfo.value.__cause__, RuntimeError)
-    # assert str(excinfo.value.__cause__) == "Simulated hardware error"
