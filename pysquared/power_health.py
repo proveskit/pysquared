@@ -19,12 +19,6 @@ from .logger import Logger
 from .protos.power_monitor import PowerMonitorProto
 from .sensor_reading.avg import avg_readings
 
-try:
-    pass
-
-except Exception:
-    pass
-
 
 class State:
     """Base class for power health states."""
