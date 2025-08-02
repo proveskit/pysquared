@@ -22,14 +22,14 @@ class ReadingProto:
 
     @property
     def value(self) -> Tuple[float, float, float] | float:
-        """Gets the bus voltage from the power monitor.
+        """Gets the value of the sensor reading.
 
         Returns:
-            A Voltage object containing the bus voltage in volts.
+            The reading value, which may be a float or a tuple of floats, depending on the implementation.
 
         Raises:
-            SensorReadingValueError: If the reading returns an invalid value.
-            SensorReadingTimeoutError: If the reading times out.
-            SensorReadingUnknownError: If an unknown error occurs while reading the light sensor.
+            SensorReadingValueError: If the sensor reading returns an invalid value.
+            SensorReadingTimeoutError: If the sensor reading times out.
+            SensorReadingUnknownError: If an unknown error occurs while reading the sensor.
         """
         ...
