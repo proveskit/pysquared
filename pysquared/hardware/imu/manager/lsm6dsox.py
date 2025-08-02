@@ -19,7 +19,11 @@ from busio import I2C
 from ....logger import Logger
 from ....protos.imu import IMUProto
 from ....protos.temperature_sensor import TemperatureSensorProto
-from ....sensor_reading.error import SensorReadingUnknownError
+from ....sensor_reading.acceleration import Acceleration
+from ....sensor_reading.error import (
+    SensorReadingUnknownError,
+)
+from ....sensor_reading.gyro import Gyro
 from ....sensor_reading.temperature import Temperature
 from ...exception import HardwareInitializationError
 
@@ -51,29 +55,37 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
         except Exception as e:
             raise HardwareInitializationError("Failed to initialize IMU") from e
 
-    def get_gyro_data(self) -> tuple[float, float, float] | None:
+    def get_gyro_data(self) -> Gyro:
         """Gets the gyroscope data from the IMU.
 
         Returns:
-            A tuple containing the x, y, and z angular acceleration values in
-            radians per second, or None if the data is not available.
+            A Gyro object containing the x, y, and z angular velocity in radians per second.
+
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the gyroscope data.
         """
         try:
-            return self._imu.gyro
+            return Gyro(self._imu.gyro[0], self._imu.gyro[1], self._imu.gyro[2])
         except Exception as e:
-            self._log.error("Error retrieving IMU gyro sensor values", e)
+            raise SensorReadingUnknownError("Failed to read gyroscope data") from e
 
-    def get_acceleration(self) -> tuple[float, float, float] | None:
+    def get_acceleration(self) -> Acceleration:
         """Gets the acceleration data from the IMU.
 
         Returns:
-            A tuple containing the x, y, and z acceleration values in m/s^2, or
-            None if the data is not available.
+            An Acceleration object containing the x, y, and z acceleration values in m/s².
+
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the acceleration data.
         """
         try:
-            return self._imu.acceleration
+            return Acceleration(
+                self._imu.acceleration[0],
+                self._imu.acceleration[1],
+                self._imu.acceleration[2],
+            )
         except Exception as e:
-            self._log.error("Error retrieving IMU acceleration sensor values", e)
+            raise SensorReadingUnknownError("Failed to read acceleration") from e
 
     def get_temperature(self) -> Temperature:
         """Gets the temperature reading from the IMU.
@@ -87,6 +99,4 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
         try:
             return Temperature(self._imu.temperature)
         except Exception as e:
-            raise SensorReadingUnknownError(
-                "Failed to read temperature from IMU"
-            ) from e
+            raise SensorReadingUnknownError("Failed to read temperature") from e

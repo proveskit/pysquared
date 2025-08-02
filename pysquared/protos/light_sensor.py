@@ -24,7 +24,7 @@ class LightSensorProto:
         ...
 
     def get_lux(self) -> Lux:
-        """Gets the light reading of the sensor.
+        """Gets the lux reading of the sensor.
 
         Returns:
             A Lux object containing the light level in SI lux.

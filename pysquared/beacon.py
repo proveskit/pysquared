@@ -31,6 +31,8 @@ from .protos.imu import IMUProto
 from .protos.power_monitor import PowerMonitorProto
 from .protos.radio import RadioProto
 from .protos.temperature_sensor import TemperatureSensorProto
+from .sensor_reading.current import Current
+from .sensor_reading.voltage import Voltage
 
 try:
     from typing import Callable, OrderedDict
@@ -127,16 +129,13 @@ class Beacon:
             if isinstance(sensor, TemperatureSensorProto):
                 sensor_name = sensor.__class__.__name__
                 reading = sensor.get_temperature()
-                state[f"{sensor_name}_{index}_temperature"] = reading.value
-                state[f"{sensor_name}_{index}_temperature_timestamp"] = (
-                    reading.timestamp
-                )
+                state[f"{sensor_name}_{index}_temperature"] = reading
 
         b = json.dumps(state, separators=(",", ":")).encode("utf-8")
         return self._packet_manager.send(b)
 
     def avg_readings(
-        self, func: Callable[..., float | None], num_readings: int = 50
+        self, func: Callable[..., Current | Voltage], num_readings: int = 50
     ) -> float | None:
         """Gets the average of the readings from a function.
 
@@ -149,10 +148,11 @@ class Beacon:
         """
         readings: float = 0
         for _ in range(num_readings):
-            reading = func()
-            if reading is None:
-                self._log.warning(f"Couldn't acquire {func.__name__}")
+            try:
+                reading = func()
+            except Exception as e:
+                self._log.error(f"Error retrieving reading from {func.__name__}", e)
                 return
 
-            readings += reading
+            readings += reading.value
         return readings / num_readings

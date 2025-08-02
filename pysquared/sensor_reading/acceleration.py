@@ -14,12 +14,10 @@ class Acceleration(Reading):
     def __init__(self, x: float, y: float, z: float) -> None:
         """Initialize the acceleration sensor reading.
 
-        :param x: The x acceleration in meter per second²
-        :type x: float
-        :param y: The y acceleration in meter per second²
-        :type y: float
-        :param z: The z acceleration in meter per second²
-        :type z: float
+        Args:
+            x: The x acceleration in meter per second²
+            y: The y acceleration in meter per second²
+            z: The z acceleration in meter per second²
         """
         super().__init__()
         self.x = x
@@ -30,7 +28,7 @@ class Acceleration(Reading):
     def value(self) -> Tuple[float, float, float]:
         """Acceleration in x, y, z meter per second².
 
-        :return: Acceleration in x, y, z meter per second²
-        :rtype: Tuple[float, float, float]
+        Returns:
+            A tuple containing the x, y, and z components of the acceleration.
         """
         return (self.x, self.y, self.z)

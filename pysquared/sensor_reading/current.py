@@ -12,8 +12,8 @@ class Current(Reading):
     def __init__(self, value: float) -> None:
         """Initialize the current sensor reading.
 
-        :param value: The current milliamps (mA)
-        :type value: float
+        Args:
+            value: The current in milliamps (mA)
         """
         super().__init__()
         self.value = value

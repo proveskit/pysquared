@@ -14,12 +14,10 @@ class Magnetic(Reading):
     def __init__(self, x: float, y: float, z: float) -> None:
         """Initialize the magnetic sensor reading.
 
-        :param x: The x magnetic field in micro-Tesla (uT)
-        :type x: float
-        :param y: The y magnetic field in micro-Tesla (uT)
-        :type y: float
-        :param z: The z magnetic field in micro-Tesla (uT)
-        :type z: float
+        Args:
+            x: The x magnetic field in micro-Tesla (uT)
+            y: The y magnetic field in micro-Tesla (uT)
+            z: The z magnetic field in micro-Tesla (uT)
         """
         super().__init__()
         self.x = x
@@ -30,7 +28,7 @@ class Magnetic(Reading):
     def value(self) -> Tuple[float, float, float]:
         """Magnetic field in x, y, z micro-Tesla (uT).
 
-        :return: Magnetic field in x, y, z micro-Tesla (uT)
-        :rtype: Tuple[float, float, float]
+        Returns:
+            A tuple containing the x, y, and z components of the magnetic field.
         """
         return (self.x, self.y, self.z)

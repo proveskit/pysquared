@@ -12,8 +12,8 @@ class Voltage(Reading):
     def __init__(self, value: float) -> None:
         """Initialize the voltage sensor reading in volts (V).
 
-        :param value: The voltage in volts (V)
-        :type value: float
+        Args:
+            value: The voltage in volts (V)
         """
         super().__init__()
         self.value = value

@@ -14,12 +14,10 @@ class Gyro(Reading):
     def __init__(self, x: float, y: float, z: float) -> None:
         """Initialize the gyro sensor reading.
 
-        :param x: The x angular velocity in radians per second
-        :type x: float
-        :param y: The y angular velocity in radians per second
-        :type y: float
-        :param z: The z angular velocity in radians per second
-        :type z: float
+        Args:
+            x: The x angular velocity in radians per second
+            y: The y angular velocity in radians per second
+            z: The z angular velocity in radians per second
         """
         super().__init__()
         self.x = x
@@ -30,7 +28,7 @@ class Gyro(Reading):
     def value(self) -> Tuple[float, float, float]:
         """Angular velocity in x, y, z radians per second
 
-        :return: Angular velocity in x, y, z radians per second
-        :rtype: Tuple[float, float, float]
+        Returns:
+            A tuple containing the x, y, and z components of the angular velocity.
         """
         return (self.x, self.y, self.z)
