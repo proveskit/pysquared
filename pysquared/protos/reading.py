@@ -9,7 +9,7 @@ except ImportError:
 
 
 class ReadingProto:
-    """Protocol defining the interface for a Power Monitor."""
+    """Protocol defining the interface for a sensor reading."""
 
     @property
     def timestamp(self) -> float:
