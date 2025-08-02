@@ -6,7 +6,7 @@ from .base import Reading
 class Current(Reading):
     """Current sensor reading in milliamps (mA)."""
 
-    value: float
+    _value: float
     """Current in milliamps (mA)."""
 
     def __init__(self, value: float) -> None:
@@ -16,4 +16,13 @@ class Current(Reading):
             value: The current in milliamps (mA)
         """
         super().__init__()
-        self.value = value
+        self._value = value
+
+    @property
+    def value(self) -> float:
+        """Get the current value in milliamps (mA).
+
+        Returns:
+            The current in milliamps (mA).
+        """
+        return self._value

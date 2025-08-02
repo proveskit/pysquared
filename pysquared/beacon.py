@@ -31,11 +31,10 @@ from .protos.imu import IMUProto
 from .protos.power_monitor import PowerMonitorProto
 from .protos.radio import RadioProto
 from .protos.temperature_sensor import TemperatureSensorProto
-from .sensor_reading.current import Current
-from .sensor_reading.voltage import Voltage
+from .sensor_reading.avg import avg_readings
 
 try:
-    from typing import Callable, OrderedDict
+    from typing import OrderedDict
 except Exception:
     pass
 
@@ -113,46 +112,73 @@ class Beacon:
                 )
             if isinstance(sensor, IMUProto):
                 sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_acceleration"] = sensor.get_acceleration()
-                state[f"{sensor_name}_{index}_gyroscope"] = sensor.get_gyro_data()
+                try:
+                    state[f"{sensor_name}_{index}_acceleration"] = (
+                        sensor.get_acceleration()
+                    )
+                except Exception as e:
+                    self._log.error(
+                        "Error retrieving acceleration",
+                        e,
+                        sensor=sensor_name,
+                        index=index,
+                    )
+
+                try:
+                    state[f"{sensor_name}_{index}_gyroscope"] = sensor.get_gyro_data()
+                except Exception as e:
+                    self._log.error(
+                        "Error retrieving gyroscope data",
+                        e,
+                        sensor=sensor_name,
+                        index=index,
+                    )
             if isinstance(sensor, PowerMonitorProto):
                 sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_current_avg"] = self.avg_readings(
-                    sensor.get_current
-                )
-                state[f"{sensor_name}_{index}_bus_voltage_avg"] = self.avg_readings(
-                    sensor.get_bus_voltage
-                )
-                state[f"{sensor_name}_{index}_shunt_voltage_avg"] = self.avg_readings(
-                    sensor.get_shunt_voltage
-                )
+                try:
+                    state[f"{sensor_name}_{index}_current_avg"] = avg_readings(
+                        sensor.get_current
+                    )
+                except Exception as e:
+                    self._log.error(
+                        "Error retrieving current", e, sensor=sensor_name, index=index
+                    )
+
+                try:
+                    state[f"{sensor_name}_{index}_bus_voltage_avg"] = avg_readings(
+                        sensor.get_bus_voltage
+                    )
+                except Exception as e:
+                    self._log.error(
+                        "Error retrieving bus voltage",
+                        e,
+                        sensor=sensor_name,
+                        index=index,
+                    )
+
+                try:
+                    state[f"{sensor_name}_{index}_shunt_voltage_avg"] = avg_readings(
+                        sensor.get_shunt_voltage
+                    )
+                except Exception as e:
+                    self._log.error(
+                        "Error retrieving shunt voltage",
+                        e,
+                        sensor=sensor_name,
+                        index=index,
+                    )
             if isinstance(sensor, TemperatureSensorProto):
                 sensor_name = sensor.__class__.__name__
-                reading = sensor.get_temperature()
-                state[f"{sensor_name}_{index}_temperature"] = reading
+                try:
+                    reading = sensor.get_temperature()
+                    state[f"{sensor_name}_{index}_temperature"] = reading.to_dict()
+                except Exception as e:
+                    self._log.error(
+                        "Error retrieving temperature",
+                        e,
+                        sensor=sensor_name,
+                        index=index,
+                    )
 
         b = json.dumps(state, separators=(",", ":")).encode("utf-8")
         return self._packet_manager.send(b)
-
-    def avg_readings(
-        self, func: Callable[..., Current | Voltage], num_readings: int = 50
-    ) -> float | None:
-        """Gets the average of the readings from a function.
-
-        Args:
-            func: The function to call.
-            num_readings: The number of readings to take.
-
-        Returns:
-            The average of the readings, or None if the readings could not be taken.
-        """
-        readings: float = 0
-        for _ in range(num_readings):
-            try:
-                reading = func()
-            except Exception as e:
-                self._log.error(f"Error retrieving reading from {func.__name__}", e)
-                return
-
-            readings += reading.value
-        return readings / num_readings

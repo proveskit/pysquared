@@ -25,7 +25,11 @@ from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
 from pysquared.protos.temperature_sensor import TemperatureSensorProto
+from pysquared.sensor_reading.acceleration import Acceleration
+from pysquared.sensor_reading.current import Current
+from pysquared.sensor_reading.gyro import Gyro
 from pysquared.sensor_reading.temperature import Temperature
+from pysquared.sensor_reading.voltage import Voltage
 
 
 @pytest.fixture
@@ -87,17 +91,17 @@ class MockCounter(Counter):
 class MockPowerMonitor(PowerMonitorProto):
     """Mocks the PowerMonitorProto for testing."""
 
-    def get_current(self) -> float:
+    def get_current(self) -> Current:
         """Mocks the get_current method."""
-        return 0.5
+        return Current(0.5)
 
-    def get_bus_voltage(self) -> float:
+    def get_bus_voltage(self) -> Voltage:
         """Mocks the get_bus_voltage method."""
-        return 3.3
+        return Voltage(3.3)
 
-    def get_shunt_voltage(self) -> float:
+    def get_shunt_voltage(self) -> Voltage:
         """Mocks the get_shunt_voltage method."""
-        return 0.1
+        return Voltage(0.1)
 
 
 class MockTemperatureSensor(TemperatureSensorProto):
@@ -111,13 +115,13 @@ class MockTemperatureSensor(TemperatureSensorProto):
 class MockIMU(IMUProto):
     """Mocks the IMUProto for testing."""
 
-    def get_gyro_data(self) -> tuple[float, float, float]:
+    def get_gyro_data(self) -> Gyro:
         """Mocks the get_gyro_data method."""
-        return (0.1, 2.3, 4.5)
+        return Gyro(0.1, 2.3, 4.5)
 
-    def get_acceleration(self) -> tuple[float, float, float]:
+    def get_acceleration(self) -> Acceleration:
         """Mocks the get_acceleration method."""
-        return (5.4, 3.2, 1.0)
+        return Acceleration(5.4, 3.2, 1.0)
 
 
 def test_beacon_init(mock_logger, mock_packet_manager):
@@ -228,16 +232,20 @@ def test_beacon_send_with_sensors(
     assert pytest.approx(d["MockPowerMonitor_4_shunt_voltage_avg"], 0.01) == 0.1
 
     # temperature sensor
-    assert pytest.approx(d["MockTemperatureSensor_5_temperature"], 0.01) == 22.5
-    assert d["MockTemperatureSensor_5_temperature_timestamp"] is not None
+    assert (
+        pytest.approx(d["MockTemperatureSensor_5_temperature"]["value"], 0.01) == 22.5
+    )
+    assert d["MockTemperatureSensor_5_temperature"]["timestamp"] is not None
 
     # IMU sensor
-    assert pytest.approx(d["MockIMU_6_gyroscope"][0], 0.1) == 0.1
-    assert pytest.approx(d["MockIMU_6_gyroscope"][1], 0.1) == 2.3
-    assert pytest.approx(d["MockIMU_6_gyroscope"][2], 0.1) == 4.5
-    assert pytest.approx(d["MockIMU_6_acceleration"][0], 0.1) == 5.4
-    assert pytest.approx(d["MockIMU_6_acceleration"][1], 0.1) == 3.2
-    assert pytest.approx(d["MockIMU_6_acceleration"][2], 0.1) == 1.0
+    assert pytest.approx(d["MockIMU_6_gyroscope"]["x"], 0.1) == 0.1
+    assert pytest.approx(d["MockIMU_6_gyroscope"]["y"], 0.1) == 2.3
+    assert pytest.approx(d["MockIMU_6_gyroscope"]["z"], 0.1) == 4.5
+    assert d["MockIMU_6_gyroscope"]["timestamp"] is not None
+    assert pytest.approx(d["MockIMU_6_acceleration"]["x"], 0.1) == 5.4
+    assert pytest.approx(d["MockIMU_6_acceleration"]["y"], 0.1) == 3.2
+    assert pytest.approx(d["MockIMU_6_acceleration"]["z"], 0.1) == 1.0
+    assert d["MockIMU_6_acceleration"]["timestamp"] is not None
 
 
 def test_beacon_avg_readings(mock_logger, mock_packet_manager):
@@ -252,7 +260,7 @@ def test_beacon_avg_readings(mock_logger, mock_packet_manager):
     # Test with a function that returns consistent values
     def constant_func():
         """Returns a constant value."""
-        return 5.0
+        return Voltage(5.0)
 
     result = beacon.avg_readings(constant_func, num_readings=5)
     assert pytest.approx(result, 0.01) == 5.0
@@ -264,7 +272,7 @@ def test_beacon_avg_readings(mock_logger, mock_packet_manager):
 
     result = beacon.avg_readings(none_func)
     assert result is None
-    mock_logger.warning.assert_called_once()
+    mock_logger.error.assert_called_once()
 
 
 def test_avg_readings_varying_values(mock_logger, mock_packet_manager):
@@ -288,7 +296,7 @@ def test_avg_readings_varying_values(mock_logger, mock_packet_manager):
         nonlocal read_count
         value = values[read_count % len(values)]
         read_count += 1
-        return value
+        return Voltage(value)
 
     # Test with a specific number of readings that's a multiple of our pattern length
     result = beacon.avg_readings(incrementing_func, num_readings=5)
