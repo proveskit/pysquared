@@ -60,6 +60,8 @@ packages = [
     "pysquared.hardware.burnwire",
     "pysquared.hardware.burnwire.manager",
     "pysquared.hardware.light_sensor.manager",
+    "pysquared.hardware.load_switch",
+    "pysquared.hardware.load_switch.manager",
     "pysquared.nvm",
     "pysquared.protos",
     "pysquared.rtc",
