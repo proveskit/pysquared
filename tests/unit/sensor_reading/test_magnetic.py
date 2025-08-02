@@ -20,7 +20,6 @@ def test_magnetic_fuzzed_values(x, y, z):
     assert reading.y == y
     assert reading.z == z
     assert reading.value == (x, y, z)
-    assert reading.value == (x, y, z)
     assert reading.timestamp is not None
     assert isinstance(reading.timestamp, (int, float))
 
