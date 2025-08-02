@@ -113,8 +113,9 @@ class Beacon:
             if isinstance(sensor, IMUProto):
                 sensor_name: str = sensor.__class__.__name__
                 try:
+                    acceleration = sensor.get_acceleration()
                     state[f"{sensor_name}_{index}_acceleration"] = (
-                        sensor.get_acceleration()
+                        acceleration.to_dict()
                     )
                 except Exception as e:
                     self._log.error(
@@ -125,7 +126,8 @@ class Beacon:
                     )
 
                 try:
-                    state[f"{sensor_name}_{index}_gyroscope"] = sensor.get_gyro_data()
+                    gyro_data = sensor.get_gyro_data()
+                    state[f"{sensor_name}_{index}_gyroscope"] = gyro_data.to_dict()
                 except Exception as e:
                     self._log.error(
                         "Error retrieving gyroscope data",
