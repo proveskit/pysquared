@@ -1,4 +1,0 @@
-# file: /Users/nate/code/github.com/proveskit/pysquared/pysquared/hardware/radio/manager/base.py
-# hypothesis_version: 6.136.7
-
-[128, 'FSK', 'Initializing radio', 'Radio send failed']

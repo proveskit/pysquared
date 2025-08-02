@@ -1,4 +1,0 @@
-# file: /Users/nate/code/github.com/proveskit/pysquared/pysquared/logger.py
-# hypothesis_version: 6.136.7
-
-['\x1b[', '\x1b[0;39;49m', '0', '1', '2', '3', '4', '5', '6', '7', '9', ';3', 'CRITICAL', 'DEBUG', 'ERROR', 'INFO', 'NOTSET', 'WARNING', 'blue', 'bold', 'err', 'gray', 'green', 'level', 'm', 'msg', 'normal', 'orange', 'pink', 'red', 'teal', 'time', 'ulined', 'white']

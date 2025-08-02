@@ -1,4 +1,0 @@
-# file: /Users/nate/code/github.com/proveskit/pysquared/pysquared/hardware/busio.py
-# hypothesis_version: 6.136.7
-
-[200, 100000, 'Configuring spi bus', 'Initializing i2c', 'Initializing spi bus']
