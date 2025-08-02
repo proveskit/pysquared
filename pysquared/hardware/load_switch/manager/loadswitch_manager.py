@@ -16,9 +16,6 @@ class LoadSwitchManager(LoadSwitchManagerProto):
     that controls the load switch, allowing for high or low enable logic.
     """
 
-    # Error message for when load switch pin is not provided
-    _LOAD_SWITCH_PIN_REQUIRED_MSG = "Load switch pin is required"
-
     def __init__(self, load_switch_pin: DigitalInOut, enable_high: bool = True) -> None:
         """Initialize the load switch manager.
         :param load_switch_pin: DigitalInOut pin controlling the load switch (can be None)
@@ -27,19 +24,14 @@ class LoadSwitchManager(LoadSwitchManagerProto):
         self._load_switch_pin = load_switch_pin
         self._enable_pin_value = enable_high
         self._disable_pin_value = not enable_high
-        self._load_enabled = False
 
     def enable_load(self) -> None:
         """Enables the load switch, allowing power to flow.
         :raises RuntimeError: If the load switch cannot be enabled due to hardware issues
         :raises NotImplementedError: If no load switch pin is provided
         """
-        if self._load_switch_pin is None:
-            raise NotImplementedError(self._LOAD_SWITCH_PIN_REQUIRED_MSG)
-
         try:
             self._load_switch_pin.value = self._enable_pin_value
-            self._load_enabled = True
         except Exception as e:
             raise RuntimeError(f"Failed to enable load switch: {e}") from e
 
@@ -48,12 +40,8 @@ class LoadSwitchManager(LoadSwitchManagerProto):
         :raises RuntimeError: If the load switch cannot be disabled due to hardware issues
         :raises NotImplementedError: If no load switch pin is provided
         """
-        if self._load_switch_pin is None:
-            raise NotImplementedError(self._LOAD_SWITCH_PIN_REQUIRED_MSG)
-
         try:
             self._load_switch_pin.value = self._disable_pin_value
-            self._load_enabled = False
         except Exception as e:
             raise RuntimeError(f"Failed to disable load switch: {e}") from e
 
@@ -64,11 +52,8 @@ class LoadSwitchManager(LoadSwitchManagerProto):
         :raises RuntimeError: If the load switch cannot be reset due to hardware issues
         :raises NotImplementedError: If no load switch pin is provided
         """
-        if self._load_switch_pin is None:
-            raise NotImplementedError(self._LOAD_SWITCH_PIN_REQUIRED_MSG)
-
         try:
-            was_enabled = self._load_enabled
+            was_enabled = self.is_enabled
             self.disable_load()
             time.sleep(0.1)
             if was_enabled:
@@ -82,9 +67,6 @@ class LoadSwitchManager(LoadSwitchManagerProto):
         :raises RuntimeError: If the load switch state cannot be read due to hardware issues
         :return: True if the load switch is enabled, False otherwise
         """
-        if self._load_switch_pin is None:
-            return self._load_enabled
-
         try:
             return self._load_switch_pin.value is self._enable_pin_value
         except Exception as e:
