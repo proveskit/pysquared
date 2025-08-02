@@ -8,7 +8,7 @@ dependencies = [
     "adafruit-circuitpython-ina219==3.4.26",
     "adafruit-circuitpython-asyncio @ git+https://github.com/adafruit/adafruit_circuitpython_asyncio@1.3.3",
     "adafruit-circuitpython-drv2605==1.3.4",
-    "adafruit-circuitpython-lis2mdl @ git+https://github.com/adafruit/Adafruit_CircuitPython_LIS2MDL@76b5cc7",
+    "adafruit-circuitpython-lis2mdl==2.1.23",
     "adafruit-circuitpython-lsm6ds==4.5.13",
     "adafruit-circuitpython-mcp9808==3.3.24",
     "adafruit-circuitpython-neopixel==6.3.12",

@@ -82,14 +82,17 @@ wheels = [
 
 [[package]]
 name = "adafruit-circuitpython-lis2mdl"
-version = "0.0.0+auto.0"
-source = { git = "https://github.com/adafruit/Adafruit_CircuitPython_LIS2MDL?rev=76b5cc7#76b5cc7c62cf75d99325f652bb5986e852b384b6" }
+version = "2.1.23"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "adafruit-blinka" },
-    { name = "adafruit-circuitpython-asyncio" },
     { name = "adafruit-circuitpython-busdevice" },
     { name = "adafruit-circuitpython-register" },
     { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/93/2e/ffa256bafb334a951b2118e6e02de5a788882a2570c721436290562ba93b/adafruit_circuitpython_lis2mdl-2.1.23.tar.gz", hash = "sha256:60e88e6ca6093c6e32843256386aeb5a06ffadbdead7ff6bc8985f7274c7083c", size = 28771, upload-time = "2024-10-07T22:03:38.49Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6c/b0/f771de054f7991e1bab13125ae07ed588def5f2e0f0fefc0b603867d26be/adafruit_circuitpython_lis2mdl-2.1.23-py3-none-any.whl", hash = "sha256:130be51d808687fe963302bdec9229bcf64c903023548f8112c2604fc25c4a0d", size = 6325, upload-time = "2024-10-07T22:03:37.583Z" },
 ]
 
 [[package]]
@@ -1051,7 +1054,7 @@ requires-dist = [
     { name = "adafruit-circuitpython-asyncio", git = "https://github.com/adafruit/adafruit_circuitpython_asyncio?rev=1.3.3" },
     { name = "adafruit-circuitpython-drv2605", specifier = "==1.3.4" },
     { name = "adafruit-circuitpython-ina219", specifier = "==3.4.26" },
-    { name = "adafruit-circuitpython-lis2mdl", git = "https://github.com/adafruit/Adafruit_CircuitPython_LIS2MDL?rev=76b5cc7" },
+    { name = "adafruit-circuitpython-lis2mdl", specifier = "==2.1.23" },
     { name = "adafruit-circuitpython-lsm6ds", specifier = "==4.5.13" },
     { name = "adafruit-circuitpython-mcp9808", specifier = "==3.3.24" },
     { name = "adafruit-circuitpython-neopixel", specifier = "==6.3.12" },

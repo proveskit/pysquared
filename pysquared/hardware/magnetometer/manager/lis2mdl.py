@@ -11,15 +11,12 @@ mag_data = magnetometer.get_vector()
 ```
 """
 
-import asyncio
-
 from adafruit_lis2mdl import LIS2MDL
 from busio import I2C
 
 from ....logger import Logger
 from ....protos.magnetometer import MagnetometerProto
 from ....sensor_reading.error import (
-    SensorReadingTimeoutError,
     SensorReadingUnknownError,
 )
 from ....sensor_reading.magnetic import Magnetic
@@ -53,7 +50,7 @@ class LIS2MDLManager(MagnetometerProto):
                 "Failed to initialize magnetometer"
             ) from e
 
-    async def get_vector(self) -> Magnetic:
+    def get_vector(self) -> Magnetic:
         """Gets the magnetic field vector from the magnetometer.
 
         Returns:
@@ -63,17 +60,12 @@ class LIS2MDLManager(MagnetometerProto):
             SensorReadingTimeoutError: If the reading times out.
             SensorReadingUnknownError: If an unknown error occurs while reading the magnetometer.
         """
-        timeout = 1.0  # seconds
         try:
-            m = await asyncio.wait_for(self._magnetometer.asyncio_magnetic, timeout)
+            m = self._magnetometer.magnetic
             return Magnetic(
                 x=m[0],
                 y=m[1],
                 z=m[2],
-            )
-        except asyncio.TimeoutError:
-            raise SensorReadingTimeoutError(
-                "Timeout while waiting for magnetometer data"
             )
         except Exception as e:
             raise SensorReadingUnknownError(

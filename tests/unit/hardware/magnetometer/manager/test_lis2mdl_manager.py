@@ -5,7 +5,6 @@ the LIS2MDL magnetometer. The tests cover initialization, successful data
 retrieval, and error handling for magnetic field vector readings.
 """
 
-import asyncio
 from typing import Generator
 from unittest.mock import MagicMock, patch
 
@@ -15,7 +14,6 @@ from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.magnetometer.manager.lis2mdl import LIS2MDLManager
 from pysquared.sensor_reading.error import (
-    SensorReadingTimeoutError,
     SensorReadingUnknownError,
 )
 from pysquared.sensor_reading.magnetic import Magnetic
@@ -106,48 +104,20 @@ def test_get_vector_success(
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
     magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
 
-    async def mock_magnetic():
-        """Mock asynchronous magnetic field vector."""
+    def mock_magnetic():
+        """Mock magnetic field vector."""
         return (1.0, 2.0, 3.0)
 
-    magnetometer._magnetometer.asyncio_magnetic = mock_magnetic()
+    magnetometer._magnetometer.magnetic = mock_magnetic()
 
     # Run the async function
-    vector = asyncio.run(magnetometer.get_vector())
+    vector = magnetometer.get_vector()
 
     # Verify the result
     assert isinstance(vector, Magnetic)
     assert vector.x == 1.0
     assert vector.y == 2.0
     assert vector.z == 3.0
-
-
-def test_get_vector_timeout(
-    mock_lis2mdl: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
-) -> None:
-    """Tests handling of timeout when retrieving the magnetic field vector.
-
-    Args:
-        mock_lis2mdl: Mocked LIS2MDL class.
-        mock_i2c: Mocked I2C bus.
-        mock_logger: Mocked Logger instance.
-    """
-    magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
-    magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
-
-    # Patch wait_for to raise TimeoutError immediately
-    with patch("asyncio.wait_for", side_effect=asyncio.TimeoutError):
-        # Set a dummy coroutine - it won't be used due to the patch
-        magnetometer._magnetometer.asyncio_magnetic = MagicMock()
-
-        # Run the async function and expect SensorReadingTimeoutError
-        with pytest.raises(SensorReadingTimeoutError) as excinfo:
-            asyncio.run(magnetometer.get_vector())
-
-        # Verify the exception message
-        assert "Timeout while waiting for magnetometer data" in str(excinfo.value)
 
 
 def test_get_vector_unknown_error(
@@ -172,7 +142,7 @@ def test_get_vector_unknown_error(
 
         # Run the async function and expect SensorReadingUnknownError
         with pytest.raises(SensorReadingUnknownError) as excinfo:
-            asyncio.run(magnetometer.get_vector())
+            magnetometer.get_vector()
 
         # Verify the exception message
         assert "Unknown error while reading magnetometer data" in str(excinfo.value)
