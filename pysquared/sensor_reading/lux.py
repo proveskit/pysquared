@@ -6,7 +6,7 @@ from .base import Reading
 class Lux(Reading):
     """Lux sensor reading in SI lux."""
 
-    value: float
+    _value: float
     """Light level in SI lux."""
 
     def __init__(self, value: float) -> None:
@@ -16,4 +16,13 @@ class Lux(Reading):
             value: The light level in SI lux
         """
         super().__init__()
-        self.value = value
+        self._value = value
+
+    @property
+    def value(self) -> float:
+        """Get the light level in SI lux.
+
+        Returns:
+            The light level in SI lux.
+        """
+        return self._value

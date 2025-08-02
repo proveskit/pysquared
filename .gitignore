@@ -3,6 +3,7 @@ __pycache__/
 .coverage*
 .coverage-reports/
 .DS_Store
+.hypothesis
 .venv
 artifacts/
 coverage-reports/

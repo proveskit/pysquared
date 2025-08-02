@@ -16,7 +16,9 @@ from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
 from pysquared.logger import Logger
+from pysquared.sensor_reading.acceleration import Acceleration
 from pysquared.sensor_reading.error import SensorReadingUnknownError
+from pysquared.sensor_reading.gyro import Gyro
 from pysquared.sensor_reading.temperature import Temperature
 
 address: int = 123
@@ -107,7 +109,10 @@ def test_get_acceleration_success(
     imu_manager._imu.acceleration = expected_accel
 
     vector = imu_manager.get_acceleration()
-    assert vector == expected_accel
+    assert isinstance(vector, Acceleration)
+    assert vector.x == expected_accel[0]
+    assert vector.y == expected_accel[1]
+    assert vector.z == expected_accel[2]
 
 
 def test_get_acceleration_failure(
@@ -132,14 +137,8 @@ def test_get_acceleration_failure(
     )
     type(mock_imu_instance).acceleration = mock_accel_property
 
-    vector = imu_manager.get_acceleration()
-
-    assert vector is None
-    assert mock_logger.error.call_count == 1
-    call_args, _ = mock_logger.error.call_args
-    assert call_args[0] == "Error retrieving IMU acceleration sensor values"
-    assert isinstance(call_args[1], RuntimeError)
-    assert str(call_args[1]) == "Simulated retrieval error"
+    with pytest.raises(SensorReadingUnknownError):
+        imu_manager.get_acceleration()
 
 
 def test_get_gyro_success(
@@ -160,7 +159,10 @@ def test_get_gyro_success(
     imu_manager._imu.gyro = expected_gyro
 
     vector = imu_manager.get_gyro_data()
-    assert vector == expected_gyro
+    assert isinstance(vector, Gyro)
+    assert vector.x == expected_gyro[0]
+    assert vector.y == expected_gyro[1]
+    assert vector.z == expected_gyro[2]
 
 
 def test_get_gyro_failure(
@@ -184,14 +186,8 @@ def test_get_gyro_failure(
     )
     type(mock_imu_instance).gyro = mock_gyro_property
 
-    vector = imu_manager.get_gyro_data()
-
-    assert vector is None
-    assert mock_logger.error.call_count == 1
-    call_args, _ = mock_logger.error.call_args
-    assert call_args[0] == "Error retrieving IMU gyro sensor values"
-    assert isinstance(call_args[1], RuntimeError)
-    assert str(call_args[1]) == "Simulated retrieval error"
+    with pytest.raises(SensorReadingUnknownError):
+        imu_manager.get_gyro_data()
 
 
 def test_get_temperature_success(
