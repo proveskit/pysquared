@@ -1,5 +1,5 @@
-"""This protocol specifies the interface that any power monitor implementation must
-adhere to, ensuring consistent behavior across different power monitor hardware.
+"""This protocol specifies the interface that any sensor reading protocol implementation must
+adhere to, ensuring consistent behavior across different types of sensor readings.
 """
 
 try:
