@@ -1,0 +1,4 @@
+# file: /Users/nate/code/github.com/proveskit/pysquared/mocks/proves_sx126/sx1262.py
+# hypothesis_version: 6.136.7
+
+[0.5, 1.6, 48.0, 50.0, 60.0, 125.0, 156.2, 434.0, 255, 256, 4129, 7439, 'FSK']

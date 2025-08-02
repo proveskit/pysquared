@@ -5,10 +5,10 @@ try:
 except ImportError:
     pass
 
-from ..protos.reading import ReadingProto
+from .base import Reading
 
 
-class Magnetic(ReadingProto):
+class Magnetic(Reading):
     """Magnetic sensor reading in micro-Tesla (uT)."""
 
     def __init__(self, x: float, y: float, z: float) -> None:

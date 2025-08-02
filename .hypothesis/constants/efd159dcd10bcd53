@@ -1,0 +1,4 @@
+# file: /Users/nate/code/github.com/proveskit/pysquared/pysquared/beacon.py
+# hypothesis_version: 6.136.7
+
+[',', ':', 'name', 'time', 'uptime', 'utf-8']

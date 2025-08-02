@@ -1,0 +1,4 @@
+# file: /Users/nate/code/github.com/proveskit/pysquared/pysquared/hardware/radio/packetizer/packet_manager.py
+# hypothesis_version: 6.136.7
+
+[b'ACK', 0.2, 'Received packet', 'Sending packets...', 'big']

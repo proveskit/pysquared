@@ -1,0 +1,4 @@
+# file: /Users/nate/.vscode/extensions/ms-python.python-2025.10.1-darwin-arm64/python_files/vscode_pytest/run_pytest_script.py
+# hypothesis_version: 6.136.7
+
+['--cov', '--cov-branch', '--cov=', '--cov=.', '-p', 'COVERAGE_ENABLED', 'PATH', 'Path', 'RUN_TEST_IDS_PIPE', 'True', '__main__', 'lib', 'python', 'scripts', 'utf-8', 'vscode_pytest']

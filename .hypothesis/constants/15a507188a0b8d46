@@ -1,0 +1,4 @@
+# file: /Users/nate/.vscode/extensions/ms-python.python-2025.10.1-darwin-arm64/python_files/vscode_pytest/__init__.py
+# hypothesis_version: 6.136.7
+
+[100, 4096, '--collect-only', '--cov', '--cov-branch', '--rootdir=', '.py', '2.0', '7.7.0', '::', 'AssertionError', 'COVERAGE_ENABLED', 'SkipTest', 'TEST_RUN_PIPE', 'True', '[', 'call', 'callspec', 'children', 'class', 'cwd', 'error', 'executed_branches', 'failure', 'file', 'folder', 'function', 'id_', 'jsonrpc', 'lib', 'lineno', 'lines_covered', 'lines_missed', 'name', 'params', 'path', 'pytest_cov', 'python', 'runID', 'session_node_path: ', 'setup', 'skip', 'skipif', 'skipped', 'status', 'success', 'test', 'tests', 'total_branches', 'type_', 'utf-8', 'vscode_xdist', 'wb', 'xdist']

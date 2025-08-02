@@ -1,0 +1,4 @@
+# file: /Users/nate/code/github.com/proveskit/pysquared/pysquared/hardware/radio/manager/rfm9x.py
+# hypothesis_version: 6.136.7
+
+[143.0, 127, 128, 255, 'Error receiving data', 'No message received', 'RFM9xFSK', 'ack_delay', 'broadcast_address', 'modulation_type', 'node_address', 'spreading_factor', 'transmit_power']

@@ -1,0 +1,4 @@
+# file: /Users/nate/code/github.com/proveskit/pysquared/pysquared/config/radio.py
+# hypothesis_version: 6.136.7
+
+[0.0, 2.0, 438.0, 915.0, 255, 435, 80000, 'FSK', 'LoRa', 'ack_delay', 'allowed_values', 'broadcast_address', 'coding_rate', 'fsk', 'license', 'lora', 'max', 'max0', 'max1', 'max_output', 'min', 'min0', 'min1', 'modulation', 'modulation_type', 'node_address', 'spreading_factor', 'start_time', 'transmit_frequency', 'transmit_power', 'type']

@@ -1,0 +1,4 @@
+# file: /Users/nate/code/github.com/proveskit/pysquared/pysquared/config/config.py
+# hypothesis_version: 6.136.7
+
+[0.0, 5.4, 6.0, 7.2, 8.0, 8.4, 2000.0, 3600, 86400, 604800, 'cubesat_name', 'debug', 'detumble_enable_x', 'detumble_enable_y', 'detumble_enable_z', 'fsk', 'heating', 'jokes', 'lora', 'max', 'max_length', 'min', 'min_length', 'normal_battery_temp', 'normal_micro_temp', 'normal_temp', 'r', 'radio', 'reboot_time', 'repeat_code', 'sleep_duration', 'super_secret_code', 'turbo_clock', 'type', 'w']
