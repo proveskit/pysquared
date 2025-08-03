@@ -1,5 +1,7 @@
 """This file provides functions for detumbling the satellite using the b-dot algorithm."""
 
+import math
+
 from ..sensor_reading.magnetic import Magnetic
 
 
@@ -25,10 +27,14 @@ class BDotDetumble:
         Returns:
             The magnitude of the magnetic field vector.
         """
-        return pow(B_now.value[0] ** 2 + B_now.value[1] ** 2 + B_now.value[2] ** 2, 0.5)
+        return math.sqrt(
+            B_now.value[0] ** 2 + B_now.value[1] ** 2 + B_now.value[2] ** 2
+        )
 
     @staticmethod
-    def _dB_dt(B_now: Magnetic, B_prev: Magnetic) -> tuple[float, float, float]:
+    def _dB_dt(
+        current_mag_field: Magnetic, previous_mag_field: Magnetic
+    ) -> tuple[float, float, float]:
         """
         Computes the time derivative of the magnetic field vector.
 
@@ -39,11 +45,20 @@ class BDotDetumble:
 
         Returns:
             dB_dt: tuple of dB/dt (dBx/dt, dBy/dt, dBz/dt)
+
+        Raises:
+            ValueError: If the time difference between the current and previous magnetic field readings is less than or equal to 0.
         """
-        dt = B_now.timestamp - B_prev.timestamp
-        Bx_dt = (B_now.value[0] - B_prev.value[0]) / dt
-        By_dt = (B_now.value[1] - B_prev.value[1]) / dt
-        Bz_dt = (B_now.value[2] - B_prev.value[2]) / dt
+        # avoid division by zero
+        dt = current_mag_field.timestamp - previous_mag_field.timestamp
+        if dt <= 0:
+            raise ValueError(
+                "Time difference between current and previous magnetic field readings must be greater than 0."
+            )
+
+        Bx_dt = (current_mag_field.value[0] - previous_mag_field.value[0]) / dt
+        By_dt = (current_mag_field.value[1] - previous_mag_field.value[1]) / dt
+        Bz_dt = (current_mag_field.value[2] - previous_mag_field.value[2]) / dt
         return (Bx_dt, By_dt, Bz_dt)
 
     def dipole_moment(
@@ -60,12 +75,29 @@ class BDotDetumble:
         |B| is the magnitude of the magnetic field vector
 
         Args:
-            mag_field (tuple): The measured magnetic field vector (length 3).
-            ang_vel (tuple): The measured angular velocity vector (length 3).
+            current_mag_field: Magnetic object containing the current magnetic field vector.
+            previous_mag_field: Magnetic object containing the previous magnetic field vector.
 
         Returns:
-            list: The dipole moment vector to be applied (length 3).
+            The dipole moment vector to be applied.
+
+        Raises:
+            ValueError: If the magnitude of the current magnetic field is too small to compute the dipole moment.
+                or if the time difference between the current and previous magnetic field readings is less than or equal to 0.
         """
-        scalar_coef = -self._gain / self._magnitude(current_mag_field)
-        dB_dt = self._dB_dt(current_mag_field, previous_mag_field)
-        return (scalar_coef * dB_dt[0], scalar_coef * dB_dt[1], scalar_coef * dB_dt[2])
+        # avoid division by zero
+        magnitude = self._magnitude(current_mag_field)
+        if magnitude < 1e-6:
+            raise ValueError(
+                "Current magnetic field magnitude is too small to compute dipole moment."
+            )
+
+        try:
+            Bx_dt, By_dt, Bz_dt = self._dB_dt(current_mag_field, previous_mag_field)
+        except ValueError:
+            raise
+
+        moment_x = -self._gain * Bx_dt / magnitude
+        moment_y = -self._gain * By_dt / magnitude
+        moment_z = -self._gain * Bz_dt / magnitude
+        return (moment_x, moment_y, moment_z)
