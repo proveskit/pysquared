@@ -17,18 +17,20 @@ class BDotDetumble:
         self._gain = gain
 
     @staticmethod
-    def _magnitude(B_now: Magnetic) -> float:
+    def _magnitude(current_mag_field: Magnetic) -> float:
         """
         Computes the magnitude of the magnetic field vector.
 
         Args:
-            B_now: Magnetic object containing the current magnetic field vector.
+            current_mag_field: Magnetic object containing the current magnetic field vector.
 
         Returns:
             The magnitude of the magnetic field vector.
         """
         return math.sqrt(
-            B_now.value[0] ** 2 + B_now.value[1] ** 2 + B_now.value[2] ** 2
+            current_mag_field.value[0] ** 2
+            + current_mag_field.value[1] ** 2
+            + current_mag_field.value[2] ** 2
         )
 
     @staticmethod
@@ -39,9 +41,8 @@ class BDotDetumble:
         Computes the time derivative of the magnetic field vector.
 
         Args:
-            B_now: Magnetic object containing the current magnetic field vector
-            B_prev: Magnetic object containing the previous magnetic field vector
-            dt: time difference between measurements (in seconds)
+            current_mag_field: Magnetic object containing the current magnetic field vector
+            previous_mag_field: Magnetic object containing the previous magnetic field vector
 
         Returns:
             dB_dt: tuple of dB/dt (dBx/dt, dBy/dt, dBz/dt)
@@ -65,7 +66,7 @@ class BDotDetumble:
         self, current_mag_field: Magnetic, previous_mag_field: Magnetic
     ) -> tuple[float, float, float]:
         """
-        Calculates the required dipole moment to detumble the satellite.
+        Computes the required dipole moment to detumble the satellite.
 
         m = -k * (dB/dt) / |B|
 
