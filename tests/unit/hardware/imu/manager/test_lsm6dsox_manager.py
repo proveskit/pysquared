@@ -155,14 +155,14 @@ def test_get_angular_velocity_success(
     """
     imu_manager = LSM6DSOXManager(mock_logger, mock_i2c, address)
     imu_manager._imu = MagicMock(spec=LSM6DSOX)
-    expected_angular_velocity = (0.1, 0.2, 0.3)
-    imu_manager._imu.angular_velocity = expected_angular_velocity
+    expected_gyro = (0.1, 0.2, 0.3)
+    imu_manager._imu.gyro = expected_gyro
 
     vector = imu_manager.get_angular_velocity()
     assert isinstance(vector, AngularVelocity)
-    assert vector.x == expected_angular_velocity[0]
-    assert vector.y == expected_angular_velocity[1]
-    assert vector.z == expected_angular_velocity[2]
+    assert vector.x == expected_gyro[0]
+    assert vector.y == expected_gyro[1]
+    assert vector.z == expected_gyro[2]
 
 
 def test_get_angular_velocity_failure(

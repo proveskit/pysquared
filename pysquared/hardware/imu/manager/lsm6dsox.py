@@ -66,9 +66,9 @@ class LSM6DSOXManager(IMUProto, TemperatureSensorProto):
         """
         try:
             return AngularVelocity(
-                self._imu.angular_velocity[0],
-                self._imu.angular_velocity[1],
-                self._imu.angular_velocity[2],
+                self._imu.gyro[0],
+                self._imu.gyro[1],
+                self._imu.gyro[2],
             )
         except Exception as e:
             raise SensorReadingUnknownError("Failed to read angular velocity") from e
