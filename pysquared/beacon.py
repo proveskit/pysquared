@@ -182,9 +182,9 @@ class Beacon:
 
         self._safe_add_sensor_reading(
             state,
-            f"{sensor_name}_{index}_gyroscope",
-            lambda: sensor.get_gyro_data().to_dict(),
-            "Error retrieving gyroscope data",
+            f"{sensor_name}_{index}_angular_velocityscope",
+            lambda: sensor.get_angular_velocity().to_dict(),
+            "Error retrieving angular velocity",
             sensor_name,
             index,
         )

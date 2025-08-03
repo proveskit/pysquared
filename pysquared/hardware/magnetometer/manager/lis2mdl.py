@@ -7,7 +7,7 @@ and provides a method for reading the magnetic field vector.
 logger = Logger()
 i2c = busio.I2C(board.SCL, board.SDA)
 magnetometer = LIS2MDLManager(logger, i2c)
-mag_data = magnetometer.get_vector()
+mag_field = magnetometer.get_magnetic_field()
 ```
 """
 
@@ -50,7 +50,7 @@ class LIS2MDLManager(MagnetometerProto):
                 "Failed to initialize magnetometer"
             ) from e
 
-    def get_vector(self) -> Magnetic:
+    def get_magnetic_field(self) -> Magnetic:
         """Gets the magnetic field vector from the magnetometer.
 
         Returns:

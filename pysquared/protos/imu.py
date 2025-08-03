@@ -3,17 +3,17 @@ ensuring consistent behavior across different IMU hardware.
 """
 
 from ..sensor_reading.acceleration import Acceleration
-from ..sensor_reading.gyro import Gyro
+from ..sensor_reading.angular_velocity import AngularVelocity
 
 
 class IMUProto:
     """Protocol defining the interface for an Inertial Measurement Unit (IMU)."""
 
-    def get_gyro_data(self) -> Gyro:
-        """Gets the gyroscope data from the inertial measurement unit.
+    def get_angular_velocity(self) -> AngularVelocity:
+        """Gets the angular velocity from the inertial measurement unit.
 
         Returns:
-            A Gyro object containing the x, y, and z angular velocity in radians per second.
+            An AngularVelocity object containing the x, y, and z angular velocity in radians per second.
 
         Raises:
             SensorReadingValueError: If the reading returns an invalid value.

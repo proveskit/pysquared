@@ -89,7 +89,7 @@ def test_create_magnetometer_failed(
     assert mock_i2c.call_count <= 3
 
 
-def test_get_vector_success(
+def test_get_magnetic_field_success(
     mock_lis2mdl: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
@@ -111,7 +111,7 @@ def test_get_vector_success(
     magnetometer._magnetometer.magnetic = mock_magnetic()
 
     # Run the async function
-    vector = magnetometer.get_vector()
+    vector = magnetometer.get_magnetic_field()
 
     # Verify the result
     assert isinstance(vector, Magnetic)
@@ -120,7 +120,7 @@ def test_get_vector_success(
     assert vector.z == 3.0
 
 
-def test_get_vector_unknown_error(
+def test_get_magnetic_field_unknown_error(
     mock_lis2mdl: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
@@ -142,7 +142,7 @@ def test_get_vector_unknown_error(
 
         # Run the async function and expect SensorReadingUnknownError
         with pytest.raises(SensorReadingUnknownError) as excinfo:
-            magnetometer.get_vector()
+            magnetometer.get_magnetic_field()
 
         # Verify the exception message
         assert "Unknown error while reading magnetometer data" in str(excinfo.value)

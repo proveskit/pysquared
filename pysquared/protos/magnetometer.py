@@ -8,7 +8,7 @@ from ..sensor_reading.magnetic import Magnetic
 class MagnetometerProto:
     """Protocol defining the interface for a Magnetometer."""
 
-    def get_vector(self) -> Magnetic:
+    def get_magnetic_field(self) -> Magnetic:
         """Gets the magnetic field vector from the magnetometer.
 
         Returns:

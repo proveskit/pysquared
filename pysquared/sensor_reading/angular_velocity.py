@@ -1,4 +1,4 @@
-"""Gyro sensor reading."""
+"""AngularVelocity sensor reading."""
 
 try:
     from typing import Tuple
@@ -8,11 +8,11 @@ except ImportError:
 from .base import Reading
 
 
-class Gyro(Reading):
-    """Gyro sensor reading in radians per second."""
+class AngularVelocity(Reading):
+    """AngularVelocity sensor reading in radians per second."""
 
     def __init__(self, x: float, y: float, z: float) -> None:
-        """Initialize the gyro sensor reading.
+        """Initialize the angular_velocity sensor reading.
 
         Args:
             x: The x angular velocity in radians per second

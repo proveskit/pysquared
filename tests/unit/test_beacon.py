@@ -26,9 +26,9 @@ from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
 from pysquared.protos.temperature_sensor import TemperatureSensorProto
 from pysquared.sensor_reading.acceleration import Acceleration
+from pysquared.sensor_reading.angular_velocity import AngularVelocity
 from pysquared.sensor_reading.avg import avg_readings
 from pysquared.sensor_reading.current import Current
-from pysquared.sensor_reading.gyro import Gyro
 from pysquared.sensor_reading.temperature import Temperature
 from pysquared.sensor_reading.voltage import Voltage
 
@@ -116,9 +116,9 @@ class MockTemperatureSensor(TemperatureSensorProto):
 class MockIMU(IMUProto):
     """Mocks the IMUProto for testing."""
 
-    def get_gyro_data(self) -> Gyro:
-        """Mocks the get_gyro_data method."""
-        return Gyro(0.1, 2.3, 4.5)
+    def get_angular_velocity(self) -> AngularVelocity:
+        """Mocks the get_angular_velocity method."""
+        return AngularVelocity(0.1, 2.3, 4.5)
 
     def get_acceleration(self) -> Acceleration:
         """Mocks the get_acceleration method."""
@@ -239,10 +239,10 @@ def test_beacon_send_with_sensors(
     assert d["MockTemperatureSensor_5_temperature"]["timestamp"] is not None
 
     # IMU sensor
-    assert pytest.approx(d["MockIMU_6_gyroscope"]["value"][0], 0.1) == 0.1
-    assert pytest.approx(d["MockIMU_6_gyroscope"]["value"][1], 0.1) == 2.3
-    assert pytest.approx(d["MockIMU_6_gyroscope"]["value"][2], 0.1) == 4.5
-    assert d["MockIMU_6_gyroscope"]["timestamp"] is not None
+    assert pytest.approx(d["MockIMU_6_angular_velocityscope"]["value"][0], 0.1) == 0.1
+    assert pytest.approx(d["MockIMU_6_angular_velocityscope"]["value"][1], 0.1) == 2.3
+    assert pytest.approx(d["MockIMU_6_angular_velocityscope"]["value"][2], 0.1) == 4.5
+    assert d["MockIMU_6_angular_velocityscope"]["timestamp"] is not None
     assert pytest.approx(d["MockIMU_6_acceleration"]["value"][0], 0.1) == 5.4
     assert pytest.approx(d["MockIMU_6_acceleration"]["value"][1], 0.1) == 3.2
     assert pytest.approx(d["MockIMU_6_acceleration"]["value"][2], 0.1) == 1.0
@@ -339,13 +339,13 @@ def test_beacon_send_with_imu_acceleration_error(
 
 @patch("pysquared.nvm.flag.microcontroller")
 @patch("pysquared.nvm.counter.microcontroller")
-def test_beacon_send_with_imu_gyro_error(
+def test_beacon_send_with_imu_angular_velocity_error(
     mock_flag_microcontroller,
     mock_counter_microcontroller,
     mock_logger,
     mock_packet_manager,
 ):
-    """Tests sending a beacon when IMU gyroscope sensor fails.
+    """Tests sending a beacon when IMU angular_velocityscope sensor fails.
 
     Args:
         mock_flag_microcontroller: Mocked microcontroller for Flag.
@@ -357,8 +357,10 @@ def test_beacon_send_with_imu_gyro_error(
     mock_counter_microcontroller.nvm = setup_datastore
 
     imu = MockIMU()
-    # Mock the get_gyro_data method to raise an exception
-    imu.get_gyro_data = MagicMock(side_effect=Exception("Gyroscope sensor failure"))
+    # Mock the get_angular_velocity method to raise an exception
+    imu.get_angular_velocity = MagicMock(
+        side_effect=Exception("AngularVelocityscope sensor failure")
+    )
 
     beacon = Beacon(
         mock_logger,
@@ -372,8 +374,8 @@ def test_beacon_send_with_imu_gyro_error(
 
     # Verify the error was logged
     mock_logger.error.assert_called_with(
-        "Error retrieving gyroscope data",
-        imu.get_gyro_data.side_effect,
+        "Error retrieving angular velocity",
+        imu.get_angular_velocity.side_effect,
         sensor="MockIMU",
         index=0,
     )
