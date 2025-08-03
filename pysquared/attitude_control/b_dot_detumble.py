@@ -1,4 +1,4 @@
-"""This file provides functions for detumbling the satellite using the b-dot algorithm."""
+"""This file provides functions for detumbling the satellite using the B-dot algorithm."""
 
 import math
 
@@ -48,13 +48,12 @@ class BDotDetumble:
             dB_dt: tuple of dB/dt (dBx/dt, dBy/dt, dBz/dt)
 
         Raises:
-            ValueError: If the time difference between the current and previous magnetic field readings is less than or equal to 0.
+            ValueError: If the time difference between the current and previous magnetic field readings is too small to compute dB/dt.
         """
-        # avoid division by zero
         dt = current_mag_field.timestamp - previous_mag_field.timestamp
-        if dt <= 0:
+        if dt < 1e-6:
             raise ValueError(
-                "Time difference between current and previous magnetic field readings must be greater than 0."
+                "Timestamp difference between current and previous magnetic field readings is too small to compute dB/dt."
             )
 
         Bx_dt = (current_mag_field.value[0] - previous_mag_field.value[0]) / dt
@@ -86,11 +85,15 @@ class BDotDetumble:
             ValueError: If the magnitude of the current magnetic field is too small to compute the dipole moment.
                 or if the time difference between the current and previous magnetic field readings is less than or equal to 0.
         """
-        # avoid division by zero
         magnitude = self._magnitude(current_mag_field)
         if magnitude < 1e-6:
             raise ValueError(
                 "Current magnetic field magnitude is too small to compute dipole moment."
+            )
+
+        if current_mag_field.timestamp <= previous_mag_field.timestamp:
+            raise ValueError(
+                "Current magnetic field timestamp must be greater than previous magnetic field timestamp."
             )
 
         try:
