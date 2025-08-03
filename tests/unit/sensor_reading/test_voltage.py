@@ -1,17 +1,17 @@
-"""Unit tests for the Temperature sensor reading class."""
+"""Unit tests for the Voltage sensor reading class."""
 
 from unittest.mock import patch
 
 from hypothesis import given
 from hypothesis import strategies as st
 
-from pysquared.sensor_reading.temperature import Temperature
+from pysquared.sensor_reading.voltage import Voltage
 
 
 @given(st.floats(allow_nan=False, allow_infinity=False))
-def test_temperature_fuzzed_values(value):
-    """Fuzz test Temperature sensor reading with arbitrary float values."""
-    reading = Temperature(value)
+def test_voltage_fuzzed_values(value):
+    """Fuzz test Voltage sensor reading with arbitrary float values."""
+    reading = Voltage(value)
     assert reading.value == value
     assert reading.timestamp is not None
     assert isinstance(reading.timestamp, (int, float))
@@ -25,9 +25,9 @@ def test_temperature_fuzzed_values(value):
 
 
 @given(st.floats(allow_nan=False, allow_infinity=False))
-def test_temperature_timestamp(ts):
-    """Test that different Temperature readings have timestamps."""
+def test_voltage_timestamp(ts):
+    """Test that different Voltage readings have timestamps."""
     with patch("time.time", side_effect=[ts]):
-        reading1 = Temperature(25.0)
+        reading1 = Voltage(3.3)
 
         assert reading1.timestamp == ts

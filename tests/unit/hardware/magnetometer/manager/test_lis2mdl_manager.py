@@ -6,13 +6,17 @@ retrieval, and error handling for magnetic field vector readings.
 """
 
 from typing import Generator
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.magnetometer.manager.lis2mdl import LIS2MDLManager
+from pysquared.sensor_reading.error import (
+    SensorReadingUnknownError,
+)
+from pysquared.sensor_reading.magnetic import Magnetic
 
 
 @pytest.fixture
@@ -85,7 +89,7 @@ def test_create_magnetometer_failed(
     assert mock_i2c.call_count <= 3
 
 
-def test_get_vector_success(
+def test_get_magnetic_field_success(
     mock_lis2mdl: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
@@ -99,18 +103,29 @@ def test_get_vector_success(
     """
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
     magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
-    magnetometer._magnetometer.magnetic = (1.0, 2.0, 3.0)
 
-    vector = magnetometer.get_vector()
-    assert vector == (1.0, 2.0, 3.0)
+    def mock_magnetic():
+        """Mock magnetic field vector."""
+        return (1.0, 2.0, 3.0)
+
+    magnetometer._magnetometer.magnetic = mock_magnetic()
+
+    # Run the async function
+    vector = magnetometer.get_magnetic_field()
+
+    # Verify the result
+    assert isinstance(vector, Magnetic)
+    assert vector.x == 1.0
+    assert vector.y == 2.0
+    assert vector.z == 3.0
 
 
-def test_get_vector_failure(
+def test_get_magnetic_field_unknown_error(
     mock_lis2mdl: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Tests handling of exceptions when retrieving the magnetic field vector.
+    """Tests handling of unknown errors when retrieving the magnetic field vector.
 
     Args:
         mock_lis2mdl: Mocked LIS2MDL class.
@@ -118,20 +133,16 @@ def test_get_vector_failure(
         mock_logger: Mocked Logger instance.
     """
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
+    magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
 
-    # Configure the mock to raise an exception when accessing the magnetic property
-    mock_mag_instance = MagicMock(spec=LIS2MDL)
-    magnetometer._magnetometer = mock_mag_instance
-    mock_magnetic_property = PropertyMock(
-        side_effect=RuntimeError("Simulated retrieval error")
-    )
-    type(mock_mag_instance).magnetic = mock_magnetic_property
+    # Patch wait_for to raise TimeoutError immediately
+    with patch("asyncio.wait_for", side_effect=ValueError):
+        # Set a dummy coroutine - it won't be used due to the patch
+        magnetometer._magnetometer.asyncio_magnetic = MagicMock()
 
-    vector = magnetometer.get_vector()
+        # Run the async function and expect SensorReadingUnknownError
+        with pytest.raises(SensorReadingUnknownError) as excinfo:
+            magnetometer.get_magnetic_field()
 
-    assert vector is None
-    assert mock_logger.error.call_count == 1
-    call_args, _ = mock_logger.error.call_args
-    assert call_args[0] == "Error retrieving magnetometer sensor values"
-    assert isinstance(call_args[1], RuntimeError)
-    assert str(call_args[1]) == "Simulated retrieval error"
+        # Verify the exception message
+        assert "Unknown error while reading magnetometer data" in str(excinfo.value)

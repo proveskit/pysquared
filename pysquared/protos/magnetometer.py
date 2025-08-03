@@ -2,18 +2,20 @@
 adhere to, ensuring consistent behavior across different magnetometer hardware.
 """
 
+from ..sensor_reading.magnetic import Magnetic
+
 
 class MagnetometerProto:
     """Protocol defining the interface for a Magnetometer."""
 
-    def get_vector(self) -> tuple[float, float, float] | None:
+    def get_magnetic_field(self) -> Magnetic:
         """Gets the magnetic field vector from the magnetometer.
 
         Returns:
-            A tuple containing the x, y, and z magnetic field values in Gauss, or
-            None if not available.
+            A Magnetic object containing the x, y, and z magnetic field values in micro-Tesla (uT)
 
         Raises:
-            Exception: If there is an error retrieving the values.
+            SensorReadingTimeoutError: If the reading times out.
+            SensorReadingUnknownError: If an unknown error occurs while reading the magnetometer.
         """
         ...

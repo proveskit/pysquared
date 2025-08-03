@@ -21,5 +21,5 @@ class LSM6DSOX:
         ...
 
     acceleration: tuple[float, float, float] = (0.0, 0.0, 0.0)
-    gyro: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    angular_velocity: tuple[float, float, float] = (0.0, 0.0, 0.0)
     temperature: float = 0.0
