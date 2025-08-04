@@ -1,0 +1,3 @@
+"""
+Load switch manager class.
+"""
