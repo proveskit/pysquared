@@ -39,14 +39,6 @@ class SDCardManager:
         self.log_size = log_size
         self.log_rotate = log_rotate
 
-        if "sd" not in os.listdir("/"):
-            print("/sd directory does not exist, creating...")
-            os.mkdir("/sd")
-
-        if "logs" not in os.listdir("/sd"):
-            print("/sd/logs does not exist, creating...")
-            os.mkdir("/sd/logs")
-
         try:
             sd = sdcardio.SDCard(spi_bus, chip_select, baudrate)
             vfs = storage.VfsFat(sd)
@@ -55,6 +47,10 @@ class SDCardManager:
             print("error mounting sd card", e)
         else:
             self.mounted = True
+
+        if "logs" not in os.listdir("/sd"):
+            print("/sd/logs does not exist, creating...")
+            os.mkdir("/sd/logs")
 
     # def sd_log(self, json_output):
     #     """
