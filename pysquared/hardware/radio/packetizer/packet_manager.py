@@ -52,7 +52,10 @@ class PacketManager:
         self._license: str = license
         # 1 byte for packet identifier, 2 bytes for sequence number, 2 for total packets, 1 for rssi
         self._header_size: int = 6
-        self._payload_size: int = radio.get_max_packet_size() - self._header_size
+        self._callsign_size: int = len(license.encode()) if license else 0
+        self._payload_size: int = (
+            radio.get_max_packet_size() - self._header_size - self._callsign_size
+        )
         self._message_counter: Counter = message_counter
 
     def send(self, data: bytes) -> bool:
@@ -92,6 +95,7 @@ class PacketManager:
         - 2 bytes: sequence number (0-based)
         - 2 bytes: total number of packets
         - 1 byte: RSSI
+        - callsign bytes (variable length)
         - remaining bytes: payload
 
         Args:
@@ -120,13 +124,16 @@ class PacketManager:
                 + abs(self._radio.get_rssi()).to_bytes(1, "big")
             )
 
+            # Create callsign from license
+            callsign: bytes = self._license.encode() if self._license else b""
+
             # Get payload slice for this packet
             start: int = sequence_number * self._payload_size
             end: int = start + self._payload_size
             payload: bytes = data[start:end]
 
-            # Combine header and payload
-            packet: bytes = header + payload
+            # Combine header, callsign and payload
+            packet: bytes = header + callsign + payload
             packets.append(packet)
 
         return packets
@@ -241,7 +248,7 @@ class PacketManager:
         Returns:
             The payload of the packet.
         """
-        return packet[self._header_size :]
+        return packet[self._header_size + self._callsign_size :]
 
     def _get_packet_identifier(self) -> int:
         """Increments message_counter and returns the current identifier for a packet"""
