@@ -41,6 +41,10 @@ class SDCardManager:
 
         if "sd" not in os.listdir("/"):
             print("/sd directory does not exist, creating...")
+            os.mkdir("/sd")
+
+        if "logs" not in os.listdir("/sd"):
+            print("/sd/logs does not exist, creating...")
             os.mkdir("/sd/logs")
 
         try:
