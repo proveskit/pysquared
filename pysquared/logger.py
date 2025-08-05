@@ -168,17 +168,17 @@ class Logger:
             )
 
         if self._can_print_this_level(level_value):
-            # Write to sd card if mounted
-            if self.sd_card and self.sd_card.mounted:
-                with open("/sd/logs/log", "a") as f:
-                    f.write(json_output + "\n")
-            else:
-                print("sd card not mounted")
-
             if self.colorized:
                 json_output = json_output.replace(
                     f'"level": "{level}"', f'"level": "{LogColors[level]}"'
                 )
+            # Write to sd card if mounted
+            if self.sd_card and self.sd_card.mounted:
+                with open("/sd/logs/log.log", "a") as f:
+                    f.write(json_output + "\n")
+            else:
+                print("sd card not mounted")
+
             print(json_output)
 
     def debug(self, message: str, **kwargs: object) -> None:
