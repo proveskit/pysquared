@@ -52,7 +52,7 @@ class PacketManager:
         self._license: str = license
         # 1 byte for packet identifier, 2 bytes for sequence number, 2 for total packets, 1 for rssi
         self._header_size: int = 6
-        self._callsign_size: int = len(license.encode()) if license else 0
+        self._callsign_size: int = 6
         self._payload_size: int = (
             radio.get_max_packet_size() - self._header_size - self._callsign_size
         )
@@ -98,7 +98,7 @@ class PacketManager:
         - 2 bytes: sequence number (0-based)
         - 2 bytes: total number of packets
         - 1 byte: RSSI
-        - callsign bytes (variable length 6-9 ints but depends on config)
+        - callsign: 6 bytes
         - remaining bytes: payload
 
         Args:
@@ -127,8 +127,11 @@ class PacketManager:
                 + abs(self._radio.get_rssi()).to_bytes(1, "big")
             )
 
-            # Create callsign from license
-            callsign: bytes = self._license.encode() if self._license else b""
+            # Create callsign from license, ensuring exactly 6 bytes
+            license_bytes = self._license.encode() if self._license else b""
+            callsign: bytes = license_bytes[:6].ljust(
+                6, b"\x00"
+            )  # Truncate to 6 chars, pad with nulls
 
             # this is also just for debugging~!!
             self._logger.debug(f"adding callsign to pack {callsign}")
@@ -252,12 +255,17 @@ class PacketManager:
         """Returns the callsign.
 
         Args:
-            packet: The packet to extract the header from.
+            packet: The packet to extract the callsign from.
 
         Returns:
-            A string containing the callsign.
+            A string containing the callsign (up to 6 characters).
         """
-        return packet[6 : self._callsign_size].decode("utf-8")
+        callsign_bytes = packet[
+            self._header_size : self._header_size + self._callsign_size
+        ]
+        # Remove null padding and decode
+        callsign_bytes = callsign_bytes.rstrip(b"\x00")
+        return callsign_bytes.decode("utf-8") if callsign_bytes else ""
 
     def _get_payload(self, packet: bytes) -> bytes:
         """Returns the payload of the packet.
