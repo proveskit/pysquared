@@ -129,9 +129,8 @@ class PacketManager:
 
             # Create callsign from license, ensuring exactly 6 bytes
             license_bytes = self._license.encode() if self._license else b""
-            callsign: bytes = license_bytes[:6].ljust(
-                6, b"\x00"
-            )  # Truncate to 6 chars, pad with nulls
+            # Truncate to 6 chars, pad with nulls to exactly 6 bytes
+            callsign: bytes = license_bytes[:6] + b"\x00" * (6 - len(license_bytes[:6]))
 
             # this is also just for debugging~!!
             self._logger.debug(f"adding callsign to pack {callsign}")
