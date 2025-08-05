@@ -71,9 +71,6 @@ class PacketManager:
             self._logger.warning("License is required to send data")
             return False
 
-        # this is only here for debugging move it later
-        self._logger.debug("going to pack data")
-
         packets: list[bytes] = self._pack_data(data)
         total_packets: int = len(packets)
         self._logger.debug("Sending packets...", num_packets=total_packets)
@@ -131,9 +128,6 @@ class PacketManager:
             license_bytes = self._license.encode() if self._license else b""
             # Truncate to 6 chars, pad with nulls to exactly 6 bytes
             callsign: bytes = license_bytes[:6] + b"\x00" * (6 - len(license_bytes[:6]))
-
-            # this is also just for debugging~!!
-            self._logger.debug(f"adding callsign to pack {callsign}")
             # Get payload slice for this packet
             start: int = sequence_number * self._payload_size
             end: int = start + self._payload_size
@@ -141,9 +135,6 @@ class PacketManager:
 
             # Combine header, callsign and payload
             packet: bytes = header + callsign + payload
-            # this is also just for debugging~!!
-            self._logger.debug(f"This is our final packet {packet}")
-
             packets.append(packet)
 
         return packets
