@@ -80,7 +80,7 @@ class Logger:
     def __init__(
         self,
         error_counter: Counter,
-        sd_card: SDCardManager,
+        sd_card: SDCardManager = None,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
     ) -> None:
@@ -168,13 +168,17 @@ class Logger:
             )
 
         if self._can_print_this_level(level_value):
+            # Write to sd card if mounted
+            if self.sd_card and self.sd_card.mounted:
+                with open("/sd/logs/log", "a") as f:
+                    f.write(json_output + "\n")
+            else:
+                print("sd card not mounted")
+
             if self.colorized:
                 json_output = json_output.replace(
                     f'"level": "{level}"', f'"level": "{LogColors[level]}"'
                 )
-            if self.sd_card.mounted:
-                with open("/sd/logs/log", "a") as f:
-                    f.write(json_output + "\n")
             print(json_output)
 
     def debug(self, message: str, **kwargs: object) -> None:

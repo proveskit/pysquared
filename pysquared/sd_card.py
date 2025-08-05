@@ -29,7 +29,7 @@ class SDCardManager:
         self,
         spi_bus: SPI,
         chip_select: Pin,
-        baudrate: int = 4000000,
+        baudrate: int = 400000,
         mount_path: str = "/sd",
         mounted: bool = False,
         log_size: int = 50000,  # 50 kb
