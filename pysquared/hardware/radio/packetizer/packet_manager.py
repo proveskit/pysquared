@@ -186,6 +186,7 @@ class PacketManager:
                 "Received packet",
                 packet_length=len(packet),
                 header=self._get_header(packet),
+                callsign=self._get_callsign(packet),
                 payload=self._get_payload(packet),
             )
 
@@ -246,6 +247,17 @@ class PacketManager:
             int.from_bytes(packet[3:5], "big"),  # total packets
             -int.from_bytes(packet[5:6], "big"),  # RSSI
         )
+
+    def _get_callsign(self, packet: bytes) -> str:
+        """Returns the callsign.
+
+        Args:
+            packet: The packet to extract the header from.
+
+        Returns:
+            A string containing the callsign.
+        """
+        return packet[6 : self._callsign_size].decode("utf-8")
 
     def _get_payload(self, packet: bytes) -> bytes:
         """Returns the payload of the packet.
