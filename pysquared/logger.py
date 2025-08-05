@@ -172,8 +172,6 @@ class Logger:
             if self.sd_card and self.sd_card.mounted:
                 with open("/sd/logs/log.log", "a") as f:
                     f.write(json_output + "\n")
-            else:
-                print("sd card not mounted")
 
             if self.colorized:
                 json_output = json_output.replace(
