@@ -88,38 +88,3 @@ class SDCardManager:
     #         f.write(json_output + "\n")
 
     #     print(f"Log saved to {full_path}")
-
-    # def print_directory(self, path, tabs=0):
-    #     """
-    #     Prints directories of /sd and children with relevant metedata
-
-    #     Args:
-    #         path (str): Path to sd directory.
-    #         tabs: amount of tabs to print the the directories in (i think)
-    #     """
-
-    #     for file in os.listdir(path):
-    #         if file == "?":
-    #             continue  # Issue noted in Learn
-    #         stats = os.stat(path + "/" + file)
-    #         filesize = stats[6]
-    #         isdir = stats[0] & 0x4000
-
-    #         if filesize < 1000:
-    #             sizestr = str(filesize) + " by"
-    #         elif filesize < 1000000:
-    #             sizestr = "%0.1f KB" % (filesize / 1000)
-    #         else:
-    #             sizestr = "%0.1f MB" % (filesize / 1000000)
-
-    #         prettyprintname = ""
-    #         for _ in range(tabs):
-    #             prettyprintname += "   "
-    #         prettyprintname += file
-    #         if isdir:
-    #             prettyprintname += "/"
-    #         print("{0:<40} Size: {1:>10}".format(prettyprintname, sizestr))
-
-    #         # recursively print directory contents
-    #         if isdir:
-    #             self.print_directory(path + "/" + file, tabs + 1)
