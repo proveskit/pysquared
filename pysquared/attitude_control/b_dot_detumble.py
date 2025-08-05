@@ -13,6 +13,8 @@ class BDotDetumble:
 
         Args:
             gain: Gain constant for the B-dot detumbling algorithm.
+
+        TODO(nateinaction): Create system for teams to set values that compute gain for them.
         """
         self._gain = gain
 
