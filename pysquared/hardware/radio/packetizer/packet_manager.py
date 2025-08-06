@@ -241,7 +241,7 @@ class PacketManager:
             -int.from_bytes(packet[5:6], "big"),  # RSSI
         )
 
-    def _get_callsign(self, packet: bytes) -> str:
+    def _get_callsign(self, packet: bytes) -> bytes:
         """Returns the callsign.
 
         Args:
@@ -250,12 +250,7 @@ class PacketManager:
         Returns:
             A string containing the callsign (up to 6 characters).
         """
-        callsign_bytes = packet[
-            self._header_size : self._header_size + self._callsign_size
-        ]
-        # Remove null padding and decode
-        callsign_bytes = callsign_bytes.rstrip(b"\x00")
-        return callsign_bytes.decode("utf-8", errors="ignore") if callsign_bytes else ""
+        return packet[self._header_size : self._header_size + self._callsign_size]
 
     def _get_payload(self, packet: bytes) -> bytes:
         """Returns the payload of the packet.
