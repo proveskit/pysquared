@@ -255,7 +255,7 @@ class PacketManager:
         ]
         # Remove null padding and decode
         callsign_bytes = callsign_bytes.rstrip(b"\x00")
-        return callsign_bytes.decode("utf-8") if callsign_bytes else ""
+        return callsign_bytes.decode("utf-8", errors="ignore") if callsign_bytes else ""
 
     def _get_payload(self, packet: bytes) -> bytes:
         """Returns the payload of the packet.
