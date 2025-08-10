@@ -73,7 +73,8 @@ class PacketManager:
         self._logger.debug("Sending packets...", num_packets=total_packets)
 
         for packet in packets:
-            self._radio.send(packet)
+            if !(self._radio.send(packet)):
+                return False
 
             # Only add send delay if there are multiple packets
             if len(packets) > 1:
