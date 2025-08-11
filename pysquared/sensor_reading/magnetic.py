@@ -9,7 +9,11 @@ from .base import Reading
 
 
 class Magnetic(Reading):
-    """Magnetic sensor reading in micro-Tesla (uT)."""
+    """Magnetic sensor reading in micro-Tesla (uT).
+
+    Tesla is the SI unit of magnetic flux density (also called magnetic B-field strength),
+    and 1 Tesla = 1,000,000 micro-Tesla (uT).
+    """
 
     def __init__(self, x: float, y: float, z: float) -> None:
         """Initialize the magnetic sensor reading.
@@ -27,6 +31,9 @@ class Magnetic(Reading):
     @property
     def value(self) -> Tuple[float, float, float]:
         """Magnetic field in x, y, z micro-Tesla (uT).
+
+        Tesla is the SI unit of magnetic flux density (also called magnetic B-field strength),
+        and 1 Tesla = 1,000,000 micro-Tesla (uT).
 
         Returns:
             A tuple containing the x, y, and z components of the magnetic field.
