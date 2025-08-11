@@ -6,20 +6,52 @@ Coding style for this file foregoes more complex programming constructs in favor
 We assume that non-programmers may read this code to understand and validate detumbling logic.
 """
 
+import math
+
 from ....protos.magnetorquer import MagnetorquerProto
 
 
 class ProvesV3Manager(MagnetorquerProto):
     """Manager for Proves V3 hardware components."""
 
-    num_coil_turns = 100  # TODO(nateinaction): Set this to the actual number of turns in the magnetorquer coil.
-    """Number of turns in the magnetorquer coil."""
+    _coil_voltage = 3.3
+    """Voltage supplied to the magnetorquers in Volts."""
 
-    coil_area = 0.01  # TODO(nateinaction): Set this to the actual area of one turn of the coil in square meters.
-    """Area of one turn of the coil in m²."""
+    _coil_num_turns_x_y = 2 * 24
+    """Number of turns in the x and y-axis magnetorquer coil.
+    The x and y magenetorquer coil consists of 2 layers of 24 turns each.
+    """
 
-    max_current: float = 1.0  # TODO(nateinaction): Set this to the actual maximum current for the magnetorquers in Amperes.
-    """Maximum current for the magnetorquers in Amperes."""
+    _coil_length_x_y = 0.053
+    """Length of the x and y-axis coil in meters."""
+
+    _coil_width_x_y = 0.045
+    """Width of the x and y-axis coil in meters."""
+
+    _coil_area_x_y = _coil_length_x_y * _coil_width_x_y
+
+    _coil_resistance_x_y = 57.2
+    """Resistance of the x and y-axis coil in ohms."""
+
+    _coil_max_current_x_y = _coil_voltage / _coil_resistance_x_y
+    """Maximum current for the x and y-axis magnetorquers in Amperes."""
+
+    _coil_num_turns_z = 3 * 51
+    """Number of turns in the z-axis magnetorquer coil.
+    The z magenetorquer coil consists of 3 layers of 51 turns each.
+    """
+
+    _coil_diameter_z = 0.05755
+    """Diameter of the z-axis coil in meters."""
+
+    _coil_area_z = math.pi * (_coil_diameter_z / 2) ** 2
+    """Area of the z-axis coil in square meters."""
+
+    _coil_resistance_z = 248.8
+    """Resistance of the z-axis coil in ohms."""
+
+    _coil_max_current_z = _coil_voltage / _coil_resistance_z
+    """Maximum current for the z-axis magnetorquer in Amperes."""
 
     def __init__(self) -> None:
         """Initializes the Proves V3 Manager."""
@@ -61,9 +93,12 @@ class ProvesV3Manager(MagnetorquerProto):
             A tuple containing the limited current for each axis.
         """
         return (
-            min(abs(current[0]), self.max_current) * (1 if current[0] >= 0 else -1),
-            min(abs(current[1]), self.max_current) * (1 if current[1] >= 0 else -1),
-            min(abs(current[2]), self.max_current) * (1 if current[2] >= 0 else -1),
+            min(abs(current[0]), self._coil_max_current_x_y)
+            * (1 if current[0] >= 0 else -1),
+            min(abs(current[1]), self._coil_max_current_x_y)
+            * (1 if current[1] >= 0 else -1),
+            min(abs(current[2]), self._coil_max_current_z)
+            * (1 if current[2] >= 0 else -1),
         )
 
     def _current_from_dipole_moment(
@@ -85,7 +120,7 @@ class ProvesV3Manager(MagnetorquerProto):
         Returns:
             A tuple containing the current for each axis (current_x, current_y, current_z) in Amperes.
         """
-        current_x = dipole_moment[0] / (self.num_coil_turns * self.coil_area)
-        current_y = dipole_moment[1] / (self.num_coil_turns * self.coil_area)
-        current_z = dipole_moment[2] / (self.num_coil_turns * self.coil_area)
+        current_x = dipole_moment[0] / (self._coil_num_turns_x_y * self._coil_area_x_y)
+        current_y = dipole_moment[1] / (self._coil_num_turns_x_y * self._coil_area_x_y)
+        current_z = dipole_moment[2] / (self._coil_num_turns_z * self._coil_area_z)
         return (current_x, current_y, current_z)
