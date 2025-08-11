@@ -2,30 +2,12 @@
 
 import asyncio
 import time
-from typing import Protocol
 
 from ..logger import Logger
 from ..protos.magnetometer import MagnetometerProto
+from ..protos.magnetorquer import MagnetorquerProto
 from ..sensor_reading.magnetic import Magnetic
 from .b_dot_detumble import BDotDetumble
-
-
-class MagnetorquerProto(Protocol):
-    """Protocol defining the interface for magnetorquer control."""
-
-    def set_dipole_moment(self, x: float, y: float, z: float) -> None:
-        """Set the magnetic dipole moment for all three axes.
-
-        Args:
-            x: X-axis dipole moment in A⋅m²
-            y: Y-axis dipole moment in A⋅m²
-            z: Z-axis dipole moment in A⋅m²
-        """
-        ...
-
-    def disable(self) -> None:
-        """Disable all magnetorquers."""
-        ...
 
 
 class DetumbleService:
@@ -54,11 +36,7 @@ class DetumbleService:
         self._control_period = control_period
 
     def execute_control_step(self) -> None:
-        """Execute one step of the detumble control algorithm.
-
-        Returns:
-            True if control step was successful, False otherwise
-        """
+        """Execute one step of the detumble control algorithm."""
         # Get sensor readings
         try:
             magnetic_field = self._magnetometer.get_magnetic_field()
@@ -81,9 +59,7 @@ class DetumbleService:
             self.previous_mag_field = magnetic_field
 
         # Apply dipole moment to magnetorquers
-        self._magnetorquer.set_dipole_moment(
-            dipole_moment[0], dipole_moment[1], dipole_moment[2]
-        )
+        self._magnetorquer.set_dipole_moment(dipole_moment)
 
     async def run_detumble_loop(self, max_iterations: int = 1000) -> None:
         """Run the detumble control loop for a specified number of iterations.

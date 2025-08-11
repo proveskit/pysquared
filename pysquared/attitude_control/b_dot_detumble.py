@@ -1,4 +1,19 @@
-"""This file provides functions for detumbling the satellite using the B-dot algorithm."""
+"""This file provides functions for detumbling the satellite using the B-dot algorithm.
+
+Coding style for this file foregoes more complex programming constructs in favor readability.
+We assume that non-programmers may read this code to understand and validate detumbling logic.
+
+Units and concepts used in this file:
+- B-dot detumbling algorithm
+    - https://en.wikipedia.org/wiki/Spacecraft_detumbling#Magnetic_control:_B-dot
+- Magnetic field (B-field) strength in micro-Tesla (uT)
+    - https://en.wikipedia.org/wiki/Magnetic_field
+    - https://en.wikipedia.org/wiki/Tesla_(unit)
+- Dipole moment in Ampere-square meter (A⋅m²)
+    - https://en.wikipedia.org/wiki/Magnetic_dipole
+    - https://en.wikipedia.org/wiki/Ampere
+    - https://en.wikipedia.org/wiki/Square_metre
+"""
 
 import math
 
@@ -6,7 +21,17 @@ from ..sensor_reading.magnetic import Magnetic
 
 
 class BDotDetumble:
-    """B-dot detumbling for attitude control."""
+    """B-dot detumbling for attitude control.
+
+    Example usage:
+    ```python
+        b_dot_detumble = BDotDetumble(gain=1.0)
+        current_mag_field = Magnetic(value=(0.1, 0.2, 0.3), timestamp=1234567890)
+        previous_mag_field = Magnetic(value=(0.1, 0.2, 0.3), timestamp=1234567880)
+        dipole_moment = b_dot_detumble.dipole_moment(current_mag_field, previous_mag_field)
+        print(dipole_moment)
+    ```
+    """
 
     def __init__(self, gain: float = 1.0):
         """Initializes the BDotDetumble class.
@@ -47,7 +72,7 @@ class BDotDetumble:
             previous_mag_field: Magnetic object containing the previous magnetic field vector
 
         Returns:
-            dB_dt: tuple of dB/dt (dBx/dt, dBy/dt, dBz/dt)
+            dB_dt: tuple of dB/dt (dBx/dt, dBy/dt, dBz/dt) in micro-Tesla per second (uT/s).
 
         Raises:
             ValueError: If the time difference between the current and previous magnetic field readings is too small to compute dB/dt.
@@ -58,10 +83,10 @@ class BDotDetumble:
                 "Timestamp difference between current and previous magnetic field readings is too small to compute dB/dt."
             )
 
-        Bx_dt = (current_mag_field.value[0] - previous_mag_field.value[0]) / dt
-        By_dt = (current_mag_field.value[1] - previous_mag_field.value[1]) / dt
-        Bz_dt = (current_mag_field.value[2] - previous_mag_field.value[2]) / dt
-        return (Bx_dt, By_dt, Bz_dt)
+        dBx_dt = (current_mag_field.value[0] - previous_mag_field.value[0]) / dt
+        dBy_dt = (current_mag_field.value[1] - previous_mag_field.value[1]) / dt
+        dBz_dt = (current_mag_field.value[2] - previous_mag_field.value[2]) / dt
+        return (dBx_dt, dBy_dt, dBz_dt)
 
     def dipole_moment(
         self, current_mag_field: Magnetic, previous_mag_field: Magnetic
@@ -71,17 +96,17 @@ class BDotDetumble:
 
         m = -k * (dB/dt) / |B|
 
-        m is the dipole moment
+        m is the dipole moment in A⋅m²
         k is a gain constant
-        dB/dt is the time derivative of the magnetic field reading
-        |B| is the magnitude of the magnetic field vector
+        dB/dt is the time derivative of the magnetic field reading in micro-Tesla per second (uT/s)
+        |B| is the magnitude of the magnetic field vector in micro-Tesla (uT)
 
         Args:
             current_mag_field: Magnetic object containing the current magnetic field vector.
             previous_mag_field: Magnetic object containing the previous magnetic field vector.
 
         Returns:
-            The dipole moment vector to be applied.
+            The dipole moment in A⋅m² as a tuple (moment_x, moment_y, moment_z).
 
         Raises:
             ValueError: If the magnitude of the current magnetic field is too small to compute the dipole moment.
@@ -99,11 +124,11 @@ class BDotDetumble:
             )
 
         try:
-            Bx_dt, By_dt, Bz_dt = self._dB_dt(current_mag_field, previous_mag_field)
+            dBx_dt, dBy_dt, dBz_dt = self._dB_dt(current_mag_field, previous_mag_field)
         except ValueError:
             raise
 
-        moment_x = -self._gain * Bx_dt / magnitude
-        moment_y = -self._gain * By_dt / magnitude
-        moment_z = -self._gain * Bz_dt / magnitude
+        moment_x = -self._gain * dBx_dt / magnitude
+        moment_y = -self._gain * dBy_dt / magnitude
+        moment_z = -self._gain * dBz_dt / magnitude
         return (moment_x, moment_y, moment_z)
