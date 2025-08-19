@@ -13,6 +13,7 @@ logger.error("This is an error message.", err=Exception("Something went wrong.")
 """
 
 import json
+import os
 import time
 import traceback
 from collections import OrderedDict
@@ -170,6 +171,10 @@ class Logger:
         if self._can_print_this_level(level_value):
             # Write to sd card if mounted
             if self.sd_card and self.sd_card.mounted:
+                if "logs" not in os.listdir("/sd"):
+                    print("/sd/logs does not exist, creating...")
+                    os.mkdir("/sd/logs")
+
                 with open("/sd/logs/activity.log", "a") as f:
                     f.write(json_output + "\n")
 

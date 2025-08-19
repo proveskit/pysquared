@@ -1,9 +1,11 @@
 """This module provides a SD Card class to manipulate the sd card filesystem"""
 
-import os
+# import os
 
 import sdcardio
 import storage
+
+from .hardware.exception import HardwareInitializationError
 
 try:
     from busio import SPI
@@ -22,24 +24,15 @@ class SDCardManager:
         spi_bus: SPI,
         chip_select: Pin,
         baudrate: int = 400000,
-        mount_path: str = "/sd",
         mounted: bool = False,
-        log_size: int = 50000,  # 50 kb
-        log_rotate: int = 10,
     ) -> None:
         self.mounted = mounted
-        self.log_size = log_size
-        self.log_rotate = log_rotate
+        self.mount_path = ("/sd",)
 
         try:
             sd = sdcardio.SDCard(spi_bus, chip_select, baudrate)
             vfs = storage.VfsFat(sd)
-            storage.mount(vfs, mount_path)
-        except (OSError, ValueError) as e:
-            print("error mounting sd card", e)
-        else:
+            storage.mount(vfs, self.mount_path)
             self.mounted = True
-
-        if "logs" not in os.listdir("/sd"):
-            print("/sd/logs does not exist, creating...")
-            os.mkdir("/sd/logs")
+        except (OSError, ValueError) as e:
+            raise HardwareInitializationError("Failed to initialize SD Card") from e
