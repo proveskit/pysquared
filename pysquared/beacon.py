@@ -87,53 +87,7 @@ class Beacon:
         Returns:
             True if the beacon was sent successfully, False otherwise.
         """
-        state: OrderedDict[str, object] = OrderedDict()
-        state["name"] = self._name
-
-        # Warning: CircuitPython does not support time.gmtime(), when testing this code it will use your local timezone
-        now = time.localtime()
-        state["time"] = (
-            f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
-        )
-
-        state["uptime"] = time.time() - self._boot_time
-
-        for index, sensor in enumerate(self._sensors):
-            if isinstance(sensor, Processor):
-                sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_temperature"] = sensor.temperature
-            if isinstance(sensor, Flag):
-                state[f"{sensor.get_name()}_{index}"] = sensor.get()
-            if isinstance(sensor, Counter):
-                state[f"{sensor.get_name()}_{index}"] = sensor.get()
-            if isinstance(sensor, RadioProto):
-                sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_modulation"] = (
-                    sensor.get_modulation().__name__
-                )
-            if isinstance(sensor, IMUProto):
-                sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_acceleration"] = sensor.get_acceleration()
-                state[f"{sensor_name}_{index}_gyroscope"] = sensor.get_gyro_data()
-            if isinstance(sensor, PowerMonitorProto):
-                sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_current_avg"] = self.avg_readings(
-                    sensor.get_current
-                )
-                state[f"{sensor_name}_{index}_bus_voltage_avg"] = self.avg_readings(
-                    sensor.get_bus_voltage
-                )
-                state[f"{sensor_name}_{index}_shunt_voltage_avg"] = self.avg_readings(
-                    sensor.get_shunt_voltage
-                )
-            if isinstance(sensor, TemperatureSensorProto):
-                sensor_name = sensor.__class__.__name__
-                reading = sensor.get_temperature()
-                state[f"{sensor_name}_{index}_temperature"] = reading.value
-                state[f"{sensor_name}_{index}_temperature_timestamp"] = (
-                    reading.timestamp
-                )
-
+        state = self._build_state()
         # Use binary encoding for efficiency
         b = self._encode_binary_state(state)
         return self._packet_manager.send(b)
@@ -150,35 +104,45 @@ class Beacon:
         encoder = BinaryEncoder()
 
         for key, value in state.items():
-            if isinstance(value, int):
-                # Determine appropriate size for integer
-                if -128 <= value <= 127:
-                    encoder.add_int(key, value, size=1)
-                elif -32768 <= value <= 32767:
-                    encoder.add_int(key, value, size=2)
-                else:
-                    encoder.add_int(key, value, size=4)
-            elif isinstance(value, float):
-                encoder.add_float(key, value)
-            elif isinstance(value, (list, tuple)):
-                # Handle sensor data arrays (acceleration, gyroscope)
-                if len(value) == 3 and all(isinstance(v, (int, float)) for v in value):
-                    for i, v in enumerate(value):
-                        encoder.add_float(f"{key}_{i}", float(v))
-                else:
-                    # Fallback to string representation for complex data
-                    encoder.add_string(key, str(value))
-            else:
-                # String or other data
-                encoder.add_string(key, str(value))
+            self._encode_value(encoder, key, value)
 
         return encoder.to_bytes()
 
-    def send_json(self) -> bool:
-        """Sends the beacon using JSON encoding (legacy method).
+    def _encode_value(self, encoder: BinaryEncoder, key: str, value: object) -> None:
+        """Encode a single value into the binary encoder.
+
+        Args:
+            encoder: The binary encoder to add data to
+            key: The key name for the value
+            value: The value to encode
+        """
+        if isinstance(value, int):
+            # Determine appropriate size for integer
+            if -128 <= value <= 127:
+                encoder.add_int(key, value, size=1)
+            elif -32768 <= value <= 32767:
+                encoder.add_int(key, value, size=2)
+            else:
+                encoder.add_int(key, value, size=4)
+        elif isinstance(value, float):
+            encoder.add_float(key, value)
+        elif isinstance(value, (list, tuple)):
+            # Handle sensor data arrays (acceleration, gyroscope)
+            if len(value) == 3 and all(isinstance(v, (int, float)) for v in value):
+                for i, v in enumerate(value):
+                    encoder.add_float(f"{key}_{i}", float(v))
+            else:
+                # Fallback to string representation for complex data
+                encoder.add_string(key, str(value))
+        else:
+            # String or other data
+            encoder.add_string(key, str(value))
+
+    def _build_state(self) -> OrderedDict[str, object]:
+        """Build the beacon state dictionary from sensors.
 
         Returns:
-            True if the beacon was sent successfully, False otherwise.
+            OrderedDict containing all beacon data
         """
         state: OrderedDict[str, object] = OrderedDict()
         state["name"] = self._name
@@ -227,6 +191,15 @@ class Beacon:
                     reading.timestamp
                 )
 
+        return state
+
+    def send_json(self) -> bool:
+        """Sends the beacon using JSON encoding (legacy method).
+
+        Returns:
+            True if the beacon was sent successfully, False otherwise.
+        """
+        state = self._build_state()
         b = json.dumps(state, separators=(",", ":")).encode("utf-8")
         return self._packet_manager.send(b)
 
@@ -276,6 +249,30 @@ class Beacon:
             Dictionary mapping key hashes to key names
         """
         # Create a sample state to get the key structure
+        state = self._build_sample_state()
+
+        # Encode to get key mapping
+        encoder = BinaryEncoder()
+        for key, value in state.items():
+            if isinstance(value, str):
+                encoder.add_string(key, value)
+            elif isinstance(value, float):
+                encoder.add_float(key, value)
+            elif isinstance(value, int):
+                encoder.add_int(key, value)
+            elif isinstance(value, bool):
+                encoder.add_int(key, int(value), size=1)
+
+        # Generate the binary data to populate key map
+        encoder.to_bytes()
+        return encoder.get_key_map()
+
+    def _build_sample_state(self) -> OrderedDict[str, object]:
+        """Build a sample state dictionary for key mapping.
+
+        Returns:
+            OrderedDict containing sample beacon data with the same structure
+        """
         state: OrderedDict[str, object] = OrderedDict()
         state["name"] = self._name
         state["time"] = "sample"
@@ -308,18 +305,4 @@ class Beacon:
                 state[f"{sensor_name}_{index}_temperature"] = 0.0
                 state[f"{sensor_name}_{index}_temperature_timestamp"] = 0
 
-        # Encode to get key mapping
-        encoder = BinaryEncoder()
-        for key, value in state.items():
-            if isinstance(value, str):
-                encoder.add_string(key, value)
-            elif isinstance(value, float):
-                encoder.add_float(key, value)
-            elif isinstance(value, int):
-                encoder.add_int(key, value)
-            elif isinstance(value, bool):
-                encoder.add_int(key, int(value), size=1)
-
-        # Generate the binary data to populate key map
-        encoder.to_bytes()
-        return encoder.get_key_map()
+        return state

@@ -468,3 +468,87 @@ def test_beacon_encode_binary_state_edge_cases(mock_logger, mock_packet_manager)
     assert "['a', 'b']" in decoded_values or '["a", "b"]' in decoded_values
     assert any("text" in str(v) for v in decoded_values)  # Mixed list as string
     assert "None" in decoded_values
+
+
+def test_beacon_build_state(mock_logger, mock_packet_manager):
+    """Tests the _build_state method.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    import time
+    from unittest.mock import patch
+
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 1000.0)
+
+    # Mock time.time() and time.localtime()
+    with (
+        patch("time.time", return_value=1060.0),
+        patch(
+            "time.localtime",
+            return_value=time.struct_time((2024, 1, 15, 10, 30, 45, 0, 0, 0)),
+        ),
+    ):
+        state = beacon._build_state()
+
+        # Verify basic state structure
+        assert isinstance(state, dict)  # OrderedDict is a dict subclass
+        assert state["name"] == "test_beacon"
+        assert state["time"] == "2024-01-15 10:30:45"
+        assert state["uptime"] == 60.0  # 1060 - 1000
+
+        # Should have only basic fields for beacon with no sensors
+        assert len(state) == 3
+
+
+def test_beacon_encode_value(mock_logger, mock_packet_manager):
+    """Tests the _encode_value method.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    from pysquared.binary_encoder import BinaryEncoder
+
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
+    encoder = BinaryEncoder()
+
+    # Test integer encoding
+    beacon._encode_value(encoder, "small_int", 100)
+    beacon._encode_value(encoder, "medium_int", 30000)
+    beacon._encode_value(encoder, "large_int", 2000000000)
+
+    # Test float encoding
+    beacon._encode_value(encoder, "test_float", 3.14)
+
+    # Test string encoding
+    beacon._encode_value(encoder, "test_string", "hello")
+
+    # Test list encoding (3-element numeric)
+    beacon._encode_value(encoder, "acceleration", [1.0, 2.0, 3.0])
+
+    # Test list encoding (non-numeric)
+    beacon._encode_value(encoder, "text_list", ["a", "b"])
+
+    # Get encoded data and verify it can be decoded
+    data = encoder.to_bytes()
+    assert isinstance(data, bytes)
+    assert len(data) > 0
+
+    # Decode and verify expected values are present
+    decoded = beacon.decode_binary_beacon(data, encoder.get_key_map())
+
+    # Check that expected values are in the decoded data
+    values = list(decoded.values())
+    assert 100 in values
+    assert 30000 in values
+    assert 2000000000 in values
+    assert any(abs(v - 3.14) < 0.01 for v in values if isinstance(v, float))
+    assert "hello" in values
+    # The list [1.0, 2.0, 3.0] should be split into individual float values
+    assert any(abs(v - 1.0) < 0.01 for v in values if isinstance(v, float))
+    assert any(abs(v - 2.0) < 0.01 for v in values if isinstance(v, float))
+    assert any(abs(v - 3.0) < 0.01 for v in values if isinstance(v, float))
+    # The text list should be converted to string
+    assert "['a', 'b']" in values or '["a", "b"]' in values
