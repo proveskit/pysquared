@@ -290,3 +290,181 @@ def test_avg_readings_varying_values(mock_logger, mock_packet_manager):
     # Test with a specific number of readings that's a multiple of our pattern length
     result = beacon.avg_readings(incrementing_func, num_readings=5)
     assert result == expected_avg
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_create_key_map(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests the create_key_map method.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        Processor(),
+        MockFlag(0, 0),
+        MockCounter(0),
+        MockRadio(),
+        MockPowerMonitor(),
+        MockTemperatureSensor(),
+        MockIMU(),
+    )
+
+    # Test create_key_map
+    key_map = beacon.create_key_map()
+
+    # Verify key_map is a dictionary
+    assert isinstance(key_map, dict)
+
+    # Verify it contains expected keys
+    expected_keys = [
+        "name",
+        "time",
+        "uptime",
+        "Processor_0_temperature",
+        "test_flag_1",
+        "test_counter_2",
+        "MockRadio_3_modulation",
+        "MockPowerMonitor_4_current_avg",
+        "MockPowerMonitor_4_bus_voltage_avg",
+        "MockPowerMonitor_4_shunt_voltage_avg",
+        "MockTemperatureSensor_5_temperature",
+        "MockTemperatureSensor_5_temperature_timestamp",
+    ]
+
+    # Add IMU keys (acceleration and gyroscope, 3 components each)
+    for i in range(3):
+        expected_keys.append(f"MockIMU_6_acceleration_{i}")
+        expected_keys.append(f"MockIMU_6_gyroscope_{i}")
+
+    # Check that all expected keys are present in the values of key_map
+    key_map_values = set(key_map.values())
+    for expected_key in expected_keys:
+        assert expected_key in key_map_values, (
+            f"Expected key '{expected_key}' not found in key_map"
+        )
+
+    # Verify key_map maps hashes to key names
+    for hash_val, key_name in key_map.items():
+        assert isinstance(hash_val, int)
+        assert isinstance(key_name, str)
+
+
+def test_beacon_encode_binary_state(mock_logger, mock_packet_manager):
+    """Tests the _encode_binary_state method.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    from collections import OrderedDict
+
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
+
+    # Create test state data
+    state = OrderedDict()
+    state["name"] = "TestSat"
+    state["uptime"] = 123.45
+    state["battery_level"] = 85
+    state["temperature"] = 22.5
+    state["acceleration"] = [0.1, 0.2, 9.8]  # Test tuple/list handling
+    state["status"] = True  # Test non-numeric, non-string data
+
+    # Test the method
+    binary_data = beacon._encode_binary_state(state)
+
+    # Verify it returns bytes
+    assert isinstance(binary_data, bytes)
+    assert len(binary_data) > 0
+
+    # Verify we can decode the data
+    decoded = Beacon.decode_binary_beacon(binary_data)
+
+    # Check that decoded data contains expected values
+    decoded_values = list(decoded.values())
+    assert "TestSat" in decoded_values
+    assert any(abs(v - 123.45) < 0.01 for v in decoded_values if isinstance(v, float))
+    assert 85 in decoded_values
+    assert any(abs(v - 22.5) < 0.01 for v in decoded_values if isinstance(v, float))
+    # Array should be split into individual float values
+    assert any(abs(v - 0.1) < 0.01 for v in decoded_values if isinstance(v, float))
+    assert any(abs(v - 0.2) < 0.01 for v in decoded_values if isinstance(v, float))
+    assert any(abs(v - 9.8) < 0.01 for v in decoded_values if isinstance(v, float))
+    # Boolean True should be treated as integer 1 (since bool is subclass of int)
+    assert 1 in decoded_values
+
+
+def test_beacon_encode_binary_state_integer_sizing(mock_logger, mock_packet_manager):
+    """Tests _encode_binary_state integer size optimization.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    from collections import OrderedDict
+
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
+
+    # Test different integer sizes
+    state = OrderedDict()
+    state["small_int"] = 100  # Should use 1 byte
+    state["medium_int"] = 30000  # Should use 2 bytes
+    state["large_int"] = 2000000000  # Should use 4 bytes
+
+    binary_data = beacon._encode_binary_state(state)
+
+    # Verify encoding and decoding works
+    assert isinstance(binary_data, bytes)
+    decoded = Beacon.decode_binary_beacon(binary_data)
+
+    decoded_values = list(decoded.values())
+    assert 100 in decoded_values
+    assert 30000 in decoded_values
+    assert 2000000000 in decoded_values
+
+
+def test_beacon_encode_binary_state_edge_cases(mock_logger, mock_packet_manager):
+    """Tests _encode_binary_state with edge cases.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    from collections import OrderedDict
+
+    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
+
+    # Test edge cases
+    state = OrderedDict()
+    state["empty_list"] = []  # Empty array
+    state["non_numeric_list"] = ["a", "b"]  # Non-numeric array
+    state["mixed_list"] = [1, "text", 2.5]  # Mixed array
+    state["none_value"] = None  # None value
+
+    binary_data = beacon._encode_binary_state(state)
+
+    # Should handle gracefully and return valid binary data
+    assert isinstance(binary_data, bytes)
+    decoded = Beacon.decode_binary_beacon(binary_data)
+
+    # All values should be converted to strings for complex/unsupported types
+    decoded_values = list(decoded.values())
+    assert "[]" in decoded_values
+    assert "['a', 'b']" in decoded_values or '["a", "b"]' in decoded_values
+    assert any("text" in str(v) for v in decoded_values)  # Mixed list as string
+    assert "None" in decoded_values
