@@ -86,7 +86,11 @@ def verify_binary_decoding(binary_data, key_map, original_data):
         decoded_value = decoded_data.get(key)
         if isinstance(original_value, float):
             # Allow small floating point differences
-            assert abs(decoded_value - original_value) < 0.001, (
+            assert decoded_value is not None, f"Missing decoded value for {key}"
+            assert isinstance(decoded_value, (int, float)), (
+                f"Expected numeric value for {key}, got {type(decoded_value)}"
+            )
+            assert abs(float(decoded_value) - original_value) < 0.001, (
                 f"Float mismatch for {key}: {decoded_value} != {original_value}"
             )
         else:

@@ -31,6 +31,7 @@ class TestBinaryEncoder:
 
         decoder = BinaryDecoder(data, encoder.get_key_map())
         result = decoder.get_float("test_float")
+        assert result is not None
         assert abs(result - 3.14159) < 0.0001  # Account for float precision
 
     def test_single_string(self):
@@ -54,7 +55,9 @@ class TestBinaryEncoder:
 
         decoder = BinaryDecoder(data, encoder.get_key_map())
         assert decoder.get_int("count") == 100
-        assert abs(decoder.get_float("temperature") - 23.5) < 0.01
+        temp_result = decoder.get_float("temperature")
+        assert temp_result is not None
+        assert abs(temp_result - 23.5) < 0.01
         assert decoder.get_string("name") == "MySat"
         assert decoder.get_int("battery") == 85
 
@@ -82,7 +85,9 @@ class TestBinaryEncoder:
 
         decoder = BinaryDecoder(data, encoder.get_key_map())
         assert decoder.get_int("neg_int") == -42
-        assert abs(decoder.get_float("neg_float") - (-3.14)) < 0.01
+        neg_float_result = decoder.get_float("neg_float")
+        assert neg_float_result is not None
+        assert abs(neg_float_result - (-3.14)) < 0.01
 
     def test_double_precision_float(self):
         """Test double precision float encoding."""
@@ -93,6 +98,7 @@ class TestBinaryEncoder:
 
         decoder = BinaryDecoder(data, encoder.get_key_map())
         result = decoder.get_float("double_val")
+        assert result is not None
         assert abs(result - 3.141592653589793) < 0.000000000001
 
     def test_empty_string(self):
@@ -157,7 +163,9 @@ class TestBinaryEncoder:
 
         all_data = decoder.get_all()
         assert all_data["count"] == 100
-        assert abs(all_data["temp"] - 23.5) < 0.01
+        temp_value = all_data["temp"]
+        assert isinstance(temp_value, float)
+        assert abs(temp_value - 23.5) < 0.01
         assert all_data["name"] == "Test"
 
     def test_malformed_data(self):
@@ -197,10 +205,16 @@ class TestBeaconIntegration:
         # Verify data can be decoded correctly
         decoder = BinaryDecoder(data, encoder.get_key_map())
         assert decoder.get_string("name") == "TestSat"
-        assert abs(decoder.get_float("uptime") - 3600.5) < 0.01
+        uptime_result = decoder.get_float("uptime")
+        assert uptime_result is not None
+        assert abs(uptime_result - 3600.5) < 0.01
         assert decoder.get_int("battery_level") == 85
-        assert abs(decoder.get_float("IMU_0_acceleration_2") - 9.81) < 0.01
-        assert abs(decoder.get_float("PowerMonitor_0_current_avg") - 0.125) < 0.001
+        accel_result = decoder.get_float("IMU_0_acceleration_2")
+        assert accel_result is not None
+        assert abs(accel_result - 9.81) < 0.01
+        current_result = decoder.get_float("PowerMonitor_0_current_avg")
+        assert current_result is not None
+        assert abs(current_result - 0.125) < 0.001
 
         # Don't return data, let test complete normally
         assert len(data) > 0

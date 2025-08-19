@@ -253,7 +253,7 @@ class Beacon:
         return readings / num_readings
 
     @staticmethod
-    def decode_binary_beacon(data: bytes, key_map: dict = None) -> dict:
+    def decode_binary_beacon(data: bytes, key_map: dict | None = None) -> dict:
         """Decode binary beacon data received from another satellite.
 
         Args:

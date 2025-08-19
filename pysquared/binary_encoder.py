@@ -21,7 +21,7 @@ import struct
 from collections import OrderedDict
 
 try:
-    from typing import Dict, Tuple, Union
+    from typing import Dict, Optional, Tuple, Union
 except ImportError:
     pass
 
@@ -31,7 +31,9 @@ class BinaryEncoder:
 
     def __init__(self) -> None:
         """Initialize the binary encoder."""
-        self._data: OrderedDict[str, Tuple[str, Union[int, float, str]]] = OrderedDict()
+        self._data: OrderedDict[str, Tuple[str, Union[int, float, str, bytes]]] = (
+            OrderedDict()
+        )
         self._key_map: Dict[int, str] = {}
 
     def get_key_map(self) -> Dict[int, str]:
@@ -110,7 +112,11 @@ class BinaryEncoder:
             if fmt == "s":
                 # String: type=0, length + data
                 result += struct.pack(">IB", key_hash, 0)  # key_hash + type
-                result += struct.pack(">B", len(value)) + value
+                # value is bytes for strings
+                byte_value = (
+                    value if isinstance(value, bytes) else str(value).encode("utf-8")
+                )
+                result += struct.pack(">B", len(byte_value)) + byte_value
             elif fmt in "bB":
                 # 1-byte int: type=1
                 result += struct.pack(
@@ -144,7 +150,7 @@ class BinaryEncoder:
 class BinaryDecoder:
     """Decodes data from binary format."""
 
-    def __init__(self, data: bytes, key_map: Dict[int, str] = None) -> None:
+    def __init__(self, data: bytes, key_map: Optional[Dict[int, str]] = None) -> None:
         """Initialize the binary decoder.
 
         Args:
@@ -223,7 +229,7 @@ class BinaryDecoder:
                 # Unknown type, skip
                 break
 
-    def get_int(self, key: str) -> int | None:
+    def get_int(self, key: str) -> Optional[int]:
         """Get an integer value.
 
         Args:
@@ -235,7 +241,7 @@ class BinaryDecoder:
         value = self._data.get(key)
         return int(value) if value is not None else None
 
-    def get_float(self, key: str) -> float | None:
+    def get_float(self, key: str) -> Optional[float]:
         """Get a float value.
 
         Args:
@@ -247,7 +253,7 @@ class BinaryDecoder:
         value = self._data.get(key)
         return float(value) if value is not None else None
 
-    def get_string(self, key: str) -> str | None:
+    def get_string(self, key: str) -> Optional[str]:
         """Get a string value.
 
         Args:
