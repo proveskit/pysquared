@@ -109,42 +109,63 @@ class BinaryEncoder:
             key_hash = hash(key) & 0xFFFFFFFF  # 4-byte hash
             self._key_map[key_hash] = key
 
-            if fmt == "s":
-                # String: type=0, length + data
-                result += struct.pack(">IB", key_hash, 0)  # key_hash + type
-                # value is bytes for strings
-                byte_value = (
-                    value if isinstance(value, bytes) else str(value).encode("utf-8")
-                )
-                result += struct.pack(">B", len(byte_value)) + byte_value
-            elif fmt in "bB":
-                # 1-byte int: type=1
-                result += struct.pack(
-                    ">IBb" if fmt == "b" else ">IBB", key_hash, 1, value
-                )
-            elif fmt in "hH":
-                # 2-byte int: type=2
-                result += struct.pack(
-                    ">IBh" if fmt == "h" else ">IBH", key_hash, 2, value
-                )
-            elif fmt in "iI":
-                # 4-byte int: type=3
-                result += struct.pack(
-                    ">IBi" if fmt == "i" else ">IBI", key_hash, 3, value
-                )
-            elif fmt in "qQ":
-                # 8-byte int: type=4
-                result += struct.pack(
-                    ">IBq" if fmt == "q" else ">IBQ", key_hash, 4, value
-                )
-            elif fmt == "f":
-                # 4-byte float: type=5
-                result += struct.pack(">IBf", key_hash, 5, value)
-            elif fmt == "d":
-                # 8-byte float: type=6
-                result += struct.pack(">IBd", key_hash, 6, value)
+            result += self._encode_field(key_hash, fmt, value)
 
         return result
+
+    def _encode_field(
+        self, key_hash: int, fmt: str, value: Union[int, float, str, bytes]
+    ) -> bytes:
+        """Encode a single field into bytes.
+
+        Args:
+            key_hash: Hash of the field key
+            fmt: Format string for the field
+            value: Value to encode
+
+        Returns:
+            Encoded field bytes
+        """
+        if fmt == "s":
+            # String: type=0, length + data
+            result = struct.pack(">IB", key_hash, 0)  # key_hash + type
+            byte_value = (
+                value if isinstance(value, bytes) else str(value).encode("utf-8")
+            )
+            result += struct.pack(">B", len(byte_value)) + byte_value
+            return result
+        elif fmt in "bB":
+            # 1-byte int: type=1 (signed), type=11 (unsigned)
+            type_id = 1 if fmt == "b" else 11
+            return struct.pack(
+                ">IBb" if fmt == "b" else ">IBB", key_hash, type_id, value
+            )
+        elif fmt in "hH":
+            # 2-byte int: type=2 (signed), type=12 (unsigned)
+            type_id = 2 if fmt == "h" else 12
+            return struct.pack(
+                ">IBh" if fmt == "h" else ">IBH", key_hash, type_id, value
+            )
+        elif fmt in "iI":
+            # 4-byte int: type=3 (signed), type=13 (unsigned)
+            type_id = 3 if fmt == "i" else 13
+            return struct.pack(
+                ">IBi" if fmt == "i" else ">IBI", key_hash, type_id, value
+            )
+        elif fmt in "qQ":
+            # 8-byte int: type=4 (signed), type=14 (unsigned)
+            type_id = 4 if fmt == "q" else 14
+            return struct.pack(
+                ">IBq" if fmt == "q" else ">IBQ", key_hash, type_id, value
+            )
+        elif fmt == "f":
+            # 4-byte float: type=5
+            return struct.pack(">IBf", key_hash, 5, value)
+        elif fmt == "d":
+            # 8-byte float: type=6
+            return struct.pack(">IBd", key_hash, 6, value)
+        else:
+            raise ValueError(f"Unknown format: {fmt}")
 
 
 class BinaryDecoder:
@@ -179,55 +200,60 @@ class BinaryDecoder:
             # Get key name from hash or use hash as string
             key_name = self._key_map.get(key_hash, f"field_{key_hash:08x}")
 
-            if data_type == 0:  # String
-                if offset + 1 > len(data):
-                    break
-                str_len = struct.unpack(">B", data[offset : offset + 1])[0]
-                offset += 1
+            value, consumed = self._decode_field(data, offset, data_type)
+            if value is None:
+                break  # Failed to decode or unknown type
 
-                if offset + str_len > len(data):
-                    break
-                self._data[key_name] = data[offset : offset + str_len].decode("utf-8")
-                offset += str_len
+            self._data[key_name] = value
+            offset += consumed
 
-            elif data_type == 1:  # 1-byte int
-                if offset + 1 > len(data):
-                    break
-                self._data[key_name] = struct.unpack(">b", data[offset : offset + 1])[0]
-                offset += 1
+    def _decode_field(
+        self, data: bytes, offset: int, data_type: int
+    ) -> Tuple[Union[int, float, str, None], int]:
+        """Decode a single field from binary data.
 
-            elif data_type == 2:  # 2-byte int
-                if offset + 2 > len(data):
-                    break
-                self._data[key_name] = struct.unpack(">h", data[offset : offset + 2])[0]
-                offset += 2
+        Args:
+            data: Binary data
+            offset: Current offset in data
+            data_type: Type identifier
 
-            elif data_type == 3:  # 4-byte int
-                if offset + 4 > len(data):
-                    break
-                self._data[key_name] = struct.unpack(">i", data[offset : offset + 4])[0]
-                offset += 4
+        Returns:
+            Tuple of (decoded_value, bytes_consumed) or (None, 0) if failed
+        """
+        if data_type == 0:  # String
+            if offset + 1 > len(data):
+                return None, 0
+            str_len = struct.unpack(">B", data[offset : offset + 1])[0]
+            offset += 1
 
-            elif data_type == 4:  # 8-byte int
-                if offset + 8 > len(data):
-                    break
-                self._data[key_name] = struct.unpack(">q", data[offset : offset + 8])[0]
-                offset += 8
+            if offset + str_len > len(data):
+                return None, 0
+            value = data[offset : offset + str_len].decode("utf-8")
+            return value, 1 + str_len
 
-            elif data_type == 5:  # 4-byte float
-                if offset + 4 > len(data):
-                    break
-                self._data[key_name] = struct.unpack(">f", data[offset : offset + 4])[0]
-                offset += 4
+        # Define format mappings for numeric types with separate signed/unsigned
+        type_formats = {
+            1: (">b", 1),  # 1-byte signed int
+            2: (">h", 2),  # 2-byte signed int
+            3: (">i", 4),  # 4-byte signed int
+            4: (">q", 8),  # 8-byte signed int
+            5: (">f", 4),  # 4-byte float
+            6: (">d", 8),  # 8-byte float
+            11: (">B", 1),  # 1-byte unsigned int
+            12: (">H", 2),  # 2-byte unsigned int
+            13: (">I", 4),  # 4-byte unsigned int
+            14: (">Q", 8),  # 8-byte unsigned int
+        }
 
-            elif data_type == 6:  # 8-byte float
-                if offset + 8 > len(data):
-                    break
-                self._data[key_name] = struct.unpack(">d", data[offset : offset + 8])[0]
-                offset += 8
-            else:
-                # Unknown type, skip
-                break
+        if data_type in type_formats:
+            fmt, size = type_formats[data_type]
+            if offset + size > len(data):
+                return None, 0
+            value = struct.unpack(fmt, data[offset : offset + size])[0]
+            return value, size
+        else:
+            # Unknown type
+            return None, 0
 
     def get_int(self, key: str) -> Optional[int]:
         """Get an integer value.
