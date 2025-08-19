@@ -18,7 +18,7 @@ import json
 import time
 from collections import OrderedDict
 
-from .utils.binary_encoder import BinaryDecoder, BinaryEncoder
+from .binary_encoder import BinaryDecoder, BinaryEncoder
 
 try:
     from mocks.circuitpython.microcontroller import Processor

@@ -14,7 +14,7 @@ from pathlib import Path
 # Add pysquared to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from pysquared.utils.binary_encoder import BinaryDecoder, BinaryEncoder
+from pysquared.binary_encoder import BinaryDecoder, BinaryEncoder
 
 
 def create_sample_beacon_data():

@@ -2,7 +2,7 @@
 
 import pytest
 
-from pysquared.utils.binary_encoder import BinaryDecoder, BinaryEncoder
+from pysquared.binary_encoder import BinaryDecoder, BinaryEncoder
 
 
 class TestBinaryEncoder:
