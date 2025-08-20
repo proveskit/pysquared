@@ -2,7 +2,7 @@
 
 This module contains unit tests for the `LSM6DSOXManager` class, which manages
 the LSM6DSOX IMU. The tests cover initialization, successful data retrieval,
-and error handling for acceleration, angular_velocityscope, and temperature readings.
+and error handling for acceleration, angular_velocity, and temperature readings.
 """
 
 import math

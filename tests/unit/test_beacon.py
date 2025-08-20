@@ -239,10 +239,10 @@ def test_beacon_send_with_sensors(
     assert d["MockTemperatureSensor_5_temperature"]["timestamp"] is not None
 
     # IMU sensor
-    assert pytest.approx(d["MockIMU_6_angular_velocityscope"]["value"][0], 0.1) == 0.1
-    assert pytest.approx(d["MockIMU_6_angular_velocityscope"]["value"][1], 0.1) == 2.3
-    assert pytest.approx(d["MockIMU_6_angular_velocityscope"]["value"][2], 0.1) == 4.5
-    assert d["MockIMU_6_angular_velocityscope"]["timestamp"] is not None
+    assert pytest.approx(d["MockIMU_6_angular_velocity"]["value"][0], 0.1) == 0.1
+    assert pytest.approx(d["MockIMU_6_angular_velocity"]["value"][1], 0.1) == 2.3
+    assert pytest.approx(d["MockIMU_6_angular_velocity"]["value"][2], 0.1) == 4.5
+    assert d["MockIMU_6_angular_velocity"]["timestamp"] is not None
     assert pytest.approx(d["MockIMU_6_acceleration"]["value"][0], 0.1) == 5.4
     assert pytest.approx(d["MockIMU_6_acceleration"]["value"][1], 0.1) == 3.2
     assert pytest.approx(d["MockIMU_6_acceleration"]["value"][2], 0.1) == 1.0
@@ -345,7 +345,7 @@ def test_beacon_send_with_imu_angular_velocity_error(
     mock_logger,
     mock_packet_manager,
 ):
-    """Tests sending a beacon when IMU angular_velocityscope sensor fails.
+    """Tests sending a beacon when IMU angular_velocity sensor fails.
 
     Args:
         mock_flag_microcontroller: Mocked microcontroller for Flag.

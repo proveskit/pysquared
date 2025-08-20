@@ -1,6 +1,6 @@
 """This module defines the `LSM6DSOXManager` class, which provides a high-level interface
 for interacting with the LSM6DSOX inertial measurement unit. It handles the initialization of the sensor and
-provides methods for reading angular_velocityscope, acceleration, and temperature data.
+provides methods for reading angular_velocity, acceleration, and temperature data.
 
 **Usage:**
 ```python
