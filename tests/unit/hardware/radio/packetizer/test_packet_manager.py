@@ -62,7 +62,9 @@ def test_packet_manager_init(mock_logger, mock_radio, mock_message_counter):
     assert packet_manager._message_counter is mock_message_counter
     assert packet_manager._send_delay == 0.5
     assert packet_manager._header_size == 6
-    assert packet_manager._payload_size == 94  # 100 - 6 header bytes
+    assert packet_manager._callsign_size == len(license_str.encode())
+    # payload_size = max_packet_size - header_size - callsign_size = 100 - 6 - 12 = 82
+    assert packet_manager._payload_size == 82
 
 
 def test_pack_data_single_packet(mock_logger, mock_radio, mock_message_counter):
@@ -85,19 +87,24 @@ def test_pack_data_single_packet(mock_logger, mock_radio, mock_message_counter):
 
     # Check packet structure
     packet = packets[0]
-    assert len(packet) == len(test_data) + packet_manager._header_size
+    expected_packet_size = (
+        len(test_data) + packet_manager._header_size + packet_manager._callsign_size
+    )
+    assert len(packet) == expected_packet_size
 
     # Check header
     packet_identifier = int.from_bytes(packet[0:1], "big")
     sequence_number = int.from_bytes(packet[1:3], "big")
     total_packets = int.from_bytes(packet[3:5], "big")
     rssi = int.from_bytes(packet[5:6], "big")
-    payload = packet[6:]
+    callsign = packet[6 : 6 + packet_manager._callsign_size]
+    payload = packet[6 + packet_manager._callsign_size :]
 
     assert packet_identifier == mock_message_counter.get()
     assert sequence_number == 0
     assert total_packets == 1
     assert rssi == 70
+    assert callsign == license_str.encode()
     assert payload == test_data
 
 
@@ -117,6 +124,7 @@ def test_pack_data_multiple_packets(mock_logger, mock_radio, mock_message_counte
     # Create test data that requires multiple packets
     # With a payload size of 94, this will require 3 packets
     test_data = b"X" * 250
+
     packets = packet_manager._pack_data(test_data)
     assert len(packets) == 3
 
@@ -128,12 +136,14 @@ def test_pack_data_multiple_packets(mock_logger, mock_radio, mock_message_counte
         sequence_number = int.from_bytes(packet[1:3], "big")
         total_packets = int.from_bytes(packet[3:5], "big")
         rssi = int.from_bytes(packet[5:6], "big")
-        payload = packet[6:]
+        callsign = packet[6 : 6 + packet_manager._callsign_size]
+        payload = packet[6 + packet_manager._callsign_size :]
 
         assert packet_identifier == mock_message_counter.get()
         assert sequence_number == i
         assert total_packets == 3
         assert rssi == 70
+        assert callsign == license_str.encode()
         reconstructed_data += payload
 
     # Verify the reconstructed data matches the original
