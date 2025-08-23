@@ -18,6 +18,8 @@ import json
 import time
 from collections import OrderedDict
 
+from .binary_encoder import BinaryDecoder, BinaryEncoder
+
 try:
     from mocks.circuitpython.microcontroller import Processor
 except ImportError:
@@ -86,15 +88,66 @@ class Beacon:
         Returns:
             True if the beacon was sent successfully, False otherwise.
         """
-        state = self._build_beacon_state()
-        beacon_data = json.dumps(state, separators=(",", ":")).encode("utf-8")
-        return self._packet_manager.send(beacon_data)
+        state = self._build_state()
+        # Use binary encoding for efficiency
+        b = self._encode_binary_state(state)
+        return self._packet_manager.send(b)
 
-    def _build_beacon_state(self) -> OrderedDict[str, object]:
-        """Builds the beacon state dictionary with system info and sensor data.
+    def _encode_binary_state(self, state: OrderedDict[str, object]) -> bytes:
+        """Encode the state dictionary using binary encoding for efficiency.
+
+        Args:
+            state: The state dictionary to encode
 
         Returns:
-            OrderedDict containing the beacon state data.
+            Binary encoded data
+        """
+        encoder = BinaryEncoder()
+
+        for key, value in state.items():
+            self._encode_value(encoder, key, value)
+
+        return encoder.to_bytes()
+
+    def _encode_value(self, encoder: BinaryEncoder, key: str, value: object) -> None:
+        """Encode a single value into the binary encoder.
+
+        Args:
+            encoder: The binary encoder to add data to
+            key: The key name for the value
+            value: The value to encode
+        """
+        if isinstance(value, int):
+            # Determine appropriate size for integer
+            if -128 <= value <= 127:
+                encoder.add_int(key, value, size=1)
+            elif -32768 <= value <= 32767:
+                encoder.add_int(key, value, size=2)
+            else:
+                encoder.add_int(key, value, size=4)
+        elif isinstance(value, float):
+            encoder.add_float(key, value)
+        elif isinstance(value, dict):
+            # Handle dictionary objects (sensor readings with to_dict())
+            for dict_key, dict_value in value.items():
+                self._encode_value(encoder, f"{key}_{dict_key}", dict_value)
+        elif isinstance(value, (list, tuple)):
+            # Handle sensor data arrays (acceleration, gyroscope)
+            if len(value) == 3 and all(isinstance(v, (int, float)) for v in value):
+                for i, v in enumerate(value):
+                    encoder.add_float(f"{key}_{i}", float(v))
+            else:
+                # Fallback to string representation for complex data
+                encoder.add_string(key, str(value))
+        else:
+            # String or other data
+            encoder.add_string(key, str(value))
+
+    def _build_state(self) -> OrderedDict[str, object]:
+        """Build the beacon state dictionary from sensors.
+
+        Returns:
+            OrderedDict containing all beacon data
         """
         state: OrderedDict[str, object] = OrderedDict()
         self._add_system_info(state)
@@ -263,3 +316,97 @@ class Beacon:
             state[key] = reading_func()
         except Exception as e:
             self._log.error(error_msg, e, sensor=sensor_name, index=index)
+
+    def send_json(self) -> bool:
+        """Sends the beacon using JSON encoding (legacy method).
+
+        Returns:
+            True if the beacon was sent successfully, False otherwise.
+        """
+        state = self._build_state()
+        b = json.dumps(state, separators=(",", ":")).encode("utf-8")
+        return self._packet_manager.send(b)
+
+    @staticmethod
+    def decode_binary_beacon(data: bytes, key_map: dict | None = None) -> dict:
+        """Decode binary beacon data received from another satellite.
+
+        Args:
+            data: Binary encoded beacon data
+            key_map: Optional key mapping for decoding (hash -> key name)
+
+        Returns:
+            Dictionary containing decoded beacon data
+        """
+        decoder = BinaryDecoder(data, key_map)
+        return decoder.get_all()
+
+    def generate_key_mapping(self) -> dict:
+        """Create a key mapping for this beacon's data structure.
+
+        This method generates a template beacon packet and returns the key mapping
+        that can be used to decode binary beacon data with the same structure.
+
+        Returns:
+            Dictionary mapping key hashes to key names
+        """
+        # Create a template state to get the key structure
+        state = self._build_template_state()
+
+        # Encode to get key mapping
+        encoder = BinaryEncoder()
+        for key, value in state.items():
+            if isinstance(value, str):
+                encoder.add_string(key, value)
+            elif isinstance(value, float):
+                encoder.add_float(key, value)
+            elif isinstance(value, int):
+                encoder.add_int(key, value)
+            elif isinstance(value, bool):
+                encoder.add_int(key, int(value), size=1)
+
+        # Generate the binary data to populate key map
+        encoder.to_bytes()
+        return encoder.get_key_map()
+
+    def _build_template_state(self) -> OrderedDict[str, object]:
+        """Build a template state dictionary for key mapping.
+
+        Returns:
+            OrderedDict containing template beacon data with the same structure
+        """
+        state: OrderedDict[str, object] = OrderedDict()
+        state["name"] = self._name
+        state["time"] = "template"
+        state["uptime"] = 0.0
+
+        for index, sensor in enumerate(self._sensors):
+            if isinstance(sensor, Processor):
+                sensor_name = sensor.__class__.__name__
+                state[f"{sensor_name}_{index}_temperature"] = 0.0
+            if isinstance(sensor, Flag):
+                state[f"{sensor.get_name()}_{index}"] = False
+            if isinstance(sensor, Counter):
+                state[f"{sensor.get_name()}_{index}"] = 0
+            if isinstance(sensor, RadioProto):
+                sensor_name = sensor.__class__.__name__
+                state[f"{sensor_name}_{index}_modulation"] = "template"
+            if isinstance(sensor, IMUProto):
+                sensor_name: str = sensor.__class__.__name__
+                # Handle dict structure from to_dict() calls
+                for i in range(3):
+                    state[f"{sensor_name}_{index}_acceleration_timestamp"] = 0.0
+                    state[f"{sensor_name}_{index}_acceleration_value_{i}"] = 0.0
+                    state[f"{sensor_name}_{index}_angular_velocity_timestamp"] = 0.0
+                    state[f"{sensor_name}_{index}_angular_velocity_value_{i}"] = 0.0
+            if isinstance(sensor, PowerMonitorProto):
+                sensor_name: str = sensor.__class__.__name__
+                state[f"{sensor_name}_{index}_current_avg"] = 0.0
+                state[f"{sensor_name}_{index}_bus_voltage_avg"] = 0.0
+                state[f"{sensor_name}_{index}_shunt_voltage_avg"] = 0.0
+            if isinstance(sensor, TemperatureSensorProto):
+                sensor_name = sensor.__class__.__name__
+                state[f"{sensor_name}_{index}_temperature_timestamp"] = 0.0
+                state[f"{sensor_name}_{index}_temperature_value"] = 0.0
+
+        return state
