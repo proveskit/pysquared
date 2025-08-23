@@ -239,17 +239,17 @@ class Beacon:
         decoder = BinaryDecoder(data, key_map)
         return decoder.get_all()
 
-    def create_key_map(self) -> dict:
+    def generate_key_mapping(self) -> dict:
         """Create a key mapping for this beacon's data structure.
 
-        This method generates a sample beacon packet and returns the key mapping
+        This method generates a template beacon packet and returns the key mapping
         that can be used to decode binary beacon data with the same structure.
 
         Returns:
             Dictionary mapping key hashes to key names
         """
-        # Create a sample state to get the key structure
-        state = self._build_sample_state()
+        # Create a template state to get the key structure
+        state = self._build_template_state()
 
         # Encode to get key mapping
         encoder = BinaryEncoder()
@@ -267,15 +267,15 @@ class Beacon:
         encoder.to_bytes()
         return encoder.get_key_map()
 
-    def _build_sample_state(self) -> OrderedDict[str, object]:
-        """Build a sample state dictionary for key mapping.
+    def _build_template_state(self) -> OrderedDict[str, object]:
+        """Build a template state dictionary for key mapping.
 
         Returns:
-            OrderedDict containing sample beacon data with the same structure
+            OrderedDict containing template beacon data with the same structure
         """
         state: OrderedDict[str, object] = OrderedDict()
         state["name"] = self._name
-        state["time"] = "sample"
+        state["time"] = "template"
         state["uptime"] = 0.0
 
         for index, sensor in enumerate(self._sensors):
@@ -288,7 +288,7 @@ class Beacon:
                 state[f"{sensor.get_name()}_{index}"] = 0
             if isinstance(sensor, RadioProto):
                 sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_modulation"] = "sample"
+                state[f"{sensor_name}_{index}_modulation"] = "template"
             if isinstance(sensor, IMUProto):
                 sensor_name: str = sensor.__class__.__name__
                 # Handle arrays by creating individual entries
