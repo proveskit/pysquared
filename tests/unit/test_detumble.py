@@ -85,7 +85,7 @@ def test_x_product_zero():
 
 # Bigger context: magnetorquer_dipole() is called by do_detumble() in (FC board) functions.py & (Batt Board) battery_functions.py
 # mag_field: mag. field strength at x, y, & z axis (tuple) (magnetometer reading)
-# ang_vel: ang. vel. at x, y, z axis (tuple) (gyroscope reading)
+# ang_vel: ang. vel. at x, y, z axis (tuple) (angular_velocity reading)
 def test_magnetorquer_dipole():
     """Tests the magnetorquer_dipole function with valid inputs."""
     mag_field = (30.0, -45.0, 60.0)

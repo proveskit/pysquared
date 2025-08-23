@@ -24,7 +24,12 @@ from pysquared.protos.imu import IMUProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
 from pysquared.protos.temperature_sensor import TemperatureSensorProto
+from pysquared.sensor_reading.acceleration import Acceleration
+from pysquared.sensor_reading.angular_velocity import AngularVelocity
+from pysquared.sensor_reading.avg import avg_readings
+from pysquared.sensor_reading.current import Current
 from pysquared.sensor_reading.temperature import Temperature
+from pysquared.sensor_reading.voltage import Voltage
 
 
 @pytest.fixture
@@ -86,17 +91,17 @@ class MockCounter(Counter):
 class MockPowerMonitor(PowerMonitorProto):
     """Mocks the PowerMonitorProto for testing."""
 
-    def get_current(self) -> float:
+    def get_current(self) -> Current:
         """Mocks the get_current method."""
-        return 0.5
+        return Current(0.5)
 
-    def get_bus_voltage(self) -> float:
+    def get_bus_voltage(self) -> Voltage:
         """Mocks the get_bus_voltage method."""
-        return 3.3
+        return Voltage(3.3)
 
-    def get_shunt_voltage(self) -> float:
+    def get_shunt_voltage(self) -> Voltage:
         """Mocks the get_shunt_voltage method."""
-        return 0.1
+        return Voltage(0.1)
 
 
 class MockTemperatureSensor(TemperatureSensorProto):
@@ -110,13 +115,13 @@ class MockTemperatureSensor(TemperatureSensorProto):
 class MockIMU(IMUProto):
     """Mocks the IMUProto for testing."""
 
-    def get_gyro_data(self) -> tuple[float, float, float]:
-        """Mocks the get_gyro_data method."""
-        return (0.1, 2.3, 4.5)
+    def get_angular_velocity(self) -> AngularVelocity:
+        """Mocks the get_angular_velocity method."""
+        return AngularVelocity(0.1, 2.3, 4.5)
 
-    def get_acceleration(self) -> tuple[float, float, float]:
+    def get_acceleration(self) -> Acceleration:
         """Mocks the get_acceleration method."""
-        return (5.4, 3.2, 1.0)
+        return Acceleration(5.4, 3.2, 1.0)
 
 
 def test_beacon_init(mock_logger, mock_packet_manager):
@@ -237,42 +242,28 @@ def test_beacon_send_with_sensors(
     assert any(abs(v - 5.4) < 0.1 for v in values if isinstance(v, float))  # accel x
 
 
-def test_beacon_avg_readings(mock_logger, mock_packet_manager):
-    """Tests the avg_readings method in the context of the Beacon class.
-
-    Args:
-        mock_logger: Mocked Logger instance.
-        mock_packet_manager: Mocked PacketManager instance.
-    """
-    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
+def test_avg_readings_function():
+    """Tests the avg_readings standalone function."""
 
     # Test with a function that returns consistent values
     def constant_func():
         """Returns a constant value."""
-        return 5.0
+        return Voltage(5.0)
 
-    result = beacon.avg_readings(constant_func, num_readings=5)
+    result = avg_readings(constant_func, num_readings=5)
     assert pytest.approx(result, 0.01) == 5.0
 
-    # Test with a function that returns None
-    def none_func():
-        """Returns None to simulate a sensor failure."""
-        return None
+    # Test with a function that raises an exception
+    def error_func():
+        """Raises an exception to simulate a sensor failure."""
+        raise Exception("Sensor error")
 
-    result = beacon.avg_readings(none_func)
-    assert result is None
-    mock_logger.warning.assert_called_once()
+    with pytest.raises(RuntimeError, match="Error retrieving reading from error_func"):
+        avg_readings(error_func)
 
 
-def test_avg_readings_varying_values(mock_logger, mock_packet_manager):
-    """Tests avg_readings with values that vary.
-
-    Args:
-        mock_logger: Mocked Logger instance.
-        mock_packet_manager: Mocked PacketManager instance.
-    """
-    beacon = Beacon(mock_logger, "test_beacon", mock_packet_manager, 0.0)
-
+def test_avg_readings_varying_values():
+    """Tests avg_readings with values that vary."""
     # Create a simple counter function that returns incrementing values
     # Starting from 1 and incrementing by 1 each time
     values = list(range(1, 6))  # [1, 2, 3, 4, 5]
@@ -285,10 +276,10 @@ def test_avg_readings_varying_values(mock_logger, mock_packet_manager):
         nonlocal read_count
         value = values[read_count % len(values)]
         read_count += 1
-        return value
+        return Voltage(value)
 
     # Test with a specific number of readings that's a multiple of our pattern length
-    result = beacon.avg_readings(incrementing_func, num_readings=5)
+    result = avg_readings(incrementing_func, num_readings=5)
     assert result == expected_avg
 
 
@@ -326,7 +317,7 @@ def test_beacon_create_key_map(
     )
 
     # Test create_key_map
-    key_map = beacon.create_key_map()
+    key_map = beacon.generate_key_mapping()
 
     # Verify key_map is a dictionary
     assert isinstance(key_map, dict)
@@ -347,10 +338,10 @@ def test_beacon_create_key_map(
         "MockTemperatureSensor_5_temperature_timestamp",
     ]
 
-    # Add IMU keys (acceleration and gyroscope, 3 components each)
+    # Add IMU keys (acceleration and angular_velocity, 3 components each)
     for i in range(3):
         expected_keys.append(f"MockIMU_6_acceleration_{i}")
-        expected_keys.append(f"MockIMU_6_gyroscope_{i}")
+        expected_keys.append(f"MockIMU_6_angular_velocity_{i}")
 
     # Check that all expected keys are present in the values of key_map
     key_map_values = set(key_map.values())
@@ -363,6 +354,51 @@ def test_beacon_create_key_map(
     for hash_val, key_name in key_map.items():
         assert isinstance(hash_val, int)
         assert isinstance(key_name, str)
+
+
+def test_beacon_send_with_imu_acceleration_error(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests sending a beacon when IMU acceleration sensor fails.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    imu = MockIMU()
+    # Mock the get_acceleration method to raise an exception
+    imu.get_acceleration = MagicMock(
+        side_effect=Exception("Acceleration sensor failure")
+    )
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        imu,
+    )
+
+    _ = beacon.send()
+
+    # Verify the error was logged
+    mock_logger.error.assert_called_with(
+        "Error retrieving acceleration",
+        imu.get_acceleration.side_effect,
+        sensor="MockIMU",
+        index=0,
+    )
+
+    # Verify beacon was still sent (despite the error)
+    mock_packet_manager.send.assert_called_once()
 
 
 def test_beacon_encode_binary_state(mock_logger, mock_packet_manager):
@@ -552,3 +588,318 @@ def test_beacon_encode_value(mock_logger, mock_packet_manager):
     assert any(abs(v - 3.0) < 0.01 for v in values if isinstance(v, float))
     # The text list should be converted to string
     assert "['a', 'b']" in values or '["a", "b"]' in values
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_send_with_imu_angular_velocity_error(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests sending a beacon when IMU angular_velocity sensor fails.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    imu = MockIMU()
+    # Mock the get_angular_velocity method to raise an exception
+    imu.get_angular_velocity = MagicMock(
+        side_effect=Exception("AngularVelocityscope sensor failure")
+    )
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        imu,
+    )
+
+    _ = beacon.send()
+
+    # Verify the error was logged
+    mock_logger.error.assert_called_with(
+        "Error retrieving angular velocity",
+        imu.get_angular_velocity.side_effect,
+        sensor="MockIMU",
+        index=0,
+    )
+
+    # Verify beacon was still sent (despite the error)
+    mock_packet_manager.send.assert_called_once()
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_send_with_power_monitor_current_error(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests sending a beacon when power monitor current sensor fails.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    power_monitor = MockPowerMonitor()
+    # Mock the get_current method to raise an exception
+    power_monitor.get_current = MagicMock(
+        side_effect=Exception("Current sensor failure")
+    )
+    power_monitor.get_current.__name__ = "get_current"
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        power_monitor,
+    )
+
+    _ = beacon.send()
+
+    # Verify the error was logged
+    mock_logger.error.assert_called_with(
+        "Error retrieving current",
+        mock_logger.error.call_args[0][1],  # The actual RuntimeError that was raised
+        sensor="MockPowerMonitor",
+        index=0,
+    )
+    # Verify the exception is a RuntimeError from avg_readings
+    assert isinstance(mock_logger.error.call_args[0][1], RuntimeError)
+    assert "Error retrieving reading from get_current" in str(
+        mock_logger.error.call_args[0][1]
+    )
+
+    # Verify beacon was still sent (despite the error)
+    mock_packet_manager.send.assert_called_once()
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_send_with_power_monitor_bus_voltage_error(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests sending a beacon when power monitor bus voltage sensor fails.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    power_monitor = MockPowerMonitor()
+    # Mock the get_bus_voltage method to raise an exception
+    power_monitor.get_bus_voltage = MagicMock(
+        side_effect=Exception("Bus voltage sensor failure")
+    )
+    power_monitor.get_bus_voltage.__name__ = "get_bus_voltage"
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        power_monitor,
+    )
+
+    _ = beacon.send()
+
+    # Verify the error was logged
+    mock_logger.error.assert_called_with(
+        "Error retrieving bus voltage",
+        mock_logger.error.call_args[0][1],  # The actual RuntimeError that was raised
+        sensor="MockPowerMonitor",
+        index=0,
+    )
+    # Verify the exception is a RuntimeError from avg_readings
+    assert isinstance(mock_logger.error.call_args[0][1], RuntimeError)
+    assert "Error retrieving reading from get_bus_voltage" in str(
+        mock_logger.error.call_args[0][1]
+    )
+
+    # Verify beacon was still sent (despite the error)
+    mock_packet_manager.send.assert_called_once()
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_send_with_power_monitor_shunt_voltage_error(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests sending a beacon when power monitor shunt voltage sensor fails.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    power_monitor = MockPowerMonitor()
+    # Mock the get_shunt_voltage method to raise an exception
+    power_monitor.get_shunt_voltage = MagicMock(
+        side_effect=Exception("Shunt voltage sensor failure")
+    )
+    power_monitor.get_shunt_voltage.__name__ = "get_shunt_voltage"
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        power_monitor,
+    )
+
+    _ = beacon.send()
+
+    # Verify the error was logged
+    mock_logger.error.assert_called_with(
+        "Error retrieving shunt voltage",
+        mock_logger.error.call_args[0][1],  # The actual RuntimeError that was raised
+        sensor="MockPowerMonitor",
+        index=0,
+    )
+    # Verify the exception is a RuntimeError from avg_readings
+    assert isinstance(mock_logger.error.call_args[0][1], RuntimeError)
+    assert "Error retrieving reading from get_shunt_voltage" in str(
+        mock_logger.error.call_args[0][1]
+    )
+
+    # Verify beacon was still sent (despite the error)
+    mock_packet_manager.send.assert_called_once()
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_send_with_temperature_sensor_error(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests sending a beacon when temperature sensor fails.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    temp_sensor = MockTemperatureSensor()
+    # Mock the get_temperature method to raise an exception
+    temp_sensor.get_temperature = MagicMock(
+        side_effect=Exception("Temperature sensor failure")
+    )
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        temp_sensor,
+    )
+
+    _ = beacon.send()
+
+    # Verify the error was logged
+    mock_logger.error.assert_called_with(
+        "Error retrieving temperature",
+        temp_sensor.get_temperature.side_effect,
+        sensor="MockTemperatureSensor",
+        index=0,
+    )
+
+    # Verify beacon was still sent (despite the error)
+    mock_packet_manager.send.assert_called_once()
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_send_with_multiple_sensor_errors(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests sending a beacon when multiple sensors fail.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    imu = MockIMU()
+    power_monitor = MockPowerMonitor()
+    temp_sensor = MockTemperatureSensor()
+
+    # Mock multiple methods to raise exceptions
+    imu.get_acceleration = MagicMock(
+        side_effect=Exception("Acceleration sensor failure")
+    )
+    power_monitor.get_current = MagicMock(
+        side_effect=Exception("Current sensor failure")
+    )
+    power_monitor.get_current.__name__ = "get_current"
+    temp_sensor.get_temperature = MagicMock(
+        side_effect=Exception("Temperature sensor failure")
+    )
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        imu,
+        power_monitor,
+        temp_sensor,
+    )
+
+    _ = beacon.send()
+
+    # Verify all errors were logged
+    assert mock_logger.error.call_count == 3
+
+    # Check that the correct error messages were logged
+    calls = mock_logger.error.call_args_list
+    error_messages = [call[0][0] for call in calls]
+
+    assert "Error retrieving acceleration" in error_messages
+    assert "Error retrieving current" in error_messages
+    assert "Error retrieving temperature" in error_messages
+
+    # Verify beacon was still sent (despite the errors)
+    mock_packet_manager.send.assert_called_once()
