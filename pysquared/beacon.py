@@ -127,6 +127,10 @@ class Beacon:
                 encoder.add_int(key, value, size=4)
         elif isinstance(value, float):
             encoder.add_float(key, value)
+        elif isinstance(value, dict):
+            # Handle dictionary objects (sensor readings with to_dict())
+            for dict_key, dict_value in value.items():
+                self._encode_value(encoder, f"{key}_{dict_key}", dict_value)
         elif isinstance(value, (list, tuple)):
             # Handle sensor data arrays (acceleration, gyroscope)
             if len(value) == 3 and all(isinstance(v, (int, float)) for v in value):
@@ -389,10 +393,12 @@ class Beacon:
                 state[f"{sensor_name}_{index}_modulation"] = "template"
             if isinstance(sensor, IMUProto):
                 sensor_name: str = sensor.__class__.__name__
-                # Handle arrays by creating individual entries
+                # Handle dict structure from to_dict() calls
                 for i in range(3):
-                    state[f"{sensor_name}_{index}_acceleration_{i}"] = 0.0
-                    state[f"{sensor_name}_{index}_angular_velocity_{i}"] = 0.0
+                    state[f"{sensor_name}_{index}_acceleration_timestamp"] = 0.0
+                    state[f"{sensor_name}_{index}_acceleration_value_{i}"] = 0.0
+                    state[f"{sensor_name}_{index}_angular_velocity_timestamp"] = 0.0
+                    state[f"{sensor_name}_{index}_angular_velocity_value_{i}"] = 0.0
             if isinstance(sensor, PowerMonitorProto):
                 sensor_name: str = sensor.__class__.__name__
                 state[f"{sensor_name}_{index}_current_avg"] = 0.0
@@ -400,7 +406,7 @@ class Beacon:
                 state[f"{sensor_name}_{index}_shunt_voltage_avg"] = 0.0
             if isinstance(sensor, TemperatureSensorProto):
                 sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_temperature"] = 0.0
-                state[f"{sensor_name}_{index}_temperature_timestamp"] = 0
+                state[f"{sensor_name}_{index}_temperature_timestamp"] = 0.0
+                state[f"{sensor_name}_{index}_temperature_value"] = 0.0
 
         return state

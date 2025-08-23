@@ -334,14 +334,20 @@ def test_beacon_create_key_map(
         "MockPowerMonitor_4_current_avg",
         "MockPowerMonitor_4_bus_voltage_avg",
         "MockPowerMonitor_4_shunt_voltage_avg",
-        "MockTemperatureSensor_5_temperature",
         "MockTemperatureSensor_5_temperature_timestamp",
+        "MockTemperatureSensor_5_temperature_value",
     ]
 
-    # Add IMU keys (acceleration and angular_velocity, 3 components each)
+    # Add IMU keys (acceleration and angular_velocity with timestamp and values)
+    expected_keys.extend(
+        [
+            "MockIMU_6_acceleration_timestamp",
+            "MockIMU_6_angular_velocity_timestamp",
+        ]
+    )
     for i in range(3):
-        expected_keys.append(f"MockIMU_6_acceleration_{i}")
-        expected_keys.append(f"MockIMU_6_angular_velocity_{i}")
+        expected_keys.append(f"MockIMU_6_acceleration_value_{i}")
+        expected_keys.append(f"MockIMU_6_angular_velocity_value_{i}")
 
     # Check that all expected keys are present in the values of key_map
     key_map_values = set(key_map.values())
@@ -356,6 +362,8 @@ def test_beacon_create_key_map(
         assert isinstance(key_name, str)
 
 
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
 def test_beacon_send_with_imu_acceleration_error(
     mock_flag_microcontroller,
     mock_counter_microcontroller,
@@ -612,7 +620,7 @@ def test_beacon_send_with_imu_angular_velocity_error(
     imu = MockIMU()
     # Mock the get_angular_velocity method to raise an exception
     imu.get_angular_velocity = MagicMock(
-        side_effect=Exception("AngularVelocityscope sensor failure")
+        side_effect=Exception("Angular Velocity scope sensor failure")
     )
 
     beacon = Beacon(
