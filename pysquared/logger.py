@@ -18,8 +18,9 @@ import time
 import traceback
 from collections import OrderedDict
 
+import adafruit_pathlib
+
 from .nvm.counter import Counter
-from .sd_card import SDCardManager
 
 
 def _color(msg, color="gray", fmt="normal") -> str:
@@ -81,7 +82,8 @@ class Logger:
     def __init__(
         self,
         error_counter: Counter,
-        sd_card: SDCardManager = None,
+        path: adafruit_pathlib.Path = None,
+        # sd_card: SDCardManager = None,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
     ) -> None:
@@ -94,9 +96,15 @@ class Logger:
             colorized (bool): Whether to colorize output.
         """
         self._error_counter: Counter = error_counter
-        self.sd_card: SDCardManager = sd_card
+        self.sd_path: adafruit_pathlib.Path = path
+        # self.sd_card: SDCardManager = sd_card
         self._log_level: int = log_level
         self.colorized: bool = colorized
+
+        try:
+            self.sd_path = self.sd_path / "logs"
+        except TypeError as e:
+            print(f"path not set: {e}")
 
     def _can_print_this_level(self, level_value: int) -> bool:
         """

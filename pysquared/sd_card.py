@@ -2,6 +2,7 @@
 
 # import os
 
+import adafruit_pathlib
 import sdcardio
 import storage
 
@@ -24,10 +25,11 @@ class SDCardManager:
         spi_bus: SPI,
         chip_select: Pin,
         baudrate: int = 400000,
-        mounted: bool = False,
+        mount_path: str = "/sd",
     ) -> None:
-        self.mounted = mounted
-        self.mount_path = ("/sd",)
+        self.mounted = False
+        self.path = adafruit_pathlib.Path("/sd")
+        self.mount_path = mount_path
 
         try:
             sd = sdcardio.SDCard(spi_bus, chip_select, baudrate)
