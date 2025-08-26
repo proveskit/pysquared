@@ -29,6 +29,7 @@ class ProvesV3Manager(MagnetorquerProto):
     """Width of the x and y-axis coil in meters."""
 
     _coil_area_x_y = _coil_length_x_y * _coil_width_x_y
+    """Area of the x and y-axis coil in square meters."""
 
     _coil_resistance_x_y = 57.2
     """Resistance of the x and y-axis coil in ohms."""
@@ -92,6 +93,9 @@ class ProvesV3Manager(MagnetorquerProto):
         Returns:
             A tuple containing the limited current for each axis.
         """
+        # Take the minimum of the absolute value of the current and the maximum current for that axis.
+        # If the current is negative, we keep the sign.
+        # This ensures that we do not exceed the maximum current for each axis.
         return (
             min(abs(current[0]), self._coil_max_current_x_y)
             * (1 if current[0] >= 0 else -1),
