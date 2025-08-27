@@ -309,7 +309,9 @@ class TestBinaryEncoder:
             )
 
             assert decoder.get_int("test") == 42
-            assert abs(decoder.get_float("temp") - 23.5) < 0.01
+            temp_value = decoder.get_float("temp")
+            assert temp_value is not None
+            assert abs(temp_value - 23.5) < 0.01
             assert decoder.get_string("name") == "test"
 
 

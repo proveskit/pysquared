@@ -137,12 +137,14 @@ class BinaryEncoder:
         else:
             raise ValueError(f"Unknown format: {fmt}")
 
-    def _encode_string_field(self, key_hash: int, value: Union[str, bytes]) -> bytes:
+    def _encode_string_field(
+        self, key_hash: int, value: Union[int, float, str, bytes]
+    ) -> bytes:
         """Encode a string field into bytes.
 
         Args:
             key_hash: Hash of the field key
-            value: String value to encode
+            value: Value to encode as string
 
         Returns:
             Encoded string field bytes
@@ -152,36 +154,40 @@ class BinaryEncoder:
         result += struct.pack(">B", len(byte_value)) + byte_value
         return result
 
-    def _encode_integer_field(self, key_hash: int, fmt: str, value: int) -> bytes:
+    def _encode_integer_field(
+        self, key_hash: int, fmt: str, value: Union[int, float, str, bytes]
+    ) -> bytes:
         """Encode an integer field into bytes.
 
         Args:
             key_hash: Hash of the field key
             fmt: Format string for the integer
-            value: Integer value to encode
+            value: Value to encode as integer
 
         Returns:
             Encoded integer field bytes
         """
         type_info = self._get_integer_type_info(fmt)
         return struct.pack(
-            type_info["struct_format"], key_hash, type_info["type_id"], value
+            type_info["struct_format"], key_hash, type_info["type_id"], int(value)
         )
 
-    def _encode_float_field(self, key_hash: int, fmt: str, value: float) -> bytes:
+    def _encode_float_field(
+        self, key_hash: int, fmt: str, value: Union[int, float, str, bytes]
+    ) -> bytes:
         """Encode a float field into bytes.
 
         Args:
             key_hash: Hash of the field key
             fmt: Format string for the float
-            value: Float value to encode
+            value: Value to encode as float
 
         Returns:
             Encoded float field bytes
         """
         type_id = 5 if fmt == "f" else 6
         struct_format = f">IB{fmt}"
-        return struct.pack(struct_format, key_hash, type_id, value)
+        return struct.pack(struct_format, key_hash, type_id, float(value))
 
     def _get_integer_type_info(self, fmt: str) -> dict:
         """Get type information for integer formats.
