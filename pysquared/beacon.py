@@ -140,13 +140,13 @@ class Beacon:
         elif key in ("name", "time"):
             encoder.add_string(key, str(value))
         elif key == "uptime":
-            encoder.add_float(key, float(value))
+            encoder.add_float(key, self._safe_float_convert(value))
         elif "temperature" in key or "voltage" in key or "current" in key:
-            encoder.add_float(key, float(value))
+            encoder.add_float(key, self._safe_float_convert(value))
         elif "timestamp" in key:
-            encoder.add_float(key, float(value))
+            encoder.add_float(key, self._safe_float_convert(value))
         elif key.endswith(("_0", "_1", "_2")):  # IMU array indices
-            encoder.add_float(key, float(value))
+            encoder.add_float(key, self._safe_float_convert(value))
         elif "modulation" in key:
             encoder.add_string(key, str(value))
         elif isinstance(value, bool):
@@ -165,6 +165,25 @@ class Beacon:
             # Fallback for unknown types
             encoder.add_string(key, str(value))
 
+    def _safe_float_convert(self, value: object) -> float:
+        """Safely convert a value to float with proper type checking.
+
+        Args:
+            value: The value to convert to float
+
+        Returns:
+            Float representation of the value
+
+        Raises:
+            ValueError: If the value cannot be converted to float
+        """
+        if isinstance(value, (int, float)):
+            return float(value)
+        elif isinstance(value, str):
+            return float(value)
+        else:
+            raise ValueError(f"Cannot convert {type(value).__name__} to float: {value}")
+
     def _encode_sensor_dict(
         self, encoder: BinaryEncoder, key: str, sensor_data: dict
     ) -> None:
@@ -181,14 +200,16 @@ class Beacon:
         for dict_key, dict_value in sensor_data.items():
             full_key = f"{key}_{dict_key}"
             if dict_key == "timestamp":
-                encoder.add_float(full_key, float(dict_value))
+                encoder.add_float(full_key, self._safe_float_convert(dict_value))
             elif dict_key == "value":
                 if isinstance(dict_value, (list, tuple)) and len(dict_value) == 3:
                     # Handle 3D vectors (acceleration, gyroscope)
                     for i, v in enumerate(dict_value):
-                        encoder.add_float(f"{full_key}_{i}", float(v))
+                        encoder.add_float(
+                            f"{full_key}_{i}", self._safe_float_convert(v)
+                        )
                 else:
-                    encoder.add_float(full_key, float(dict_value))
+                    encoder.add_float(full_key, self._safe_float_convert(dict_value))
             else:
                 # Handle other sensor-specific fields
                 if isinstance(dict_value, (int, float)):
