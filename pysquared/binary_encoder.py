@@ -168,7 +168,7 @@ class BinaryEncoder:
         Returns:
             Encoded string field bytes
         """
-        result = struct.pack(">IB", key_hash, 0)  # key_hash + type=0
+        result = struct.pack(">IB", key_hash, 0)
         byte_value = value if isinstance(value, bytes) else str(value).encode("utf-8")
         result += struct.pack(">B", len(byte_value)) + byte_value
         return result
