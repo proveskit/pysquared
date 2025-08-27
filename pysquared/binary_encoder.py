@@ -115,10 +115,17 @@ class BinaryEncoder:
 
         return result
 
+    # Format type constants for better readability
+    _STRING_FORMATS = {"s"}
+    _INTEGER_FORMATS = {"b", "B", "h", "H", "i", "I", "q", "Q"}
+    _FLOAT_FORMATS = {"f", "d"}
+
     def _encode_field(
         self, key_hash: int, fmt: str, value: Union[int, float, str, bytes]
     ) -> bytes:
         """Encode a single field into bytes.
+
+        Dispatches to the appropriate encoding method based on format type.
 
         Args:
             key_hash: Hash of the field key
@@ -128,14 +135,26 @@ class BinaryEncoder:
         Returns:
             Encoded field bytes
         """
-        if fmt == "s":
+        if self._is_string_format(fmt):
             return self._encode_string_field(key_hash, value)
-        elif fmt in "bBhHiIqQ":
+        elif self._is_integer_format(fmt):
             return self._encode_integer_field(key_hash, fmt, value)
-        elif fmt in "fd":
+        elif self._is_float_format(fmt):
             return self._encode_float_field(key_hash, fmt, value)
         else:
             raise ValueError(f"Unknown format: {fmt}")
+
+    def _is_string_format(self, fmt: str) -> bool:
+        """Check if format represents a string type."""
+        return fmt in self._STRING_FORMATS
+
+    def _is_integer_format(self, fmt: str) -> bool:
+        """Check if format represents an integer type."""
+        return fmt in self._INTEGER_FORMATS
+
+    def _is_float_format(self, fmt: str) -> bool:
+        """Check if format represents a float type."""
+        return fmt in self._FLOAT_FORMATS
 
     def _encode_string_field(
         self, key_hash: int, value: Union[int, float, str, bytes]

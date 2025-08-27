@@ -547,7 +547,7 @@ def test_beacon_build_state(mock_logger, mock_packet_manager):
 
 
 def test_beacon_encode_value(mock_logger, mock_packet_manager):
-    """Tests the _encode_value method.
+    """Tests the _encode_known_value method.
 
     Args:
         mock_logger: Mocked Logger instance.
@@ -559,21 +559,21 @@ def test_beacon_encode_value(mock_logger, mock_packet_manager):
     encoder = BinaryEncoder()
 
     # Test integer encoding
-    beacon._encode_value(encoder, "small_int", 100)
-    beacon._encode_value(encoder, "medium_int", 30000)
-    beacon._encode_value(encoder, "large_int", 2000000000)
+    beacon._encode_known_value(encoder, "small_int", 100)
+    beacon._encode_known_value(encoder, "medium_int", 30000)
+    beacon._encode_known_value(encoder, "large_int", 2000000000)
 
     # Test float encoding
-    beacon._encode_value(encoder, "test_float", 3.14)
+    beacon._encode_known_value(encoder, "test_float", 3.14)
 
     # Test string encoding
-    beacon._encode_value(encoder, "test_string", "hello")
+    beacon._encode_known_value(encoder, "test_string", "hello")
 
     # Test list encoding (3-element numeric)
-    beacon._encode_value(encoder, "acceleration", [1.0, 2.0, 3.0])
+    beacon._encode_known_value(encoder, "acceleration", [1.0, 2.0, 3.0])
 
     # Test list encoding (non-numeric)
-    beacon._encode_value(encoder, "text_list", ["a", "b"])
+    beacon._encode_known_value(encoder, "text_list", ["a", "b"])
 
     # Get encoded data and verify it can be decoded
     data = encoder.to_bytes()

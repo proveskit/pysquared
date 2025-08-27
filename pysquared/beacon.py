@@ -96,6 +96,8 @@ class Beacon:
     def _encode_binary_state(self, state: OrderedDict[str, object]) -> bytes:
         """Encode the state dictionary using binary encoding for efficiency.
 
+        Uses explicit encoding based on known beacon data structure for safety and performance.
+
         Args:
             state: The state dictionary to encode
 
@@ -105,81 +107,94 @@ class Beacon:
         encoder = BinaryEncoder()
 
         for key, value in state.items():
-            self._encode_value(encoder, key, value)
+            self._encode_known_value(encoder, key, value)
 
         return encoder.to_bytes()
 
-    def _encode_value(self, encoder: BinaryEncoder, key: str, value: object) -> None:
-        """Encode a single value into the binary encoder.
+    def _encode_known_value(
+        self, encoder: BinaryEncoder, key: str, value: object
+    ) -> None:
+        """Encode a value with known type expectations for beacon data.
+
+        This method handles the specific data types we know appear in beacon state,
+        providing explicit and safe encoding without runtime type detection complexity.
 
         Args:
             encoder: The binary encoder to add data to
             key: The key name for the value
             value: The value to encode
         """
-        if isinstance(value, int):
-            self._encode_integer(encoder, key, value)
+        # Handle sensor reading dictionaries (from to_dict() calls)
+        if isinstance(value, dict):
+            self._encode_sensor_dict(encoder, key, value)
+        # Handle lists/tuples - particularly 3D sensor vectors
+        elif isinstance(value, (list, tuple)):
+            if len(value) == 3 and all(isinstance(v, (int, float)) for v in value):
+                # Handle 3D vectors (acceleration, gyroscope) by splitting into components
+                for i, v in enumerate(value):
+                    encoder.add_float(f"{key}_{i}", float(v))
+            else:
+                # Non-numeric or non-3D arrays as strings
+                encoder.add_string(key, str(value))
+        # Handle beacon system data with known types
+        elif key in ("name", "time"):
+            encoder.add_string(key, str(value))
+        elif key == "uptime":
+            encoder.add_float(key, float(value))
+        elif "temperature" in key or "voltage" in key or "current" in key:
+            encoder.add_float(key, float(value))
+        elif "timestamp" in key:
+            encoder.add_float(key, float(value))
+        elif key.endswith(("_0", "_1", "_2")):  # IMU array indices
+            encoder.add_float(key, float(value))
+        elif "modulation" in key:
+            encoder.add_string(key, str(value))
+        elif isinstance(value, bool):
+            encoder.add_int(key, int(value), size=1)
+        elif isinstance(value, int):
+            # Use appropriate size based on expected range
+            if -128 <= value <= 255:  # Counter values, small readings
+                encoder.add_int(key, value, size=1)
+            elif -32768 <= value <= 32767:  # Medium range values
+                encoder.add_int(key, value, size=2)
+            else:  # Timestamps, large values
+                encoder.add_int(key, value, size=4)
         elif isinstance(value, float):
             encoder.add_float(key, value)
-        elif isinstance(value, dict):
-            self._encode_dictionary(encoder, key, value)
-        elif isinstance(value, (list, tuple)):
-            self._encode_sequence(encoder, key, value)
         else:
+            # Fallback for unknown types
             encoder.add_string(key, str(value))
 
-    def _encode_integer(self, encoder: BinaryEncoder, key: str, value: int) -> None:
-        """Encode an integer value with appropriate size.
-
-        Args:
-            encoder: The binary encoder to add data to
-            key: The key name for the value
-            value: The integer value to encode
-        """
-        if -128 <= value <= 127:
-            encoder.add_int(key, value, size=1)
-        elif -32768 <= value <= 32767:
-            encoder.add_int(key, value, size=2)
-        else:
-            encoder.add_int(key, value, size=4)
-
-    def _encode_dictionary(self, encoder: BinaryEncoder, key: str, value: dict) -> None:
-        """Encode a dictionary by recursively encoding each key-value pair.
-
-        Args:
-            encoder: The binary encoder to add data to
-            key: The key name for the value
-            value: The dictionary to encode
-        """
-        for dict_key, dict_value in value.items():
-            self._encode_value(encoder, f"{key}_{dict_key}", dict_value)
-
-    def _encode_sequence(
-        self, encoder: BinaryEncoder, key: str, value: list | tuple
+    def _encode_sensor_dict(
+        self, encoder: BinaryEncoder, key: str, sensor_data: dict
     ) -> None:
-        """Encode a list or tuple value.
+        """Encode sensor data dictionary with known structure.
+
+        Handles sensor readings that come from to_dict() methods with known structure
+        like {timestamp: float, value: float|list}.
 
         Args:
             encoder: The binary encoder to add data to
-            key: The key name for the value
-            value: The sequence to encode
+            key: The base key name
+            sensor_data: Dictionary containing sensor readings
         """
-        if self._is_numeric_triplet(value):
-            for i, v in enumerate(value):
-                encoder.add_float(f"{key}_{i}", float(v))
-        else:
-            encoder.add_string(key, str(value))
-
-    def _is_numeric_triplet(self, value: list | tuple) -> bool:
-        """Check if a sequence is a 3-element numeric array.
-
-        Args:
-            value: The sequence to check
-
-        Returns:
-            True if the sequence has 3 numeric elements, False otherwise
-        """
-        return len(value) == 3 and all(isinstance(v, (int, float)) for v in value)
+        for dict_key, dict_value in sensor_data.items():
+            full_key = f"{key}_{dict_key}"
+            if dict_key == "timestamp":
+                encoder.add_float(full_key, float(dict_value))
+            elif dict_key == "value":
+                if isinstance(dict_value, (list, tuple)) and len(dict_value) == 3:
+                    # Handle 3D vectors (acceleration, gyroscope)
+                    for i, v in enumerate(dict_value):
+                        encoder.add_float(f"{full_key}_{i}", float(v))
+                else:
+                    encoder.add_float(full_key, float(dict_value))
+            else:
+                # Handle other sensor-specific fields
+                if isinstance(dict_value, (int, float)):
+                    encoder.add_float(full_key, float(dict_value))
+                else:
+                    encoder.add_string(full_key, str(dict_value))
 
     def _build_state(self) -> OrderedDict[str, object]:
         """Build the beacon state dictionary from sensors.
