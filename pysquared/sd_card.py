@@ -28,13 +28,12 @@ class SDCardManager:
         mount_path: str = "/sd",
     ) -> None:
         self.mounted = False
-        self.path = adafruit_pathlib.Path("/sd")
-        self.mount_path = mount_path
+        self.mount_path = adafruit_pathlib.Path(mount_path)
 
         try:
             sd = sdcardio.SDCard(spi_bus, chip_select, baudrate)
             vfs = storage.VfsFat(sd)
-            storage.mount(vfs, self.mount_path)
+            storage.mount(vfs, str(self.mount_path))
             self.mounted = True
         except (OSError, ValueError) as e:
             raise HardwareInitializationError("Failed to initialize SD Card") from e
