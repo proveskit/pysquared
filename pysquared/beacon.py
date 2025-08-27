@@ -118,30 +118,68 @@ class Beacon:
             value: The value to encode
         """
         if isinstance(value, int):
-            # Determine appropriate size for integer
-            if -128 <= value <= 127:
-                encoder.add_int(key, value, size=1)
-            elif -32768 <= value <= 32767:
-                encoder.add_int(key, value, size=2)
-            else:
-                encoder.add_int(key, value, size=4)
+            self._encode_integer(encoder, key, value)
         elif isinstance(value, float):
             encoder.add_float(key, value)
         elif isinstance(value, dict):
-            # Handle dictionary objects (sensor readings with to_dict())
-            for dict_key, dict_value in value.items():
-                self._encode_value(encoder, f"{key}_{dict_key}", dict_value)
+            self._encode_dictionary(encoder, key, value)
         elif isinstance(value, (list, tuple)):
-            # Handle sensor data arrays (acceleration, gyroscope)
-            if len(value) == 3 and all(isinstance(v, (int, float)) for v in value):
-                for i, v in enumerate(value):
-                    encoder.add_float(f"{key}_{i}", float(v))
-            else:
-                # Fallback to string representation for complex data
-                encoder.add_string(key, str(value))
+            self._encode_sequence(encoder, key, value)
         else:
-            # String or other data
             encoder.add_string(key, str(value))
+
+    def _encode_integer(self, encoder: BinaryEncoder, key: str, value: int) -> None:
+        """Encode an integer value with appropriate size.
+
+        Args:
+            encoder: The binary encoder to add data to
+            key: The key name for the value
+            value: The integer value to encode
+        """
+        if -128 <= value <= 127:
+            encoder.add_int(key, value, size=1)
+        elif -32768 <= value <= 32767:
+            encoder.add_int(key, value, size=2)
+        else:
+            encoder.add_int(key, value, size=4)
+
+    def _encode_dictionary(self, encoder: BinaryEncoder, key: str, value: dict) -> None:
+        """Encode a dictionary by recursively encoding each key-value pair.
+
+        Args:
+            encoder: The binary encoder to add data to
+            key: The key name for the value
+            value: The dictionary to encode
+        """
+        for dict_key, dict_value in value.items():
+            self._encode_value(encoder, f"{key}_{dict_key}", dict_value)
+
+    def _encode_sequence(
+        self, encoder: BinaryEncoder, key: str, value: list | tuple
+    ) -> None:
+        """Encode a list or tuple value.
+
+        Args:
+            encoder: The binary encoder to add data to
+            key: The key name for the value
+            value: The sequence to encode
+        """
+        if self._is_numeric_triplet(value):
+            for i, v in enumerate(value):
+                encoder.add_float(f"{key}_{i}", float(v))
+        else:
+            encoder.add_string(key, str(value))
+
+    def _is_numeric_triplet(self, value: list | tuple) -> bool:
+        """Check if a sequence is a 3-element numeric array.
+
+        Args:
+            value: The sequence to check
+
+        Returns:
+            True if the sequence has 3 numeric elements, False otherwise
+        """
+        return len(value) == 3 and all(isinstance(v, (int, float)) for v in value)
 
     def _build_state(self) -> OrderedDict[str, object]:
         """Build the beacon state dictionary from sensors.
@@ -376,37 +414,66 @@ class Beacon:
             OrderedDict containing template beacon data with the same structure
         """
         state: OrderedDict[str, object] = OrderedDict()
+        self._add_template_system_info(state)
+        self._add_template_sensor_data(state)
+        return state
+
+    def _add_template_system_info(self, state: OrderedDict[str, object]) -> None:
+        """Add template system information to the state dictionary.
+
+        Args:
+            state: The state dictionary to update
+        """
         state["name"] = self._name
         state["time"] = "template"
         state["uptime"] = 0.0
 
-        for index, sensor in enumerate(self._sensors):
-            if isinstance(sensor, Processor):
-                sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_temperature"] = 0.0
-            if isinstance(sensor, Flag):
-                state[f"{sensor.get_name()}_{index}"] = False
-            if isinstance(sensor, Counter):
-                state[f"{sensor.get_name()}_{index}"] = 0
-            if isinstance(sensor, RadioProto):
-                sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_modulation"] = "template"
-            if isinstance(sensor, IMUProto):
-                sensor_name: str = sensor.__class__.__name__
-                # Handle dict structure from to_dict() calls
-                for i in range(3):
-                    state[f"{sensor_name}_{index}_acceleration_timestamp"] = 0.0
-                    state[f"{sensor_name}_{index}_acceleration_value_{i}"] = 0.0
-                    state[f"{sensor_name}_{index}_angular_velocity_timestamp"] = 0.0
-                    state[f"{sensor_name}_{index}_angular_velocity_value_{i}"] = 0.0
-            if isinstance(sensor, PowerMonitorProto):
-                sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_current_avg"] = 0.0
-                state[f"{sensor_name}_{index}_bus_voltage_avg"] = 0.0
-                state[f"{sensor_name}_{index}_shunt_voltage_avg"] = 0.0
-            if isinstance(sensor, TemperatureSensorProto):
-                sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_temperature_timestamp"] = 0.0
-                state[f"{sensor_name}_{index}_temperature_value"] = 0.0
+    def _add_template_sensor_data(self, state: OrderedDict[str, object]) -> None:
+        """Add template sensor data to the state dictionary.
 
-        return state
+        This method adds template data for each sensor type to ensure consistent
+        structure even when sensors fail during actual data collection.
+
+        Args:
+            state: The state dictionary to update
+        """
+        for index, sensor in enumerate(self._sensors):
+            self._add_template_for_sensor(state, sensor, index)
+
+    def _add_template_for_sensor(
+        self, state: OrderedDict[str, object], sensor, index: int
+    ) -> None:
+        """Add template data for a specific sensor.
+
+        Args:
+            state: The state dictionary to update
+            sensor: The sensor instance
+            index: The sensor index
+        """
+        if isinstance(sensor, Processor):
+            sensor_name = sensor.__class__.__name__
+            state[f"{sensor_name}_{index}_temperature"] = 0.0
+        elif isinstance(sensor, Flag):
+            state[f"{sensor.get_name()}_{index}"] = False
+        elif isinstance(sensor, Counter):
+            state[f"{sensor.get_name()}_{index}"] = 0
+        elif isinstance(sensor, RadioProto):
+            sensor_name = sensor.__class__.__name__
+            state[f"{sensor_name}_{index}_modulation"] = "template"
+        elif isinstance(sensor, IMUProto):
+            sensor_name = sensor.__class__.__name__
+            # Add template data for all IMU fields that would be created
+            state[f"{sensor_name}_{index}_acceleration_timestamp"] = 0.0
+            state[f"{sensor_name}_{index}_angular_velocity_timestamp"] = 0.0
+            for i in range(3):
+                state[f"{sensor_name}_{index}_acceleration_value_{i}"] = 0.0
+                state[f"{sensor_name}_{index}_angular_velocity_value_{i}"] = 0.0
+        elif isinstance(sensor, PowerMonitorProto):
+            sensor_name = sensor.__class__.__name__
+            state[f"{sensor_name}_{index}_current_avg"] = 0.0
+            state[f"{sensor_name}_{index}_bus_voltage_avg"] = 0.0
+            state[f"{sensor_name}_{index}_shunt_voltage_avg"] = 0.0
+        elif isinstance(sensor, TemperatureSensorProto):
+            sensor_name = sensor.__class__.__name__
+            state[f"{sensor_name}_{index}_temperature_timestamp"] = 0.0
+            state[f"{sensor_name}_{index}_temperature_value"] = 0.0

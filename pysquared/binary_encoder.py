@@ -17,6 +17,8 @@ battery_level = decoder.get_int("battery_level")
 ```
 """
 
+from __future__ import annotations
+
 import struct
 from collections import OrderedDict
 
@@ -127,45 +129,80 @@ class BinaryEncoder:
             Encoded field bytes
         """
         if fmt == "s":
-            # String: type=0, length + data
-            result = struct.pack(">IB", key_hash, 0)  # key_hash + type
-            byte_value = (
-                value if isinstance(value, bytes) else str(value).encode("utf-8")
-            )
-            result += struct.pack(">B", len(byte_value)) + byte_value
-            return result
-        elif fmt in "bB":
-            # 1-byte int: type=1 (signed), type=11 (unsigned)
-            type_id = 1 if fmt == "b" else 11
-            return struct.pack(
-                ">IBb" if fmt == "b" else ">IBB", key_hash, type_id, value
-            )
-        elif fmt in "hH":
-            # 2-byte int: type=2 (signed), type=12 (unsigned)
-            type_id = 2 if fmt == "h" else 12
-            return struct.pack(
-                ">IBh" if fmt == "h" else ">IBH", key_hash, type_id, value
-            )
-        elif fmt in "iI":
-            # 4-byte int: type=3 (signed), type=13 (unsigned)
-            type_id = 3 if fmt == "i" else 13
-            return struct.pack(
-                ">IBi" if fmt == "i" else ">IBI", key_hash, type_id, value
-            )
-        elif fmt in "qQ":
-            # 8-byte int: type=4 (signed), type=14 (unsigned)
-            type_id = 4 if fmt == "q" else 14
-            return struct.pack(
-                ">IBq" if fmt == "q" else ">IBQ", key_hash, type_id, value
-            )
-        elif fmt == "f":
-            # 4-byte float: type=5
-            return struct.pack(">IBf", key_hash, 5, value)
-        elif fmt == "d":
-            # 8-byte float: type=6
-            return struct.pack(">IBd", key_hash, 6, value)
+            return self._encode_string_field(key_hash, value)
+        elif fmt in "bBhHiIqQ":
+            return self._encode_integer_field(key_hash, fmt, value)
+        elif fmt in "fd":
+            return self._encode_float_field(key_hash, fmt, value)
         else:
             raise ValueError(f"Unknown format: {fmt}")
+
+    def _encode_string_field(self, key_hash: int, value: Union[str, bytes]) -> bytes:
+        """Encode a string field into bytes.
+
+        Args:
+            key_hash: Hash of the field key
+            value: String value to encode
+
+        Returns:
+            Encoded string field bytes
+        """
+        result = struct.pack(">IB", key_hash, 0)  # key_hash + type=0
+        byte_value = value if isinstance(value, bytes) else str(value).encode("utf-8")
+        result += struct.pack(">B", len(byte_value)) + byte_value
+        return result
+
+    def _encode_integer_field(self, key_hash: int, fmt: str, value: int) -> bytes:
+        """Encode an integer field into bytes.
+
+        Args:
+            key_hash: Hash of the field key
+            fmt: Format string for the integer
+            value: Integer value to encode
+
+        Returns:
+            Encoded integer field bytes
+        """
+        type_info = self._get_integer_type_info(fmt)
+        return struct.pack(
+            type_info["struct_format"], key_hash, type_info["type_id"], value
+        )
+
+    def _encode_float_field(self, key_hash: int, fmt: str, value: float) -> bytes:
+        """Encode a float field into bytes.
+
+        Args:
+            key_hash: Hash of the field key
+            fmt: Format string for the float
+            value: Float value to encode
+
+        Returns:
+            Encoded float field bytes
+        """
+        type_id = 5 if fmt == "f" else 6
+        struct_format = f">IB{fmt}"
+        return struct.pack(struct_format, key_hash, type_id, value)
+
+    def _get_integer_type_info(self, fmt: str) -> dict:
+        """Get type information for integer formats.
+
+        Args:
+            fmt: Format string for the integer
+
+        Returns:
+            Dictionary containing type_id and struct_format
+        """
+        integer_types = {
+            "b": {"type_id": 1, "struct_format": ">IBb"},
+            "B": {"type_id": 11, "struct_format": ">IBB"},
+            "h": {"type_id": 2, "struct_format": ">IBh"},
+            "H": {"type_id": 12, "struct_format": ">IBH"},
+            "i": {"type_id": 3, "struct_format": ">IBi"},
+            "I": {"type_id": 13, "struct_format": ">IBI"},
+            "q": {"type_id": 4, "struct_format": ">IBq"},
+            "Q": {"type_id": 14, "struct_format": ">IBQ"},
+        }
+        return integer_types[fmt]
 
 
 class BinaryDecoder:

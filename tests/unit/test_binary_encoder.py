@@ -285,9 +285,32 @@ class TestBinaryEncoder:
 
     def test_import_fallback(self):
         """Test that the module works even when typing imports fail."""
-        # This test ensures the module handles import errors gracefully
-        # The actual fallback is tested by the fact that all other tests pass
-        assert True  # Just verify imports worked in general
+        import sys
+        from unittest.mock import patch
+
+        # Mock the typing import to fail
+        with patch.dict("sys.modules", {"typing": None}):
+            # Force reimport to test the fallback
+            if "pysquared.binary_encoder" in sys.modules:
+                del sys.modules["pysquared.binary_encoder"]
+
+            # This should work even without typing imports
+            import pysquared.binary_encoder
+
+            # Test that basic functionality still works
+            encoder = pysquared.binary_encoder.BinaryEncoder()
+            encoder.add_int("test", 42)
+            encoder.add_float("temp", 23.5)
+            encoder.add_string("name", "test")
+
+            data = encoder.to_bytes()
+            decoder = pysquared.binary_encoder.BinaryDecoder(
+                data, encoder.get_key_map()
+            )
+
+            assert decoder.get_int("test") == 42
+            assert abs(decoder.get_float("temp") - 23.5) < 0.01
+            assert decoder.get_string("name") == "test"
 
 
 class TestBeaconIntegration:
