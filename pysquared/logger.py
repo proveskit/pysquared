@@ -82,7 +82,7 @@ class Logger:
     def __init__(
         self,
         error_counter: Counter,
-        path: adafruit_pathlib.Path = None,
+        sd_path: adafruit_pathlib.Path = None,
         # sd_card: SDCardManager = None,
         log_level: int = LogLevel.NOTSET,
         colorized: bool = False,
@@ -96,8 +96,7 @@ class Logger:
             colorized (bool): Whether to colorize output.
         """
         self._error_counter: Counter = error_counter
-        self.sd_path: adafruit_pathlib.Path = path
-        # self.sd_card: SDCardManager = sd_card
+        self.sd_path: adafruit_pathlib.Path = sd_path
         self._log_level: int = log_level
         self.colorized: bool = colorized
 
@@ -178,8 +177,8 @@ class Logger:
 
         if self._can_print_this_level(level_value):
             # Write to sd card if mounted
-            if self.sd_card and self.sd_card.mounted:
-                if "logs" not in os.listdir("/sd"):
+            if self.path:
+                if "logs" not in self.sd_path.iterdir():
                     print("/sd/logs does not exist, creating...")
                     os.mkdir("/sd/logs")
 
