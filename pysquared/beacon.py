@@ -145,7 +145,9 @@ class Beacon:
             encoder.add_float(key, self._safe_float_convert(value))
         elif "timestamp" in key:
             encoder.add_float(key, self._safe_float_convert(value))
-        elif key.endswith(("_0", "_1", "_2")):  # IMU array indices
+        elif (
+            key.endswith("_0") or key.endswith("_1") or key.endswith("_2")
+        ):  # IMU array indices
             encoder.add_float(key, self._safe_float_convert(value))
         elif "modulation" in key:
             encoder.add_string(key, str(value))
