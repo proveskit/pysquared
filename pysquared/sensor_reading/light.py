@@ -6,7 +6,7 @@ from .base import Reading
 class Light(Reading):
     """Light sensor reading (non-unit-specific light levels)."""
 
-    value: float
+    _value: float
     """Light level (non-unit-specific)."""
 
     def __init__(self, value: float) -> None:
@@ -16,4 +16,13 @@ class Light(Reading):
             value: The light level (non-unit-specific)
         """
         super().__init__()
-        self.value = value
+        self._value = value
+
+    @property
+    def value(self) -> float:
+        """Get the light level (non-unit-specific).
+
+        Returns:
+            The light level (non-unit-specific).
+        """
+        return self._value

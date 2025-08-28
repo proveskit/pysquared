@@ -2,7 +2,7 @@
 
 This module contains unit tests for the `LSM6DSOXManager` class, which manages
 the LSM6DSOX IMU. The tests cover initialization, successful data retrieval,
-and error handling for acceleration, gyroscope, and temperature readings.
+and error handling for acceleration, angular_velocity, and temperature readings.
 """
 
 import math
@@ -16,6 +16,8 @@ from mocks.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
 from pysquared.logger import Logger
+from pysquared.sensor_reading.acceleration import Acceleration
+from pysquared.sensor_reading.angular_velocity import AngularVelocity
 from pysquared.sensor_reading.error import SensorReadingUnknownError
 from pysquared.sensor_reading.temperature import Temperature
 
@@ -107,7 +109,10 @@ def test_get_acceleration_success(
     imu_manager._imu.acceleration = expected_accel
 
     vector = imu_manager.get_acceleration()
-    assert vector == expected_accel
+    assert isinstance(vector, Acceleration)
+    assert vector.x == expected_accel[0]
+    assert vector.y == expected_accel[1]
+    assert vector.z == expected_accel[2]
 
 
 def test_get_acceleration_failure(
@@ -132,22 +137,16 @@ def test_get_acceleration_failure(
     )
     type(mock_imu_instance).acceleration = mock_accel_property
 
-    vector = imu_manager.get_acceleration()
-
-    assert vector is None
-    assert mock_logger.error.call_count == 1
-    call_args, _ = mock_logger.error.call_args
-    assert call_args[0] == "Error retrieving IMU acceleration sensor values"
-    assert isinstance(call_args[1], RuntimeError)
-    assert str(call_args[1]) == "Simulated retrieval error"
+    with pytest.raises(SensorReadingUnknownError):
+        imu_manager.get_acceleration()
 
 
-def test_get_gyro_success(
+def test_get_angular_velocity_success(
     mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Tests successful retrieval of the gyro vector.
+    """Tests successful retrieval of the angular_velocity vector.
 
     Args:
         mock_lsm6dsox: Mocked LSM6DSOX class.
@@ -159,16 +158,19 @@ def test_get_gyro_success(
     expected_gyro = (0.1, 0.2, 0.3)
     imu_manager._imu.gyro = expected_gyro
 
-    vector = imu_manager.get_gyro_data()
-    assert vector == expected_gyro
+    vector = imu_manager.get_angular_velocity()
+    assert isinstance(vector, AngularVelocity)
+    assert vector.x == expected_gyro[0]
+    assert vector.y == expected_gyro[1]
+    assert vector.z == expected_gyro[2]
 
 
-def test_get_gyro_failure(
+def test_get_angular_velocity_failure(
     mock_lsm6dsox: MagicMock,
     mock_i2c: MagicMock,
     mock_logger: MagicMock,
 ) -> None:
-    """Tests handling of exceptions when retrieving the gyro vector.
+    """Tests handling of exceptions when retrieving the angular_velocity vector.
 
     Args:
         mock_lsm6dsox: Mocked LSM6DSOX class.
@@ -179,19 +181,13 @@ def test_get_gyro_failure(
     mock_imu_instance = MagicMock(spec=LSM6DSOX)
     imu_manager._imu = mock_imu_instance
 
-    mock_gyro_property = PropertyMock(
+    mock_angular_velocity_property = PropertyMock(
         side_effect=RuntimeError("Simulated retrieval error")
     )
-    type(mock_imu_instance).gyro = mock_gyro_property
+    type(mock_imu_instance).angular_velocity = mock_angular_velocity_property
 
-    vector = imu_manager.get_gyro_data()
-
-    assert vector is None
-    assert mock_logger.error.call_count == 1
-    call_args, _ = mock_logger.error.call_args
-    assert call_args[0] == "Error retrieving IMU gyro sensor values"
-    assert isinstance(call_args[1], RuntimeError)
-    assert str(call_args[1]) == "Simulated retrieval error"
+    with pytest.raises(SensorReadingUnknownError):
+        imu_manager.get_angular_velocity()
 
 
 def test_get_temperature_success(
