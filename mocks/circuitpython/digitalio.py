@@ -5,9 +5,7 @@ testing purposes. It allows for simulating the behavior of the digitalio module 
 the need for actual hardware.
 """
 
-from __future__ import annotations
-
-import mocks.circuitpython.microcontroller as microcontroller
+import microcontroller
 
 
 class DriveMode:
