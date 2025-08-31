@@ -19,7 +19,7 @@ PySquared is built on top of CircuitPython, which is a version of Python designe
 
 We use type hints throughout the PySquared codebase to ensure that our code is clear and maintainable. Type hints help us catch errors early and make it easier to understand the expected types of variables and function parameters.
 
-We do not accept changes with lines that are ignored the type checker i.e. `# type: ignore`. If you run into an issue where you think you need to ignore a type, it is likely a problem with the design of your component. Please take a moment to think about how you can fix the type error instead. If you need help, please reach out for assistance.
+We do not accept changes to files in the `pysquared/` directory with lines that are ignored the type checker i.e. `# type: ignore`. The only exception is for logged (a PR or Issue is made) upstream issues that is preventing typechecking from passing. If you run into an issue where you think you need to ignore a type, it is likely a problem with the design of your component. Please take a moment to think about how you can fix the type error instead. If you need help, please reach out for assistance.
 
 ??? note "Using the Typing Module"
     For more advanced type hinting we can use the Python standard library's `typing` module which was introduced in Python 3.5. This module provides a variety of type hints that can be used to specify more complex types, such as `List`, `Dict`, and `Optional`. CircuitPython does not support the `typing` module so we must wrap the import in a try/except block to avoid import errors. For example:

@@ -22,6 +22,7 @@ repos:
         language: pygrep
         types: [python]
         files: ^pysquared/
+        exclude: ^pysquared/beacon\.py|^pysquared/logger\.py|^pysquared/rtc/manager/microcontroller\.py|pysquared/sd_card\.py
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1

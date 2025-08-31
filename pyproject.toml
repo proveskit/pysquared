@@ -97,7 +97,6 @@ exclude = [
     ".venv",
     ".git",
     "typeshed",
-    # "tests", # TODO(nateinaction): Remove this exclusion before PR
 ]
 typeshedPath = "./typeshed"
 reportMissingModuleSource = false
