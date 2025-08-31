@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.13"
 
 [[package]]
@@ -135,6 +135,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c0/ef/5a4bd87deae0dfd5ecb4e205889e772f7ae7a6a1274d05d28610a4970a94/adafruit_circuitpython_neopixel-6.3.12.tar.gz", hash = "sha256:e3379bd0ee2d7cb529c78824f5c2c7cd660a06c525311e6e251062e0c03529db", size = 28478, upload-time = "2024-10-07T22:16:39.937Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a3/12/12d5f2260a52f666860299bc5a5b2848d2e0a40b3d4a0aacb962085df475/adafruit_circuitpython_neopixel-6.3.12-py3-none-any.whl", hash = "sha256:9ecca6e6bf32707f49d041c3c7beb352b8f37cea8cb3bad65e8c464dec0b7b6e", size = 6429, upload-time = "2024-10-07T22:16:38.325Z" },
+]
+
+[[package]]
+name = "adafruit-circuitpython-pathlib"
+version = "1.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "adafruit-blinka" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/af/92/8bf5f3f9336526bfc2de876fdda3598f44cef05df949f9388fc707507092/adafruit_circuitpython_pathlib-1.0.2.tar.gz", hash = "sha256:f119a0abfb86bdaafd8d26cc5a32ca768e196c884b2b807f3ac27ef899b5879a", size = 24691, upload-time = "2025-05-12T16:23:45.792Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/9b/995fc29904dddf3100ade2d5536773d097408d898cc088c88ed91058b733/adafruit_circuitpython_pathlib-1.0.2-py3-none-any.whl", hash = "sha256:53add7534624aff4248e3be0019e9817d7cd399e0d39f903870da2115e9a241e", size = 6619, upload-time = "2025-05-12T16:23:44.031Z" },
 ]
 
 [[package]]
@@ -997,6 +1009,7 @@ dependencies = [
     { name = "adafruit-circuitpython-lsm6ds" },
     { name = "adafruit-circuitpython-mcp9808" },
     { name = "adafruit-circuitpython-neopixel" },
+    { name = "adafruit-circuitpython-pathlib" },
     { name = "adafruit-circuitpython-register" },
     { name = "adafruit-circuitpython-rfm" },
     { name = "adafruit-circuitpython-tca9548a" },
@@ -1035,6 +1048,7 @@ requires-dist = [
     { name = "adafruit-circuitpython-lsm6ds", specifier = "==4.5.13" },
     { name = "adafruit-circuitpython-mcp9808", specifier = "==3.3.24" },
     { name = "adafruit-circuitpython-neopixel", specifier = "==6.3.12" },
+    { name = "adafruit-circuitpython-pathlib", specifier = "==1.0.2" },
     { name = "adafruit-circuitpython-register", specifier = "==1.10.4" },
     { name = "adafruit-circuitpython-rfm", specifier = "==1.0.6" },
     { name = "adafruit-circuitpython-tca9548a", git = "https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A?rev=1.0.0" },

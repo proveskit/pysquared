@@ -2,17 +2,12 @@
 
 # import os
 
-import adafruit_pathlib
 import sdcardio
 import storage
+from busio import SPI
+from microcontroller import Pin
 
 from .hardware.exception import HardwareInitializationError
-
-try:
-    from busio import SPI
-    from microcontroller import Pin
-except ImportError:
-    pass
 
 
 class SDCardManager:
@@ -27,14 +22,9 @@ class SDCardManager:
         baudrate: int = 400000,
         mount_path: str = "/sd",
     ) -> None:
-        self.mounted = False
-        self.path = adafruit_pathlib.Path("/sd")
-        self.mount_path = mount_path
-
         try:
             sd = sdcardio.SDCard(spi_bus, chip_select, baudrate)
             vfs = storage.VfsFat(sd)
-            storage.mount(vfs, self.mount_path)
-            self.mounted = True
+            storage.mount(vfs, mount_path)
         except (OSError, ValueError) as e:
             raise HardwareInitializationError("Failed to initialize SD Card") from e

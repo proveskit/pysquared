@@ -46,7 +46,7 @@ def set_mount_points(
                 except OSError:
                     print(f"Mount point {path} already exists.")
         except Exception as e:
-            print(f"Error creating mount point {path}: {e}")
+            print(f"Error creating mount point: {e}")
             time.sleep(wait_time)
             continue
 
