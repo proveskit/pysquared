@@ -12,6 +12,7 @@ help: ## Display this help.
 	@$(MAKE) uv
 	@$(UV) venv
 	@$(UV) pip install --requirement pyproject.toml
+	@$(UV) pip install circuitpython-typeshed --target typeshed
 
 .PHONY: pre-commit-install
 pre-commit-install: uv
@@ -68,7 +69,7 @@ $(TOOLS_DIR):
 	mkdir -p $(TOOLS_DIR)
 
 ### Tool Versions
-UV_VERSION ?= 0.7.13
+UV_VERSION ?= 0.8.14
 MPY_CROSS_VERSION ?= 9.0.5
 
 UV_DIR ?= $(TOOLS_DIR)/uv-$(UV_VERSION)

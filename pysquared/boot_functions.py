@@ -31,7 +31,7 @@ def set_mount_points(
     print("Disabling USB drive")
     time.sleep(wait_time)
 
-    storage.mount("/", False)
+    storage.remount("/", False)
     print("Remounting root filesystem")
     time.sleep(wait_time)
 

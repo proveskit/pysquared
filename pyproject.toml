@@ -88,6 +88,9 @@ directory = ".coverage-reports/html"
 [tool.coverage.xml]
 output = ".coverage-reports/coverage.xml"
 
+[tool.ty.environment]
+typeshed = "./typeshed"
+
 [tool.pyright]
 include = ["pysquared"]
 exclude = [
@@ -95,8 +98,11 @@ exclude = [
     ".venv",
     ".git",
     "typings",
+    "typeshed",
+    "tests", # TODO(nateinaction): Remove this exclusion before PR
 ]
 stubPath = "./typings"
+typeshedPath = "./typeshed"
 reportMissingModuleSource = false
 
 [tool.interrogate]
@@ -105,3 +111,6 @@ omit-covered-files = true
 fail-under = 100
 verbose = 2
 color = true
+exclude = [
+    "typeshed",
+]
