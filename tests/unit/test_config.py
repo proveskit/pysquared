@@ -5,6 +5,8 @@ loading, validating, and updating configuration settings. The tests cover variou
 data types, validation rules, and update scenarios.
 """
 
+# pyright: reportAttributeAccessIssue=false
+
 import json
 import os
 import tempfile

@@ -5,6 +5,8 @@ the INA219 power monitor. The tests cover initialization, successful data
 retrieval, and error handling for bus voltage, shunt voltage, and current readings.
 """
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 

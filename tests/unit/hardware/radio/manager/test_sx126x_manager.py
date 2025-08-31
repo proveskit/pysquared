@@ -5,6 +5,8 @@ SX126x radios. The tests cover initialization, sending and receiving data,
 and retrieving the current modulation.
 """
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 from typing import Generator
 from unittest.mock import MagicMock, call, patch
 

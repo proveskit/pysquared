@@ -5,6 +5,8 @@ the LSM6DSOX IMU. The tests cover initialization, successful data retrieval,
 and error handling for acceleration, gyroscope, and temperature readings.
 """
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 

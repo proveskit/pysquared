@@ -6,6 +6,8 @@ modifying radio configuration, and retrieving radio parameters like temperature
 and RSSI.
 """
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 import math
 from typing import Generator
 from unittest.mock import MagicMock, patch
@@ -706,7 +708,7 @@ def test_receive_exception(
 
 
 def test_modify_lora_config(
-    mock_logger: MagicMock,
+    mock_logger: Logger,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
@@ -752,7 +754,7 @@ def test_modify_lora_config(
 
 
 def test_modify_lora_config_high_sf_success(
-    mock_logger: MagicMock,
+    mock_logger: Logger,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
@@ -791,7 +793,7 @@ def test_modify_lora_config_high_sf_success(
 
 
 def test_modify_fsk_config(
-    mock_logger: MagicMock,
+    mock_logger: Logger,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
@@ -833,7 +835,7 @@ def test_modify_fsk_config(
 
 
 def test_get_max_packet_size_lora(
-    mock_logger: MagicMock,
+    mock_logger: Logger,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,
@@ -864,7 +866,7 @@ def test_get_max_packet_size_lora(
 
 
 def test_get_max_packet_size_fsk(
-    mock_logger: MagicMock,
+    mock_logger: Logger,
     mock_spi: MagicMock,
     mock_chip_select: MagicMock,
     mock_reset: MagicMock,

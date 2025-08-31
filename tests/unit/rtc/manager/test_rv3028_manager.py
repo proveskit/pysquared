@@ -4,6 +4,7 @@ This module contains unit tests for the `RV3028Manager` class, which manages
 the RV3028 Real-Time Clock (RTC). The tests cover initialization, successful
 time setting, and error handling during time setting operations.
 """
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
 
 from typing import Generator
 from unittest.mock import MagicMock, patch
@@ -40,7 +41,8 @@ def mock_rv3028(mock_i2c: I2C) -> Generator[MagicMock, None, None]:
         A MagicMock instance of RV3028.
     """
     with patch("pysquared.rtc.manager.rv3028.RV3028") as mock_class:
-        mock_class.return_value = RV3028(mock_i2c)
+        mock_instance = MagicMock(spec=RV3028)
+        mock_class.return_value = mock_instance
         yield mock_class
 
 

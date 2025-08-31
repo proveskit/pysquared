@@ -281,8 +281,11 @@ def test_reset(mock_microcontroller, cdh, mock_logger):
     mock_logger.info.assert_called_once()
 
 
+@patch("time.sleep")
 @patch("pysquared.cdh.microcontroller")
-def test_listen_for_commands_reset(mock_microcontroller, cdh, mock_packet_manager):
+def test_listen_for_commands_reset(
+    mock_microcontroller, mock_sleep, cdh, mock_packet_manager
+):
     """Tests listen_for_commands with reset command.
 
     Args:
@@ -310,9 +313,10 @@ def test_listen_for_commands_reset(mock_microcontroller, cdh, mock_packet_manage
     mock_microcontroller.reset.assert_called_once()
 
 
+@patch("time.sleep")
 @patch("random.choice")
 def test_listen_for_commands_send_joke(
-    mock_random_choice, cdh, mock_packet_manager, mock_config
+    mock_random_choice, mock_sleep, cdh, mock_packet_manager, mock_config
 ):
     """Tests listen_for_commands with send_joke command.
 
@@ -338,8 +342,9 @@ def test_listen_for_commands_send_joke(
     )
 
 
+@patch("time.sleep")
 def test_listen_for_commands_change_radio_modulation(
-    cdh, mock_packet_manager, mock_config
+    mock_sleep, cdh, mock_packet_manager, mock_config
 ):
     """Tests listen_for_commands with change_radio_modulation command.
 
@@ -363,7 +368,10 @@ def test_listen_for_commands_change_radio_modulation(
     )
 
 
-def test_listen_for_commands_unknown_command(cdh, mock_packet_manager, mock_logger):
+@patch("time.sleep")
+def test_listen_for_commands_unknown_command(
+    mock_sleep, cdh, mock_packet_manager, mock_logger
+):
     """Tests listen_for_commands with an unknown command.
 
     Args:

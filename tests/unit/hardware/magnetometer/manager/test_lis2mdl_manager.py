@@ -5,6 +5,8 @@ the LIS2MDL magnetometer. The tests cover initialization, successful data
 retrieval, and error handling for magnetic field vector readings.
 """
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
