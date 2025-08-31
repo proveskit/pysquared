@@ -5,6 +5,8 @@ the activation of burnwires. The tests cover initialization, successful burn
 operations, error handling, and cleanup procedures.
 """
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportFunctionMemberAccess=false
+
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest

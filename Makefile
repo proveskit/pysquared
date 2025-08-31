@@ -1,5 +1,5 @@
 .PHONY: all
-all: .venv pre-commit-install
+all: .venv typeshed pre-commit-install
 
 .PHONY: help
 help: ## Display this help.
@@ -13,6 +13,11 @@ help: ## Display this help.
 	@$(UV) venv
 	@$(UV) pip install --requirement pyproject.toml
 
+typeshed: ## Install CircuitPython typeshed stubs
+	@echo "Installing CircuitPython typeshed stubs..."
+	@$(MAKE) uv
+	@$(UV) pip install circuitpython-typeshed==0.1.0 --target typeshed
+
 .PHONY: pre-commit-install
 pre-commit-install: uv
 	@echo "Installing pre-commit hooks..."
@@ -22,7 +27,8 @@ pre-commit-install: uv
 fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
-typecheck: .venv ## Run type check
+.PHONY: typecheck
+typecheck: .venv typeshed ## Run type check
 	@$(UV) run -m pyright .
 
 .PHONY: test
@@ -68,7 +74,7 @@ $(TOOLS_DIR):
 	mkdir -p $(TOOLS_DIR)
 
 ### Tool Versions
-UV_VERSION ?= 0.7.13
+UV_VERSION ?= 0.8.14
 MPY_CROSS_VERSION ?= 9.0.5
 
 UV_DIR ?= $(TOOLS_DIR)/uv-$(UV_VERSION)

@@ -5,6 +5,8 @@ collecting and sending telemetry data. The tests cover initialization, basic
 sending functionality, and sending with various sensor types.
 """
 
+# pyright: reportAttributeAccessIssue=false
+
 import json
 import time
 from typing import Optional, Type
@@ -162,7 +164,7 @@ def test_beacon_send_basic(mock_time, mock_logger, mock_packet_manager):
     send_args = mock_packet_manager.send.call_args[0][0]
     d = json.loads(send_args)
     assert d["name"] == "test_beacon"
-    assert d["time"] == time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    assert d["time"] == time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())  # type: ignore # PR: https://github.com/adafruit/circuitpython/pull/10603
     assert d["uptime"] == 60.0
 
 

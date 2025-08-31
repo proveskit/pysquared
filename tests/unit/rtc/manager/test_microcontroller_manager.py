@@ -5,6 +5,9 @@ manages the microcontroller's built-in Real-Time Clock (RTC). The tests cover
 initialization and setting the time.
 """
 
+# PR: https://github.com/adafruit/circuitpython/pull/10603
+# pyright: reportAttributeAccessIssue=false
+
 import time
 
 import pytest

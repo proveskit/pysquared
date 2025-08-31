@@ -5,6 +5,8 @@ SX126x radios. The tests cover initialization, sending and receiving data,
 and retrieving the current modulation.
 """
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 from typing import Generator
 from unittest.mock import MagicMock, call, patch
 
@@ -85,11 +87,11 @@ def mock_radio_config() -> RadioConfig:
 
 @pytest.fixture
 def mock_sx1262(
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_irq: MagicMock,
-    mock_gpio: MagicMock,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_irq: DigitalInOut,
+    mock_gpio: DigitalInOut,
 ) -> Generator[MagicMock, None, None]:
     """Mocks the SX1262 class.
 
@@ -112,12 +114,12 @@ def mock_sx1262(
 
 def test_init_fsk_success(
     mock_sx1262: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_irq: MagicMock,
-    mock_gpio: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_irq: DigitalInOut,
+    mock_gpio: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful initialization when radio_config.modulation is FSK.
@@ -163,12 +165,12 @@ def test_init_fsk_success(
 
 def test_init_lora_success(
     mock_sx1262: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_irq: MagicMock,
-    mock_gpio: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_irq: DigitalInOut,
+    mock_gpio: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful initialization when radio_config.modulation is LoRa.
@@ -219,12 +221,12 @@ def test_init_lora_success(
 
 def test_init_failed_fsk(
     mock_sx1262: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_irq: MagicMock,
-    mock_gpio: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_irq: DigitalInOut,
+    mock_gpio: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests __init__ retries on FSK initialization failure.
@@ -262,12 +264,12 @@ def test_init_failed_fsk(
 
 def test_init_failed_lora(
     mock_sx1262: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_irq: MagicMock,
-    mock_gpio: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_irq: DigitalInOut,
+    mock_gpio: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests __init__ retries on FSK initialization failure.
@@ -309,12 +311,12 @@ def test_init_failed_lora(
 @pytest.fixture
 def initialized_manager(
     mock_sx1262: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_irq: MagicMock,
-    mock_gpio: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_irq: DigitalInOut,
+    mock_gpio: DigitalInOut,
     mock_radio_config: RadioConfig,
 ) -> SX126xManager:
     """Provides an initialized SX126xManager instance with a mock radio.
@@ -364,12 +366,12 @@ def test_send_success_bytes(
 
 def test_send_unlicensed(
     mock_sx1262: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_irq: MagicMock,
-    mock_gpio: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_irq: DigitalInOut,
+    mock_gpio: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests send attempt when not licensed.
@@ -576,12 +578,12 @@ def test_receive_exception(
 
 def test_get_modulation_initialized(
     mock_sx1262: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_irq: MagicMock,
-    mock_gpio: MagicMock,
+    mock_logger: Logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_irq: DigitalInOut,
+    mock_gpio: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests get_modulation when radio is initialized.
