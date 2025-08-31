@@ -12,7 +12,6 @@ dependencies = [
     "adafruit-circuitpython-lsm6ds==4.5.13",
     "adafruit-circuitpython-mcp9808==3.3.24",
     "adafruit-circuitpython-neopixel==6.3.12",
-    "adafruit-circuitpython-pathlib==1.0.2",
     "adafruit-circuitpython-register==1.10.4",
     "adafruit-circuitpython-rfm==1.0.6",
     "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A@1.0.0",
@@ -30,7 +29,7 @@ dev = [
     "coverage==7.9.1",
     "freezegun>=1.5.2",
     "pre-commit==4.2.0",
-    "pyright[nodejs]==1.1.402",
+    "pyright[nodejs]==1.1.404",
     "pytest==8.4.1",
 ]
 docs = [

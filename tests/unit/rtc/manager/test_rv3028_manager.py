@@ -80,9 +80,7 @@ def test_create_rtc_failed(
     assert mock_rv3028.call_count <= 3
 
 
-def test_set_time_success(
-    mock_rv3028, mock_i2c: I2C, mock_logger: Logger
-) -> None:
+def test_set_time_success(mock_rv3028, mock_i2c: I2C, mock_logger: Logger) -> None:
     """Tests successful setting of the time.
 
     Args:

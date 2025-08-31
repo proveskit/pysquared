@@ -9,8 +9,8 @@ from unittest.mock import MagicMock
 import pytest
 from microcontroller import Pin
 
-from pysquared.nvm.counter import Counter
 from pysquared.logger import Logger, _color
+from pysquared.nvm.counter import Counter
 
 
 @pytest.fixture

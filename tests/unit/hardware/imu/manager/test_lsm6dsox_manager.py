@@ -5,7 +5,6 @@ the LSM6DSOX IMU. The tests cover initialization, successful data retrieval,
 and error handling for acceleration, gyroscope, and temperature readings.
 """
 
-import math
 from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
@@ -33,7 +32,7 @@ def mock_logger() -> MagicMock:
 
 
 @pytest.fixture
-def mock_lsm6dsox(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+def mock_lsm6dsox(mock_i2c: I2C) -> Generator[MagicMock, None, None]:
     """Mocks the LSM6DSOX class.
 
     Args:
@@ -49,8 +48,8 @@ def mock_lsm6dsox(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
 
 def test_create_imu(
     mock_lsm6dsox: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests successful creation of an LSM6DSOX IMU instance.
 
@@ -67,8 +66,8 @@ def test_create_imu(
 
 def test_create_imu_failed(
     mock_lsm6dsox: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests that initialization is retried when it fails.
 
@@ -88,8 +87,8 @@ def test_create_imu_failed(
 
 def test_get_acceleration_success(
     mock_lsm6dsox: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger: Logger,
 ) -> None:
     """Tests successful retrieval of the acceleration vector.
 
@@ -110,8 +109,8 @@ def test_get_acceleration_success(
 
 def test_get_acceleration_failure(
     mock_lsm6dsox: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests handling of exceptions when retrieving the acceleration vector.
 
@@ -142,8 +141,8 @@ def test_get_acceleration_failure(
 
 def test_get_gyro_success(
     mock_lsm6dsox: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger: Logger,
 ) -> None:
     """Tests successful retrieval of the gyro vector.
 
@@ -163,8 +162,8 @@ def test_get_gyro_success(
 
 def test_get_gyro_failure(
     mock_lsm6dsox: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests handling of exceptions when retrieving the gyro vector.
 
@@ -194,8 +193,8 @@ def test_get_gyro_failure(
 
 def test_get_temperature_success(
     mock_lsm6dsox: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger: Logger,
 ) -> None:
     """Tests successful retrieval of the temperature.
 
@@ -211,13 +210,13 @@ def test_get_temperature_success(
 
     temp = imu_manager.get_temperature()
     assert temp is not None
-    assert math.isclose(temp, expected_temp, rel_tol=1e-9)
+    assert pytest.approx(expected_temp, rel=1e-9) == temp
 
 
 def test_get_temperature_failure(
     mock_lsm6dsox: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests handling of exceptions when retrieving the temperature.
 

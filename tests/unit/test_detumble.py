@@ -47,9 +47,7 @@ def test_x_product():
     ang_vel_vector = (0.0, 0.02, 0.015)
     expected_result = [-0.525, 0.45, 0.6]
     # x_product takes in tuple arguments and returns a list value
-    actual_result = x_product(
-        mag_field_vector, ang_vel_vector
-    )  # cross product
+    actual_result = x_product(mag_field_vector, ang_vel_vector)  # cross product
     assert pytest.approx(actual_result[0], 0.001) == expected_result[0]
     assert pytest.approx(actual_result[1], 0.001) == expected_result[1]
     assert pytest.approx(actual_result[2], 0.001) == expected_result[2]

@@ -70,7 +70,7 @@ def mock_radio_config() -> RadioConfig:
 
 @pytest.fixture
 def mock_rfm9x(
-    mock_spi: MagicMock, mock_chip_select: MagicMock, mock_reset: MagicMock
+    mock_spi: SPI, mock_chip_select: DigitalInOut, mock_reset: DigitalInOut
 ) -> Generator[MagicMock, None, None]:
     """Mocks the RFM9x class.
 
@@ -109,10 +109,10 @@ def mock_rfm9xfsk(
 def test_init_fsk_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful initialization when radio_config.modulation is FSK.
@@ -159,10 +159,10 @@ def test_init_fsk_success(
 def test_init_lora_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful initialization when radio_config.modulation is LoRa.
@@ -217,10 +217,10 @@ def test_init_lora_success(
 def test_init_lora_high_sf_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,  # Use base config
 ):
     """Tests LoRa initialization with high spreading factor.
@@ -258,10 +258,10 @@ def test_init_lora_high_sf_success(
 
 def test_init_failed_fsk(
     mock_rfm9xfsk: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests __init__ retries on FSK initialization failure.
@@ -293,10 +293,10 @@ def test_init_failed_fsk(
 
 def test_init_failed_lora(
     mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests __init__ retries on LoRa initialization failure.
@@ -329,10 +329,10 @@ def test_init_failed_lora(
 
 def test_send_success_bytes(
     mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful sending of bytes.
@@ -366,10 +366,10 @@ def test_send_success_bytes(
 
 def test_send_unlicensed(
     mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests send attempt when not licensed.
@@ -408,10 +408,10 @@ def test_send_unlicensed(
 
 def test_send_exception(
     mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests handling of exception during radio.send().
@@ -448,10 +448,10 @@ def test_send_exception(
 def test_get_modulation_initialized(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests get_modulation when radio is initialized.
@@ -500,10 +500,10 @@ def test_get_modulation_initialized(
 def test_get_temperature_success(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
     raw_value: int,
     expected_temperature: float,
@@ -537,7 +537,7 @@ def test_get_temperature_success(
     temp = manager.get_temperature()
 
     assert isinstance(temp, float)
-    assert math.isclose(temp, expected_temperature, rel_tol=1e-9)
+    assert temp == pytest.approx(expected_temperature, rel=1e-9)
     mock_radio_instance.read_u8.assert_called_once_with(0x5B)
     mock_logger.debug.assert_called_with("Radio temperature read", temp=temp)
 
@@ -545,10 +545,10 @@ def test_get_temperature_success(
 def test_get_temperature_read_exception(
     mock_rfm9x: MagicMock,
     mock_rfm9xfsk: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests handling exception during radio.read_u8().
@@ -587,10 +587,10 @@ def test_get_temperature_read_exception(
 
 def test_receive_success(
     mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful reception of a message.
@@ -627,10 +627,10 @@ def test_receive_success(
 
 def test_receive_no_message(
     mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests receiving when no message is available (timeout).
@@ -667,10 +667,10 @@ def test_receive_no_message(
 
 def test_receive_exception(
     mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests handling of exception during radio.receive().
@@ -896,10 +896,10 @@ def test_get_max_packet_size_fsk(
 
 def test_get_rssi(
     mock_rfm9x: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests getting the RSSI value from the radio.

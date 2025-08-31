@@ -86,12 +86,12 @@ def mock_radio_config() -> RadioConfig:
 
 @pytest.fixture
 def mock_sx1280(
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
 ) -> Generator[MagicMock, None, None]:
     """Mocks the SX1280 class.
 
@@ -121,13 +121,13 @@ def mock_sx1280(
 
 def test_init_fsk_success(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful initialization when radio_config.modulation is set to FSK.
@@ -175,13 +175,13 @@ def test_init_fsk_success(
 
 def test_init_lora_success(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful initialization when radio_config.modulation is set to LoRa.
@@ -230,13 +230,13 @@ def test_init_lora_success(
 
 def test_init_failed_fsk(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests initialization retries on FSK initialization failure.
@@ -275,13 +275,13 @@ def test_init_failed_fsk(
 
 def test_init_failed_lora(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests initialization retries on LoRa initialization failure.
@@ -320,13 +320,13 @@ def test_init_failed_lora(
 
 def test_send_success_bytes(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger: Logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful sending of bytes.
@@ -367,13 +367,13 @@ def test_send_success_bytes(
 
 def test_send_unlicensed(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests send attempt when not licensed.
@@ -419,13 +419,13 @@ def test_send_unlicensed(
 
 def test_send_exception(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests handling of exception during radio.send().
@@ -468,13 +468,13 @@ def test_send_exception(
 
 def test_get_modulation_initialized(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests get_modulation when radio is initialized.
@@ -522,13 +522,13 @@ def test_get_modulation_initialized(
 
 def test_receive_success(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests successful reception of a message.
@@ -572,13 +572,13 @@ def test_receive_success(
 
 def test_receive_no_message(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests receiving when no message is available (timeout).
@@ -622,13 +622,13 @@ def test_receive_no_message(
 
 def test_receive_exception(
     mock_sx1280: MagicMock,
-    mock_logger: MagicMock,
-    mock_spi: MagicMock,
-    mock_chip_select: MagicMock,
-    mock_reset: MagicMock,
-    mock_busy: MagicMock,
-    mock_txen: MagicMock,
-    mock_rxen: MagicMock,
+    mock_logger,
+    mock_spi: SPI,
+    mock_chip_select: DigitalInOut,
+    mock_reset: DigitalInOut,
+    mock_busy: DigitalInOut,
+    mock_txen: DigitalInOut,
+    mock_rxen: DigitalInOut,
     mock_radio_config: RadioConfig,
 ):
     """Tests handling of exception during radio.receive().

@@ -8,8 +8,8 @@ successful initialization and failure scenarios.
 from unittest.mock import MagicMock, patch
 
 import pytest
-from microcontroller import Pin
 from digitalio import Direction
+from microcontroller import Pin
 
 from pysquared.hardware.digitalio import initialize_pin
 from pysquared.hardware.exception import HardwareInitializationError
@@ -47,7 +47,7 @@ def test_initialize_pin_success(mock_pin: Pin, mock_digital_in_out: MagicMock):
 
 @patch("pysquared.hardware.digitalio.DigitalInOut")
 @patch("pysquared.hardware.digitalio.Pin")
-def test_initialize_pin_failure(mock_pin: MagicMock, mock_digital_in_out: MagicMock):
+def test_initialize_pin_failure(mock_pin: Pin, mock_digital_in_out: MagicMock):
     """Tests digital pin initialization failure with retries.
 
     Args:
@@ -57,17 +57,12 @@ def test_initialize_pin_failure(mock_pin: MagicMock, mock_digital_in_out: MagicM
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
-    # Mock pin and direction
-    mock_pin = mock_pin()
-    mock_direction = Direction.OUTPUT
-    initial_value = True
-
     # Mock DigitalInOut to raise an exception
     mock_digital_in_out.side_effect = Exception("Simulated failure")
 
     # Call the function and assert exception
     with pytest.raises(HardwareInitializationError):
-        initialize_pin(mock_logger, mock_pin, mock_direction, initial_value)
+        initialize_pin(mock_logger, mock_pin, Direction.OUTPUT, True)
 
     # Assertions
     mock_digital_in_out.assert_called_once_with(mock_pin)

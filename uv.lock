@@ -138,18 +138,6 @@ wheels = [
 ]
 
 [[package]]
-name = "adafruit-circuitpython-pathlib"
-version = "1.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "adafruit-blinka" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/af/92/8bf5f3f9336526bfc2de876fdda3598f44cef05df949f9388fc707507092/adafruit_circuitpython_pathlib-1.0.2.tar.gz", hash = "sha256:f119a0abfb86bdaafd8d26cc5a32ca768e196c884b2b807f3ac27ef899b5879a", size = 24691, upload-time = "2025-05-12T16:23:45.792Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2f/9b/995fc29904dddf3100ade2d5536773d097408d898cc088c88ed91058b733/adafruit_circuitpython_pathlib-1.0.2-py3-none-any.whl", hash = "sha256:53add7534624aff4248e3be0019e9817d7cd399e0d39f903870da2115e9a241e", size = 6619, upload-time = "2025-05-12T16:23:44.031Z" },
-]
-
-[[package]]
 name = "adafruit-circuitpython-pixelbuf"
 version = "2.0.7"
 source = { registry = "https://pypi.org/simple" }
@@ -972,15 +960,15 @@ wheels = [
 
 [[package]]
 name = "pyright"
-version = "1.1.402"
+version = "1.1.404"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nodeenv" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/aa/04/ce0c132d00e20f2d2fb3b3e7c125264ca8b909e693841210534b1ea1752f/pyright-1.1.402.tar.gz", hash = "sha256:85a33c2d40cd4439c66aa946fd4ce71ab2f3f5b8c22ce36a623f59ac22937683", size = 3888207, upload-time = "2025-06-11T08:48:35.759Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e2/6e/026be64c43af681d5632722acd100b06d3d39f383ec382ff50a71a6d5bce/pyright-1.1.404.tar.gz", hash = "sha256:455e881a558ca6be9ecca0b30ce08aa78343ecc031d37a198ffa9a7a1abeb63e", size = 4065679, upload-time = "2025-08-20T18:46:14.029Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/37/1a1c62d955e82adae588be8e374c7f77b165b6cb4203f7d581269959abbc/pyright-1.1.402-py3-none-any.whl", hash = "sha256:2c721f11869baac1884e846232800fe021c33f1b4acb3929cff321f7ea4e2982", size = 5624004, upload-time = "2025-06-11T08:48:33.998Z" },
+    { url = "https://files.pythonhosted.org/packages/84/30/89aa7f7d7a875bbb9a577d4b1dc5a3e404e3d2ae2657354808e905e358e0/pyright-1.1.404-py3-none-any.whl", hash = "sha256:c7b7ff1fdb7219c643079e4c3e7d4125f0dafcc19d253b47e898d130ea426419", size = 5902951, upload-time = "2025-08-20T18:46:12.096Z" },
 ]
 
 [package.optional-dependencies]
@@ -1009,7 +997,6 @@ dependencies = [
     { name = "adafruit-circuitpython-lsm6ds" },
     { name = "adafruit-circuitpython-mcp9808" },
     { name = "adafruit-circuitpython-neopixel" },
-    { name = "adafruit-circuitpython-pathlib" },
     { name = "adafruit-circuitpython-register" },
     { name = "adafruit-circuitpython-rfm" },
     { name = "adafruit-circuitpython-tca9548a" },
@@ -1048,7 +1035,6 @@ requires-dist = [
     { name = "adafruit-circuitpython-lsm6ds", specifier = "==4.5.13" },
     { name = "adafruit-circuitpython-mcp9808", specifier = "==3.3.24" },
     { name = "adafruit-circuitpython-neopixel", specifier = "==6.3.12" },
-    { name = "adafruit-circuitpython-pathlib", specifier = "==1.0.2" },
     { name = "adafruit-circuitpython-register", specifier = "==1.10.4" },
     { name = "adafruit-circuitpython-rfm", specifier = "==1.0.6" },
     { name = "adafruit-circuitpython-tca9548a", git = "https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A?rev=1.0.0" },
@@ -1066,7 +1052,7 @@ dev = [
     { name = "coverage", specifier = "==7.9.1" },
     { name = "freezegun", specifier = ">=1.5.2" },
     { name = "pre-commit", specifier = "==4.2.0" },
-    { name = "pyright", extras = ["nodejs"], specifier = "==1.1.402" },
+    { name = "pyright", extras = ["nodejs"], specifier = "==1.1.404" },
     { name = "pytest", specifier = "==8.4.1" },
 ]
 docs = [
