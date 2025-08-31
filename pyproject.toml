@@ -97,11 +97,9 @@ exclude = [
     "**/__pycache__",
     ".venv",
     ".git",
-    "typings",
     "typeshed",
-    "tests", # TODO(nateinaction): Remove this exclusion before PR
+    # "tests", # TODO(nateinaction): Remove this exclusion before PR
 ]
-stubPath = "./typings"
 typeshedPath = "./typeshed"
 reportMissingModuleSource = false
 
