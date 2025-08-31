@@ -18,6 +18,11 @@ from busio import I2C
 
 from ....logger import Logger
 from ....protos.power_monitor import PowerMonitorProto
+from ....sensor_reading.current import Current
+from ....sensor_reading.error import (
+    SensorReadingUnknownError,
+)
+from ....sensor_reading.voltage import Voltage
 from ...exception import HardwareInitializationError
 
 
@@ -49,35 +54,44 @@ class INA219Manager(PowerMonitorProto):
                 "Failed to initialize INA219 power monitor"
             ) from e
 
-    def get_bus_voltage(self) -> float | None:
+    def get_bus_voltage(self) -> Voltage:
         """Gets the bus voltage from the INA219.
 
         Returns:
-            The bus voltage in volts, or None if the data is not available.
+            A Voltage object containing the bus voltage in volts.
+
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the light sensor.
         """
         try:
-            return self._ina219.bus_voltage
+            return Voltage(self._ina219.bus_voltage)
         except Exception as e:
-            self._log.error("Error retrieving bus voltage", e)
+            raise SensorReadingUnknownError("Failed to get bus voltage") from e
 
-    def get_shunt_voltage(self) -> float | None:
+    def get_shunt_voltage(self) -> Voltage:
         """Gets the shunt voltage from the INA219.
 
         Returns:
-            The shunt voltage in volts, or None if the data is not available.
+            A Voltage object containing the shunt voltage in volts.
+
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the light sensor.
         """
         try:
-            return self._ina219.shunt_voltage
+            return Voltage(self._ina219.shunt_voltage)
         except Exception as e:
-            self._log.error("Error retrieving shunt voltage", e)
+            raise SensorReadingUnknownError("Failed to get shunt voltage") from e
 
-    def get_current(self) -> float | None:
+    def get_current(self) -> Current:
         """Gets the current from the INA219.
 
         Returns:
-            The current in amps, or None if the data is not available.
+            A Current object containing the current in milliamps (mA)
+
+        Raises:
+            SensorReadingUnknownError: If an unknown error occurs while reading the light sensor.
         """
         try:
-            return self._ina219.current
+            return Current(self._ina219.current)
         except Exception as e:
-            self._log.error("Error retrieving current", e)
+            raise SensorReadingUnknownError("Failed to get current") from e

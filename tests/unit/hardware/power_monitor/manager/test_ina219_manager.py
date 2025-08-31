@@ -15,6 +15,9 @@ import pytest
 from mocks.adafruit_ina219.ina219 import INA219
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.power_monitor.manager.ina219 import INA219Manager
+from pysquared.sensor_reading.current import Current
+from pysquared.sensor_reading.error import SensorReadingUnknownError
+from pysquared.sensor_reading.voltage import Voltage
 
 address: int = 123
 
@@ -95,7 +98,8 @@ def test_get_bus_voltage_success(mock_ina219, mock_i2c, mock_logger):
     power_monitor._ina219.bus_voltage = 3.3
 
     voltage = power_monitor.get_bus_voltage()
-    assert voltage == pytest.approx(3.3, rel=1e-6)
+    assert isinstance(voltage, Voltage)
+    assert voltage.value == pytest.approx(3.3, rel=1e-6)
 
 
 def test_get_bus_voltage_failure(mock_ina219, mock_i2c, mock_logger):
@@ -116,8 +120,8 @@ def test_get_bus_voltage_failure(mock_ina219, mock_i2c, mock_logger):
     )
     type(power_monitor._ina219).bus_voltage = mock_ina219_bus_voltage_property
 
-    voltage = power_monitor.get_bus_voltage()
-    assert voltage is None
+    with pytest.raises(SensorReadingUnknownError):
+        power_monitor.get_bus_voltage()
 
 
 def test_get_shunt_voltage_success(mock_ina219, mock_i2c, mock_logger):
@@ -134,7 +138,8 @@ def test_get_shunt_voltage_success(mock_ina219, mock_i2c, mock_logger):
     power_monitor._ina219.shunt_voltage = 0.1
 
     voltage = power_monitor.get_shunt_voltage()
-    assert voltage == pytest.approx(0.1, rel=1e-6)
+    assert isinstance(voltage, Voltage)
+    assert voltage.value == pytest.approx(0.1, rel=1e-6)
 
 
 def test_get_shunt_voltage_failure(mock_ina219, mock_i2c, mock_logger):
@@ -155,8 +160,8 @@ def test_get_shunt_voltage_failure(mock_ina219, mock_i2c, mock_logger):
     )
     type(power_monitor._ina219).shunt_voltage = mock_ina219_shunt_voltage_property
 
-    voltage = power_monitor.get_shunt_voltage()
-    assert voltage is None
+    with pytest.raises(SensorReadingUnknownError):
+        power_monitor.get_shunt_voltage()
 
 
 def test_get_current_success(mock_ina219, mock_i2c, mock_logger):
@@ -173,7 +178,8 @@ def test_get_current_success(mock_ina219, mock_i2c, mock_logger):
     power_monitor._ina219.current = 0.5
 
     current = power_monitor.get_current()
-    assert current == pytest.approx(0.5, rel=1e-6)
+    assert isinstance(current, Current)
+    assert current.value == pytest.approx(0.5, rel=1e-6)
 
 
 def test_get_current_failure(mock_ina219, mock_i2c, mock_logger):
@@ -194,5 +200,5 @@ def test_get_current_failure(mock_ina219, mock_i2c, mock_logger):
     )
     type(power_monitor._ina219).current = mock_ina219_current_property
 
-    current = power_monitor.get_current()
-    assert current is None
+    with pytest.raises(SensorReadingUnknownError):
+        power_monitor.get_current()

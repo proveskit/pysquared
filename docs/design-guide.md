@@ -120,7 +120,7 @@ The following table lists possible sensor properties, their corresponding types 
 | duty_cycle       | int                  | 16-bit PWM duty cycle                        |
 | eCO2             | float                | equivalent/estimated CO₂ in ppm              |
 | frequency        | int                  | Hertz (Hz)                                   |
-| gyro             | (float, float, float)| x, y, z radians per second                   |
+| angular velocity | (float, float, float)| x, y, z radians per second                   |
 | light            | float                | non-unit-specific light levels               |
 | lux              | float                | SI lux                                       |
 | magnetic         | (float, float, float)| x, y, z micro-Tesla (uT)                     |
