@@ -9,21 +9,21 @@ from unittest.mock import MagicMock
 import pytest
 from microcontroller import Pin
 
-import pysquared.nvm.counter as counter
+from pysquared.nvm.counter import Counter
 from pysquared.logger import Logger, _color
 
 
 @pytest.fixture
 def logger():
     """Provides a Logger instance for testing without colorization."""
-    count = MagicMock(spec=counter.Counter)
+    count = MagicMock(spec=Counter)
     return Logger(count)
 
 
 @pytest.fixture
 def logger_color():
     """Provides a Logger instance for testing with colorization enabled."""
-    count = MagicMock(spec=counter.Counter)
+    count = MagicMock(spec=Counter)
     return Logger(error_counter=count, colorized=True)
 
 

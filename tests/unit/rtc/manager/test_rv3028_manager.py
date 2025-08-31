@@ -30,7 +30,7 @@ def mock_logger() -> MagicMock:
 
 
 @pytest.fixture
-def mock_rv3028(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+def mock_rv3028(mock_i2c: I2C) -> Generator[MagicMock, None, None]:
     """Mocks the RV3028 class.
 
     Args:
@@ -44,7 +44,7 @@ def mock_rv3028(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
         yield mock_class
 
 
-def test_create_rtc(mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock) -> None:
+def test_create_rtc(mock_rv3028, mock_i2c: I2C, mock_logger: Logger) -> None:
     """Tests successful creation of an RV3028 RTC instance.
 
     Args:
@@ -60,8 +60,8 @@ def test_create_rtc(mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock) ->
 
 def test_create_rtc_failed(
     mock_rv3028: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger: Logger,
 ) -> None:
     """Tests that initialization is retried when it fails.
 
@@ -81,7 +81,7 @@ def test_create_rtc_failed(
 
 
 def test_set_time_success(
-    mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock
+    mock_rv3028, mock_i2c: I2C, mock_logger: Logger
 ) -> None:
     """Tests successful setting of the time.
 
@@ -106,7 +106,7 @@ def test_set_time_success(
 
 
 def test_set_time_failure_set_date(
-    mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock
+    mock_rv3028, mock_i2c: I2C, mock_logger: Logger
 ) -> None:
     """Tests handling of exceptions during set_date.
 
@@ -133,7 +133,7 @@ def test_set_time_failure_set_date(
 
 
 def test_set_time_failure_set_time(
-    mock_rv3028, mock_i2c: MagicMock, mock_logger: MagicMock
+    mock_rv3028, mock_i2c: I2C, mock_logger: Logger
 ) -> None:
     """Tests handling of exceptions during set_time.
 

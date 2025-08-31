@@ -8,6 +8,7 @@ successful initialization and failure scenarios.
 from unittest.mock import MagicMock, patch
 
 import pytest
+from microcontroller import Pin
 from digitalio import Direction
 
 from pysquared.hardware.digitalio import initialize_pin
@@ -17,7 +18,7 @@ from pysquared.logger import Logger
 
 @patch("pysquared.hardware.digitalio.DigitalInOut")
 @patch("pysquared.hardware.digitalio.Pin")
-def test_initialize_pin_success(mock_pin: MagicMock, mock_digital_in_out: MagicMock):
+def test_initialize_pin_success(mock_pin: Pin, mock_digital_in_out: MagicMock):
     """Tests successful initialization of a digital pin.
 
     Args:
@@ -28,7 +29,6 @@ def test_initialize_pin_success(mock_pin: MagicMock, mock_digital_in_out: MagicM
     mock_logger = MagicMock(spec=Logger)
 
     # Mock pin and direction
-    mock_pin = mock_pin()
     mock_direction = Direction.OUTPUT
     initial_value = True
 

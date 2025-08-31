@@ -13,11 +13,10 @@ logger.error("This is an error message.", err=Exception("Something went wrong.")
 """
 
 import json
+import os
 import time
 import traceback
 from collections import OrderedDict
-
-from adafruit_pathlib import Path
 
 from .nvm.counter import Counter
 
@@ -82,28 +81,28 @@ class Logger:
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
-        log_dir: Path | None = None,
+        log_dir: str | None = None,
         colorized: bool = False,
     ) -> None:
         """
         Initializes the Logger instance.
 
         Args:
-            error_counter (Counter): Counter for error occurrences.
-            log_level (int): Initial log level.
-            log_dir (Path | None): Directory to save log files. If None, logs are not saved to a file.
-            colorized (bool): Whether to colorize output.
+            error_counter: Counter for error occurrences.
+            log_level: Initial log level.
+            log_dir: Directory to save log files. If None, logs are not saved to a file.
+            colorized: Whether to colorize output.
         """
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
-        self._log_dir: Path | None = log_dir
+        self._log_dir: str | None = log_dir
         self._colorized: bool = colorized
 
         if log_dir is not None:
             try:
-                if not log_dir.exists():
-                    raise ValueError("Logging path does not exist.")
-                if not log_dir.is_dir():
+                # TODO(nateinaction): test this on CircuitPython
+                stat = os.stat(log_dir)
+                if not stat[0] != "directory":
                     raise ValueError("Logging path must be a directory.")
             except OSError as e:
                 raise ValueError("Invalid logging path.") from e
@@ -180,8 +179,9 @@ class Logger:
 
         if self._can_print_this_level(level_value):
             if self._log_dir is not None:
-                file = self._log_dir / "activity.log"
-                file.open("a").write(json_output + "\n")
+                file = self._log_dir + os.sep + "activity.log"
+                with open(file, "a") as f:
+                    f.write(json_output + "\n")
 
             if self._colorized:
                 json_output = json_output.replace(

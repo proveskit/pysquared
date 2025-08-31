@@ -17,19 +17,19 @@ from pysquared.logger import Logger
 
 
 @pytest.fixture
-def mock_logger() -> MagicMock:
+def mock_logger() -> Logger:
     """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @pytest.fixture
-def mock_packet_manager() -> MagicMock:
+def mock_packet_manager() -> PacketManager:
     """Mocks the PacketManager class."""
     return MagicMock(spec=PacketManager)
 
 
 @pytest.fixture
-def mock_config() -> MagicMock:
+def mock_config() -> Config:
     """Mocks the Config class."""
     config = MagicMock(spec=Config)
     config.super_secret_code = "test_password"
