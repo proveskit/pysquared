@@ -1,8 +1,8 @@
-"""Unit tests for the storage module.
+"""Unit tests for the filesystem class.
 
-This module contains unit tests for the `storage` module, which provides utilities
-for managing storage during the boot process. The tests focus on verifying that
-the correct sequence of storage operations is performed with appropriate delays.
+This file contains unit tests for the `filesystem` class, which provides utilities
+for managing the filesystem during the boot process. The tests focus on verifying that
+the correct sequence of filesystem operations.
 """
 
 # pyright: reportAttributeAccessIssue=false
