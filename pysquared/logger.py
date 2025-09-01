@@ -140,8 +140,8 @@ class Logger:
             message (str): The log message.
             **kwargs: Additional key/value pairs to include in the log.
         """
-        now = time.localtime()
-        asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
+        now = time.localtime()  # type: ignore # PR: https://github.com/adafruit/circuitpython/pull/10603
+        asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"  # type: ignore # PR: https://github.com/adafruit/circuitpython/pull/10603
 
         # case where someone used debug, info, or warning yet also provides an 'err' kwarg with an Exception
         if (

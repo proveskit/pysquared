@@ -31,9 +31,10 @@ from .protos.imu import IMUProto
 from .protos.power_monitor import PowerMonitorProto
 from .protos.radio import RadioProto
 from .protos.temperature_sensor import TemperatureSensorProto
+from .sensor_reading.avg import avg_readings
 
 try:
-    from typing import Callable, OrderedDict
+    from typing import OrderedDict
 except Exception:
     pass
 
@@ -85,70 +86,179 @@ class Beacon:
         Returns:
             True if the beacon was sent successfully, False otherwise.
         """
+        state = self._build_beacon_state()
+        beacon_data = json.dumps(state, separators=(",", ":")).encode("utf-8")
+        return self._packet_manager.send(beacon_data)
+
+    def _build_beacon_state(self) -> OrderedDict[str, object]:
+        """Builds the beacon state dictionary with system info and sensor data.
+
+        Returns:
+            OrderedDict containing the beacon state data.
+        """
         state: OrderedDict[str, object] = OrderedDict()
+        self._add_system_info(state)
+        self._add_sensor_data(state)
+        return state
+
+    def _add_system_info(self, state: OrderedDict[str, object]) -> None:
+        """Adds system information to the beacon state.
+
+        Args:
+            state: The state dictionary to update.
+        """
         state["name"] = self._name
 
-        # Warning: CircuitPython does not support time.gmtime(), when testing this code it will use your local timezone
-        now = time.localtime()
+        now = time.localtime()  # type: ignore # PR: https://github.com/adafruit/circuitpython/pull/10603
         state["time"] = (
-            f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
+            f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"  # type: ignore # PR: https://github.com/adafruit/circuitpython/pull/10603
         )
 
         state["uptime"] = time.time() - self._boot_time
 
-        for index, sensor in enumerate(self._sensors):
-            if isinstance(sensor, Processor):
-                sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_temperature"] = sensor.temperature
-            if isinstance(sensor, Flag):
-                state[f"{sensor.get_name()}_{index}"] = sensor.get()
-            if isinstance(sensor, Counter):
-                state[f"{sensor.get_name()}_{index}"] = sensor.get()
-            if isinstance(sensor, RadioProto):
-                sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_modulation"] = (
-                    sensor.get_modulation().__name__
-                )
-            if isinstance(sensor, IMUProto):
-                sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_acceleration"] = sensor.get_acceleration()
-                state[f"{sensor_name}_{index}_gyroscope"] = sensor.get_gyro_data()
-            if isinstance(sensor, PowerMonitorProto):
-                sensor_name: str = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_current_avg"] = self.avg_readings(
-                    sensor.get_current
-                )
-                state[f"{sensor_name}_{index}_bus_voltage_avg"] = self.avg_readings(
-                    sensor.get_bus_voltage
-                )
-                state[f"{sensor_name}_{index}_shunt_voltage_avg"] = self.avg_readings(
-                    sensor.get_shunt_voltage
-                )
-            if isinstance(sensor, TemperatureSensorProto):
-                sensor_name = sensor.__class__.__name__
-                state[f"{sensor_name}_{index}_temperature"] = sensor.get_temperature()
-
-        b = json.dumps(state, separators=(",", ":")).encode("utf-8")
-        return self._packet_manager.send(b)
-
-    def avg_readings(
-        self, func: Callable[..., float | None], num_readings: int = 50
-    ) -> float | None:
-        """Gets the average of the readings from a function.
+    def _add_sensor_data(self, state: OrderedDict[str, object]) -> None:
+        """Adds sensor data to the beacon state.
 
         Args:
-            func: The function to call.
-            num_readings: The number of readings to take.
-
-        Returns:
-            The average of the readings, or None if the readings could not be taken.
+            state: The state dictionary to update.
         """
-        readings: float = 0
-        for _ in range(num_readings):
-            reading = func()
-            if reading is None:
-                self._log.warning(f"Couldn't acquire {func.__name__}")
-                return
+        for index, sensor in enumerate(self._sensors):
+            if isinstance(sensor, Processor):
+                self._add_processor_data(state, sensor, index)
+            elif isinstance(sensor, Flag):
+                self._add_flag_data(state, sensor, index)
+            elif isinstance(sensor, Counter):
+                self._add_counter_data(state, sensor, index)
+            elif isinstance(sensor, RadioProto):
+                self._add_radio_data(state, sensor, index)
+            elif isinstance(sensor, IMUProto):
+                self._add_imu_data(state, sensor, index)
+            elif isinstance(sensor, PowerMonitorProto):
+                self._add_power_monitor_data(state, sensor, index)
+            elif isinstance(sensor, TemperatureSensorProto):
+                self._add_temperature_sensor_data(state, sensor, index)
 
-            readings += reading
-        return readings / num_readings
+    def _add_processor_data(
+        self, state: OrderedDict[str, object], sensor: Processor, index: int
+    ) -> None:
+        """Adds processor data to the beacon state."""
+        sensor_name = sensor.__class__.__name__
+        state[f"{sensor_name}_{index}_temperature"] = sensor.temperature
+
+    def _add_flag_data(
+        self, state: OrderedDict[str, object], sensor: Flag, index: int
+    ) -> None:
+        """Adds flag data to the beacon state."""
+        state[f"{sensor.get_name()}_{index}"] = sensor.get()
+
+    def _add_counter_data(
+        self, state: OrderedDict[str, object], sensor: Counter, index: int
+    ) -> None:
+        """Adds counter data to the beacon state."""
+        state[f"{sensor.get_name()}_{index}"] = sensor.get()
+
+    def _add_radio_data(
+        self, state: OrderedDict[str, object], sensor: RadioProto, index: int
+    ) -> None:
+        """Adds radio data to the beacon state."""
+        sensor_name = sensor.__class__.__name__
+        state[f"{sensor_name}_{index}_modulation"] = sensor.get_modulation().__name__
+
+    def _add_imu_data(
+        self, state: OrderedDict[str, object], sensor: IMUProto, index: int
+    ) -> None:
+        """Adds IMU data to the beacon state."""
+        sensor_name = sensor.__class__.__name__
+
+        self._safe_add_sensor_reading(
+            state,
+            f"{sensor_name}_{index}_acceleration",
+            lambda: sensor.get_acceleration().to_dict(),
+            "Error retrieving acceleration",
+            sensor_name,
+            index,
+        )
+
+        self._safe_add_sensor_reading(
+            state,
+            f"{sensor_name}_{index}_angular_velocity",
+            lambda: sensor.get_angular_velocity().to_dict(),
+            "Error retrieving angular velocity",
+            sensor_name,
+            index,
+        )
+
+    def _add_power_monitor_data(
+        self, state: OrderedDict[str, object], sensor: PowerMonitorProto, index: int
+    ) -> None:
+        """Adds power monitor data to the beacon state."""
+        sensor_name = sensor.__class__.__name__
+
+        self._safe_add_sensor_reading(
+            state,
+            f"{sensor_name}_{index}_current_avg",
+            lambda: avg_readings(sensor.get_current),
+            "Error retrieving current",
+            sensor_name,
+            index,
+        )
+
+        self._safe_add_sensor_reading(
+            state,
+            f"{sensor_name}_{index}_bus_voltage_avg",
+            lambda: avg_readings(sensor.get_bus_voltage),
+            "Error retrieving bus voltage",
+            sensor_name,
+            index,
+        )
+
+        self._safe_add_sensor_reading(
+            state,
+            f"{sensor_name}_{index}_shunt_voltage_avg",
+            lambda: avg_readings(sensor.get_shunt_voltage),
+            "Error retrieving shunt voltage",
+            sensor_name,
+            index,
+        )
+
+    def _add_temperature_sensor_data(
+        self,
+        state: OrderedDict[str, object],
+        sensor: TemperatureSensorProto,
+        index: int,
+    ) -> None:
+        """Adds temperature sensor data to the beacon state."""
+        sensor_name = sensor.__class__.__name__
+
+        self._safe_add_sensor_reading(
+            state,
+            f"{sensor_name}_{index}_temperature",
+            lambda: sensor.get_temperature().to_dict(),
+            "Error retrieving temperature",
+            sensor_name,
+            index,
+        )
+
+    def _safe_add_sensor_reading(
+        self,
+        state: OrderedDict[str, object],
+        key: str,
+        reading_func,
+        error_msg: str,
+        sensor_name: str,
+        index: int,
+    ) -> None:
+        """Safely adds a sensor reading to the state with error handling.
+
+        Args:
+            state: The state dictionary to update.
+            key: The key to store the reading under.
+            reading_func: Function that returns the sensor reading.
+            error_msg: Error message to log if reading fails.
+            sensor_name: Name of the sensor for logging.
+            index: Index of the sensor for logging.
+        """
+        try:
+            state[key] = reading_func()
+        except Exception as e:
+            self._log.error(error_msg, e, sensor=sensor_name, index=index)

@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.13"
 
 [[package]]
@@ -231,16 +231,16 @@ wheels = [
 
 [[package]]
 name = "adafruit-circuitpython-veml7700"
-version = "2.0.2"
+version = "2.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "adafruit-blinka" },
     { name = "adafruit-circuitpython-busdevice" },
     { name = "adafruit-circuitpython-register" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1a/b0/a9646c7448fd2b2097f06e7e43a32345fcf71164be18e77a6a8818b97a17/adafruit_circuitpython_veml7700-2.0.2.tar.gz", hash = "sha256:5e661fb2e179a3f21c962aabf7561f4eb2775e6c126eae130eb0e2ac23ea0a09", size = 26416, upload-time = "2024-10-08T12:24:57.132Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/38/f8/fa8b1516e6c3789bb5821ed8613d0fc9f05c867f5d2b180b7d779ddb2f18/adafruit_circuitpython_veml7700-2.1.4.tar.gz", hash = "sha256:d1ad949b8292e83b5f0a57f411befef7b3d25a489021be7079881ea8a9a0cf27", size = 24322, upload-time = "2025-06-17T16:35:15.968Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/56/07/de5e6bea37d50cc718e1155639f201f2ebe35a2a2de24f71b01486a530f5/adafruit_circuitpython_veml7700-2.0.2-py3-none-any.whl", hash = "sha256:277a6adac2183e3c6256455cf6d3a33d7b2959a70704721cf1f6d94108a1679e", size = 5530, upload-time = "2024-10-08T12:24:55.519Z" },
+    { url = "https://files.pythonhosted.org/packages/03/ff/f2e9de823939a24a1e707bf82ad8ee5db0cbbe9398666d749f03bf0c2456/adafruit_circuitpython_veml7700-2.1.4-py3-none-any.whl", hash = "sha256:a9d5cbc3437f41187694ce46dda1ecc2a50e7552edb0b8aaa44b9131d565a13b", size = 6371, upload-time = "2025-06-17T16:35:15.096Z" },
 ]
 
 [[package]]
@@ -268,6 +268,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/da/54/054bafaf2c0fb8473d423743e191fcdf49b2c1fd5e9af3524efbe097bafd/asyncio-3.4.3.tar.gz", hash = "sha256:83360ff8bc97980e4ff25c964c7bd3923d333d177aa4f7fb736b019f26c7cb41", size = 204411, upload-time = "2015-03-10T14:11:26.494Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/22/74/07679c5b9f98a7cb0fc147b1ef1cc1853bc07a4eb9cb5731e24732c5f773/asyncio-3.4.3-py3-none-any.whl", hash = "sha256:c4d18b22701821de07bd6aea8b53d21449ec0ec5680645e5317062ea21817d2d", size = 101767, upload-time = "2015-03-10T14:05:10.959Z" },
+]
+
+[[package]]
+name = "attrs"
+version = "25.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5a/b0/1367933a8532ee6ff8d63537de4f1177af4bff9f3e829baf7331f595bb24/attrs-25.3.0.tar.gz", hash = "sha256:75d7cefc7fb576747b2c81b4442d4d4a1ce0900973527c011d1030fd3bf4af1b", size = 812032, upload-time = "2025-03-13T11:10:22.779Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/06/bb80f5f86020c4551da315d78b3ab75e8228f89f0162f2c3a819e407941a/attrs-25.3.0-py3-none-any.whl", hash = "sha256:427318ce031701fea540783410126f03899a97ffc6f61596ad581ac2e40e3bc3", size = 63815, upload-time = "2025-03-13T11:10:21.14Z" },
 ]
 
 [[package]]
@@ -509,6 +518,19 @@ version = "0.1.13"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/be/31/a76f4bfa885f93b8167cb4c85cf32b54d1f64384d0b897d45bc6d19b7b45/htmlmin2-0.1.13-py3-none-any.whl", hash = "sha256:75609f2a42e64f7ce57dbff28a39890363bde9e7e5885db633317efbdf8c79a2", size = 34486, upload-time = "2023-03-14T21:28:30.388Z" },
+]
+
+[[package]]
+name = "hypothesis"
+version = "6.136.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "sortedcontainers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2e/19/92369e1d5f2ead5f3f491d5453f28a04be82133886d3a7b46ebdcf7e109d/hypothesis-6.136.7.tar.gz", hash = "sha256:864c5cf7779adc58871ee51595bc724c496047c5bc45229e0baa950b103a73ea", size = 458037, upload-time = "2025-08-01T22:14:23.057Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/59/32813aa1a2715d7c531f87b46a04ba23d05d2bd4f7e21ecda8135100f8ce/hypothesis-6.136.7-py3-none-any.whl", hash = "sha256:12a8b76a5c453f8478d6bb4b5450824856af571c5e7821604a15aeaafa9beefd", size = 524917, upload-time = "2025-08-01T22:14:18.845Z" },
 ]
 
 [[package]]
@@ -960,15 +982,15 @@ wheels = [
 
 [[package]]
 name = "pyright"
-version = "1.1.402"
+version = "1.1.404"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nodeenv" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/aa/04/ce0c132d00e20f2d2fb3b3e7c125264ca8b909e693841210534b1ea1752f/pyright-1.1.402.tar.gz", hash = "sha256:85a33c2d40cd4439c66aa946fd4ce71ab2f3f5b8c22ce36a623f59ac22937683", size = 3888207, upload-time = "2025-06-11T08:48:35.759Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e2/6e/026be64c43af681d5632722acd100b06d3d39f383ec382ff50a71a6d5bce/pyright-1.1.404.tar.gz", hash = "sha256:455e881a558ca6be9ecca0b30ce08aa78343ecc031d37a198ffa9a7a1abeb63e", size = 4065679, upload-time = "2025-08-20T18:46:14.029Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/37/1a1c62d955e82adae588be8e374c7f77b165b6cb4203f7d581269959abbc/pyright-1.1.402-py3-none-any.whl", hash = "sha256:2c721f11869baac1884e846232800fe021c33f1b4acb3929cff321f7ea4e2982", size = 5624004, upload-time = "2025-06-11T08:48:33.998Z" },
+    { url = "https://files.pythonhosted.org/packages/84/30/89aa7f7d7a875bbb9a577d4b1dc5a3e404e3d2ae2657354808e905e358e0/pyright-1.1.404-py3-none-any.whl", hash = "sha256:c7b7ff1fdb7219c643079e4c3e7d4125f0dafcc19d253b47e898d130ea426419", size = 5902951, upload-time = "2025-08-20T18:46:12.096Z" },
 ]
 
 [package.optional-dependencies]
@@ -1013,6 +1035,7 @@ dev = [
     { name = "circuitpython-stubs" },
     { name = "coverage" },
     { name = "freezegun" },
+    { name = "hypothesis" },
     { name = "pre-commit" },
     { name = "pyright", extra = ["nodejs"] },
     { name = "pytest" },
@@ -1039,7 +1062,7 @@ requires-dist = [
     { name = "adafruit-circuitpython-rfm", specifier = "==1.0.6" },
     { name = "adafruit-circuitpython-tca9548a", git = "https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A?rev=1.0.0" },
     { name = "adafruit-circuitpython-ticks", specifier = "==1.1.1" },
-    { name = "adafruit-circuitpython-veml7700", specifier = "==2.0.2" },
+    { name = "adafruit-circuitpython-veml7700", specifier = "==2.1.4" },
     { name = "proves-circuitpython-rv3028", git = "https://github.com/proveskit/PROVES_CircuitPython_RV3028?rev=1.0.1" },
     { name = "proves-circuitpython-sx126", git = "https://github.com/proveskit/micropySX126X?rev=1.0.0" },
     { name = "proves-circuitpython-sx1280", git = "https://github.com/proveskit/CircuitPython_SX1280?rev=1.0.4" },
@@ -1051,8 +1074,9 @@ dev = [
     { name = "circuitpython-stubs", specifier = "==9.2.8" },
     { name = "coverage", specifier = "==7.9.1" },
     { name = "freezegun", specifier = ">=1.5.2" },
+    { name = "hypothesis", specifier = "==6.136.7" },
     { name = "pre-commit", specifier = "==4.2.0" },
-    { name = "pyright", extras = ["nodejs"], specifier = "==1.1.402" },
+    { name = "pyright", extras = ["nodejs"], specifier = "==1.1.404" },
     { name = "pytest", specifier = "==8.4.1" },
 ]
 docs = [
@@ -1170,6 +1194,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/44/cd/a040c4b3119bbe532e5b0732286f805445375489fceaec1f48306068ee3b/smmap-5.0.2.tar.gz", hash = "sha256:26ea65a03958fa0c8a1c7e8c7a58fdc77221b8910f6be2131affade476898ad5", size = 22329, upload-time = "2025-01-02T07:14:40.909Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/04/be/d09147ad1ec7934636ad912901c5fd7667e1c858e19d355237db0d0cd5e4/smmap-5.0.2-py3-none-any.whl", hash = "sha256:b30115f0def7d7531d22a0fb6502488d879e75b260a9db4d0819cfb25403af5e", size = 24303, upload-time = "2025-01-02T07:14:38.724Z" },
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f23394729afe52f3bf7adec04bf9ed2c820b39e19299111/sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88", size = 30594, upload-time = "2021-05-16T22:03:42.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575, upload-time = "2021-05-16T22:03:41.177Z" },
 ]
 
 [[package]]
