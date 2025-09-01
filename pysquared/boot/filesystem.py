@@ -1,9 +1,12 @@
-"""File includes utilities for managing storage during the boot process."""
+"""File includes utilities for managing the filesystem during the boot process."""
 
 import os
 import time
 
-import storage
+try:
+    import storage
+except ImportError:
+    import mocks.circuitpython.storage as storage
 
 
 def mkdir(
@@ -24,13 +27,13 @@ def mkdir(
 
     Usage:
         ```python
-        from pysquared.boot.storage import mkdir
+        from pysquared.boot.filesystem import mkdir
         mkdir("/sd")
         ```
     """
     try:
         storage.disable_usb_drive()
-        time.sleep(storage_action_delay)
+        time.sleep(seconds=storage_action_delay)
         print("Disabled USB drive")
 
         storage.remount("/", False)
