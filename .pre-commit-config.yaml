@@ -24,6 +24,16 @@ repos:
         files: ^pysquared/
         exclude: ^pysquared/beacon\.py|^pysquared/logger\.py|^pysquared/rtc/manager/microcontroller\.py|pysquared/sd_card\.py
 
+  - repo: local
+    hooks:
+      - id: prevent-pyright-ignore
+        name: prevent pyright ignore annotations
+        description: 'Enforce that no `# type: ignore` annotations exist in the codebase.'
+        entry: '# pyright:? *.*false'
+        language: pygrep
+        types: [python]
+        files: ^pysquared/
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
