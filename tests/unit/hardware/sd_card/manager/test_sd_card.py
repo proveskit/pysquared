@@ -19,11 +19,11 @@ from pysquared.hardware.exception import HardwareInitializationError
 sys.modules["storage"] = MagicMock()
 sys.modules["sdcardio"] = MagicMock()
 
-from pysquared.hardware.sd_card.sd_card import SDCardManager  # noqa: E402
+from pysquared.hardware.sd_card.manager.sd_card import SDCardManager  # noqa: E402
 
 
-@patch("pysquared.hardware.sd_card.sd_card.storage")
-@patch("pysquared.hardware.sd_card.sd_card.sdcardio")
+@patch("pysquared.hardware.sd_card.manager.sd_card.storage")
+@patch("pysquared.hardware.sd_card.manager.sd_card.sdcardio")
 def test_sdcard_init_success(
     mock_sdcardio: MagicMock,
     mock_storage: MagicMock,
@@ -52,8 +52,8 @@ def test_sdcard_init_success(
     mock_storage.mount.assert_called_once_with(mock_block_device, mount_path)
 
 
-@patch("pysquared.hardware.sd_card.sd_card.storage")
-@patch("pysquared.hardware.sd_card.sd_card.sdcardio")
+@patch("pysquared.hardware.sd_card.manager.sd_card.storage")
+@patch("pysquared.hardware.sd_card.manager.sd_card.sdcardio")
 def test_sdcard_init_error(
     mock_sdcardio: MagicMock,
     mock_storage: MagicMock,

@@ -5,7 +5,7 @@ import storage
 from busio import SPI
 from microcontroller import Pin
 
-from ..exception import HardwareInitializationError
+from ...exception import HardwareInitializationError
 
 
 class SDCardManager:
