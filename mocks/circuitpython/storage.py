@@ -5,8 +5,6 @@ for testing purposes. It allows for simulating the behavior of the storage
 module without the need for actual hardware.
 """
 
-from __future__ import annotations
-
 
 def disable_usb_drive() -> None:
     """A mock function to disable the USB drive."""
