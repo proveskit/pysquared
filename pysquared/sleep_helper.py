@@ -6,9 +6,6 @@ durations while maintaining system safety and watchdog activity.
 
 import time
 
-import alarm
-from alarm.time import TimeAlarm
-
 from .config.config import Config
 from .logger import Logger
 from .watchdog import Watchdog
@@ -38,14 +35,15 @@ class SleepHelper:
         self.config: Config = config
         self.watchdog: Watchdog = watchdog
 
-    def safe_sleep(self, duration) -> None:
+    def safe_sleep(self, duration, watchdog_timeout=15) -> None:
         """
-        Puts the Satellite to sleep for a specified duration, in seconds.
+        Puts the Satellite to sleep for a specified duration, in seconds while still petting the watchdog at least every 15 seconds.
 
         Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config
 
         Args:
             duration (int): Specified time, in seconds, to sleep the Satellite for.
+            watchdog_timeout (int): Time, in seconds, to wait before petting the watchdog. Default is 15 seconds.
         """
         # Ensure the duration does not exceed the longest allowable sleep time
         if duration > self.config.longest_allowable_sleep_time:
@@ -71,10 +69,7 @@ class SleepHelper:
 
             time_increment = min(end_sleep_time - time.monotonic(), watchdog_timeout)
 
-            time_alarm: TimeAlarm = TimeAlarm(
-                monotonic_time=time.monotonic() + time_increment
-            )
-            alarm.light_sleep_until_alarms(time_alarm)
+            time.sleep(time_increment)
 
             # Pet the watchdog on wake
             self.watchdog.pet()
