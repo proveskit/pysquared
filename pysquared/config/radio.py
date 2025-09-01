@@ -45,6 +45,8 @@ class RadioConfig:
         self.start_time: int = radio_dict["start_time"]
         self.fsk: FSKConfig = FSKConfig(radio_dict["fsk"])
         self.lora: LORAConfig = LORAConfig(radio_dict["lora"])
+        self.default_callsigns: list = radio_dict["default_callsigns"]
+        self.main_sat_license: str = radio_dict["main_sat_license"]
 
         self.RADIO_SCHEMA = {
             "license": {"type": str},
@@ -57,6 +59,8 @@ class RadioConfig:
                 "min1": 915.0,
                 "max1": 915.0,
             },
+            "default_callsigns": {"type": list},
+            "main_sat_license": {"type": str},
         }
 
     def validate(self, key: str, value) -> None:
