@@ -45,6 +45,7 @@ docs = [
 [tool.setuptools]
 packages = [
     "pysquared",
+    "pysquared.boot",
     "pysquared.config",
     "pysquared.hardware",
     "pysquared.hardware.imu",

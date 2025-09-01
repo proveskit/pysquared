@@ -22,7 +22,7 @@ repos:
         language: pygrep
         types: [python]
         files: ^pysquared/
-        exclude: ^pysquared/beacon\.py|^pysquared/logger\.py|^pysquared/rtc/manager/microcontroller\.py
+        exclude: ^pysquared/beacon\.py|^pysquared/logger\.py|^pysquared/rtc/manager/microcontroller\.py|pysquared/sd_card\.py
 
   - repo: local
     hooks:

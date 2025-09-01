@@ -18,8 +18,6 @@ import time
 import traceback
 from collections import OrderedDict
 
-import adafruit_pathlib
-
 from .nvm.counter import Counter
 
 
@@ -82,28 +80,32 @@ class Logger:
     def __init__(
         self,
         error_counter: Counter,
-        sd_path: adafruit_pathlib.Path = None,
-        # sd_card: SDCardManager = None,
         log_level: int = LogLevel.NOTSET,
+        log_dir: str | None = None,
         colorized: bool = False,
     ) -> None:
         """
         Initializes the Logger instance.
 
         Args:
-            error_counter (Counter): Counter for error occurrences.
-            log_level (int): Initial log level.
-            colorized (bool): Whether to colorize output.
+            error_counter: Counter for error occurrences.
+            log_level: Initial log level.
+            log_dir: Directory to save log files. If None, logs are not saved to a file.
+            colorized: Whether to colorize output.
         """
         self._error_counter: Counter = error_counter
-        self.sd_path: adafruit_pathlib.Path = sd_path
         self._log_level: int = log_level
-        self.colorized: bool = colorized
+        self._log_dir: str | None = log_dir
+        self._colorized: bool = colorized
 
-        try:
-            self.sd_path = self.sd_path / "logs"
-        except TypeError as e:
-            print(f"path not set: {e}")
+        if log_dir is not None:
+            try:
+                # Octal number 0o040000 is the stat mode indicating the file being stat'd is a directory
+                _is_directory: int = 0o040000
+                if os.stat(log_dir)[0] != _is_directory:
+                    raise ValueError("Logging path must be a directory.")
+            except OSError as e:
+                raise ValueError("Invalid logging path.") from e
 
     def _can_print_this_level(self, level_value: int) -> bool:
         """
@@ -176,16 +178,12 @@ class Logger:
             )
 
         if self._can_print_this_level(level_value):
-            # Write to sd card if mounted
-            if self.path:
-                if "logs" not in self.sd_path.iterdir():
-                    print("/sd/logs does not exist, creating...")
-                    os.mkdir("/sd/logs")
-
-                with open("/sd/logs/activity.log", "a") as f:
+            if self._log_dir is not None:
+                file = self._log_dir + os.sep + "activity.log"
+                with open(file, "a") as f:
                     f.write(json_output + "\n")
 
-            if self.colorized:
+            if self._colorized:
                 json_output = json_output.replace(
                     f'"level": "{level}"', f'"level": "{LogColors[level]}"'
                 )
