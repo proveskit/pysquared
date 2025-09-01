@@ -101,9 +101,12 @@ class Logger:
         if log_dir is not None:
             try:
                 # Octal number 0o040000 is the stat mode indicating the file being stat'd is a directory
-                _is_directory: int = 0o040000
-                if os.stat(log_dir)[0] != _is_directory:
-                    raise ValueError("Logging path must be a directory.")
+                directory_mode: int = 0o040000
+                st_mode = os.stat(log_dir)[0]
+                if st_mode != directory_mode:
+                    raise ValueError(
+                        f"Logging path must be a directory, received {st_mode}."
+                    )
             except OSError as e:
                 raise ValueError("Invalid logging path.") from e
 
@@ -164,18 +167,7 @@ class Logger:
 
         json_order.update(kwargs)
 
-        try:
-            json_output = json.dumps(json_order)
-        except TypeError as e:
-            json_output = json.dumps(
-                OrderedDict(
-                    [
-                        ("time", asctime),
-                        ("level", "ERROR"),
-                        ("msg", f"Failed to serialize log message: {e}"),
-                    ]
-                ),
-            )
+        json_output = json.dumps(json_order)
 
         if self._can_print_this_level(level_value):
             if self._log_dir is not None:

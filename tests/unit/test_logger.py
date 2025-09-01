@@ -4,13 +4,26 @@ This module contains unit tests for the `Logger` class, which provides logging
 functionality with different severity levels, colorized output, and error counting.
 """
 
-from unittest.mock import MagicMock
+# pyright: reportAttributeAccessIssue=false
+
+import os
+import shutil
+import tempfile
+from unittest.mock import MagicMock, patch
 
 import pytest
 from microcontroller import Pin
 
 from pysquared.logger import Logger, _color
 from pysquared.nvm.counter import Counter
+
+
+@pytest.fixture
+def temp_dir():
+    """Sets up a temporary directory for testing and cleans it up afterwards."""
+    temp_dir = tempfile.mkdtemp()
+    yield temp_dir
+    shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 @pytest.fixture
@@ -25,6 +38,13 @@ def logger_color():
     """Provides a Logger instance for testing with colorization enabled."""
     count = MagicMock(spec=Counter)
     return Logger(error_counter=count, colorized=True)
+
+
+@pytest.fixture
+def logger_file():
+    """Provides a Logger instance for testing with file logging."""
+    count = MagicMock(spec=Counter)
+    return Logger(error_counter=count, log_dir=temp_dir())
 
 
 def test_debug_log(capsys, logger):
@@ -282,3 +302,67 @@ def test_invalid_json_type_pin(capsys, logger):
     logger.debug("Initializing watchdog", pin=mock_pin)
     captured = capsys.readouterr()
     assert "TypeError" not in captured.out
+
+
+@patch("pysquared.logger.os.stat")
+def test_logger_init_with_valid_directory(
+    mock_os_stat: MagicMock,
+):
+    """Tests Logger initialization with a valid directory for log_dir."""
+    count = MagicMock(spec=Counter)
+
+    mock_os_stat.return_value = [0o040000]
+
+    logger = Logger(error_counter=count, log_dir="placeholder")
+    assert logger._log_dir == "placeholder"
+
+
+@patch("pysquared.logger.os.stat")
+def test_logger_init_with_not_a_directory(
+    mock_os_stat: MagicMock,
+):
+    """Tests Logger initialization with filesystem object that is not a directory for log_dir."""
+    count = MagicMock(spec=Counter)
+
+    mock_os_stat.return_value = [1234]
+
+    with pytest.raises(ValueError):
+        _ = Logger(error_counter=count, log_dir="placeholder")
+
+
+@patch("pysquared.logger.os.stat")
+def test_logger_init_with_invalid_directory(
+    mock_os_stat: MagicMock,
+):
+    """Tests Logger initialization with invalid directory for log_dir."""
+    count = MagicMock(spec=Counter)
+
+    with pytest.raises(ValueError):
+        mock_os_stat.side_effect = OSError("Stat failed")
+        _ = Logger(error_counter=count, log_dir="placeholder")
+
+
+@patch("pysquared.logger.os.stat")
+def test_log_to_file(mock_os_stat: MagicMock):
+    """Tests logging messages to a file."""
+    count = MagicMock(spec=Counter)
+
+    mock_os_stat.return_value = [0o040000]
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        log_path = os.path.join(temp_dir, "poke")
+        os.mkdir(log_path)
+        logger = Logger(error_counter=count, log_dir=log_path)
+        logger.info("Aaron Siemsen rocks")
+
+        with open(os.path.join(log_path, "activity.log"), "r") as f:
+            contents = f.read()
+            assert "Aaron Siemsen rocks" in contents
+
+
+def test_get_error_count():
+    """Tests retrieving the error count from the Logger."""
+    count = MagicMock(spec=Counter)
+    count.get.return_value = 5
+    logger = Logger(error_counter=count)
+    assert logger.get_error_count() == 5
