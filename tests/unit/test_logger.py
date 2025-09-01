@@ -7,7 +7,6 @@ functionality with different severity levels, colorized output, and error counti
 # pyright: reportAttributeAccessIssue=false
 
 import os
-import shutil
 import tempfile
 from unittest.mock import MagicMock, patch
 
@@ -16,14 +15,6 @@ from microcontroller import Pin
 
 from pysquared.logger import Logger, _color
 from pysquared.nvm.counter import Counter
-
-
-@pytest.fixture
-def temp_dir():
-    """Sets up a temporary directory for testing and cleans it up afterwards."""
-    temp_dir = tempfile.mkdtemp()
-    yield temp_dir
-    shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 @pytest.fixture
@@ -38,13 +29,6 @@ def logger_color():
     """Provides a Logger instance for testing with colorization enabled."""
     count = MagicMock(spec=Counter)
     return Logger(error_counter=count, colorized=True)
-
-
-@pytest.fixture
-def logger_file():
-    """Provides a Logger instance for testing with file logging."""
-    count = MagicMock(spec=Counter)
-    return Logger(error_counter=count, log_dir=temp_dir())
 
 
 def test_debug_log(capsys, logger):
