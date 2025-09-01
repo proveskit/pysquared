@@ -9,8 +9,6 @@ from __future__ import annotations
 
 from circuitpython_typing import BlockDevice
 
-# from storage import VfsFat
-
 
 def mount(filesystem: VfsFat, mount_path: str, *, readonly: bool = False) -> None:
     """A mock function to mount the filesystem.
@@ -44,8 +42,8 @@ def remount(path: str, readonly: bool) -> None:
 
 
 class VfsFat:
-    """A mock class representing a FAT filesystem."""
+    """A mock class representing a VfsFat filesystem."""
 
     def __init__(self, block_device: BlockDevice) -> None:
-        """Initializes the mock FAT filesystem."""
+        """Initializes the mock VfsFat filesystem."""
         pass
