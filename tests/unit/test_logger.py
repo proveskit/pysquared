@@ -297,7 +297,8 @@ def test_logger_init_with_valid_directory(
 
     mock_os_stat.return_value = [0o040000]
 
-    logger = Logger(error_counter=count, log_dir="placeholder")
+    logger = Logger(error_counter=count)
+    logger.set_log_dir("placeholder")
     assert logger._log_dir == "placeholder"
 
 
@@ -310,8 +311,10 @@ def test_logger_init_with_not_a_directory(
 
     mock_os_stat.return_value = [1234]
 
+    logger = Logger(error_counter=count)
+
     with pytest.raises(ValueError):
-        _ = Logger(error_counter=count, log_dir="placeholder")
+        logger.set_log_dir("placeholder")
 
 
 @patch("pysquared.logger.os.stat")
@@ -321,9 +324,12 @@ def test_logger_init_with_invalid_directory(
     """Tests Logger initialization with invalid directory for log_dir."""
     count = MagicMock(spec=Counter)
 
+    mock_os_stat.side_effect = OSError("Stat failed")
+
+    logger = Logger(error_counter=count)
+
     with pytest.raises(ValueError):
-        mock_os_stat.side_effect = OSError("Stat failed")
-        _ = Logger(error_counter=count, log_dir="placeholder")
+        logger.set_log_dir("placeholder")
 
 
 @patch("pysquared.logger.os.stat")
@@ -333,10 +339,12 @@ def test_log_to_file(mock_os_stat: MagicMock):
 
     mock_os_stat.return_value = [0o040000]
 
+    logger = Logger(error_counter=count)
+
     with tempfile.TemporaryDirectory() as temp_dir:
         log_path = os.path.join(temp_dir, "poke")
         os.mkdir(log_path)
-        logger = Logger(error_counter=count, log_dir=log_path)
+        logger.set_log_dir(log_path)
         logger.info("Aaron Siemsen rocks")
 
         with open(os.path.join(log_path, "activity.log"), "r") as f:

@@ -77,11 +77,12 @@ class LogLevel:
 class Logger:
     """Handles logging messages with different severity levels."""
 
+    _log_dir: str | None = None
+
     def __init__(
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
-        log_dir: str | None = None,
         colorized: bool = False,
     ) -> None:
         """
@@ -90,25 +91,11 @@ class Logger:
         Args:
             error_counter: Counter for error occurrences.
             log_level: Initial log level.
-            log_dir: Directory to save log files. If None, logs are not saved to a file.
             colorized: Whether to colorize output.
         """
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
-        self._log_dir: str | None = log_dir
         self._colorized: bool = colorized
-
-        if log_dir is not None:
-            try:
-                # Octal number 0o040000 is the stat mode indicating the file being stat'd is a directory
-                directory_mode: int = 0o040000
-                st_mode = os.stat(log_dir)[0]
-                if st_mode != directory_mode:
-                    raise ValueError(
-                        f"Logging path must be a directory, received {st_mode}."
-                    )
-            except OSError as e:
-                raise ValueError("Invalid logging path.") from e
 
     def _can_print_this_level(self, level_value: int) -> bool:
         """
@@ -246,3 +233,26 @@ class Logger:
             int: The number of errors logged.
         """
         return self._error_counter.get()
+
+    def set_log_dir(self, log_dir: str) -> None:
+        """
+        Sets the log directory for file logging.
+
+        Args:
+            log_dir (str): Directory to save log files.
+
+        Raises:
+            ValueError: If the provided path is not a valid directory.
+        """
+        try:
+            # Octal number 0o040000 is the stat mode indicating the file being stat'd is a directory
+            directory_mode: int = 0o040000
+            st_mode = os.stat(log_dir)[0]
+            if st_mode != directory_mode:
+                raise ValueError(
+                    f"Logging path must be a directory, received {st_mode}."
+                )
+        except OSError as e:
+            raise ValueError("Invalid logging path.") from e
+
+        self._log_dir = log_dir
