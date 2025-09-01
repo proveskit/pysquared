@@ -33,7 +33,7 @@ def mkdir(
     """
     try:
         storage.disable_usb_drive()
-        time.sleep(seconds=storage_action_delay)
+        time.sleep(storage_action_delay)
         print("Disabled USB drive")
 
         storage.remount("/", False)
