@@ -64,9 +64,6 @@ class SleepHelper:
 
         # Sleep in increments to allow for watchdog to be pet
         while time.monotonic() < end_sleep_time:
-            # TODO(nateinaction): Replace the hardcoded watchdog timeout with a config value
-            watchdog_timeout = 15
-
             time_increment = min(end_sleep_time - time.monotonic(), watchdog_timeout)
 
             time.sleep(time_increment)
