@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from digitalio import DigitalInOut, Direction
-from microcontroller import Pin
 from pysquared.logger import Logger
 from pysquared.watchdog import Watchdog
 
@@ -16,7 +15,7 @@ from pysquared.watchdog import Watchdog
 @pytest.fixture
 def mock_pin() -> MagicMock:
     """Mocks a microcontroller Pin."""
-    return MagicMock(spec=Pin)
+    return MagicMock()
 
 
 @pytest.fixture

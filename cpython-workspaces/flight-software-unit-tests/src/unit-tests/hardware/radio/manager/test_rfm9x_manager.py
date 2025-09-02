@@ -147,7 +147,7 @@ def test_init_fsk_success(
         mock_reset: Mocked reset pin.
         mock_radio_config: Mocked RadioConfig instance.
     """
-    mock_fsk_instance = MagicMock(spec=RFM9xFSK)
+    mock_fsk_instance = MagicMock()
     mock_rfm9xfsk.return_value = mock_fsk_instance
 
     manager = RFM9xManager(
@@ -198,7 +198,7 @@ def test_init_lora_success(
         mock_radio_config: Mocked RadioConfig instance.
     """
     mock_radio_config.modulation = "LoRa"
-    mock_lora_instance = MagicMock(spec=RFM9x)
+    mock_lora_instance = MagicMock()
     mock_rfm9x.return_value = mock_lora_instance
 
     manager = RFM9xManager(
@@ -258,7 +258,7 @@ def test_init_lora_high_sf_success(
     mock_radio_config.modulation = "LoRa"
     # Modify config for high SF
     mock_radio_config.lora.spreading_factor = 10
-    mock_lora_instance = MagicMock(spec=RFM9x)
+    mock_lora_instance = MagicMock()
     # Set SF on the mock instance *before* it's returned by the patch
     mock_lora_instance.spreading_factor = 10
     mock_rfm9x.return_value = mock_lora_instance
@@ -367,7 +367,7 @@ def test_send_success_bytes(
         mock_radio_config: Mocked RadioConfig instance.
     """
     mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     mock_radio_instance.send = MagicMock()
     mock_rfm9x.return_value = mock_radio_instance
 
@@ -404,7 +404,7 @@ def test_send_unlicensed(
         mock_radio_config: Mocked RadioConfig instance.
     """
     mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     mock_radio_instance.send = MagicMock()
     mock_rfm9x.return_value = mock_radio_instance
 
@@ -446,7 +446,7 @@ def test_send_exception(
         mock_radio_config: Mocked RadioConfig instance.
     """
     mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     mock_radio_instance.send = MagicMock()
     send_error = RuntimeError("SPI Error")
     mock_radio_instance.send.side_effect = send_error
@@ -542,7 +542,7 @@ def test_get_temperature_success(
         raw_value: Raw temperature value from the radio.
         expected_temperature: Expected calculated temperature.
     """
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     mock_radio_instance.read_u8 = MagicMock()
     mock_radio_instance.read_u8.return_value = raw_value
 
@@ -591,7 +591,7 @@ def test_get_temperature_read_exception(
         mock_chip_select,
         mock_reset,
     )
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     manager._radio = mock_radio_instance
 
     read_error = RuntimeError("Read failed")
@@ -621,7 +621,7 @@ def test_receive_success(
         mock_radio_config: Mocked RadioConfig instance.
     """
     mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     expected_data = b"Received Data"
     mock_radio_instance.receive = MagicMock()
     mock_radio_instance.receive.return_value = expected_data
@@ -661,7 +661,7 @@ def test_receive_no_message(
         mock_radio_config: Mocked RadioConfig instance.
     """
     mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     mock_radio_instance.receive = MagicMock()
     mock_radio_instance.receive.return_value = None  # Simulate timeout
     mock_rfm9x.return_value = mock_radio_instance
@@ -701,7 +701,7 @@ def test_receive_exception(
         mock_radio_config: Mocked RadioConfig instance.
     """
     mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     mock_radio_instance.receive = MagicMock()
     receive_error = RuntimeError("Receive Error")
     mock_radio_instance.receive.side_effect = receive_error
@@ -744,7 +744,7 @@ def test_modify_lora_config(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with LoRa mock
-    lora_mock = MagicMock(spec=RFM9x)
+    lora_mock = MagicMock()
     lora_mock.ack_delay = mock_radio_config.lora.ack_delay
     manager._radio = lora_mock
 
@@ -789,7 +789,7 @@ def test_modify_lora_config_high_sf_success(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with LoRa mock
-    lora_mock = MagicMock(spec=RFM9x)
+    lora_mock = MagicMock()
     lora_mock.ack_delay = mock_radio_config.lora.ack_delay
     lora_mock.spreading_factor = mock_radio_config.lora.spreading_factor
     manager._radio = lora_mock
@@ -827,7 +827,7 @@ def test_modify_fsk_config(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with FSK mock
-    fsk_mock = MagicMock(spec=RFM9xFSK)
+    fsk_mock = MagicMock()
     fsk_mock.fsk_broadcast_address = mock_radio_config.fsk.broadcast_address
     manager._radio = fsk_mock
 
@@ -868,7 +868,7 @@ def test_get_max_packet_size_lora(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with LoRa mock
-    lora_mock = MagicMock(spec=RFM9x)
+    lora_mock = MagicMock()
     lora_mock.max_packet_length = 252
     manager._radio = lora_mock
 
@@ -898,7 +898,7 @@ def test_get_max_packet_size_fsk(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with FSK mock
-    fsk_mock = MagicMock(spec=RFM9xFSK)
+    fsk_mock = MagicMock()
     fsk_mock.max_packet_length = 252
     manager._radio = fsk_mock
 
@@ -925,7 +925,7 @@ def test_get_rssi(
         mock_radio_config: Mocked RadioConfig instance.
     """
     mock_radio_config.modulation = "LoRa"
-    mock_radio_instance = MagicMock(spec=RFM9x)
+    mock_radio_instance = MagicMock()
     expected_rssi = 70.0
     mock_radio_instance.last_rssi = expected_rssi
     mock_rfm9x.return_value = mock_radio_instance
