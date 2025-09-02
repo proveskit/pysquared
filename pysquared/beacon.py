@@ -19,9 +19,9 @@ import time
 from collections import OrderedDict
 
 try:
-    from mocks.circuitpython.microcontroller import Processor
-except ImportError:
     from microcontroller import Processor
+except ImportError:
+    from mocks.circuitpython.microcontroller import Processor
 
 from .hardware.radio.packetizer.packet_manager import PacketManager
 from .logger import Logger
