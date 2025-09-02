@@ -289,7 +289,7 @@ class TestBinaryEncoder:
         from unittest.mock import patch
 
         # Mock the typing import to fail
-        with patch.dict("sys.modules", {"typing": None}):
+        with patch.dict(sys.modules, {"typing": None}):
             # Force reimport to test the fallback
             if "pysquared.binary_encoder" in sys.modules:
                 del sys.modules["pysquared.binary_encoder"]
