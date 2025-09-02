@@ -3,7 +3,8 @@
     "**/__pycache__"
   ],
   "include": [
-    "unit"
+    "./flight-software-mocks",
+    "./flight-software-unit-tests"
   ],
   "reportMissingModuleSource": false
 }

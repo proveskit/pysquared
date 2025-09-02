@@ -102,6 +102,12 @@ directory = ".coverage-reports/html"
 [tool.coverage.xml]
 output = ".coverage-reports/coverage.xml"
 
+# [tool.pyright]
+# exclude = ["**/__pycache__", "./typeshed"]
+# include = ["src"]
+# reportMissingModuleSource = false
+# typeshedPath = "../typeshed"
+
 [tool.interrogate]
 ignore-init-method = true
 omit-covered-files = true

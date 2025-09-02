@@ -13,10 +13,10 @@ help: ## Display this help.
 	@$(UV) venv
 	@$(UV) pip install --requirement pyproject.toml
 
-typeshed: ## Install CircuitPython typeshed stubs
+circuitpython-workspace/typeshed: ## Install CircuitPython typeshed stubs
 	@echo "Installing CircuitPython typeshed stubs..."
 	@$(MAKE) uv
-	@$(UV) pip install circuitpython-typeshed==0.1.0 --target typeshed
+	@$(UV) pip install circuitpython-typeshed==0.1.0 --target circuitpython-workspace/typeshed
 
 .PHONY: pre-commit-install
 pre-commit-install: uv
@@ -28,7 +28,7 @@ fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
 .PHONY: typecheck
-typecheck: .venv typeshed ## Run type check
+typecheck: .venv circuitpython-workspace/typeshed ## Run type check
 	@$(UV) run -m pyright --project=circuitpython-workspaces circuitpython-workspaces/
 	@$(UV) run -m pyright --project=cpython-workspaces cpython-workspaces/
 

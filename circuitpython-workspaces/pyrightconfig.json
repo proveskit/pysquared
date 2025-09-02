@@ -4,8 +4,8 @@
     "./typeshed"
   ],
   "include": [
-    "pysquared"
+    "./flight-software"
   ],
   "reportMissingModuleSource": false,
-  "typeshedPath": "../typeshed"
+  "typeshedPath": "./typeshed"
 }
