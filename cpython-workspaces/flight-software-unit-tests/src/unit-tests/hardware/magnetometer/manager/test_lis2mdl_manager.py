@@ -6,7 +6,7 @@ retrieval, and error handling for magnetic field vector readings.
 """
 
 from typing import Generator
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
@@ -133,8 +133,11 @@ def test_get_magnetic_field_unknown_error(
     """
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
     magnetometer._magnetometer = MagicMock()
-    magnetometer._magnetometer.magnetic = MagicMock()
-    magnetometer._magnetometer.magnetic.side_effect = Exception("test exception")
+
+    # Configure the magnetic property to raise an exception when accessed
+    type(magnetometer._magnetometer).magnetic = PropertyMock(
+        side_effect=Exception("test exception")
+    )
 
     with pytest.raises(SensorReadingUnknownError) as excinfo:
         magnetometer.get_magnetic_field()
