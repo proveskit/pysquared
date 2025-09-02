@@ -17,8 +17,8 @@ from digitalio import DigitalInOut
 
 # import mocks.adafruit_rfm.rfm9x
 # import mocks.adafruit_rfm.rfm9xfsk
-# from mocks.adafruit_rfm.rfm9x import RFM9x
-# from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
+from mocks.adafruit_rfm.rfm9x import RFM9x as MockRFM9x
+from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK as MockRFM9xFSK
 from pysquared.config.radio import RadioConfig
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.radio.modulation import FSK, LoRa
@@ -26,18 +26,10 @@ from pysquared.logger import Logger
 from pysquared.sensor_reading.error import SensorReadingUnknownError
 from pysquared.sensor_reading.temperature import Temperature
 
-# RFM9x = MagicMock()
-# RFM9xFSK = MagicMock()
-# sys.modules["adafruit_rfm.rfm9x.RFM9x"] = RFM9x
-# sys.modules["adafruit_rfm.rfm9xfsk.RFM9xFSK"] = RFM9xFSK
-# sys.modules["adafruit_rfm.rfm9x"] = mocks.adafruit_rfm.rfm9x
-# sys.modules["adafruit_rfm.rfm9xfsk"] = mocks.adafruit_rfm.rfm9xfsk
 rfm9x = MagicMock()
-RFM9x = MagicMock()
-rfm9x.RFM9x = RFM9x
+rfm9x.RFM9x = MockRFM9x
 rfm9xfsk = MagicMock()
-RFM9xFSK = MagicMock()
-rfm9xfsk.RFM9xFSK = RFM9xFSK
+rfm9xfsk.RFM9xFSK = MockRFM9xFSK
 sys.modules["adafruit_rfm.rfm9x"] = rfm9x
 sys.modules["adafruit_rfm.rfm9xfsk"] = rfm9xfsk
 
@@ -104,7 +96,7 @@ def mock_rfm9x(
         A MagicMock instance of RFM9x.
     """
     with patch("pysquared.hardware.radio.manager.rfm9x.RFM9x") as mock_class:
-        mock_class.return_value = RFM9x(mock_spi, mock_chip_select, mock_reset, 0)
+        mock_class.return_value = MockRFM9x(mock_spi, mock_chip_select, mock_reset, 0)
         yield mock_class
 
 
@@ -123,7 +115,9 @@ def mock_rfm9xfsk(
         A MagicMock instance of RFM9xFSK.
     """
     with patch("pysquared.hardware.radio.manager.rfm9x.RFM9xFSK") as mock_class:
-        mock_class.return_value = RFM9xFSK(mock_spi, mock_chip_select, mock_reset, 0)
+        mock_class.return_value = MockRFM9xFSK(
+            mock_spi, mock_chip_select, mock_reset, 0
+        )
         yield mock_class
 
 
@@ -225,10 +219,11 @@ def test_init_lora_success(
         mock_lora_instance.spreading_factor == mock_radio_config.lora.spreading_factor
     )
     assert mock_lora_instance.tx_power == mock_radio_config.lora.transmit_power
-    # Check high SF optimization (default config SF is 7, so these shouldn't be set)
+    # Check high SF optimization (default config SF is 7, so preamble_length shouldn't be set to SF)
+    # For SF <= 9, preamble_length should be 8 (default), not equal to SF
     assert (
         not hasattr(mock_lora_instance, "preamble_length")
-        or mock_lora_instance.preamble_length is None
+        or mock_lora_instance.preamble_length != mock_radio_config.lora.spreading_factor
     )
     mock_logger.debug.assert_called_with(
         "Initializing radio", radio_type="RFM9xManager", modulation=LoRa.__name__
@@ -744,9 +739,9 @@ def test_modify_lora_config(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with LoRa mock
-    lora_mock = MagicMock()
+    lora_mock = MockRFM9x(mock_spi, mock_chip_select, mock_reset, 915)
     lora_mock.ack_delay = mock_radio_config.lora.ack_delay
-    manager._radio = lora_mock
+    manager._radio = lora_mock  # type: ignore
 
     # Modify the config
     manager.modify_config("spreading_factor", 7)
@@ -755,12 +750,12 @@ def test_modify_lora_config(
     manager.modify_config("transmit_power", 20)
 
     # Verify the radio was modified with the new config
-    assert manager._radio.spreading_factor == 7
-    assert manager._radio.ack_delay == pytest.approx(0.5, rel=1e-9)
+    assert manager._radio.spreading_factor == 7  # type: ignore
+    assert manager._radio.ack_delay == pytest.approx(0.5, rel=1e-9)  # type: ignore
     # Check that preamble_length is set to 8 (default for LoRa)
-    assert manager._radio.preamble_length == 8
-    assert manager._radio.enable_crc is False
-    assert manager._radio.tx_power == 20
+    assert manager._radio.preamble_length == 8  # type: ignore
+    assert manager._radio.enable_crc is False  # type: ignore
+    assert manager._radio.tx_power == 20  # type: ignore
 
     # modify an unknown config key
     with pytest.raises(KeyError):
@@ -789,20 +784,20 @@ def test_modify_lora_config_high_sf_success(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with LoRa mock
-    lora_mock = MagicMock()
+    lora_mock = MockRFM9x(mock_spi, mock_chip_select, mock_reset, 915)
     lora_mock.ack_delay = mock_radio_config.lora.ack_delay
     lora_mock.spreading_factor = mock_radio_config.lora.spreading_factor
-    manager._radio = lora_mock
+    manager._radio = lora_mock  # type: ignore
 
     # Modify the config
     manager.modify_config("spreading_factor", 10)
 
     # Verify the radio was modified with the new config
-    assert manager._radio.ack_delay == pytest.approx(
+    assert manager._radio.ack_delay == pytest.approx(  # type: ignore
         mock_radio_config.lora.ack_delay, rel=1e-9
     )
-    assert manager._radio.spreading_factor == 10
-    assert manager._radio.preamble_length == 10
+    assert manager._radio.spreading_factor == 10  # type: ignore
+    assert manager._radio.preamble_length == 10  # type: ignore
 
 
 def test_modify_fsk_config(
@@ -827,9 +822,9 @@ def test_modify_fsk_config(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with FSK mock
-    fsk_mock = MagicMock()
+    fsk_mock = MockRFM9xFSK(mock_spi, mock_chip_select, mock_reset, 915)
     fsk_mock.fsk_broadcast_address = mock_radio_config.fsk.broadcast_address
-    manager._radio = fsk_mock
+    manager._radio = fsk_mock  # type: ignore
 
     # Modify the config
     manager.modify_config("broadcast_address", 123)
@@ -837,9 +832,9 @@ def test_modify_fsk_config(
     manager.modify_config("modulation_type", 1)
 
     # Verify the radio was modified with the new config
-    assert manager._radio.fsk_broadcast_address == 123
-    assert manager._radio.fsk_node_address == 222
-    assert manager._radio.modulation_type == 1
+    assert manager._radio.fsk_broadcast_address == 123  # type: ignore
+    assert manager._radio.fsk_node_address == 222  # type: ignore
+    assert manager._radio.modulation_type == 1  # type: ignore
 
     # modify an unknown config key
     with pytest.raises(KeyError):
@@ -868,9 +863,9 @@ def test_get_max_packet_size_lora(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with LoRa mock
-    lora_mock = MagicMock()
+    lora_mock = MockRFM9x(mock_spi, mock_chip_select, mock_reset, 915)
     lora_mock.max_packet_length = 252
-    manager._radio = lora_mock
+    manager._radio = lora_mock  # type: ignore
 
     # Check that get_max_packet_size returns the radio's max_packet_length
     assert manager.get_max_packet_size() == 252
@@ -898,9 +893,9 @@ def test_get_max_packet_size_fsk(
     manager._radio_config = mock_radio_config
 
     # Initialize the radio manually with FSK mock
-    fsk_mock = MagicMock()
+    fsk_mock = MockRFM9xFSK(mock_spi, mock_chip_select, mock_reset, 915)
     fsk_mock.max_packet_length = 252
-    manager._radio = fsk_mock
+    manager._radio = fsk_mock  # type: ignore
 
     # Check that get_max_packet_size returns the radio's max_packet_length
     assert manager.get_max_packet_size() == 252

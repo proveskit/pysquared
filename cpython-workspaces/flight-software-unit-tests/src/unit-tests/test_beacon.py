@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from freezegun import freeze_time
 from mocks.circuitpython.byte_array import ByteArray
+from mocks.circuitpython.microcontroller import Processor
 from pysquared.hardware.radio.modulation import LoRa, RadioModulation
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
@@ -29,16 +30,6 @@ from pysquared.sensor_reading.avg import avg_readings
 from pysquared.sensor_reading.current import Current
 from pysquared.sensor_reading.temperature import Temperature
 from pysquared.sensor_reading.voltage import Voltage
-
-
-class Processor:
-    """Mock Processor class for testing isinstance checks and sensor functionality."""
-
-    @property
-    def temperature(self) -> float:
-        """Mock temperature property of a processor."""
-        return 35.0
-
 
 microcontroller = MagicMock()
 microcontroller.Processor = Processor
