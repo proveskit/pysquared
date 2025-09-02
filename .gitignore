@@ -15,3 +15,4 @@ pysquared.egg-info/
 site/
 typeshed/
 *.egg-info
+.ruff_cache/

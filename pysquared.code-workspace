@@ -28,7 +28,11 @@
   "extensions": {
     "recommendations": [
       "ms-python.python",
-      "ms-python.pylance",
+      "ms-python.vscode-pylance",
+      "ms-python.isort",
+      "ms-python.debugpy",
+      "redhat.vscode-yaml",
+      "tamasfe.even-better-toml"
     ]
   }
 }
