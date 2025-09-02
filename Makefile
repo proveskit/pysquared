@@ -1,5 +1,5 @@
 .PHONY: all
-all: .venv typeshed pre-commit-install
+all: .venv circuitpython-workspaces/typeshed pre-commit-install
 
 .PHONY: help
 help: ## Display this help.
