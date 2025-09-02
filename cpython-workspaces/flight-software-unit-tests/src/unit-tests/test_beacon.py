@@ -30,11 +30,20 @@ from pysquared.sensor_reading.current import Current
 from pysquared.sensor_reading.temperature import Temperature
 from pysquared.sensor_reading.voltage import Voltage
 
-Processor = MagicMock()
+
+class Processor:
+    """Mock Processor class for testing isinstance checks and sensor functionality."""
+
+    @property
+    def temperature(self) -> float:
+        """Mock temperature property of a processor."""
+        return 35.0
+
+
 microcontroller = MagicMock()
 microcontroller.Processor = Processor
 sys.modules["microcontroller"] = microcontroller
-from pysquared.beacon import Beacon
+from pysquared.beacon import Beacon  # noqa: E402
 
 
 @pytest.fixture
