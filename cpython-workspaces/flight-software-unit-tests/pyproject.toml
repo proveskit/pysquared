@@ -1,0 +1,62 @@
+[project]
+name = "pysquared-flight-software-unit-tests"
+version = "2.0.0"
+description = "Tests for PySquared"
+requires-python = ">=3.13"
+dependencies = [
+    "pysquared-flight-software",
+    "pysquared-flight-software-mocks",
+    "adafruit-circuitpython-typing==1.12.1",
+    "circuitpython-stubs==9.2.8",
+    "coverage==7.9.1",
+    "freezegun>=1.5.2",
+    "pre-commit==4.2.0",
+    "pyright[nodejs]==1.1.404",
+    "pytest==8.4.1",
+    "hypothesis==6.136.7",
+]
+
+# [build-system]
+# requires = ["uv_build>=0.7.19,<0.8.0"]
+# build-backend = "uv_build"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+# [tool.setuptools.packages.find]
+# where = ["src"]
+# include = ["pysquared*"]
+
+[tool.ruff.format]
+# Use `\n` line endings for all files
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+pythonpath = "."
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+include = [
+    "pysquared/**/*.py",
+]
+
+[tool.coverage.html]
+directory = ".coverage-reports/html"
+
+[tool.coverage.xml]
+output = ".coverage-reports/coverage.xml"
+
+[tool.interrogate]
+ignore-init-method = true
+omit-covered-files = true
+fail-under = 100
+verbose = 2
+color = true
+exclude = [
+    "typeshed",
+]

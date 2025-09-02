@@ -1,0 +1,11 @@
+{
+  "exclude": [
+    "**/__pycache__",
+    "./typeshed"
+  ],
+  "include": [
+    "pysquared"
+  ],
+  "reportMissingModuleSource": false,
+  "typeshedPath": "../typeshed"
+}

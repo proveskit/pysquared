@@ -29,11 +29,12 @@ fmt: pre-commit-install ## Lint and format files
 
 .PHONY: typecheck
 typecheck: .venv typeshed ## Run type check
-	@$(UV) run -m pyright .
+	@$(UV) run -m pyright --project=circuitpython-workspaces circuitpython-workspaces/flight-software/src
+# 	@$(UV) run -m pyright --project=tests tests/flight-software-unit-tests/src
 
 .PHONY: test
 test: .venv ## Run tests
-	$(UV) run coverage run --rcfile=pyproject.toml -m pytest tests/unit
+	$(UV) run coverage run --rcfile=pyproject.toml -m pytest cpython-workspaces/flight-software-unit-tests/src
 	@$(UV) run coverage html --rcfile=pyproject.toml > /dev/null
 	@$(UV) run coverage xml --rcfile=pyproject.toml > /dev/null
 
