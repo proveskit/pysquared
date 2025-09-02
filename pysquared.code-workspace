@@ -19,7 +19,7 @@
         "connectionId": "proves-kit",
         "projectKey": "proveskit_circuitpy_flight_software",
     },
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    // "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
     "files.exclude": {
       "circuitpython-workspaces/": true,
       "cpython-workspaces/": true
