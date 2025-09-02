@@ -290,7 +290,7 @@ class TestBinaryEncoder:
         import sys
 
         # Mock the typing import to fail
-        with patch.dict(sys.modules, {"typing": None}):
+        with patch.dict(sys.modules, {"typing": None}):  # type: ignore[attr-defined]
             # Force reimport to test the fallback
             if "pysquared.binary_encoder" in sys.modules:
                 del sys.modules["pysquared.binary_encoder"]
