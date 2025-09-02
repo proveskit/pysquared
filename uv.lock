@@ -1025,11 +1025,31 @@ dependencies = [
     { name = "pysquared-flight-software-unit-tests" },
 ]
 
+[package.dev-dependencies]
+docs = [
+    { name = "mkdocs-git-revision-date-localized-plugin" },
+    { name = "mkdocs-llmstxt" },
+    { name = "mkdocs-material" },
+    { name = "mkdocs-minify-plugin" },
+    { name = "mkdocs-section-index" },
+    { name = "mkdocstrings", extra = ["python"] },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "pysquared-flight-software", editable = "circuitpython-workspaces/flight-software" },
     { name = "pysquared-flight-software-mocks", editable = "cpython-workspaces/flight-software-mocks" },
     { name = "pysquared-flight-software-unit-tests", editable = "cpython-workspaces/flight-software-unit-tests" },
+]
+
+[package.metadata.requires-dev]
+docs = [
+    { name = "mkdocs-git-revision-date-localized-plugin", specifier = "==1.4.7" },
+    { name = "mkdocs-llmstxt", specifier = "==0.2.0" },
+    { name = "mkdocs-material", specifier = "==9.6.14" },
+    { name = "mkdocs-minify-plugin", specifier = "==0.7.1" },
+    { name = "mkdocs-section-index", specifier = "==0.3.10" },
+    { name = "mkdocstrings", extras = ["python"], specifier = "==0.29.1" },
 ]
 
 [[package]]
@@ -1065,14 +1085,6 @@ dev = [
     { name = "pyright", extra = ["nodejs"] },
     { name = "pytest" },
 ]
-docs = [
-    { name = "mkdocs-git-revision-date-localized-plugin" },
-    { name = "mkdocs-llmstxt" },
-    { name = "mkdocs-material" },
-    { name = "mkdocs-minify-plugin" },
-    { name = "mkdocs-section-index" },
-    { name = "mkdocstrings", extra = ["python"] },
-]
 
 [package.metadata]
 requires-dist = [
@@ -1103,14 +1115,6 @@ dev = [
     { name = "pre-commit", specifier = "==4.2.0" },
     { name = "pyright", extras = ["nodejs"], specifier = "==1.1.404" },
     { name = "pytest", specifier = "==8.4.1" },
-]
-docs = [
-    { name = "mkdocs-git-revision-date-localized-plugin", specifier = "==1.4.7" },
-    { name = "mkdocs-llmstxt", specifier = "==0.2.0" },
-    { name = "mkdocs-material", specifier = "==9.6.14" },
-    { name = "mkdocs-minify-plugin", specifier = "==0.7.1" },
-    { name = "mkdocs-section-index", specifier = "==0.3.10" },
-    { name = "mkdocstrings", extras = ["python"], specifier = "==0.29.1" },
 ]
 
 [[package]]

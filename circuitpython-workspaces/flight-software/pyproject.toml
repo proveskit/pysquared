@@ -32,14 +32,6 @@ dev = [
     "pytest==8.4.1",
     "hypothesis==6.136.7",
 ]
-docs = [
-    "mkdocs-material==9.6.14",
-    "mkdocstrings[python]==0.29.1",
-    "mkdocs-section-index==0.3.10",
-    "mkdocs-git-revision-date-localized-plugin==1.4.7",
-    "mkdocs-minify-plugin==0.7.1",
-    "mkdocs-llmstxt==0.2.0",
-]
 
 # [build-system]
 # requires = ["uv_build>=0.7.19,<0.8.0"]
@@ -51,32 +43,6 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["pysquared*"]
-
-# [tool.setuptools]
-# packages = [
-#     "src",
-#     "src.config",
-#     "src.hardware",
-#     "src.hardware.imu",
-#     "src.hardware.imu.manager",
-#     "src.hardware.magnetometer",
-#     "src.hardware.magnetometer.manager",
-#     "src.hardware.radio",
-#     "src.hardware.radio.manager",
-#     "src.hardware.radio.packetizer",
-#     "src.hardware.power_monitor",
-#     "src.hardware.power_monitor.manager",
-#     "src.hardware.temperature_sensor",
-#     "src.hardware.temperature_sensor.manager",
-#     "src.hardware.burnwire",
-#     "src.hardware.burnwire.manager",
-#     "src.hardware.light_sensor.manager",
-#     "src.nvm",
-#     "src.protos",
-#     "src.rtc",
-#     "src.rtc.manager",
-#     "src.sensor_reading"
-# ]
 
 [tool.ruff.format]
 # Use `\n` line endings for all files
