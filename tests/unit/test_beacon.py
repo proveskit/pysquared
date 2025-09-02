@@ -5,6 +5,8 @@ collecting and sending telemetry data. The tests cover initialization, basic
 sending functionality, and sending with various sensor types.
 """
 
+# pyright: reportAttributeAccessIssue=false
+
 import time
 from typing import Optional, Type
 from unittest.mock import MagicMock, patch

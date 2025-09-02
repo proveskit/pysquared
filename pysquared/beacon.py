@@ -238,10 +238,9 @@ class Beacon:
         """
         state["name"] = self._name
 
-        # Warning: CircuitPython does not support time.gmtime(), when testing this code it will use your local timezone
-        now = time.localtime()
+        now = time.localtime()  # type: ignore # PR: https://github.com/adafruit/circuitpython/pull/10603
         state["time"] = (
-            f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
+            f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"  # type: ignore # PR: https://github.com/adafruit/circuitpython/pull/10603
         )
 
         state["uptime"] = time.time() - self._boot_time

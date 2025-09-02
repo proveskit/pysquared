@@ -1,9 +1,12 @@
 """Tests for the MCP9808Manager class."""
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
+from busio import I2C
 
 from mocks.adafruit_mcp9808.mcp9808 import MCP9808
 from pysquared.hardware.exception import HardwareInitializationError
@@ -35,7 +38,7 @@ def mock_i2c():
 
 
 @pytest.fixture
-def mock_mcp9808(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
+def mock_mcp9808(mock_i2c: I2C) -> Generator[MagicMock, None, None]:
     """Mocks the MCP9808 class.
 
     Args:

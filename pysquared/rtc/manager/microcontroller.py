@@ -30,7 +30,7 @@ class MicrocontrollerManager(RTCProto):
         This method is required on every boot to ensure the RTC is ready for use.
         """
         microcontroller_rtc = rtc.RTC()
-        microcontroller_rtc.datetime = time.localtime()
+        microcontroller_rtc.datetime = time.localtime()  # type: ignore # PR: https://github.com/adafruit/circuitpython/pull/10603
 
     def set_time(
         self,

@@ -5,11 +5,9 @@ testing purposes. It allows for simulating the behavior of the busio module with
 the need for actual hardware.
 """
 
-from __future__ import annotations
-
 from typing import Optional
 
-import mocks.circuitpython.microcontroller as microcontroller
+import microcontroller
 
 
 class SPI:
