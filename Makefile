@@ -29,8 +29,8 @@ fmt: pre-commit-install ## Lint and format files
 
 .PHONY: typecheck
 typecheck: .venv typeshed ## Run type check
-	@$(UV) run -m pyright --project=circuitpython-workspaces circuitpython-workspaces/flight-software/src
-# 	@$(UV) run -m pyright --project=tests tests/flight-software-unit-tests/src
+	@$(UV) run -m pyright --project=circuitpython-workspaces circuitpython-workspaces/
+	@$(UV) run -m pyright --project=cpython-workspaces cpython-workspaces/
 
 .PHONY: test
 test: .venv ## Run tests

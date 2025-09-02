@@ -23,9 +23,9 @@ dependencies = [
 [tool.setuptools]
 package-dir = {"" = "src"}
 
-# [tool.setuptools.packages.find]
-# where = ["src"]
-# include = ["pysquared*"]
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["unit-tests*"]
 
 [tool.ruff.format]
 # Use `\n` line endings for all files

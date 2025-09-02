@@ -21,6 +21,7 @@ dependencies = [
     "proves-circuitpython-sx1280 @ git+https://github.com/proveskit/CircuitPython_SX1280@1.0.4",
     "adafruit-circuitpython-typing==1.12.1",
     "circuitpython-stubs==9.2.8",
+    "pysquared-flight-software",
 ]
 
 # [build-system]
@@ -30,9 +31,9 @@ dependencies = [
 [tool.setuptools]
 package-dir = {"" = "src"}
 
-# [tool.setuptools.packages.find]
-# where = ["src"]
-# include = ["pysquared*"]
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["mocks*"]
 
 [tool.ruff.format]
 # Use `\n` line endings for all files
