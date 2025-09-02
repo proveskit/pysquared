@@ -41,8 +41,7 @@ rfm9xfsk.RFM9xFSK = RFM9xFSK
 sys.modules["adafruit_rfm.rfm9x"] = rfm9x
 sys.modules["adafruit_rfm.rfm9xfsk"] = rfm9xfsk
 
-
-from pysquared.hardware.radio.manager.rfm9x import RFM9xManager
+from pysquared.hardware.radio.manager.rfm9x import RFM9xManager  # noqa: E402
 
 
 @pytest.fixture
@@ -744,11 +743,10 @@ def test_modify_lora_config(
     manager._log = mock_logger
     manager._radio_config = mock_radio_config
 
-    # Initialize the radio manually
-    manager._radio = RFM9x(
-        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
-    )
-    manager._radio.ack_delay = mock_radio_config.lora.ack_delay
+    # Initialize the radio manually with LoRa mock
+    lora_mock = MagicMock(spec=RFM9x)
+    lora_mock.ack_delay = mock_radio_config.lora.ack_delay
+    manager._radio = lora_mock
 
     # Modify the config
     manager.modify_config("spreading_factor", 7)
@@ -790,12 +788,11 @@ def test_modify_lora_config_high_sf_success(
     manager._log = mock_logger
     manager._radio_config = mock_radio_config
 
-    # Initialize the radio manually
-    manager._radio = RFM9x(
-        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
-    )
-    manager._radio.ack_delay = mock_radio_config.lora.ack_delay
-    manager._radio.spreading_factor = mock_radio_config.lora.spreading_factor
+    # Initialize the radio manually with LoRa mock
+    lora_mock = MagicMock(spec=RFM9x)
+    lora_mock.ack_delay = mock_radio_config.lora.ack_delay
+    lora_mock.spreading_factor = mock_radio_config.lora.spreading_factor
+    manager._radio = lora_mock
 
     # Modify the config
     manager.modify_config("spreading_factor", 10)
@@ -829,11 +826,10 @@ def test_modify_fsk_config(
     manager._log = mock_logger
     manager._radio_config = mock_radio_config
 
-    # Initialize the radio manually
-    manager._radio = RFM9xFSK(
-        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
-    )
-    manager._radio.fsk_broadcast_address = mock_radio_config.fsk.broadcast_address
+    # Initialize the radio manually with FSK mock
+    fsk_mock = MagicMock(spec=RFM9xFSK)
+    fsk_mock.fsk_broadcast_address = mock_radio_config.fsk.broadcast_address
+    manager._radio = fsk_mock
 
     # Modify the config
     manager.modify_config("broadcast_address", 123)
@@ -871,11 +867,10 @@ def test_get_max_packet_size_lora(
     manager._log = mock_logger
     manager._radio_config = mock_radio_config
 
-    # Initialize the radio manually
-    manager._radio = RFM9x(
-        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
-    )
-    manager._radio.max_packet_length = 252
+    # Initialize the radio manually with LoRa mock
+    lora_mock = MagicMock(spec=RFM9x)
+    lora_mock.max_packet_length = 252
+    manager._radio = lora_mock
 
     # Check that get_max_packet_size returns the radio's max_packet_length
     assert manager.get_max_packet_size() == 252
@@ -902,11 +897,10 @@ def test_get_max_packet_size_fsk(
     manager._log = mock_logger
     manager._radio_config = mock_radio_config
 
-    # Initialize the radio manually
-    manager._radio = RFM9xFSK(
-        mock_spi, mock_chip_select, mock_reset, mock_radio_config.transmit_frequency
-    )
-    manager._radio.max_packet_length = 252
+    # Initialize the radio manually with FSK mock
+    fsk_mock = MagicMock(spec=RFM9xFSK)
+    fsk_mock.max_packet_length = 252
+    manager._radio = fsk_mock
 
     # Check that get_max_packet_size returns the radio's max_packet_length
     assert manager.get_max_packet_size() == 252

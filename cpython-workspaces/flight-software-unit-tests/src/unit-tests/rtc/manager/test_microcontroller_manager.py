@@ -9,21 +9,11 @@ import sys
 import time
 from unittest.mock import MagicMock
 
-import pytest
-
-# from mocks.circuitpython.rtc import RTC as MockRTC
 MockRTC = MagicMock()
 rtc = MagicMock()
 rtc.RTC = MockRTC
 sys.modules["rtc"] = rtc
-from pysquared.rtc.manager.microcontroller import MicrocontrollerManager
-
-
-@pytest.fixture(autouse=True)
-def cleanup():
-    """Cleans up the MockRTC instance after each test."""
-    yield
-    MockRTC().destroy()
+from pysquared.rtc.manager.microcontroller import MicrocontrollerManager  # noqa: E402
 
 
 def test_init():
@@ -35,7 +25,7 @@ def test_init():
     """
     MicrocontrollerManager()
 
-    mrtc: MockRTC = MockRTC()
+    mrtc = MockRTC()
     assert mrtc.datetime is not None, "Mock RTC datetime should be set"
     assert isinstance(mrtc.datetime, time.struct_time), (
         "Mock RTC datetime should be a time.struct_time instance"
@@ -62,7 +52,7 @@ def test_set_time():
     rtc.set_time(year, month, day, hour, minute, second, day_of_week)
 
     # Get the mock RTC instance and check its datetime
-    mrtc: MockRTC = MockRTC()
+    mrtc = MockRTC()
     assert mrtc.datetime is not None, "Mock RTC datetime should be set"
     assert isinstance(mrtc.datetime, time.struct_time), (
         "Mock RTC datetime should be a time.struct_time instance"
