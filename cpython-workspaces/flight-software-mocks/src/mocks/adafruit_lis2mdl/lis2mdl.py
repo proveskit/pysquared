@@ -5,8 +5,6 @@ testing purposes. It allows for simulating the behavior of the LIS2MDL without t
 need for actual hardware.
 """
 
-# from pysquared.sensor_reading.magnetic import Magnetic
-
 
 class LIS2MDL:
     """A mock LIS2MDL magnetometer."""

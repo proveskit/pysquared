@@ -9,8 +9,6 @@ from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
-
-# from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.magnetometer.manager.lis2mdl import LIS2MDLManager
 from pysquared.sensor_reading.error import (
