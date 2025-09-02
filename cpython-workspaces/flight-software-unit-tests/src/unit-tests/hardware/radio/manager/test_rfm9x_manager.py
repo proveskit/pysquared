@@ -7,21 +7,42 @@ and RSSI.
 """
 
 import math
+import sys
 from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
 from busio import SPI
 from digitalio import DigitalInOut
-from mocks.adafruit_rfm.rfm9x import RFM9x
-from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
+
+# import mocks.adafruit_rfm.rfm9x
+# import mocks.adafruit_rfm.rfm9xfsk
+# from mocks.adafruit_rfm.rfm9x import RFM9x
+# from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK
 from pysquared.config.radio import RadioConfig
 from pysquared.hardware.exception import HardwareInitializationError
-from pysquared.hardware.radio.manager.rfm9x import RFM9xManager
 from pysquared.hardware.radio.modulation import FSK, LoRa
 from pysquared.logger import Logger
 from pysquared.sensor_reading.error import SensorReadingUnknownError
 from pysquared.sensor_reading.temperature import Temperature
+
+# RFM9x = MagicMock()
+# RFM9xFSK = MagicMock()
+# sys.modules["adafruit_rfm.rfm9x.RFM9x"] = RFM9x
+# sys.modules["adafruit_rfm.rfm9xfsk.RFM9xFSK"] = RFM9xFSK
+# sys.modules["adafruit_rfm.rfm9x"] = mocks.adafruit_rfm.rfm9x
+# sys.modules["adafruit_rfm.rfm9xfsk"] = mocks.adafruit_rfm.rfm9xfsk
+rfm9x = MagicMock()
+RFM9x = MagicMock()
+rfm9x.RFM9x = RFM9x
+rfm9xfsk = MagicMock()
+RFM9xFSK = MagicMock()
+rfm9xfsk.RFM9xFSK = RFM9xFSK
+sys.modules["adafruit_rfm.rfm9x"] = rfm9x
+sys.modules["adafruit_rfm.rfm9xfsk"] = rfm9xfsk
+
+
+from pysquared.hardware.radio.manager.rfm9x import RFM9xManager
 
 
 @pytest.fixture

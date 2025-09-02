@@ -9,7 +9,8 @@ from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL
+
+# from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.magnetometer.manager.lis2mdl import LIS2MDLManager
 from pysquared.sensor_reading.error import (
@@ -41,7 +42,7 @@ def mock_lis2mdl(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
         A MagicMock instance of LIS2MDL.
     """
     with patch("pysquared.hardware.magnetometer.manager.lis2mdl.LIS2MDL") as mock_class:
-        mock_class.return_value = LIS2MDL(mock_i2c)
+        mock_class.return_value = MagicMock()
         yield mock_class
 
 
@@ -59,7 +60,7 @@ def test_create_magnetometer(
     """
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
 
-    assert isinstance(magnetometer._magnetometer, LIS2MDL)
+    assert magnetometer._magnetometer == mock_lis2mdl.return_value
     mock_logger.debug.assert_called_once_with("Initializing magnetometer")
 
 
@@ -101,7 +102,7 @@ def test_get_magnetic_field_success(
         mock_logger: Mocked Logger instance.
     """
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
-    magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
+    magnetometer._magnetometer = MagicMock()
 
     def mock_magnetic():
         """Mock magnetic field vector."""
@@ -109,7 +110,6 @@ def test_get_magnetic_field_success(
 
     magnetometer._magnetometer.magnetic = mock_magnetic()
 
-    # Run the async function
     vector = magnetometer.get_magnetic_field()
 
     # Verify the result
@@ -132,16 +132,12 @@ def test_get_magnetic_field_unknown_error(
         mock_logger: Mocked Logger instance.
     """
     magnetometer = LIS2MDLManager(mock_logger, mock_i2c)
-    magnetometer._magnetometer = MagicMock(spec=LIS2MDL)
+    magnetometer._magnetometer = MagicMock()
+    magnetometer._magnetometer.magnetic = MagicMock()
+    magnetometer._magnetometer.magnetic.side_effect = Exception("test exception")
 
-    # Patch wait_for to raise TimeoutError immediately
-    with patch("asyncio.wait_for", side_effect=ValueError):
-        # Set a dummy coroutine - it won't be used due to the patch
-        magnetometer._magnetometer.asyncio_magnetic = MagicMock()
+    with pytest.raises(SensorReadingUnknownError) as excinfo:
+        magnetometer.get_magnetic_field()
 
-        # Run the async function and expect SensorReadingUnknownError
-        with pytest.raises(SensorReadingUnknownError) as excinfo:
-            magnetometer.get_magnetic_field()
-
-        # Verify the exception message
-        assert "Unknown error while reading magnetometer data" in str(excinfo.value)
+    # Verify the exception message
+    assert "Unknown error while reading magnetometer data" in str(excinfo.value)

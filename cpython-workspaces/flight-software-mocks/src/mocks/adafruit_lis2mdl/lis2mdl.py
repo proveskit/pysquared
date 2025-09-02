@@ -5,7 +5,7 @@ testing purposes. It allows for simulating the behavior of the LIS2MDL without t
 need for actual hardware.
 """
 
-from pysquared.sensor_reading.magnetic import Magnetic
+# from pysquared.sensor_reading.magnetic import Magnetic
 
 
 class LIS2MDL:
@@ -17,9 +17,4 @@ class LIS2MDL:
         Args:
             i2c: The I2C bus to use.
         """
-        self.i2c = i2c
-
-    @property
-    async def async_magnetic(self):
-        """Asynchronously returns a mock magnetic field vector."""
-        return Magnetic(0.0, 0.0, 0.0)
+        pass

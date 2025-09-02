@@ -5,10 +5,17 @@ manages the microcontroller's built-in Real-Time Clock (RTC). The tests cover
 initialization and setting the time.
 """
 
+import sys
 import time
+from unittest.mock import MagicMock
 
 import pytest
-from mocks.circuitpython.rtc import RTC as MockRTC
+
+# from mocks.circuitpython.rtc import RTC as MockRTC
+MockRTC = MagicMock()
+rtc = MagicMock()
+rtc.RTC = MockRTC
+sys.modules["rtc"] = rtc
 from pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 
 

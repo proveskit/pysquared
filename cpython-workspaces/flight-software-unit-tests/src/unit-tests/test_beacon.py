@@ -6,6 +6,7 @@ sending functionality, and sending with various sensor types.
 """
 
 import json
+import sys
 import time
 from typing import Optional, Type
 from unittest.mock import MagicMock, patch
@@ -13,8 +14,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from freezegun import freeze_time
 from mocks.circuitpython.byte_array import ByteArray
-from mocks.circuitpython.microcontroller import Processor
-from pysquared.beacon import Beacon
 from pysquared.hardware.radio.modulation import LoRa, RadioModulation
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
@@ -30,6 +29,12 @@ from pysquared.sensor_reading.avg import avg_readings
 from pysquared.sensor_reading.current import Current
 from pysquared.sensor_reading.temperature import Temperature
 from pysquared.sensor_reading.voltage import Voltage
+
+Processor = MagicMock()
+microcontroller = MagicMock()
+microcontroller.Processor = Processor
+sys.modules["microcontroller"] = microcontroller
+from pysquared.beacon import Beacon
 
 
 @pytest.fixture
