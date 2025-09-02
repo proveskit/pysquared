@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from busio import I2C
-from mocks.rv3028 import RV3028
+from mocks.rv3028.rv3028 import RV3028
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.logger import Logger
 from pysquared.rtc.manager.rv3028 import RV3028Manager
