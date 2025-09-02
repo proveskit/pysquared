@@ -114,10 +114,10 @@ class Beacon:
     def _encode_known_value(
         self, encoder: BinaryEncoder, key: str, value: object
     ) -> None:
-        """Encode a value with known type expectations for beacon data.
+        """Encode a value based on its actual type.
 
-        This method handles the specific data types we know appear in beacon state,
-        providing explicit and safe encoding without runtime type detection complexity.
+        This method uses direct type checking for cleaner and more reliable encoding
+        without relying on key name patterns.
 
         Args:
             encoder: The binary encoder to add data to
@@ -136,33 +136,14 @@ class Beacon:
             else:
                 # Non-numeric or non-3D arrays as strings
                 encoder.add_string(key, str(value))
-        # Handle beacon system data with known types
-        elif key in ("name", "time"):
-            encoder.add_string(key, str(value))
-        elif key == "uptime":
-            encoder.add_float(key, self._safe_float_convert(value))
-        elif "temperature" in key or "voltage" in key or "current" in key:
-            encoder.add_float(key, self._safe_float_convert(value))
-        elif "timestamp" in key:
-            encoder.add_float(key, self._safe_float_convert(value))
-        elif key.endswith(("_0", "_1", "_2")):  # IMU array indices
-            encoder.add_float(key, self._safe_float_convert(value))
-        elif "modulation" in key:
-            encoder.add_string(key, str(value))
         elif isinstance(value, bool):
-            encoder.add_int(key, int(value), size=1)
+            encoder.add_int(key, int(value))
         elif isinstance(value, int):
-            # Use appropriate size based on expected range
-            if -128 <= value <= 255:  # Counter values, small readings
-                encoder.add_int(key, value, size=1)
-            elif -32768 <= value <= 32767:  # Medium range values
-                encoder.add_int(key, value, size=2)
-            else:  # Timestamps, large values
-                encoder.add_int(key, value, size=4)
+            encoder.add_int(key, value)  # Let add_int determine optimal size
         elif isinstance(value, float):
             encoder.add_float(key, value)
         else:
-            # Fallback for unknown types
+            # Fallback for all other types (strings, etc.)
             encoder.add_string(key, str(value))
 
     def _safe_float_convert(self, value: object) -> float:
@@ -201,21 +182,14 @@ class Beacon:
             full_key = f"{key}_{dict_key}"
             if dict_key == "timestamp":
                 encoder.add_float(full_key, self._safe_float_convert(dict_value))
-            elif dict_key == "value":
-                if isinstance(dict_value, (list, tuple)) and len(dict_value) == 3:
-                    # Handle 3D vectors (acceleration, gyroscope)
-                    for i, v in enumerate(dict_value):
-                        encoder.add_float(
-                            f"{full_key}_{i}", self._safe_float_convert(v)
-                        )
-                else:
-                    encoder.add_float(full_key, self._safe_float_convert(dict_value))
+            elif isinstance(dict_value, (list, tuple)) and len(dict_value) == 3:
+                # Handle 3D vectors (acceleration, gyroscope)
+                for i, v in enumerate(dict_value):
+                    encoder.add_float(f"{full_key}_{i}", self._safe_float_convert(v))
+            elif isinstance(dict_value, (int, float)):
+                encoder.add_float(full_key, float(dict_value))
             else:
-                # Handle other sensor-specific fields
-                if isinstance(dict_value, (int, float)):
-                    encoder.add_float(full_key, float(dict_value))
-                else:
-                    encoder.add_string(full_key, str(dict_value))
+                encoder.add_string(full_key, str(dict_value))
 
     def _build_state(self) -> OrderedDict[str, object]:
         """Build the beacon state dictionary from sensors.

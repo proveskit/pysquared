@@ -46,14 +46,27 @@ class BinaryEncoder:
         """
         return self._key_map.copy()
 
-    def add_int(self, key: str, value: int, size: int = 4) -> None:
+    def add_int(self, key: str, value: int, size: int = None) -> None:
         """Add an integer value.
 
         Args:
             key: The key name for the value
             value: The integer value
-            size: Size in bytes (1, 2, 4, or 8)
+            size: Size in bytes (1, 2, 4, or 8). If None, automatically determined based on value range.
         """
+        if size is None:
+            # Automatically determine optimal size based on value range
+            if (
+                -128 <= value <= 255
+            ):  # Fits in 1 byte (covers both signed and unsigned ranges)
+                size = 1
+            elif -32768 <= value <= 32767:  # Fits in 2 bytes
+                size = 2
+            elif -2147483648 <= value <= 2147483647:  # Fits in 4 bytes
+                size = 4
+            else:  # Use 8 bytes for large values
+                size = 8
+
         if size == 1:
             fmt = "b" if -128 <= value <= 127 else "B"
         elif size == 2:
