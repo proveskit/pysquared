@@ -21,18 +21,6 @@ dependencies = [
     "proves-circuitpython-sx1280 @ git+https://github.com/proveskit/CircuitPython_SX1280@1.0.4",
 ]
 
-[dependency-groups]
-dev = [
-    "adafruit-circuitpython-typing==1.12.1",
-    "circuitpython-stubs==9.2.8",
-    "coverage==7.9.1",
-    "freezegun>=1.5.2",
-    "pre-commit==4.2.0",
-    "pyright[nodejs]==1.1.404",
-    "pytest==8.4.1",
-    "hypothesis==6.136.7",
-]
-
 [tool.setuptools]
 package-dir = {"" = "src"}
 

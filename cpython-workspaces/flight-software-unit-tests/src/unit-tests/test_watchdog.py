@@ -4,12 +4,17 @@ This module contains unit tests for the `Watchdog` class, which provides
 functionality for petting a watchdog timer to prevent system resets.
 """
 
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
-from digitalio import DigitalInOut, Direction
+from mocks.circuitpython.digitalio import Direction as MockDirection
 from pysquared.logger import Logger
-from pysquared.watchdog import Watchdog
+
+digitalio = MagicMock()
+digitalio.Direction = MockDirection
+sys.modules["digitalio"] = digitalio
+from pysquared.watchdog import Watchdog  # noqa: E402
 
 
 @pytest.fixture
@@ -35,7 +40,7 @@ def test_watchdog_init(
         mock_logger: Mocked Logger instance.
         mock_pin: Mocked Pin instance.
     """
-    mock_digital_in_out = MagicMock(spec=DigitalInOut)
+    mock_digital_in_out = MagicMock()
     mock_initialize_pin.return_value = mock_digital_in_out
 
     watchdog = Watchdog(mock_logger, mock_pin)
@@ -43,7 +48,7 @@ def test_watchdog_init(
     mock_initialize_pin.assert_called_once_with(
         mock_logger,
         mock_pin,
-        Direction.OUTPUT,
+        digitalio.Direction.OUTPUT,
         False,
     )
     assert watchdog._digital_in_out is mock_digital_in_out
@@ -65,7 +70,7 @@ def test_watchdog_pet(
         mock_logger: Mocked Logger instance.
         mock_pin: Mocked Pin instance.
     """
-    mock_digital_in_out = MagicMock(spec=DigitalInOut)
+    mock_digital_in_out = MagicMock()
     mock_initialize_pin.return_value = mock_digital_in_out
 
     # Inject a side effect to the sleep function

@@ -376,15 +376,6 @@ wheels = [
 ]
 
 [[package]]
-name = "circuitpython-stubs"
-version = "9.2.8"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7c/ff/dc3b631854ba75d14cdbcb121616e896cc7118211b4cdbf4df1a47c49f12/circuitpython_stubs-9.2.8.tar.gz", hash = "sha256:49250e168a00491719216bd43f8c6431f45ae9a74df5caccde44b1059b0d3c27", size = 348440, upload-time = "2025-05-28T21:30:08.7Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c9/1a/34091af39e17f81c9fbcbe3a1336dac99e7297e5931b4803ed9c041515f2/circuitpython_stubs-9.2.8-py3-none-any.whl", hash = "sha256:54be0d8b2f5d4547028e30c96a1b5b60a55033bf382d2cdac2c5c27dffadb0fb", size = 1008714, upload-time = "2025-05-28T21:30:06.231Z" },
-]
-
-[[package]]
 name = "click"
 version = "8.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1074,18 +1065,6 @@ dependencies = [
     { name = "proves-circuitpython-sx1280" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "adafruit-circuitpython-typing" },
-    { name = "circuitpython-stubs" },
-    { name = "coverage" },
-    { name = "freezegun" },
-    { name = "hypothesis" },
-    { name = "pre-commit" },
-    { name = "pyright", extra = ["nodejs"] },
-    { name = "pytest" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "adafruit-circuitpython-asyncio", git = "https://github.com/adafruit/adafruit_circuitpython_asyncio?rev=1.3.3" },
@@ -1105,40 +1084,22 @@ requires-dist = [
     { name = "proves-circuitpython-sx1280", git = "https://github.com/proveskit/CircuitPython_SX1280?rev=1.0.4" },
 ]
 
-[package.metadata.requires-dev]
-dev = [
-    { name = "adafruit-circuitpython-typing", specifier = "==1.12.1" },
-    { name = "circuitpython-stubs", specifier = "==9.2.8" },
-    { name = "coverage", specifier = "==7.9.1" },
-    { name = "freezegun", specifier = ">=1.5.2" },
-    { name = "hypothesis", specifier = "==6.136.7" },
-    { name = "pre-commit", specifier = "==4.2.0" },
-    { name = "pyright", extras = ["nodejs"], specifier = "==1.1.404" },
-    { name = "pytest", specifier = "==8.4.1" },
-]
-
 [[package]]
 name = "pysquared-flight-software-mocks"
 version = "2.0.0"
 source = { editable = "cpython-workspaces/flight-software-mocks" }
 dependencies = [
     { name = "adafruit-circuitpython-typing" },
-    { name = "circuitpython-stubs" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "adafruit-circuitpython-typing", specifier = "==1.12.1" },
-    { name = "circuitpython-stubs", specifier = "==9.2.8" },
-]
+requires-dist = [{ name = "adafruit-circuitpython-typing", specifier = "==1.12.1" }]
 
 [[package]]
 name = "pysquared-flight-software-unit-tests"
 version = "2.0.0"
 source = { editable = "cpython-workspaces/flight-software-unit-tests" }
 dependencies = [
-    { name = "adafruit-circuitpython-typing" },
-    { name = "circuitpython-stubs" },
     { name = "coverage" },
     { name = "freezegun" },
     { name = "hypothesis" },
@@ -1151,8 +1112,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "adafruit-circuitpython-typing", specifier = "==1.12.1" },
-    { name = "circuitpython-stubs", specifier = "==9.2.8" },
     { name = "coverage", specifier = "==7.9.1" },
     { name = "freezegun", specifier = ">=1.5.2" },
     { name = "hypothesis", specifier = "==6.136.7" },

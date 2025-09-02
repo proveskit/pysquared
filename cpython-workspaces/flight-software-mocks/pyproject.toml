@@ -5,7 +5,6 @@ description = "Flight Software for the PROVES Kit"
 requires-python = ">=3.13"
 dependencies = [
     "adafruit-circuitpython-typing==1.12.1",
-    "circuitpython-stubs==9.2.8",
 ]
 
 [tool.setuptools]

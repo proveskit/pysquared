@@ -9,8 +9,6 @@ dependencies = [
     "pysquared-flight-software-mocks",
 
     # External dependencies
-    "adafruit-circuitpython-typing==1.12.1",
-    "circuitpython-stubs==9.2.8",
     "coverage==7.9.1",
     "freezegun>=1.5.2",
     "pre-commit==4.2.0",

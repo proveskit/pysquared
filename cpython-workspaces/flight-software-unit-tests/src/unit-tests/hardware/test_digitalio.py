@@ -5,13 +5,18 @@ functionality for initializing digital input/output pins. The tests cover
 successful initialization and failure scenarios.
 """
 
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
-from digitalio import Direction
-from pysquared.hardware.digitalio import initialize_pin
+from mocks.circuitpython.digitalio import Direction as MockDirection
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.logger import Logger
+
+digitalio = MagicMock()
+digitalio.Direction = MockDirection
+sys.modules["digitalio"] = digitalio
+from pysquared.hardware.digitalio import initialize_pin  # noqa: E402
 
 
 @patch("pysquared.hardware.digitalio.DigitalInOut")
@@ -27,8 +32,7 @@ def test_initialize_pin_success(mock_pin: MagicMock, mock_digital_in_out: MagicM
     mock_logger = MagicMock(spec=Logger)
 
     # Mock pin and direction
-    mock_pin = mock_pin()
-    mock_direction = Direction.OUTPUT
+    mock_direction = digitalio.Direction.OUTPUT
     initial_value = True
 
     # Mock DigitalInOut instance
@@ -57,8 +61,7 @@ def test_initialize_pin_failure(mock_pin: MagicMock, mock_digital_in_out: MagicM
     mock_logger = MagicMock(spec=Logger)
 
     # Mock pin and direction
-    mock_pin = mock_pin()
-    mock_direction = Direction.OUTPUT
+    mock_direction = digitalio.Direction.OUTPUT
     initial_value = True
 
     # Mock DigitalInOut to raise an exception

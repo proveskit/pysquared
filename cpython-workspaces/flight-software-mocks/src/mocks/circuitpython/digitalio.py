@@ -5,6 +5,8 @@ testing purposes. It allows for simulating the behavior of the digitalio module 
 the need for actual hardware.
 """
 
+from __future__ import annotations
+
 import microcontroller
 
 
@@ -29,7 +31,12 @@ class DigitalInOut:
 class Direction:
     """A mock Direction."""
 
-    pass
+    INPUT: Direction
+    OUTPUT: Direction
+
+
+Direction.INPUT = Direction()
+Direction.OUTPUT = Direction()
 
 
 class Pull:
