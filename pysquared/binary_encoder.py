@@ -46,7 +46,7 @@ class BinaryEncoder:
         """
         return self._key_map.copy()
 
-    def add_int(self, key: str, value: int, size: int = None) -> None:
+    def add_int(self, key: str, value: int, size: int | None = None) -> None:
         """Add an integer value.
 
         Args:
