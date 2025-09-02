@@ -124,10 +124,8 @@ class Beacon:
             key: The key name for the value
             value: The value to encode
         """
-        # Handle sensor reading dictionaries (from to_dict() calls)
         if isinstance(value, dict):
             self._encode_sensor_dict(encoder, key, value)
-        # Handle lists/tuples - particularly 3D sensor vectors
         elif isinstance(value, (list, tuple)):
             if len(value) == 3 and all(isinstance(v, (int, float)) for v in value):
                 # Handle 3D vectors (acceleration, gyroscope) by splitting into components
@@ -136,25 +134,10 @@ class Beacon:
             else:
                 # Non-numeric or non-3D arrays as strings
                 encoder.add_string(key, str(value))
-        # Handle beacon system data with known types
-        elif key in ("name", "time"):
-            encoder.add_string(key, str(value))
-        elif key == "uptime":
-            encoder.add_float(key, self._safe_float_convert(value))
-        elif "temperature" in key or "voltage" in key or "current" in key:
-            encoder.add_float(key, self._safe_float_convert(value))
-        elif "timestamp" in key:
-            encoder.add_float(key, self._safe_float_convert(value))
-        elif (
-            key.endswith("_0") or key.endswith("_1") or key.endswith("_2")
-        ):  # IMU array indices
-            encoder.add_float(key, self._safe_float_convert(value))
-        elif "modulation" in key:
-            encoder.add_string(key, str(value))
         elif isinstance(value, bool):
             encoder.add_int(key, int(value))
         elif isinstance(value, int):
-            encoder.add_int(key, value)  # Let add_int determine optimal size
+            encoder.add_int(key, value)
         elif isinstance(value, float):
             encoder.add_float(key, value)
         else:

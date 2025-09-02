@@ -55,30 +55,54 @@ class BinaryEncoder:
             size: Size in bytes (1, 2, 4, or 8). If None, automatically determined based on value range.
         """
         if size is None:
-            # Automatically determine optimal size based on value range
-            if (
-                -128 <= value <= 255
-            ):  # Fits in 1 byte (covers both signed and unsigned ranges)
-                size = 1
-            elif -32768 <= value <= 32767:  # Fits in 2 bytes
-                size = 2
-            elif -2147483648 <= value <= 2147483647:  # Fits in 4 bytes
-                size = 4
-            else:  # Use 8 bytes for large values
-                size = 8
+            size = self._determine_int_size(value)
 
-        if size == 1:
-            fmt = "b" if -128 <= value <= 127 else "B"
-        elif size == 2:
-            fmt = "h" if -32768 <= value <= 32767 else "H"
-        elif size == 4:
-            fmt = "i" if -2147483648 <= value <= 2147483647 else "I"
-        elif size == 8:
-            fmt = "q" if -9223372036854775808 <= value <= 9223372036854775807 else "Q"
-        else:
+        fmt = self._get_int_format(size, value)
+        self._data[key] = (fmt, value)
+
+    def _determine_int_size(self, value: int) -> int:
+        """Determine the optimal size for an integer value.
+
+        Args:
+            value: The integer value
+
+        Returns:
+            Size in bytes (1, 2, 4, or 8)
+        """
+        if -128 <= value <= 255:  # Fits in 1 byte
+            return 1
+        elif -32768 <= value <= 32767:  # Fits in 2 bytes
+            return 2
+        elif -2147483648 <= value <= 2147483647:  # Fits in 4 bytes
+            return 4
+        else:  # Use 8 bytes for large values
+            return 8
+
+    def _get_int_format(self, size: int, value: int) -> str:
+        """Get the struct format string for an integer.
+
+        Args:
+            size: Size in bytes
+            value: The integer value
+
+        Returns:
+            Struct format string
+
+        Raises:
+            ValueError: If size is not supported
+        """
+        size_ranges = {
+            1: (-128, 127, "b", "B"),
+            2: (-32768, 32767, "h", "H"),
+            4: (-2147483648, 2147483647, "i", "I"),
+            8: (-9223372036854775808, 9223372036854775807, "q", "Q"),
+        }
+
+        if size not in size_ranges:
             raise ValueError(f"Unsupported integer size: {size}")
 
-        self._data[key] = (fmt, value)
+        min_val, max_val, signed_fmt, unsigned_fmt = size_ranges[size]
+        return signed_fmt if min_val <= value <= max_val else unsigned_fmt
 
     def add_float(self, key: str, value: float, double_precision: bool = False) -> None:
         """Add a float value.
