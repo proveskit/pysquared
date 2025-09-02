@@ -5,10 +5,13 @@ the LIS2MDL magnetometer. The tests cover initialization, successful data
 retrieval, and error handling for magnetic field vector readings.
 """
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
+from busio import I2C
 
 from mocks.adafruit_lis2mdl.lis2mdl import LIS2MDL
 from pysquared.hardware.exception import HardwareInitializationError
@@ -48,8 +51,8 @@ def mock_lis2mdl(mock_i2c: MagicMock) -> Generator[MagicMock, None, None]:
 
 def test_create_magnetometer(
     mock_lis2mdl: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests successful creation of a LIS2MDL magnetometer instance.
 
@@ -66,8 +69,8 @@ def test_create_magnetometer(
 
 def test_create_magnetometer_failed(
     mock_lis2mdl: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests that initialization is retried when it fails.
 
@@ -91,8 +94,8 @@ def test_create_magnetometer_failed(
 
 def test_get_magnetic_field_success(
     mock_lis2mdl: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests successful retrieval of the magnetic field vector.
 
@@ -122,8 +125,8 @@ def test_get_magnetic_field_success(
 
 def test_get_magnetic_field_unknown_error(
     mock_lis2mdl: MagicMock,
-    mock_i2c: MagicMock,
-    mock_logger: MagicMock,
+    mock_i2c: I2C,
+    mock_logger,
 ) -> None:
     """Tests handling of unknown errors when retrieving the magnetic field vector.
 

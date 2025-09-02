@@ -13,3 +13,4 @@ build/
 pysquared.egg-info/
 **/*.mpy
 site/
+typeshed/

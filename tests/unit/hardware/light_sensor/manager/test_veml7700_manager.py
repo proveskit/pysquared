@@ -1,5 +1,7 @@
 """Test the VEML7700Manager class."""
 
+# pyright: reportAttributeAccessIssue=false, reportOptionalMemberAccess=false, reportReturnType=false
+
 from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 

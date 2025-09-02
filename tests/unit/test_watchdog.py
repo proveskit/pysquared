@@ -15,20 +15,20 @@ from pysquared.watchdog import Watchdog
 
 
 @pytest.fixture
-def mock_pin() -> MagicMock:
+def mock_pin() -> Pin:
     """Mocks a microcontroller Pin."""
     return MagicMock(spec=Pin)
 
 
 @pytest.fixture
-def mock_logger() -> MagicMock:
+def mock_logger() -> Logger:
     """Mocks the Logger class."""
     return MagicMock(spec=Logger)
 
 
 @patch("pysquared.watchdog.initialize_pin")
 def test_watchdog_init(
-    mock_initialize_pin: MagicMock, mock_logger: MagicMock, mock_pin: MagicMock
+    mock_initialize_pin: MagicMock, mock_logger: Logger, mock_pin: Pin
 ) -> None:
     """Tests Watchdog initialization.
 
@@ -56,8 +56,8 @@ def test_watchdog_init(
 def test_watchdog_pet(
     mock_initialize_pin: MagicMock,
     mock_sleep: MagicMock,
-    mock_logger: MagicMock,
-    mock_pin: MagicMock,
+    mock_logger: Logger,
+    mock_pin: Pin,
 ) -> None:
     """Tests Watchdog pet method using side_effect on sleep.
 
