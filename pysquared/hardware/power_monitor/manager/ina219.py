@@ -34,6 +34,7 @@ class INA219Manager(PowerMonitorProto):
         logger: Logger,
         i2c: I2C,
         addr: int,
+        do_calibration: bool = True,
     ) -> None:
         """Initializes the INA219Manager.
 
@@ -49,7 +50,8 @@ class INA219Manager(PowerMonitorProto):
         try:
             logger.debug("Initializing INA219 power monitor")
             self._ina219: INA219 = INA219(i2c, addr)
-            self._ina219.set_calibration_16V_400mA()
+            if do_calibration:
+                self._ina219.set_calibration_16V_400mA()
         except Exception as e:
             raise HardwareInitializationError(
                 "Failed to initialize INA219 power monitor"
