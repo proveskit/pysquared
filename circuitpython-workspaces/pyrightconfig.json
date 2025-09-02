@@ -6,6 +6,5 @@
   "include": [
     "./flight-software"
   ],
-  "reportMissingModuleSource": false,
   "typeshedPath": "./typeshed"
 }
