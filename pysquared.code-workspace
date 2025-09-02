@@ -9,22 +9,21 @@
       "path": "cpython-workspaces"
     },
     {
-      "name": "Repo root",
+      "name": "Root",
       "path": "."
     },
   ],
   "settings": {
     "files.eol": "\n",
-    "python.testing.pytestArgs": [
-        "tests/unit"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
     "sonarlint.connectedMode.project": {
         "connectionId": "proves-kit",
         "projectKey": "proveskit_circuitpy_flight_software",
     },
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "files.exclude": {
+      "circuitpython-workspaces/": true,
+      "cpython-workspaces/": true
+    },
   },
   "extensions": {
     "recommendations": [

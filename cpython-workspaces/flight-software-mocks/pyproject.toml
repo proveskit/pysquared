@@ -4,29 +4,9 @@ version = "2.0.0"
 description = "Flight Software for the PROVES Kit"
 requires-python = ">=3.13"
 dependencies = [
-    "adafruit-circuitpython-ina219==3.4.26",
-    "adafruit-circuitpython-asyncio @ git+https://github.com/adafruit/adafruit_circuitpython_asyncio@1.3.3",
-    "adafruit-circuitpython-drv2605==1.3.4",
-    "adafruit-circuitpython-lis2mdl==2.1.23",
-    "adafruit-circuitpython-lsm6ds==4.5.13",
-    "adafruit-circuitpython-mcp9808==3.3.24",
-    "adafruit-circuitpython-neopixel==6.3.12",
-    "adafruit-circuitpython-register==1.10.4",
-    "adafruit-circuitpython-rfm==1.0.6",
-    "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A@1.0.0",
-    "adafruit-circuitpython-ticks==1.1.1",
-    "adafruit-circuitpython-veml7700==2.1.4",
-    "proves-circuitpython-rv3028 @ git+https://github.com/proveskit/PROVES_CircuitPython_RV3028@1.0.2",
-    "proves-circuitpython-sx126 @ git+https://github.com/proveskit/micropySX126X@1.0.0",
-    "proves-circuitpython-sx1280 @ git+https://github.com/proveskit/CircuitPython_SX1280@1.0.4",
     "adafruit-circuitpython-typing==1.12.1",
     "circuitpython-stubs==9.2.8",
-    "pysquared-flight-software",
 ]
-
-# [build-system]
-# requires = ["uv_build>=0.7.19,<0.8.0"]
-# build-backend = "uv_build"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -34,37 +14,3 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["mocks*"]
-
-[tool.ruff.format]
-# Use `\n` line endings for all files
-line-ending = "lf"
-
-[tool.pytest.ini_options]
-pythonpath = "."
-
-[tool.coverage.run]
-branch = true
-relative_files = true
-
-[tool.coverage.report]
-show_missing = true
-skip_covered = false
-include = [
-    "pysquared/**/*.py",
-]
-
-[tool.coverage.html]
-directory = ".coverage-reports/html"
-
-[tool.coverage.xml]
-output = ".coverage-reports/coverage.xml"
-
-[tool.interrogate]
-ignore-init-method = true
-omit-covered-files = true
-fail-under = 100
-verbose = 2
-color = true
-exclude = [
-    "typeshed",
-]
