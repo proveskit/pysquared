@@ -204,7 +204,7 @@ def test_beacon_send_with_sensors(
         "test_beacon",
         mock_packet_manager,
         0,
-        Processor(),
+        microcontroller.Processor(),
         MockFlag(0, 0),
         MockCounter(0),
         MockRadio(),
