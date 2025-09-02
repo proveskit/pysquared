@@ -1,5 +1,7 @@
 """Tests for the binary encoder module."""
 
+from unittest.mock import patch
+
 import pytest
 
 from pysquared.binary_encoder import BinaryDecoder, BinaryEncoder
@@ -286,7 +288,6 @@ class TestBinaryEncoder:
     def test_import_fallback(self):
         """Test that the module works even when typing imports fail."""
         import sys
-        from unittest.mock import patch
 
         # Mock the typing import to fail
         with patch.dict(sys.modules, {"typing": None}):
