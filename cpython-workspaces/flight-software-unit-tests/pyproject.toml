@@ -1,0 +1,25 @@
+[project]
+name = "pysquared-flight-software-unit-tests"
+version = "2.0.0"
+description = "Tests for PySquared"
+requires-python = ">=3.13"
+dependencies = [
+    # Local workspace packages
+    "pysquared-flight-software",
+    "pysquared-flight-software-mocks",
+
+    # External dependencies
+    "coverage==7.9.1",
+    "freezegun>=1.5.2",
+    "pre-commit==4.2.0",
+    "pyright[nodejs]==1.1.404",
+    "pytest==8.4.1",
+    "hypothesis==6.136.7",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["unit-tests*"]
