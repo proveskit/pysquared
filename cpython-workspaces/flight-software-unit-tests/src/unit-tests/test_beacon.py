@@ -1041,13 +1041,3 @@ def test_beacon_encode_sensor_dict_with_non_numeric_values():
     # Verify encoding completed without error
     encoded_data = encoder.to_bytes()
     assert isinstance(encoded_data, bytes)
-
-
-def test_typing_import_exception_handling():
-    """Tests the import exception handling for typing.OrderedDict (lines 36-37)."""
-    # This test verifies that the import exception is handled gracefully
-    # The actual import happens at module load time, so we can't easily test
-    # this without reloading the module. Instead, we verify the code structure
-    # allows for the exception to be caught silently.
-    # The fact that beacon.py loads successfully proves this works
-    assert True

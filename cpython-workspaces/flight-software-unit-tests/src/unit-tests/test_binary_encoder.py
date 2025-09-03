@@ -412,3 +412,67 @@ class TestBeaconIntegration:
         assert savings_percent > 0, (
             f"Should have positive savings, got {savings_percent:.1f}%"
         )
+
+    def test_get_int_size_edge_cases(self):
+        """Test _get_int_size method for different value ranges."""
+        encoder = BinaryEncoder()
+
+        # Test 2-byte range (line 73)
+        encoder.add_int("medium_pos", 32767)  # Max for 2 bytes
+        encoder.add_int("medium_neg", -32768)  # Min for 2 bytes
+
+        # Test 8-byte range (line 77)
+        encoder.add_int("large_pos", 2147483648)  # Requires 8 bytes
+        encoder.add_int("large_neg", -2147483649)  # Requires 8 bytes
+
+        data = encoder.to_bytes()
+        decoder = BinaryDecoder(data, encoder.get_key_map())
+
+        assert decoder.get_int("medium_pos") == 32767
+        assert decoder.get_int("medium_neg") == -32768
+        assert decoder.get_int("large_pos") == 2147483648
+        assert decoder.get_int("large_neg") == -2147483649
+
+    def test_decoder_truncated_data_edge_cases(self):
+        """Test decoder with various truncated data scenarios."""
+        encoder = BinaryEncoder()
+        encoder.add_string("test", "hello")
+        encoder.add_int("num", 42)
+        full_data = encoder.to_bytes()
+
+        # Test truncated string length byte (line 322)
+        # Need exactly key_hash (4 bytes) + type (1 byte) but no length byte
+        truncated_at_string_len = full_data[
+            :5
+        ]  # Just key_hash + type, no string length
+        decoder = BinaryDecoder(truncated_at_string_len, encoder.get_key_map())
+        result = decoder.get_all()
+        # Should handle the truncation gracefully
+        assert isinstance(result, dict)  # May be empty or partial
+
+        # Test truncated numeric data (line 348)
+        encoder2 = BinaryEncoder()
+        encoder2.add_int("test_int", 123456)  # 4-byte int
+        int_data = encoder2.to_bytes()
+        # Truncate so we have key_hash + type but not enough bytes for the int
+        truncated_numeric = int_data[
+            :7
+        ]  # key_hash(4) + type(1) + partial_data(2 of 4 needed)
+        decoder2 = BinaryDecoder(truncated_numeric, encoder2.get_key_map())
+        result2 = decoder2.get_all()
+        # Should handle truncation gracefully
+        assert isinstance(result2, dict)  # May be empty
+
+    def test_corrupted_string_data(self):
+        """Test decoder with corrupted string data."""
+        # Create data that claims to have a string but is truncated
+        key_hash = b"\x12\x34\x56\x78"  # 4-byte key hash
+        string_type = b"\x00"  # String type = 0
+        string_length = b"\x10"  # Claims string is 16 bytes long
+        partial_string = b"hello"  # But only 5 bytes provided
+
+        corrupted_data = key_hash + string_type + string_length + partial_string
+        decoder = BinaryDecoder(corrupted_data)
+        result = decoder.get_all()
+        # Should handle corruption gracefully without crashing
+        assert isinstance(result, dict)
