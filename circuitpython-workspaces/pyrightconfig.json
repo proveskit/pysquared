@@ -1,0 +1,10 @@
+{
+  "exclude": [
+    "**/__pycache__",
+    "./typeshed"
+  ],
+  "include": [
+    "./flight-software"
+  ],
+  "typeshedPath": "./typeshed"
+}
