@@ -989,7 +989,7 @@ def test_beacon_generate_key_mapping_with_sensors(
 
     # Create sensors to test template generation
     processor = Processor()
-    flag = Flag("test_flag", 0)
+    flag = MockFlag(0, 0)
     counter = MockCounter(0)
     radio = MockRadio()
     imu = MockIMU()
