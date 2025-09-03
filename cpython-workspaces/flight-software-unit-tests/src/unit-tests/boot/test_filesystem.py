@@ -5,15 +5,16 @@ for managing the filesystem during the boot process. The tests focus on verifyin
 the correct sequence of filesystem operations.
 """
 
-# pyright: reportAttributeAccessIssue=false
-
 import os
 import shutil
+import sys
 import tempfile
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pysquared.boot.filesystem import mkdir
+
+sys.modules["storage"] = MagicMock()
+from pysquared.boot.filesystem import mkdir  # noqa: E402
 
 
 @pytest.fixture(autouse=True)

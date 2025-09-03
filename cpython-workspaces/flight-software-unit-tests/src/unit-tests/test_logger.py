@@ -4,8 +4,6 @@ This module contains unit tests for the `Logger` class, which provides logging
 functionality with different severity levels, colorized output, and error counting.
 """
 
-# pyright: reportAttributeAccessIssue=false
-
 import os
 import tempfile
 from unittest.mock import MagicMock, patch

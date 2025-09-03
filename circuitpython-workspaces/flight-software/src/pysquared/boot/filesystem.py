@@ -3,10 +3,7 @@
 import os
 import time
 
-try:
-    import storage
-except ImportError:
-    import mocks.circuitpython.storage as storage
+import storage
 
 
 def mkdir(

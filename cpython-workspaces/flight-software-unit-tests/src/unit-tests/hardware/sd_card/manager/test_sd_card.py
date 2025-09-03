@@ -5,8 +5,6 @@ for managing the filesystem during the boot process. The tests focus on verifyin
 the correct sequence of filesystem operations.
 """
 
-# pyright: reportAttributeAccessIssue=false
-
 import sys
 from unittest.mock import MagicMock, patch
 
