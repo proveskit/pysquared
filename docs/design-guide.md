@@ -21,8 +21,6 @@ We use type hints throughout the PySquared codebase to ensure that our code is c
 
 We use [typeshed](https://peps.python.org/pep-0561/) stubs to provide more accurate type hints for CircuitPython, replacing the default Python standard library type hints. These CircuitPython-specific stubs are located in the `typeshed/` directory. This helps the typechecker catch compatibility issues with CircuitPython code before running it on a device.
 
-However, using these stubs means that type hints in test files also reference CircuitPython types, not the standard Python types available in the test environment. As a workaround, we add pyright ignore comments (e.g., `# pyright: reportOptionalMemberAccess=false`) when necessary at the top of test files to suppress related errors. This workaround isn’t ideal. If you have suggestions for handling this issue more effectively, please share your feedback.
-
 We do not accept changes to files in the `pysquared/` directory that include lines ignoring the type checker (e.g., `# type: ignore`). The only exceptions are:
 
 - **Upstream Fix in Progress:** If a type error is caused by a bug or limitation in an external dependency, you may ignore the line only when leaving a comment with a link to the issue or PR where it is fixed or a fix is in progress. A valid type hint might look like this:
