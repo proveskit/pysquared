@@ -5,23 +5,14 @@ functionality for safe sleep operations, including watchdog petting and handling
 of sleep duration limits.
 """
 
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from pysquared.config.config import Config
 from pysquared.logger import Logger
+from pysquared.sleep_helper import SleepHelper
 from pysquared.watchdog import Watchdog
-
-# Create mock modules for alarm and alarm.time before importing SleepHelper
-mock_alarm = MagicMock()
-mock_time_alarm = MagicMock()
-sys.modules["alarm"] = mock_alarm
-sys.modules["alarm.time"] = MagicMock()
-sys.modules["alarm.time"].TimeAlarm = mock_time_alarm
-
-# Now we can import SleepHelper
-from pysquared.sleep_helper import SleepHelper  # noqa: E402
 
 
 @pytest.fixture
@@ -88,30 +79,29 @@ def test_safe_sleep_within_limit(
         mock_logger: Mocked Logger instance.
         mock_watchdog: Mocked Watchdog instance.
     """
-    # Reset mocks
-    mock_alarm.reset_mock()
-    mock_time_alarm.reset_mock()
-
-    # Setup mock time to simulate a time sequence
-    mock_time.monotonic = MagicMock()
-    mock_time.monotonic.side_effect = [0.0, 0.0, 0.0, 0.0, 15.0]
+    # Setup mock time to simulate the while loop behavior
+    # The loop checks: while time.monotonic() < end_sleep_time
+    mock_time.monotonic.side_effect = [
+        0.0,  # Initial call for end_sleep_time calculation
+        0.0,  # First while loop check (0.0 < 15.0 = True)
+        0.0,  # min() calculation for time_increment
+        15.0,  # Second while loop check (15.0 < 15.0 = False, exit loop)
+    ]
+    mock_time.sleep = MagicMock()
 
     sleep_helper.safe_sleep(15)
 
-    # Verify the watchdog was pet
+    # Verify the watchdog was pet twice (once before loop, once after sleep)
     assert mock_watchdog.pet.call_count == 2
+
+    # Verify time.sleep was called with the correct increment
+    mock_time.sleep.assert_called_once_with(15.0)
 
     # Verify no warning was logged
     mock_logger.warning.assert_not_called()
 
     # Verify debug log was called
     mock_logger.debug.assert_called_once_with("Setting Safe Sleep Mode", duration=15)
-
-    # Verify TimeAlarm was created with correct parameters
-    mock_time_alarm.assert_called_once_with(monotonic_time=15.0)
-
-    # Verify light_sleep was called with the alarm
-    mock_alarm.light_sleep_until_alarms.assert_called_once()
 
 
 @patch("pysquared.sleep_helper.time")
@@ -131,18 +121,20 @@ def test_safe_sleep_exceeds_limit(
         mock_config: Mocked Config instance.
         mock_watchdog: Mocked Watchdog instance.
     """
-    # Reset mocks
-    mock_alarm.reset_mock()
-    mock_time_alarm.reset_mock()
-
-    # Setup mock time to simulate a time sequence
-    mock_time.monotonic.side_effect = [0.0, 0.0, 0.0, 0.0, 115.0]
+    # Setup mock time to simulate the while loop behavior with adjusted duration
+    mock_time.monotonic.side_effect = [
+        0.0,  # Initial call for end_sleep_time calculation
+        0.0,  # First while loop check (0.0 < 100.0 = True)
+        0.0,  # min() calculation for time_increment
+        100.0,  # Second while loop check (100.0 < 100.0 = False, exit loop)
+    ]
+    mock_time.sleep = MagicMock()
 
     # Requested duration exceeds the longest allowable sleep time (which is 100)
     sleep_helper.safe_sleep(150)
 
     # Verify the watchdog was pet
-    mock_watchdog.pet.assert_called()
+    assert mock_watchdog.pet.call_count == 2
 
     # Verify warning was logged
     mock_logger.warning.assert_called_once_with(
@@ -155,11 +147,8 @@ def test_safe_sleep_exceeds_limit(
     # Verify debug log was called with adjusted duration
     mock_logger.debug.assert_called_once_with("Setting Safe Sleep Mode", duration=100)
 
-    # Verify TimeAlarm was created with correct parameters using adjusted duration
-    mock_time_alarm.assert_called_once_with(monotonic_time=15.0)
-
-    # Verify light_sleep was called with the alarm
-    mock_alarm.light_sleep_until_alarms.assert_called_once()
+    # Verify time.sleep was called with the adjusted duration
+    mock_time.sleep.assert_called_once_with(15)
 
 
 @patch("pysquared.sleep_helper.time")
@@ -175,37 +164,71 @@ def test_safe_sleep_multiple_watchdog_pets(
         sleep_helper: SleepHelper instance for testing.
         mock_watchdog: Mocked Watchdog instance.
     """
-    # Reset mocks
-    mock_alarm.reset_mock()
-    mock_time_alarm.reset_mock()
-
-    # Setup mock time to simulate a time sequence where we need multiple increments
+    # Setup mock time to simulate multiple sleep increments
     mock_time.monotonic.side_effect = [
-        0.0,
-        0.0,
-        0.0,
-        0.0,  # Initial
-        15.0,
-        15.0,
-        15.0,  # First loop
-        30.0,
-        30.0,
-        30.0,  # Second loop
-        35.0,  # Last check and exit loop
+        0.0,  # Initial call for end_sleep_time calculation
+        0.0,  # First while loop check (0.0 < 35.0 = True)
+        0.0,  # First min() calculation (35.0 - 0.0, 15) = 15.0
+        15.0,  # Second while loop check (15.0 < 35.0 = True)
+        15.0,  # Second min() calculation (35.0 - 15.0, 15) = 15.0
+        30.0,  # Third while loop check (30.0 < 35.0 = True)
+        30.0,  # Third min() calculation (35.0 - 30.0, 15) = 5.0
+        35.0,  # Fourth while loop check (35.0 < 35.0 = False, exit loop)
     ]
+    mock_time.sleep = MagicMock()
 
     # Call safe_sleep with a duration that will require multiple watchdog pets
     sleep_helper.safe_sleep(35)
 
-    # Verify watchdog was pet multiple times (once before sleeping + after each wake)
-    assert mock_watchdog.pet.call_count == 4  # Once before loop + three times in loop
+    # Verify watchdog was pet multiple times (once before loop + after each sleep)
+    assert (
+        mock_watchdog.pet.call_count == 4
+    )  # Once before loop + three times after each sleep
 
-    # Verify TimeAlarm was created correctly for each increment
-    mock_time_alarm.assert_any_call(monotonic_time=15.0)  # 0.0 + 15.0 (first increment)
-    mock_time_alarm.assert_any_call(
-        monotonic_time=30.0
-    )  # 15.0 + 15.0 (second increment)
-    mock_time_alarm.assert_any_call(monotonic_time=35.0)  # 30.0 + 5.0 (final increment)
+    # Verify time.sleep was called multiple times with correct increments
+    expected_calls = [
+        ((15.0,),),  # First increment: 15 seconds
+        ((15.0,),),  # Second increment: 15 seconds
+        ((5.0,),),  # Third increment: 5 seconds (remaining time)
+    ]
+    assert mock_time.sleep.call_args_list == expected_calls
 
-    # Verify light_sleep was called multiple times
-    assert mock_alarm.light_sleep_until_alarms.call_count == 3
+
+@patch("pysquared.sleep_helper.time")
+def test_safe_sleep_custom_watchdog_timeout(
+    mock_time: MagicMock,
+    sleep_helper: SleepHelper,
+    mock_watchdog: MagicMock,
+) -> None:
+    """Tests safe_sleep with custom watchdog timeout.
+
+    Args:
+        mock_time: Mocked time module.
+        sleep_helper: SleepHelper instance for testing.
+        mock_watchdog: Mocked Watchdog instance.
+    """
+    # Setup mock time to simulate behavior with custom timeout
+    mock_time.monotonic.side_effect = [
+        0.0,  # Initial call for end_sleep_time calculation
+        0.0,  # First while loop check (0.0 < 20.0 = True)
+        0.0,  # First min() calculation (20.0 - 0.0, 10) = 10.0
+        10.0,  # Second while loop check (10.0 < 20.0 = True)
+        10.0,  # Second min() calculation (20.0 - 10.0, 10) = 10.0
+        20.0,  # Third while loop check (20.0 < 20.0 = False, exit loop)
+    ]
+    mock_time.sleep = MagicMock()
+
+    # Call safe_sleep with custom watchdog timeout
+    sleep_helper.safe_sleep(20, watchdog_timeout=10)
+
+    # Verify watchdog was pet correct number of times
+    assert (
+        mock_watchdog.pet.call_count == 3
+    )  # Once before loop + twice after each sleep
+
+    # Verify time.sleep was called with custom timeout intervals
+    expected_calls = [
+        ((10.0,),),  # First increment: 10 seconds (custom timeout)
+        ((10.0,),),  # Second increment: 10 seconds (custom timeout)
+    ]
+    assert mock_time.sleep.call_args_list == expected_calls

@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from hypothesis import given
 from hypothesis import strategies as st
+
 from pysquared.sensor_reading.lux import Lux
 
 

@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
+
 from pysquared.sensor_reading.base import Reading
 
 
