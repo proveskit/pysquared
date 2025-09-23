@@ -1,7 +1,6 @@
 """Tests for the binary encoder module."""
 
 import pytest
-
 from pysquared.binary_encoder import BinaryDecoder, BinaryEncoder
 
 

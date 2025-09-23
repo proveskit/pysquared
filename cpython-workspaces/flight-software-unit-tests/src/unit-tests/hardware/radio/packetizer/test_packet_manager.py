@@ -10,7 +10,6 @@ import random
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
 from pysquared.nvm.counter import Counter
