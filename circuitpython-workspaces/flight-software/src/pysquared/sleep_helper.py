@@ -16,7 +16,6 @@ class SleepHelper:
     Class responsible for sleeping the Satellite to conserve power.
 
     Attributes:
-        cubesat (Satellite): The Satellite object.
         logger (Logger): Logger instance for logging events and errors.
         watchdog (Watchdog): Watchdog instance for system safety.
         config (Config): Configuration object.
