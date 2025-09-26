@@ -3,6 +3,7 @@ __pycache__/
 .coverage*
 .coverage-reports/
 .DS_Store
+.hypothesis
 .venv
 artifacts/
 coverage-reports/
@@ -11,3 +12,7 @@ venv
 build/
 pysquared.egg-info/
 **/*.mpy
+site/
+typeshed/
+*.egg-info
+.ruff_cache/

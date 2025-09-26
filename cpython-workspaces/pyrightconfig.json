@@ -1,0 +1,9 @@
+{
+  "exclude": [
+    "**/__pycache__"
+  ],
+  "include": [
+    "./flight-software-mocks",
+    "./flight-software-unit-tests"
+  ]
+}

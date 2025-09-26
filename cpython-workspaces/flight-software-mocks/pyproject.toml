@@ -1,0 +1,15 @@
+[project]
+name = "pysquared-flight-software-mocks"
+version = "2.0.0"
+description = "Flight Software for the PROVES Kit"
+requires-python = ">=3.13"
+dependencies = [
+    "adafruit-circuitpython-typing==1.12.1",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["mocks*"]
