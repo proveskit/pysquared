@@ -195,6 +195,8 @@ class FileValidationManager:
                                 new_chunk_size=chunk_size,
                             )
                             continue
+                        else:
+                            raise
 
         except MemoryError as e:
             self._log.error(
