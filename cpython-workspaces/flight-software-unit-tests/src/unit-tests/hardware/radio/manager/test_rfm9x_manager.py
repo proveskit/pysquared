@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from busio import SPI
 from digitalio import DigitalInOut
+
 from mocks.adafruit_rfm.rfm9x import RFM9x as MockRFM9x
 from mocks.adafruit_rfm.rfm9xfsk import RFM9xFSK as MockRFM9xFSK
 from pysquared.config.radio import RadioConfig

@@ -7,8 +7,9 @@ counter initialization, incrementing, and handling of NVM availability.
 
 from unittest.mock import MagicMock, patch
 
-import pysquared.nvm.counter as counter
 import pytest
+
+import pysquared.nvm.counter as counter
 from mocks.circuitpython.byte_array import ByteArray
 
 

@@ -8,6 +8,7 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from mocks.circuitpython.digitalio import Direction as MockDirection
 from pysquared.logger import Logger
 
