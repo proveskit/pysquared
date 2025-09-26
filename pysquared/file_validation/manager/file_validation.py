@@ -195,11 +195,6 @@ class FileValidationManager:
                                 new_chunk_size=chunk_size,
                             )
                             continue
-                        else:
-                            raise MemoryError(
-                                f"Insufficient memory to process file: {file_path}. "
-                                f"Required: {chunk_size} bytes"
-                            )
 
         except MemoryError as e:
             self._log.error(
