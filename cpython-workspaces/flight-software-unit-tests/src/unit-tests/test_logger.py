@@ -8,8 +8,9 @@ import os
 import tempfile
 from unittest.mock import MagicMock, patch
 
-import pysquared.nvm.counter as counter
 import pytest
+
+import pysquared.nvm.counter as counter
 from pysquared.logger import Logger, _color
 
 

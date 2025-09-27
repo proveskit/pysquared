@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from mocks.circuitpython.byte_array import ByteArray
+
 from pysquared.nvm.flag import Flag
 
 
