@@ -11,9 +11,9 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 from busio import SPI
 from digitalio import DigitalInOut
-
 from mocks.proves_sx126.sx126x import ERR_NONE
 from mocks.proves_sx126.sx1262 import SX1262
+
 from pysquared.config.radio import RadioConfig
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.radio.manager.sx126x import SX126xManager

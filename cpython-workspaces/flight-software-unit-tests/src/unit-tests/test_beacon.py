@@ -12,9 +12,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from freezegun import freeze_time
-
 from mocks.circuitpython.byte_array import ByteArray
 from mocks.circuitpython.microcontroller import Processor
+
 from pysquared.hardware.radio.modulation import LoRa, RadioModulation
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
