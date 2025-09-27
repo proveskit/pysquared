@@ -34,30 +34,6 @@ docs = [
     "mkdocs-llmstxt==0.2.0",
 ]
 
-[tool.setuptools]
-packages = [
-    "pysquared",
-    "pysquared.config",
-    "pysquared.hardware",
-    "pysquared.hardware.imu",
-    "pysquared.hardware.imu.manager",
-    "pysquared.hardware.magnetometer",
-    "pysquared.hardware.magnetometer.manager",
-    "pysquared.hardware.radio",
-    "pysquared.hardware.radio.manager",
-    "pysquared.hardware.radio.packetizer",
-    "pysquared.hardware.power_monitor",
-    "pysquared.hardware.power_monitor.manager",
-    "pysquared.hardware.burnwire",
-    "pysquared.hardware.burnwire.manager",
-    "pysquared.nvm",
-    "pysquared.protos",
-    "pysquared.rtc",
-    "pysquared.rtc.manager",
-    "pysquared.file_validation",
-    "pysquared.file_validation.manager"
-    ]
-
 [tool.uv.sources]
 pysquared-flight-software = { workspace = true }
 pysquared-flight-software-mocks = { workspace = true }
