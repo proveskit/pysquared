@@ -13,7 +13,7 @@ dependencies = [
     "adafruit-circuitpython-neopixel==6.3.12",
     "adafruit-circuitpython-register==1.10.4",
     "adafruit-circuitpython-rfm==1.0.6",
-    "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A@1.0.0",
+    "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A@1.1.0",
     "adafruit-circuitpython-ticks==1.1.1",
     "adafruit-circuitpython-veml7700==2.1.4",
     "proves-circuitpython-rv3028 @ git+https://github.com/proveskit/PROVES_CircuitPython_RV3028@1.0.2",

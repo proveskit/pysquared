@@ -1,0 +1,15 @@
+[project]
+name = "pysquared-ground-station"
+version = "2.0.0"
+description = "Ground Station Software for the PROVES Kit"
+requires-python = ">=3.13"
+dependencies = [
+    "pysquared-flight-software",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ground-station*"]
