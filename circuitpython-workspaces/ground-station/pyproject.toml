@@ -12,4 +12,4 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["ground-station*"]
+include = ["ground_station*"]
