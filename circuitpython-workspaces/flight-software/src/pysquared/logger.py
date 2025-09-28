@@ -95,7 +95,7 @@ class Logger:
         """
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
-        self._colorized: bool = colorized
+        self.colorized: bool = colorized
 
     def _can_print_this_level(self, level_value: int) -> bool:
         """
@@ -162,7 +162,7 @@ class Logger:
                 with open(file, "a") as f:
                     f.write(json_output + "\n")
 
-            if self._colorized:
+            if self.colorized:
                 json_output = json_output.replace(
                     f'"level": "{level}"', f'"level": "{LogColors[level]}"'
                 )
