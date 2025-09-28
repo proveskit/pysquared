@@ -11,10 +11,18 @@
 - Type-checked protocols and sensor interfaces
 - Robust error handling and JSON-structured logging
 - Configuration management with validation
-- 100% test coverage with pytest
+- [High test coverage](https://sonarcloud.io/component_measures?metric=coverage&id=proveskit_circuitpy_flight_software)
 - Designed for microcontroller resource constraints
 
 ## Quick Start
+
+### Using PySquared for your Satellite
+
+If you are looking to use PySquared in your own project, see the [Getting Started](https://proveskit.github.io/pysquared/getting-started/) guide.
+
+### Contributing to PySquared
+
+If you want to contribute to PySquared, follow these steps:
 
 1. Clone the repository:
    ```bash
@@ -32,10 +40,11 @@
    make test
    ```
 
-4. See [Getting Started](https://proveskit.github.io/pysquared/getting-started/) for more details.
+4. See the [contributing](https://proveskit.github.io/pysquared/contributing/) guide for more details.
 
 ## Documentation
 
+- [Getting Started](https://proveskit.github.io/pysquared/getting-started/)
 - [Design Guide](https://proveskit.github.io/pysquared/design-guide/)
 - [Configuration](https://proveskit.github.io/pysquared/api/#pysquared.config)
 - [Error Handling & Logging](https://proveskit.github.io/pysquared/api/#pysquared.logger)

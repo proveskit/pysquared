@@ -21,6 +21,18 @@ repos:
         entry: '# type:? *ignore'
         language: pygrep
         types: [python]
+        files: ^circuitpython-workspaces/flight-software
+        exclude: ^circuitpython-workspaces/flight-software/src/pysquared/beacon\.py|^circuitpython-workspaces/flight-software/src/pysquared/logger\.py|^circuitpython-workspaces/flight-software/src/pysquared/rtc/manager/microcontroller\.py|^circuitpython-workspaces/flight-software/src/pysquared/hardware/sd_card/manager/sd_card\.py
+
+  - repo: local
+    hooks:
+      - id: prevent-pyright-ignore
+        name: prevent pyright ignore annotations
+        description: 'Enforce that no `# type: ignore` annotations exist in the codebase.'
+        entry: '# pyright:? *.*false'
+        language: pygrep
+        types: [python]
+        files: ^circuitpython-workspaces/flight-software|^cpython-workspace/
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
