@@ -26,6 +26,7 @@ from .logger import Logger
 from .nvm.counter import Counter
 from .nvm.flag import Flag
 from .protos.imu import IMUProto
+from .protos.magnetometer import MagnetometerProto
 from .protos.power_monitor import PowerMonitorProto
 from .protos.radio import RadioProto
 from .protos.temperature_sensor import TemperatureSensorProto
@@ -49,6 +50,7 @@ class Beacon:
         *args: PowerMonitorProto
         | RadioProto
         | IMUProto
+        | MagnetometerProto
         | TemperatureSensorProto
         | Flag
         | Counter
@@ -71,6 +73,7 @@ class Beacon:
             PowerMonitorProto
             | RadioProto
             | IMUProto
+            | MagnetometerProto
             | TemperatureSensorProto
             | Flag
             | Counter
@@ -228,6 +231,8 @@ class Beacon:
                 self._add_radio_data(state, sensor, index)
             elif isinstance(sensor, IMUProto):
                 self._add_imu_data(state, sensor, index)
+            elif isinstance(sensor, MagnetometerProto):
+                self._add_magnetometer_data(state, sensor, index)
             elif isinstance(sensor, PowerMonitorProto):
                 self._add_power_monitor_data(state, sensor, index)
             elif isinstance(sensor, TemperatureSensorProto):
@@ -279,6 +284,21 @@ class Beacon:
             f"{sensor_name}_{index}_angular_velocity",
             lambda: sensor.get_angular_velocity().to_dict(),
             "Error retrieving angular velocity",
+            sensor_name,
+            index,
+        )
+
+    def _add_magnetometer_data(
+        self, state: OrderedDict[str, object], sensor: MagnetometerProto, index: int
+    ) -> None:
+        """Adds magnetometer data to the beacon state."""
+        sensor_name = sensor.__class__.__name__
+
+        self._safe_add_sensor_reading(
+            state,
+            f"{sensor_name}_{index}_magnetic_field",
+            lambda: sensor.get_magnetic_field().to_dict(),
+            "Error retrieving magnetic field",
             sensor_name,
             index,
         )
@@ -471,6 +491,12 @@ class Beacon:
             for i in range(3):
                 state[f"{sensor_name}_{index}_acceleration_value_{i}"] = 0.0
                 state[f"{sensor_name}_{index}_angular_velocity_value_{i}"] = 0.0
+        elif isinstance(sensor, MagnetometerProto):
+            sensor_name = sensor.__class__.__name__
+            # Add template data for all magnetometer fields that would be created
+            state[f"{sensor_name}_{index}_magnetic_field_timestamp"] = 0.0
+            for i in range(3):
+                state[f"{sensor_name}_{index}_magnetic_field_value_{i}"] = 0.0
         elif isinstance(sensor, PowerMonitorProto):
             sensor_name = sensor.__class__.__name__
             state[f"{sensor_name}_{index}_current_avg"] = 0.0
