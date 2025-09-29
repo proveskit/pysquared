@@ -9,7 +9,6 @@ from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
-
 from mocks.adafruit_ina219.ina219 import INA219
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.power_monitor.manager.ina219 import INA219Manager
