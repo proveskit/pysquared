@@ -11,7 +11,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from busio import SPI
 from microcontroller import Pin
-
 from pysquared.hardware.exception import HardwareInitializationError
 
 sys.modules["storage"] = MagicMock()
