@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 from mocks.adafruit_mcp9808.mcp9808 import MCP9808
+
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.temperature_sensor.manager.mcp9808 import MCP9808Manager
 from pysquared.logger import Logger
