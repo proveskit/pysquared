@@ -1,4 +1,4 @@
-"""Load switch manager for solar panel systems."""
+"""This is a generic load switch manager for controlling power to components."""
 
 import time
 
