@@ -18,7 +18,7 @@ class LoadSwitchManager(LoadSwitchManagerProto):
 
     def __init__(self, load_switch_pin: DigitalInOut, enable_high: bool = True) -> None:
         """Initialize the load switch manager.
-        :param load_switch_pin: DigitalInOut pin controlling the load switch (can be None)
+        :param load_switch_pin: DigitalInOut pin controlling the load switch
         :param enable_high: If True, load switch enables when pin is HIGH. If False, enables when LOW
         """
         self._load_switch_pin = load_switch_pin
@@ -28,7 +28,6 @@ class LoadSwitchManager(LoadSwitchManagerProto):
     def enable_load(self) -> None:
         """Enables the load switch, allowing power to flow.
         :raises RuntimeError: If the load switch cannot be enabled due to hardware issues
-        :raises NotImplementedError: If no load switch pin is provided
         """
         try:
             self._load_switch_pin.value = self._enable_pin_value
@@ -38,7 +37,6 @@ class LoadSwitchManager(LoadSwitchManagerProto):
     def disable_load(self) -> None:
         """Disables the load switch, cutting power.
         :raises RuntimeError: If the load switch cannot be disabled due to hardware issues
-        :raises NotImplementedError: If no load switch pin is provided
         """
         try:
             self._load_switch_pin.value = self._disable_pin_value
@@ -50,7 +48,6 @@ class LoadSwitchManager(LoadSwitchManagerProto):
         This method performs a momentary power cycle (0.1s) to reset the load switch
         and any connected components. Errors from underlying drivers are reraised.
         :raises RuntimeError: If the load switch cannot be reset due to hardware issues
-        :raises NotImplementedError: If no load switch pin is provided
         """
         try:
             was_enabled = self.is_enabled
@@ -68,6 +65,7 @@ class LoadSwitchManager(LoadSwitchManagerProto):
         :return: True if the load switch is enabled, False otherwise
         """
         try:
-            return self._load_switch_pin.value is self._enable_pin_value
+            pin_value = self._load_switch_pin.value
+            return pin_value == self._enable_pin_value
         except Exception as e:
             raise RuntimeError(f"Failed to read load switch state: {e}") from e
