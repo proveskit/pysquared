@@ -3,6 +3,23 @@ Welcome to the contributing guide for PySquared! This guide will help you set up
 
 ### Setting up your code editor
 
+#### Workspaces
+
+Working with the PySquared repo is different from working with other Python repos because part of the repo is designed to run on CircuitPython (e.g. the flight software) while another part is designed to run on standard CPython (e.g. the tests and development tools). To make the development experience as smooth as possible, we use [`uv`](https://docs.astral.sh/uv) workspaces for python environment management, a CircuitPython specific [`typeshed`](https://peps.python.org/pep-0561/) to give developers accurate type information for CircuitPython code, and [`pyright`](https://github.com/microsoft/pyright) configurations to control when the CircuitPython typeshed is loaded.
+
+To experience the best development environment, we recommend using a code editor that supports [code workspaces](https://code.visualstudio.com/docs/editing/workspaces/workspaces) such as VS Code. When you open up the PySquared repository in your editor, open the workspace file located at `pysquared.code-workspace` and click `Open Workspace`. This will reload VS Code into workspace mode.
+
+![Start the workspace by opening the pysquared.code-workspace file and clicking Open Workspace](images/workspace-start.jpeg)
+
+When you're in workspace mode, your editor will be able to autocomplete and tell you if you have any type errors in your code for both CircuitPython and CPython.
+
+![Demonstration showing type errors when the developer attempts to use interfaces that exist in CircuitPython but not CPython and vice versa](images/workspace-demo.jpeg)
+
+!!! question "Not using VS Code?"
+    If you're using a different code editor and you have configured it to provide this functionality, please consider contributing a section to this guide to help others get set up.
+
+#### Dev Containers
+
 Every repository comes with a `.devcontainer` directory that contains configuration for a ready-to-use development environment. This environment includes all the necessary tools and dependencies to work on the repository. You can use any code editor that supports dev containers, such as [Visual Studio Code](https://code.visualstudio.com/), to open the repository in a dev container.
 
 ### Testing custom versions of PySquared

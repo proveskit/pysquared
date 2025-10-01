@@ -19,7 +19,17 @@ PySquared is built on top of CircuitPython, which is a version of Python designe
 
 We use type hints throughout the PySquared codebase to ensure that our code is clear and maintainable. Type hints help us catch errors early and make it easier to understand the expected types of variables and function parameters.
 
-We do not accept changes with lines that are ignored the type checker i.e. `# type: ignore`. If you run into an issue where you think you need to ignore a type, it is likely a problem with the design of your component. Please take a moment to think about how you can fix the type error instead. If you need help, please reach out for assistance.
+We use [typeshed](https://peps.python.org/pep-0561/) stubs to provide more accurate type hints for CircuitPython, replacing the default Python standard library type hints. These CircuitPython-specific stubs are located in the `typeshed/` directory. This helps the typechecker catch compatibility issues with CircuitPython code before running it on a device.
+
+We do not accept changes to files in the `pysquared/` directory that include lines ignoring the type checker (e.g., `# type: ignore`). The only exceptions are:
+
+- **Upstream Fix in Progress:** If a type error is caused by a bug or limitation in an external dependency, you may ignore the line only when leaving a comment with a link to the issue or PR where it is fixed or a fix is in progress. A valid type hint might look like this:
+
+    ```python
+    some_variable = some_function()  # type: ignore  # PR https://github.com/adafruit/circuitpython/pull/10603
+    ```
+
+If you encounter a type error, first consider if it can be resolved by improving your code's design. If you believe an exception is necessary, please reach out for assistance before proceeding.
 
 ??? note "Using the Typing Module"
     For more advanced type hinting we can use the Python standard library's `typing` module which was introduced in Python 3.5. This module provides a variety of type hints that can be used to specify more complex types, such as `List`, `Dict`, and `Optional`. CircuitPython does not support the `typing` module so we must wrap the import in a try/except block to avoid import errors. For example:
