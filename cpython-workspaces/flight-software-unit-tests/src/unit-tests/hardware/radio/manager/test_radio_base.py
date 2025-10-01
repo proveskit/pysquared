@@ -6,7 +6,6 @@ the default `get_max_packet_size` returns the correct value.
 """
 
 import pytest
-
 from pysquared.hardware.radio.manager.base import BaseRadioManager
 from pysquared.hardware.radio.modulation import LoRa
 

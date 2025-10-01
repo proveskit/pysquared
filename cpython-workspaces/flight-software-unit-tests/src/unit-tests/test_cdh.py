@@ -9,7 +9,6 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from pysquared.cdh import CommandDataHandler
 from pysquared.config.config import Config
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
