@@ -10,6 +10,7 @@ import os
 import tempfile
 
 import pytest
+
 from pysquared.config.config import Config
 
 

@@ -14,7 +14,7 @@ rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 A
 """
 
 from busio import I2C
-from rv3028.rv3028 import RV3028
+from mocks.rv3028.rv3028 import RV3028
 
 from ...hardware.exception import HardwareInitializationError
 from ...logger import Logger
