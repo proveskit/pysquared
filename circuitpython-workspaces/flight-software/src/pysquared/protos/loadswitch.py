@@ -1,23 +1,23 @@
-"""Load switch manager protocol for solar panel systems."""
+"""Load switch manager protocol for generic components."""
 
 from typing import Protocol
 
 
 class LoadSwitchManagerProto(Protocol):
-    """Protocol for load switch management in solar panel systems.
+    """Protocol for load switch management in generic systems.
     This protocol defines the interface for managing load switches that control
-    power to solar panel components. Load switches can be enabled, disabled,
+    power to components. Load switches can be enabled, disabled,
     and reset with momentary power cycling.
     """
 
     def enable_load(self) -> None:
-        """Enable the load switch to provide power to the solar panel.
+        """Enable the load switch to provide power to the component.
         :raises RuntimeError: If the load switch cannot be enabled due to hardware issues
         """
         ...
 
     def disable_load(self) -> None:
-        """Disable the load switch to cut power to the solar panel.
+        """Disable the load switch to cut power to the component.
         :raises RuntimeError: If the load switch cannot be disabled due to hardware issues
         """
         ...
