@@ -73,14 +73,36 @@ class CommandDataHandler:
 
             msg: dict[str, str] = json.loads(json_str)
 
+            # Check for OSCAR password first
+            if msg.get("password") == self.oscar_password:
+                self._log.debug("OSCAR command received", msg=msg)
+                cmd = msg.get("command")
+                if cmd is None:
+                    self._log.warning("No OSCAR command found in message", msg=msg)
+                    self._packet_manager.send(
+                        f"No OSCAR command found in message: {msg}".encode("utf-8")
+                    )
+                    return
+
+                args: list[str] = []
+                raw_args = msg.get("args")
+                if isinstance(raw_args, list):
+                    args: list[str] = raw_args
+
+                # Delay to give the ground station time to switch to listening mode
+                time.sleep(self._send_delay)
+                self._packet_manager.send_acknowledgement()
+
+                self.oscar_command(cmd, args)
+                return
+
             # If message has password field, check it
             if msg.get("password") != self._config.super_secret_code:
                 self._log.debug(
                     "Invalid password in message",
                     msg=msg,
                 )
-            elif msg.get("password") == self.oscar_password:
-                self._log.debug("OSCAR command received", msg=msg)
+                return
 
             if msg.get("name") != self._config.cubesat_name:
                 self._log.debug(
