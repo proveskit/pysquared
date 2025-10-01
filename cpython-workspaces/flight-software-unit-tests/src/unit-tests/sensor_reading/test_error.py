@@ -1,7 +1,6 @@
 """Unit tests for the sensor reading error classes."""
 
 import pytest
-
 from pysquared.sensor_reading.error import (
     SensorReadingError,
     SensorReadingTimeoutError,

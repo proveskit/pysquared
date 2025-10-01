@@ -10,7 +10,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from microcontroller import Pin
-
 from pysquared.hardware.busio import initialize_i2c_bus, initialize_spi_bus
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.logger import Logger
