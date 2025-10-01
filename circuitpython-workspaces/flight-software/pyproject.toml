@@ -16,6 +16,7 @@ dependencies = [
     "adafruit-circuitpython-tca9548a @ git+https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A@1.0.0",
     "adafruit-circuitpython-ticks==1.1.1",
     "adafruit-circuitpython-veml7700==2.1.4",
+    "adafruit-circuitpython-hashlib==1.4.19",
     "proves-circuitpython-sx126 @ git+https://github.com/proveskit/micropySX126X@1.0.0",
     "proves-circuitpython-sx1280 @ git+https://github.com/proveskit/CircuitPython_SX1280@1.0.4",
 ]
