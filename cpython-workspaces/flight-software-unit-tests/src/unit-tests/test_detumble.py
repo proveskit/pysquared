@@ -5,8 +5,9 @@ functions for spacecraft detumbling. The tests cover dot product, cross product,
 and magnetorquer dipole calculations.
 """
 
-import pysquared.detumble as detumble
 import pytest
+
+import pysquared.detumble as detumble
 
 
 def test_dot_product():

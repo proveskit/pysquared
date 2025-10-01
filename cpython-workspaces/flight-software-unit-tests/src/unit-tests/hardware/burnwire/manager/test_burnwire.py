@@ -9,6 +9,7 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 from digitalio import DigitalInOut
+
 from pysquared.hardware.burnwire.manager.burnwire import BurnwireManager
 from pysquared.logger import Logger
 

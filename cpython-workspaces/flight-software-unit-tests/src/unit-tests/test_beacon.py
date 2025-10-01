@@ -14,12 +14,14 @@ import pytest
 from freezegun import freeze_time
 from mocks.circuitpython.byte_array import ByteArray
 from mocks.circuitpython.microcontroller import Processor
+
 from pysquared.hardware.radio.modulation import LoRa, RadioModulation
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
 from pysquared.nvm.counter import Counter
 from pysquared.nvm.flag import Flag
 from pysquared.protos.imu import IMUProto
+from pysquared.protos.magnetometer import MagnetometerProto
 from pysquared.protos.power_monitor import PowerMonitorProto
 from pysquared.protos.radio import RadioProto
 from pysquared.protos.temperature_sensor import TemperatureSensorProto
@@ -27,6 +29,7 @@ from pysquared.sensor_reading.acceleration import Acceleration
 from pysquared.sensor_reading.angular_velocity import AngularVelocity
 from pysquared.sensor_reading.avg import avg_readings
 from pysquared.sensor_reading.current import Current
+from pysquared.sensor_reading.magnetic import Magnetic
 from pysquared.sensor_reading.temperature import Temperature
 from pysquared.sensor_reading.voltage import Voltage
 
@@ -126,6 +129,14 @@ class MockIMU(IMUProto):
     def get_acceleration(self) -> Acceleration:
         """Mocks the get_acceleration method."""
         return Acceleration(5.4, 3.2, 1.0)
+
+
+class MockMagnetometer(MagnetometerProto):
+    """Mocks the MagnetometerProto for testing."""
+
+    def get_magnetic_field(self) -> Magnetic:
+        """Mocks the get_magnetic_field method."""
+        return Magnetic(25.5, -12.3, 8.7)
 
 
 def test_beacon_init(mock_logger, mock_packet_manager):
@@ -1041,3 +1052,130 @@ def test_beacon_encode_sensor_dict_with_non_numeric_values():
     # Verify encoding completed without error
     encoded_data = encoder.to_bytes()
     assert isinstance(encoded_data, bytes)
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_send_with_magnetometer(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests sending a beacon with magnetometer sensor.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    magnetometer = MockMagnetometer()
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        magnetometer,
+    )
+
+    result = beacon.send()
+
+    # Verify the beacon was sent successfully
+    assert result == mock_packet_manager.send.return_value
+    mock_packet_manager.send.assert_called_once()
+
+    # Decode the sent data to verify magnetometer data is included
+    sent_data = mock_packet_manager.send.call_args[0][0]
+    decoded_data = Beacon.decode_binary_beacon(sent_data)
+
+    # Verify magnetometer data is present in the decoded data
+    values = list(decoded_data.values())
+
+    # Should contain the magnetic field components (25.5, -12.3, 8.7)
+    # Use approximate comparison for floating point values
+    assert any(abs(v - 25.5) < 0.01 for v in values if isinstance(v, (int, float)))
+    assert any(abs(v - (-12.3)) < 0.01 for v in values if isinstance(v, (int, float)))
+    assert any(abs(v - 8.7) < 0.01 for v in values if isinstance(v, (int, float)))
+
+
+def test_beacon_send_with_magnetometer_error(mock_logger, mock_packet_manager):
+    """Tests sending a beacon when magnetometer sensor fails.
+
+    Args:
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    magnetometer = MockMagnetometer()
+    # Mock the get_magnetic_field method to raise an exception
+    magnetometer.get_magnetic_field = MagicMock(
+        side_effect=Exception("Magnetometer sensor failure")
+    )
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        magnetometer,
+    )
+
+    _ = beacon.send()
+
+    # Verify the error was logged
+    mock_logger.error.assert_called_with(
+        "Error retrieving magnetic field",
+        magnetometer.get_magnetic_field.side_effect,
+        sensor="MockMagnetometer",
+        index=0,
+    )
+
+    # Verify beacon was still sent (despite the error)
+    mock_packet_manager.send.assert_called_once()
+
+
+@patch("pysquared.nvm.flag.microcontroller")
+@patch("pysquared.nvm.counter.microcontroller")
+def test_beacon_generate_key_mapping_with_magnetometer(
+    mock_flag_microcontroller,
+    mock_counter_microcontroller,
+    mock_logger,
+    mock_packet_manager,
+):
+    """Tests the generate_key_mapping method includes magnetometer template data.
+
+    Args:
+        mock_flag_microcontroller: Mocked microcontroller for Flag.
+        mock_counter_microcontroller: Mocked microcontroller for Counter.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    mock_flag_microcontroller.nvm = setup_datastore
+    mock_counter_microcontroller.nvm = setup_datastore
+
+    magnetometer = MockMagnetometer()
+
+    beacon = Beacon(
+        mock_logger,
+        "test_beacon",
+        mock_packet_manager,
+        0,
+        magnetometer,
+    )
+
+    key_map = beacon.generate_key_mapping()
+
+    # Verify comprehensive key mapping is generated
+    assert isinstance(key_map, dict)
+
+    # Check that magnetometer template keys are present in the mapping
+    # The keys should include magnetometer timestamp and 3D magnetic field components
+    key_names = list(key_map.values())
+    magnetometer_keys = [key for key in key_names if "magnetic_field" in str(key)]
+
+    # Should have at least 4 keys: timestamp + 3 components (x, y, z)
+    assert len(magnetometer_keys) >= 4
