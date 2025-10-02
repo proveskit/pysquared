@@ -1,12 +1,7 @@
 """Load switch manager protocol for generic components."""
 
-try:
-    from typing import Protocol
-except ImportError:
-    pass
 
-
-class LoadSwitchManagerProto(Protocol):
+class LoadSwitchManagerProto:
     """Protocol for load switch management in generic systems.
     This protocol defines the interface for managing load switches that control
     power to components. Load switches can be enabled, disabled,
