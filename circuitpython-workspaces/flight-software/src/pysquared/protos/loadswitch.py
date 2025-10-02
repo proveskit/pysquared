@@ -1,6 +1,6 @@
 """Load switch manager protocol for generic components."""
 
-from typing import Protocol
+from ..typing import Protocol
 
 
 class LoadSwitchManagerProto(Protocol):
