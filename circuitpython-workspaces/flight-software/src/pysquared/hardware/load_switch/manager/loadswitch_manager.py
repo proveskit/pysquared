@@ -1,4 +1,19 @@
-"""This is a generic load switch manager for controlling power to components."""
+"""This is a generic load switch manager for controlling power to components.
+
+Usage:
+
+from lib.pysquared.hardware.load_switch.manager.loadswitch_manager import LoadSwitchManager
+
+load_switch_0 = LoadSwitchManager(
+    FACE0_ENABLE, True
+)
+
+load_switch_0.enable_load()
+load_switch_0.disable_load()
+load_switch_0.reset_load()
+is_enabled = load_switch_0.is_enabled
+
+"""
 
 import time
 
