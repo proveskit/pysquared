@@ -8,7 +8,6 @@ of sleep duration limits.
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from pysquared.config.config import Config
 from pysquared.logger import Logger
 from pysquared.sleep_helper import SleepHelper

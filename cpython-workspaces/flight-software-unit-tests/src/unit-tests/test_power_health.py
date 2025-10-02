@@ -9,7 +9,6 @@ error handling during sensor readings.
 from unittest.mock import MagicMock
 
 import pytest
-
 from pysquared.config.config import Config
 from pysquared.logger import Logger
 from pysquared.power_health import CRITICAL, DEGRADED, NOMINAL, UNKNOWN, PowerHealth

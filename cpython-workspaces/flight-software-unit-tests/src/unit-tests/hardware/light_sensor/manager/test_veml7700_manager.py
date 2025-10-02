@@ -4,7 +4,6 @@ from typing import Generator
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
-
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.hardware.light_sensor.manager.veml7700 import VEML7700Manager
 from pysquared.logger import Logger

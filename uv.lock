@@ -76,14 +76,14 @@ wheels = [
 
 [[package]]
 name = "adafruit-circuitpython-hashlib"
-version = "1.4.9"
+version = "1.4.19"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "adafruit-blinka" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7f/27/75d320fb2a64b2b7e3263fa96564e2a502e60cf8fd99881378a54028e593/adafruit-circuitpython-hashlib-1.4.9.tar.gz", hash = "sha256:d31df90efc272afd98fd986a6bb35337ba1cf63d6bd59e6727bab95152a206a1", size = 37392, upload-time = "2022-08-26T02:44:13.46Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/54/c4a1fd20e07a52a6ef333212dd3b631f1181e78c1822c4e2aa241c24b4bf/adafruit_circuitpython_hashlib-1.4.19.tar.gz", hash = "sha256:f764a890dd4537343efc210bf2d474eff5ba4b568f7f6f99e9cf72950a1349f1", size = 32803, upload-time = "2025-06-17T16:35:21.662Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/50/4f/d992d658c6aa16c55b5b9709742a177b425729a0fe9b91b6c2108f7c0cce/adafruit_circuitpython_hashlib-1.4.9-py3-none-any.whl", hash = "sha256:b9ef6a1b317ff7f4422343410835a9a80b6304122bbbae4faadc08fec73c33a9", size = 18611, upload-time = "2022-08-26T02:44:12.265Z" },
+    { url = "https://files.pythonhosted.org/packages/16/0e/e9876aeaaec3b336f96c04a1d4aa4c02ec437d52fccebc7cabec27a033ce/adafruit_circuitpython_hashlib-1.4.19-py3-none-any.whl", hash = "sha256:46027ddf3b6e4abfdeda4853761ef0fac28df58ce95bc194dafd4d3e43c232e7", size = 18928, upload-time = "2025-06-17T16:35:20.814Z" },
 ]
 
 [[package]]
@@ -943,11 +943,6 @@ wheels = [
 ]
 
 [[package]]
-name = "proves-circuitpython-rv3028"
-version = "1.0.2"
-source = { git = "https://github.com/proveskit/PROVES_CircuitPython_RV3028?rev=1.0.2#ae5b1c37a5b8c8c46b716a010ad1fba3ac88351e" }
-
-[[package]]
 name = "proves-circuitpython-sx126"
 version = "2.0.0"
 source = { git = "https://github.com/proveskit/micropySX126X?rev=1.0.0#247e623588b6c7b4a273c5b5aa9d35fc1b1d2f80" }
@@ -1023,22 +1018,6 @@ name = "pysquared"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "adafruit-circuitpython-asyncio" },
-    { name = "adafruit-circuitpython-drv2605" },
-    { name = "adafruit-circuitpython-hashlib" },
-    { name = "adafruit-circuitpython-ina219" },
-    { name = "adafruit-circuitpython-lis2mdl" },
-    { name = "adafruit-circuitpython-lsm6ds" },
-    { name = "adafruit-circuitpython-mcp9808" },
-    { name = "adafruit-circuitpython-neopixel" },
-    { name = "adafruit-circuitpython-register" },
-    { name = "adafruit-circuitpython-rfm" },
-    { name = "adafruit-circuitpython-tca9548a" },
-    { name = "adafruit-circuitpython-ticks" },
-    { name = "adafruit-circuitpython-veml7700" },
-    { name = "proves-circuitpython-rv3028" },
-    { name = "proves-circuitpython-sx126" },
-    { name = "proves-circuitpython-sx1280" },
     { name = "pysquared-flight-software" },
     { name = "pysquared-flight-software-mocks" },
     { name = "pysquared-flight-software-unit-tests" },
@@ -1056,22 +1035,6 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "adafruit-circuitpython-asyncio", git = "https://github.com/adafruit/adafruit_circuitpython_asyncio?rev=1.3.3" },
-    { name = "adafruit-circuitpython-drv2605", specifier = "==1.3.4" },
-    { name = "adafruit-circuitpython-hashlib", specifier = "==1.4.9" },
-    { name = "adafruit-circuitpython-ina219", specifier = "==3.4.26" },
-    { name = "adafruit-circuitpython-lis2mdl", specifier = "==2.1.23" },
-    { name = "adafruit-circuitpython-lsm6ds", specifier = "==4.5.13" },
-    { name = "adafruit-circuitpython-mcp9808", specifier = "==3.3.24" },
-    { name = "adafruit-circuitpython-neopixel", specifier = "==6.3.12" },
-    { name = "adafruit-circuitpython-register", specifier = "==1.10.4" },
-    { name = "adafruit-circuitpython-rfm", specifier = "==1.0.6" },
-    { name = "adafruit-circuitpython-tca9548a", git = "https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A?rev=1.0.0" },
-    { name = "adafruit-circuitpython-ticks", specifier = "==1.1.1" },
-    { name = "adafruit-circuitpython-veml7700", specifier = "==2.1.4" },
-    { name = "proves-circuitpython-rv3028", git = "https://github.com/proveskit/PROVES_CircuitPython_RV3028?rev=1.0.2" },
-    { name = "proves-circuitpython-sx126", git = "https://github.com/proveskit/micropySX126X?rev=1.0.0" },
-    { name = "proves-circuitpython-sx1280", git = "https://github.com/proveskit/CircuitPython_SX1280?rev=1.0.4" },
     { name = "pysquared-flight-software", editable = "circuitpython-workspaces/flight-software" },
     { name = "pysquared-flight-software-mocks", editable = "cpython-workspaces/flight-software-mocks" },
     { name = "pysquared-flight-software-unit-tests", editable = "cpython-workspaces/flight-software-unit-tests" },
@@ -1094,6 +1057,7 @@ source = { editable = "circuitpython-workspaces/flight-software" }
 dependencies = [
     { name = "adafruit-circuitpython-asyncio" },
     { name = "adafruit-circuitpython-drv2605" },
+    { name = "adafruit-circuitpython-hashlib" },
     { name = "adafruit-circuitpython-ina219" },
     { name = "adafruit-circuitpython-lis2mdl" },
     { name = "adafruit-circuitpython-lsm6ds" },
@@ -1112,6 +1076,7 @@ dependencies = [
 requires-dist = [
     { name = "adafruit-circuitpython-asyncio", git = "https://github.com/adafruit/adafruit_circuitpython_asyncio?rev=1.3.3" },
     { name = "adafruit-circuitpython-drv2605", specifier = "==1.3.4" },
+    { name = "adafruit-circuitpython-hashlib", specifier = "==1.4.19" },
     { name = "adafruit-circuitpython-ina219", specifier = "==3.4.26" },
     { name = "adafruit-circuitpython-lis2mdl", specifier = "==2.1.23" },
     { name = "adafruit-circuitpython-lsm6ds", specifier = "==4.5.13" },
