@@ -389,3 +389,222 @@ def test_listen_for_commands_unknown_command(
     cdh.listen_for_commands(30)
 
     mock_logger.warning.assert_called_once()
+
+
+# OSCAR Command Tests
+
+
+@patch("time.sleep")
+def test_listen_for_commands_oscar_password_triggers_oscar_command(
+    mock_sleep, cdh, mock_packet_manager, mock_logger
+):
+    """Tests that OSCAR password triggers the oscar_command function.
+
+    Args:
+        mock_sleep: Mocked time.sleep function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    message = {
+        "password": "Hello World!",
+        "command": "ping",
+        "args": [],
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+    mock_packet_manager.get_last_rssi.return_value = -50
+
+    cdh.listen_for_commands(30)
+
+    # Verify OSCAR command was detected
+    mock_logger.debug.assert_any_call("OSCAR command received", msg=message)
+
+    # Verify acknowledgement was sent
+    mock_packet_manager.send_acknowledgement.assert_called_once()
+
+    # Verify ping response was sent
+    mock_packet_manager.send.assert_called_once_with("Pong! -50".encode("utf-8"))
+
+
+@patch("time.sleep")
+def test_listen_for_commands_oscar_password_missing_command(
+    mock_sleep, cdh, mock_packet_manager, mock_logger
+):
+    """Tests OSCAR password with missing command field.
+
+    Args:
+        mock_sleep: Mocked time.sleep function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    message = {
+        "password": "Hello World!",
+        "args": [],
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    # Verify OSCAR command was detected
+    mock_logger.debug.assert_any_call("OSCAR command received", msg=message)
+
+    # Verify warning was logged
+    mock_logger.warning.assert_any_call(
+        "No OSCAR command found in message", msg=message
+    )
+
+    # Verify error message was sent
+    mock_packet_manager.send.assert_called_once()
+    sent_bytes = mock_packet_manager.send.call_args[0][0]
+    expected_message = f"No OSCAR command found in message: {message}"
+    assert sent_bytes.decode("utf-8") == expected_message
+
+
+def test_oscar_command_ping(cdh, mock_packet_manager, mock_logger):
+    """Tests the oscar_command method with ping command.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    mock_packet_manager.get_last_rssi.return_value = -75
+
+    cdh.oscar_command("ping", [])
+
+    # Verify info log
+    mock_logger.info.assert_called_once_with(
+        "OSCAR ping command received. Sending pong response."
+    )
+
+    # Verify pong response was sent with RSSI
+    mock_packet_manager.send.assert_called_once_with("Pong! -75".encode("utf-8"))
+
+
+def test_oscar_command_repeat_with_message(cdh, mock_packet_manager, mock_logger):
+    """Tests the oscar_command method with repeat command and message.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    args = ["Hello", "from", "ground", "station"]
+
+    cdh.oscar_command("repeat", args)
+
+    # Verify info log
+    mock_logger.info.assert_called_once_with(
+        "OSCAR repeat command received. Repeating message."
+    )
+
+    # Verify the message was repeated
+    expected_message = "Hello from ground station"
+    mock_packet_manager.send.assert_called_once_with(expected_message.encode("utf-8"))
+
+
+def test_oscar_command_repeat_no_message(cdh, mock_packet_manager, mock_logger):
+    """Tests the oscar_command method with repeat command but no message.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    cdh.oscar_command("repeat", [])
+
+    # Verify warning was logged
+    mock_logger.warning.assert_called_once_with(
+        "No message specified for repeat command"
+    )
+
+    # Verify error message was sent
+    mock_packet_manager.send.assert_called_once_with(
+        "No message specified for repeat command.".encode("utf-8")
+    )
+
+
+def test_oscar_command_unknown_command(cdh, mock_packet_manager, mock_logger):
+    """Tests the oscar_command method with unknown command.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    cdh.oscar_command("unknown_oscar_command", ["some", "args"])
+
+    # Verify warning was logged
+    mock_logger.warning.assert_called_once_with(
+        "Unknown OSCAR command received", command="unknown_oscar_command"
+    )
+
+    # Verify error message was sent
+    mock_packet_manager.send.assert_called_once_with(
+        "Unknown OSCAR command received: unknown_oscar_command".encode("utf-8")
+    )
+
+
+@patch("time.sleep")
+def test_listen_for_commands_oscar_repeat_integration(
+    mock_sleep, cdh, mock_packet_manager, mock_logger
+):
+    """Tests full integration of OSCAR repeat command through listen_for_commands.
+
+    Args:
+        mock_sleep: Mocked time.sleep function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    message = {
+        "password": "Hello World!",
+        "command": "repeat",
+        "args": ["Testing", "OSCAR", "repeat"],
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    # Verify OSCAR command was detected
+    mock_logger.debug.assert_any_call("OSCAR command received", msg=message)
+
+    # Verify acknowledgement was sent
+    mock_packet_manager.send_acknowledgement.assert_called_once()
+
+    # Verify the repeat message was sent
+    expected_message = "Testing OSCAR repeat"
+    mock_packet_manager.send.assert_called_once_with(expected_message.encode("utf-8"))
+
+
+@patch("time.sleep")
+def test_listen_for_commands_oscar_ping_integration(
+    mock_sleep, cdh, mock_packet_manager, mock_logger
+):
+    """Tests full integration of OSCAR ping command through listen_for_commands.
+
+    Args:
+        mock_sleep: Mocked time.sleep function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    message = {
+        "password": "Hello World!",
+        "command": "ping",
+        "args": [],
+    }
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+    mock_packet_manager.get_last_rssi.return_value = -82
+
+    cdh.listen_for_commands(30)
+
+    # Verify OSCAR command was detected
+    mock_logger.debug.assert_any_call("OSCAR command received", msg=message)
+
+    # Verify acknowledgement was sent
+    mock_packet_manager.send_acknowledgement.assert_called_once()
+
+    # Verify ping response was sent
+    mock_packet_manager.send.assert_called_once_with("Pong! -82".encode("utf-8"))

@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.13"
 
 [manifest]
@@ -1037,10 +1037,10 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "pysquared-flight-software", virtual = "circuitpython-workspaces/flight-software" },
-    { name = "pysquared-flight-software-mocks", virtual = "cpython-workspaces/flight-software-mocks" },
-    { name = "pysquared-flight-software-unit-tests", virtual = "cpython-workspaces/flight-software-unit-tests" },
-    { name = "pysquared-ground-station", virtual = "circuitpython-workspaces/ground-station" },
+    { name = "pysquared-flight-software", editable = "circuitpython-workspaces/flight-software" },
+    { name = "pysquared-flight-software-mocks", editable = "cpython-workspaces/flight-software-mocks" },
+    { name = "pysquared-flight-software-unit-tests", editable = "cpython-workspaces/flight-software-unit-tests" },
+    { name = "pysquared-ground-station", editable = "circuitpython-workspaces/ground-station" },
 ]
 
 [package.metadata.requires-dev]
@@ -1056,7 +1056,7 @@ docs = [
 [[package]]
 name = "pysquared-flight-software"
 version = "2.0.0"
-source = { virtual = "circuitpython-workspaces/flight-software" }
+source = { editable = "circuitpython-workspaces/flight-software" }
 dependencies = [
     { name = "adafruit-circuitpython-asyncio" },
     { name = "adafruit-circuitpython-drv2605" },
@@ -1097,7 +1097,7 @@ requires-dist = [
 [[package]]
 name = "pysquared-flight-software-mocks"
 version = "2.0.0"
-source = { virtual = "cpython-workspaces/flight-software-mocks" }
+source = { editable = "cpython-workspaces/flight-software-mocks" }
 dependencies = [
     { name = "adafruit-circuitpython-typing" },
 ]
@@ -1108,7 +1108,7 @@ requires-dist = [{ name = "adafruit-circuitpython-typing", specifier = "==1.12.1
 [[package]]
 name = "pysquared-flight-software-unit-tests"
 version = "2.0.0"
-source = { virtual = "cpython-workspaces/flight-software-unit-tests" }
+source = { editable = "cpython-workspaces/flight-software-unit-tests" }
 dependencies = [
     { name = "coverage" },
     { name = "freezegun" },
@@ -1127,21 +1127,21 @@ requires-dist = [
     { name = "hypothesis", specifier = "==6.136.7" },
     { name = "pre-commit", specifier = "==4.2.0" },
     { name = "pyright", extras = ["nodejs"], specifier = "==1.1.404" },
-    { name = "pysquared-flight-software", virtual = "circuitpython-workspaces/flight-software" },
-    { name = "pysquared-flight-software-mocks", virtual = "cpython-workspaces/flight-software-mocks" },
+    { name = "pysquared-flight-software", editable = "circuitpython-workspaces/flight-software" },
+    { name = "pysquared-flight-software-mocks", editable = "cpython-workspaces/flight-software-mocks" },
     { name = "pytest", specifier = "==8.4.1" },
 ]
 
 [[package]]
 name = "pysquared-ground-station"
 version = "2.0.0"
-source = { virtual = "circuitpython-workspaces/ground-station" }
+source = { editable = "circuitpython-workspaces/ground-station" }
 dependencies = [
     { name = "pysquared-flight-software" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pysquared-flight-software", virtual = "circuitpython-workspaces/flight-software" }]
+requires-dist = [{ name = "pysquared-flight-software", editable = "circuitpython-workspaces/flight-software" }]
 
 [[package]]
 name = "pytest"

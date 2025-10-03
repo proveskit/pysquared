@@ -34,6 +34,8 @@ class CommandDataHandler:
     command_change_radio_modulation: str = "change_radio_modulation"
     command_send_joke: str = "send_joke"
 
+    oscar_password: str = "Hello World!"  # Default password for OSCAR commands
+
     def __init__(
         self,
         logger: Logger,
@@ -70,6 +72,29 @@ class CommandDataHandler:
             json_str = json_bytes.decode("utf-8")
 
             msg: dict[str, str] = json.loads(json_str)
+
+            # Check for OSCAR password first
+            if msg.get("password") == self.oscar_password:
+                self._log.debug("OSCAR command received", msg=msg)
+                cmd = msg.get("command")
+                if cmd is None:
+                    self._log.warning("No OSCAR command found in message", msg=msg)
+                    self._packet_manager.send(
+                        f"No OSCAR command found in message: {msg}".encode("utf-8")
+                    )
+                    return
+
+                args: list[str] = []
+                raw_args = msg.get("args")
+                if isinstance(raw_args, list):
+                    args: list[str] = raw_args
+
+                # Delay to give the ground station time to switch to listening mode
+                time.sleep(self._send_delay)
+                self._packet_manager.send_acknowledgement()
+
+                self.oscar_command(cmd, args)
+                return
 
             # If message has password field, check it
             if msg.get("password") != self._config.super_secret_code:
@@ -170,3 +195,33 @@ class CommandDataHandler:
         self._packet_manager.send(data="Resetting satellite".encode("utf-8"))
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
+
+    def oscar_command(self, command: str, args: list[str]) -> None:
+        """Handles OSCAR commands.
+
+        Args:
+            command: The OSCAR command to execute.
+            args: A list of arguments for the command.
+        """
+        if command == "ping":
+            self._log.info("OSCAR ping command received. Sending pong response.")
+            self._packet_manager.send(
+                f"Pong! {self._packet_manager.get_last_rssi()}".encode("utf-8")
+            )
+
+        elif command == "repeat":
+            if len(args) < 1:
+                self._log.warning("No message specified for repeat command")
+                self._packet_manager.send(
+                    "No message specified for repeat command.".encode("utf-8")
+                )
+                return
+            repeat_message = " ".join(args)
+            self._log.info("OSCAR repeat command received. Repeating message.")
+            self._packet_manager.send(repeat_message.encode("utf-8"))
+
+        else:
+            self._log.warning("Unknown OSCAR command received", command=command)
+            self._packet_manager.send(
+                f"Unknown OSCAR command received: {command}".encode("utf-8")
+            )

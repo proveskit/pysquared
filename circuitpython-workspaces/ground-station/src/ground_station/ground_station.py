@@ -58,6 +58,7 @@ class GroundStation:
             | 1: Reset                    |
             | 2: Change radio modulation  |
             | 3: Send joke                |
+            | 4: OSCAR commands           |
             ===============================
             """
             )
@@ -74,8 +75,13 @@ class GroundStation:
         Args:
             cmd_selection: The command selection input by the user.
         """
-        if cmd_selection not in ["1", "2", "3"]:
+        if cmd_selection not in ["1", "2", "3", "4"]:
             self._log.warning("Invalid command selection. Please try again.")
+            return
+
+        # Handle OSCAR commands separately
+        if cmd_selection == "4":
+            self.handle_oscar_commands()
             return
 
         message: dict[str, object] = {
@@ -127,6 +133,79 @@ class GroundStation:
 
             self._log.info("Received response", response=b.decode("utf-8"))
             break
+
+    def handle_oscar_commands(self):
+        """
+        Handle OSCAR command selection and sending.
+        """
+        try:
+            oscar_selection = input(
+                """
+            ===============================
+            | Select OSCAR command        |
+            | 1: Ping                     |
+            | 2: Repeat message           |
+            ===============================
+            """
+            )
+
+            if oscar_selection not in ["1", "2"]:
+                self._log.warning("Invalid OSCAR command selection. Please try again.")
+                return
+
+            message: dict[str, object] = {
+                "password": self._cdh.oscar_password,
+            }
+
+            if oscar_selection == "1":
+                message["command"] = "ping"
+                message["args"] = []
+            elif oscar_selection == "2":
+                repeat_message = input("Enter message to repeat: ")
+                if not repeat_message.strip():
+                    self._log.warning("Empty message provided. Please try again.")
+                    return
+                message["command"] = "repeat"
+                message["args"] = repeat_message.split()
+
+            while True:
+                # Turn on the radio so that it captures any received packets to buffer
+                self._packet_manager.listen(1)
+
+                # Send the OSCAR message
+                self._log.info(
+                    "Sending OSCAR command",
+                    cmd=message["command"],
+                    args=message.get("args", []),
+                )
+                self._packet_manager.send(json.dumps(message).encode("utf-8"))
+
+                # Listen for ACK response
+                b = self._packet_manager.listen(1)
+                if b is None:
+                    self._log.info("No response received, retrying...")
+                    continue
+
+                if b != b"ACK":
+                    self._log.info(
+                        "No ACK response received, retrying...",
+                        response=b.decode("utf-8"),
+                    )
+                    continue
+
+                self._log.info("Received ACK")
+
+                # Now listen for the actual response
+                b = self._packet_manager.listen(1)
+                if b is None:
+                    self._log.info("No response received, retrying...")
+                    continue
+
+                self._log.info("Received OSCAR response", response=b.decode("utf-8"))
+                break
+
+        except KeyboardInterrupt:
+            self._log.debug("Keyboard interrupt received, exiting OSCAR mode.")
 
     def run(self):
         """Run the ground station interface."""
