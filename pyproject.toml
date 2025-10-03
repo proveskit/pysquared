@@ -6,6 +6,7 @@ dependencies = [
     "pysquared-flight-software",
     "pysquared-flight-software-mocks",
     "pysquared-flight-software-unit-tests",
+    "pysquared-ground-station",
 ]
 
 [dependency-groups]
@@ -22,6 +23,7 @@ docs = [
 pysquared-flight-software = { workspace = true }
 pysquared-flight-software-mocks = { workspace = true }
 pysquared-flight-software-unit-tests = { workspace = true }
+pysquared-ground-station = { workspace = true }
 
 [tool.uv.workspace]
 members = [

@@ -3,7 +3,6 @@
 from unittest.mock import Mock
 
 import pytest
-
 from pysquared.sensor_reading.avg import avg_readings
 from pysquared.sensor_reading.current import Current
 from pysquared.sensor_reading.voltage import Voltage
