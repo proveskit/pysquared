@@ -19,7 +19,6 @@ CONFIG_SCHEMA = {
     "detumble_enable_z": bool,
     "detumble_enable_x": bool,
     "detumble_enable_y": bool,
-    "jokes": list,
     "debug": bool,
     "heating": bool,
     "normal_temp": int,
@@ -274,14 +273,6 @@ def test_field_types(config_data):
     for field in bool_fields:
         assert isinstance(config_data[field], bool), f"{field} must be a boolean"
 
-    # Test list fields
-    list_fields = ["jokes"]
-    for field in list_fields:
-        assert isinstance(config_data[field], list), f"{field} must be a list"
-        assert all(isinstance(item, str) for item in config_data[field]), (
-            f"All items in {field} must be strings"
-        )
-
     # Test radio config
     assert isinstance(config_data["radio"], dict), "radio must be a dictionary"
 
@@ -368,18 +359,3 @@ def test_current_draw_positive(config_data):
     negative current draw would imply an impossible scenario in this context.
     """
     assert config_data["current_draw"] >= 0, "current_draw cannot be negative"
-
-
-def test_lists_not_empty(config_data):
-    """Tests that list fields are not empty.
-
-    Args:
-        config_data: Fixture providing the loaded configuration data.
-
-    This test specifically checks that the `jokes` list is not empty and that
-    all its elements are strings, ensuring valid content for this field.
-    """
-    assert len(config_data["jokes"]) > 0, "jokes list cannot be empty"
-    assert all(isinstance(joke, str) for joke in config_data["jokes"]), (
-        "All jokes must be strings"
-    )

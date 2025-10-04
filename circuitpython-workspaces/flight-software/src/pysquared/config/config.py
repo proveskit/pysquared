@@ -25,7 +25,8 @@ class Config:
     Loads configuration from a JSON file, validates values, and provides
     methods to update configuration settings. Supports both temporary (RAM-only)
     and permanent (file-persisted) updates. Delegates radio-related validation
-    and updates to the RadioConfig class.
+    and updates to the RadioConfig class. Jokes are loaded from a separate
+    jokes.json file in the same directory as the config file.
 
     Attributes:
         config_file (str): Path to the configuration JSON file.
@@ -35,7 +36,7 @@ class Config:
         detumble_enable_z (bool): Enable detumbling on Z axis.
         detumble_enable_x (bool): Enable detumbling on X axis.
         detumble_enable_y (bool): Enable detumbling on Y axis.
-        jokes (list[str]): List of jokes for the cubesat.
+        jokes (list[str]): List of jokes for the cubesat (loaded from jokes.json).
         debug (bool): Debug mode flag.
         heating (bool): Heating system enabled flag.
         normal_temp (int): Normal operating temperature.
@@ -83,7 +84,13 @@ class Config:
         self.detumble_enable_z: bool = json_data["detumble_enable_z"]
         self.detumble_enable_x: bool = json_data["detumble_enable_x"]
         self.detumble_enable_y: bool = json_data["detumble_enable_y"]
-        self.jokes: list[str] = json_data["jokes"]
+        
+        # Load jokes from separate jokes.json file
+        config_dir = "/".join(config_path.split("/")[:-1]) if "/" in config_path else "."
+        jokes_path = f"{config_dir}/jokes.json"
+        with open(jokes_path, "r") as f:
+            self.jokes: list[str] = json.loads(f.read())
+        
         self.debug: bool = json_data["debug"]
         self.heating: bool = json_data["heating"]
         self.normal_temp: int = json_data["normal_temp"]
