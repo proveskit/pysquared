@@ -23,8 +23,15 @@ def cleanup():
     with open(source_file, "r") as src, open(file, "w") as dest:
         dest.write(src.read())
 
+    # Also copy jokes.json file
+    jokes_file = os.path.join(temp_dir, "jokes.json")
+    jokes_source = f"{os.path.dirname(__file__)}/files/jokes.test.json"
+    with open(jokes_source, "r") as src, open(jokes_file, "w") as dest:
+        dest.write(src.read())
+
     yield file
     os.remove(file)
+    os.remove(jokes_file)
 
 
 def test_radio_cfg(cleanup) -> None:
