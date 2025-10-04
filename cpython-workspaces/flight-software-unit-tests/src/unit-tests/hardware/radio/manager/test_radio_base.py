@@ -106,6 +106,7 @@ def test_send_oversized_packet_truncates():
     sent_data = []
 
     def capture_send(data: bytes) -> bool:
+        """Captures sent data for verification."""
         sent_data.append(data)
         return True
 
@@ -154,6 +155,7 @@ def test_send_exact_size_packet_no_warning():
     sent_data = []
 
     def capture_send(data: bytes) -> bool:
+        """Captures sent data for verification."""
         sent_data.append(data)
         return True
 
