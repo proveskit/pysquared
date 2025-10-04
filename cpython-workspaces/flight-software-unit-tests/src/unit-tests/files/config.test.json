@@ -1,43 +1,43 @@
 {
-  "battery_voltage": 5.2,
-  "critical_battery_voltage": 6.6,
-  "cubesat_name": "Orpheus",
-  "current_draw": 240.5,
-  "debug": true,
-  "degraded_battery_voltage": 7.0,
-  "detumble_enable_x": true,
-  "detumble_enable_y": true,
-  "detumble_enable_z": true,
-  "heating": false,
-  "last_battery_temp": 20.0,
-  "longest_allowable_sleep_time": 600,
-  "normal_battery_temp": 1,
-  "normal_battery_voltage": 6.9,
-  "normal_charge_current": 0.5,
-  "normal_micro_temp": 20,
-  "normal_temp": 20,
-  "radio": {
-    "fsk": {
-      "broadcast_address": 255,
-      "modulation_type": 0,
-      "node_address": 1
+    "battery_voltage": 5.2,
+    "critical_battery_voltage": 6.6,
+    "cubesat_name": "Orpheus",
+    "current_draw": 240.5,
+    "debug": true,
+    "degraded_battery_voltage": 7.0,
+    "detumble_enable_x": true,
+    "detumble_enable_y": true,
+    "detumble_enable_z": true,
+    "heating": false,
+    "last_battery_temp": 20.0,
+    "longest_allowable_sleep_time": 600,
+    "normal_battery_temp": 1,
+    "normal_battery_voltage": 6.9,
+    "normal_charge_current": 0.5,
+    "normal_micro_temp": 20,
+    "normal_temp": 20,
+    "radio": {
+        "fsk": {
+            "broadcast_address": 255,
+            "modulation_type": 0,
+            "node_address": 1
+        },
+        "license": "",
+        "lora": {
+            "ack_delay": 0.2,
+            "coding_rate": 8,
+            "cyclic_redundancy_check": true,
+            "max_output": true,
+            "spreading_factor": 8,
+            "transmit_power": 23
+        },
+        "modulation": "LoRa",
+        "start_time": 80000,
+        "transmit_frequency": 437.4
     },
-    "license": "",
-    "lora": {
-      "ack_delay": 0.2,
-      "coding_rate": 8,
-      "cyclic_redundancy_check": true,
-      "max_output": true,
-      "spreading_factor": 8,
-      "transmit_power": 23
-    },
-    "modulation": "LoRa",
-    "start_time": 80000,
-    "transmit_frequency": 437.4
-  },
-  "reboot_time": 3600,
-  "repeat_code": "RP",
-  "sleep_duration": 30,
-  "super_secret_code": "ABCD",
-  "turbo_clock": false
+    "reboot_time": 3600,
+    "repeat_code": "RP",
+    "sleep_duration": 30,
+    "super_secret_code": "ABCD",
+    "turbo_clock": false
 }

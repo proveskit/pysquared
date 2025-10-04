@@ -18,7 +18,7 @@ def jokes_data():
         list: The jokes loaded from jokes.json.
     """
     workspace_root = Path(__file__).parent.parent.parent
-    jokes_path = workspace_root / "unit-tests" / "files" / "jokes.test.json"
+    jokes_path = workspace_root / "jokes.json"
     with open(jokes_path, "r") as f:
         return json.loads(f.read())
 
@@ -30,7 +30,7 @@ def test_jokes_file_exists():
     location within the project structure.
     """
     workspace_root = Path(__file__).parent.parent.parent
-    jokes_path = workspace_root / "unit-tests" / "files" / "jokes.test.json"
+    jokes_path = workspace_root / "jokes.json"
     assert jokes_path.exists(), "jokes.json file not found"
 
 
@@ -41,7 +41,7 @@ def test_jokes_is_valid_json():
     parsed as a JSON array.
     """
     workspace_root = Path(__file__).parent.parent.parent
-    jokes_path = workspace_root / "unit-tests" / "files" / "jokes.test.json"
+    jokes_path = workspace_root / "jokes.json"
     with open(jokes_path, "r") as f:
         data = json.loads(f.read())
     assert isinstance(data, list), "Jokes file is not a valid JSON array"

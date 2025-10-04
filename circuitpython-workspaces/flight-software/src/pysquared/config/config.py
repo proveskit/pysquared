@@ -70,8 +70,8 @@ class Config:
             config_path (str): Path to the configuration JSON file.
 
         Raises:
-            FileNotFoundError: If the configuration file does not exist.
-            json.JSONDecodeError: If the configuration file is not valid JSON.
+            FileNotFoundError: If the configuration file or jokes.json does not exist.
+            json.JSONDecodeError: If the configuration file or jokes.json is not valid JSON.
         """
 
         self.config_file = config_path
