@@ -73,6 +73,16 @@ class BaseRadioManager(RadioProto):
                 self._log.warning("Radio send attempt failed: Not licensed.")
                 return False
 
+            # Check if data exceeds max packet size
+            max_size = self.get_max_packet_size()
+            if len(data) > max_size:
+                self._log.warning(
+                    "Data exceeds max packet size, truncating",
+                    data_length=len(data),
+                    max_packet_size=max_size,
+                )
+                data = data[:max_size]
+
             sent = self._send_internal(data)
 
             if not sent:

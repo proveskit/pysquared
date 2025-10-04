@@ -933,3 +933,63 @@ def test_get_rssi(
     rssi_value = manager.get_rssi()
 
     assert rssi_value == expected_rssi
+
+
+def test_send_oversized_packet_truncates(
+    mock_rfm9x: MagicMock,
+    mock_logger: MagicMock,
+    mock_spi: MagicMock,
+    mock_chip_select: MagicMock,
+    mock_reset: MagicMock,
+    mock_radio_config: RadioConfig,
+):
+    """Tests that oversized packets are truncated and a warning is logged.
+
+    Args:
+        mock_rfm9x: Mocked RFM9x class.
+        mock_logger: Mocked Logger instance.
+        mock_spi: Mocked SPI bus.
+        mock_chip_select: Mocked chip select pin.
+        mock_reset: Mocked reset pin.
+        mock_radio_config: Mocked RadioConfig instance.
+    """
+    mock_radio_config.modulation = "LoRa"
+    mock_radio_instance = MagicMock()
+    mock_radio_instance.max_packet_length = 252  # RFM9x max packet length
+    mock_radio_instance.send = MagicMock(return_value=True)
+    mock_rfm9x.return_value = mock_radio_instance
+
+    manager = RFM9xManager(
+        mock_logger,
+        mock_radio_config,
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+    )
+
+    # Create oversized data (253 bytes, which is 1 byte over the limit)
+    oversized_data = b"x" * 253
+
+    # Send the oversized data
+    result = manager.send(oversized_data)
+
+    # Verify that send was successful
+    assert result is True
+
+    # Verify that a warning was logged about truncation
+    mock_logger.warning.assert_called()
+    warning_calls = [call for call in mock_logger.warning.call_args_list]
+    truncation_warning = None
+    for call in warning_calls:
+        if call[0][0] == "Data exceeds max packet size, truncating":
+            truncation_warning = call
+            break
+
+    assert truncation_warning is not None
+    assert truncation_warning[1]["data_length"] == 253
+    assert truncation_warning[1]["max_packet_size"] == 252
+
+    # Verify that the data sent to the radio was truncated to 252 bytes
+    mock_radio_instance.send.assert_called_once()
+    sent_data = mock_radio_instance.send.call_args[0][0]
+    assert len(sent_data) == 252
