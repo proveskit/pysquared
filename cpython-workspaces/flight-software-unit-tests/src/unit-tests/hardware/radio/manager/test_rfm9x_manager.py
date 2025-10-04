@@ -361,6 +361,7 @@ def test_send_success_bytes(
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock()
     mock_radio_instance.send = MagicMock()
+    mock_radio_instance.max_packet_length = 252  # RFM9x max packet length
     mock_rfm9x.return_value = mock_radio_instance
 
     manager = RFM9xManager(
@@ -440,6 +441,7 @@ def test_send_exception(
     mock_radio_config.modulation = "LoRa"
     mock_radio_instance = MagicMock()
     mock_radio_instance.send = MagicMock()
+    mock_radio_instance.max_packet_length = 252  # RFM9x max packet length
     send_error = RuntimeError("SPI Error")
     mock_radio_instance.send.side_effect = send_error
     mock_rfm9x.return_value = mock_radio_instance

@@ -5,9 +5,18 @@ ensuring that abstract methods raise `NotImplementedError` as expected and that
 the default `get_max_packet_size` returns the correct value.
 """
 
+import sys
+from unittest.mock import MagicMock
+
 import pytest
-from pysquared.hardware.radio.manager.base import BaseRadioManager
-from pysquared.hardware.radio.modulation import LoRa
+from mocks.circuitpython.microcontroller import Processor
+
+microcontroller = MagicMock()
+microcontroller.Processor = Processor
+sys.modules["microcontroller"] = microcontroller
+
+from pysquared.hardware.radio.manager.base import BaseRadioManager  # noqa: E402
+from pysquared.hardware.radio.modulation import LoRa  # noqa: E402
 
 
 def test_initialize_radio_not_implemented():
@@ -91,8 +100,6 @@ def test_send_oversized_packet_truncates():
     the BaseRadioManager logs a warning and truncates the data to max_packet_size
     before sending.
     """
-    from unittest.mock import MagicMock
-
     # Create a mock instance of the BaseRadioManager
     mock_manager = BaseRadioManager.__new__(BaseRadioManager)
     mock_manager._log = MagicMock()
@@ -140,8 +147,6 @@ def test_send_exact_size_packet_no_warning():
     This test verifies that when a packet of exactly max_packet_size is sent,
     no warning is logged and the data is sent as-is.
     """
-    from unittest.mock import MagicMock
-
     # Create a mock instance of the BaseRadioManager
     mock_manager = BaseRadioManager.__new__(BaseRadioManager)
     mock_manager._log = MagicMock()
