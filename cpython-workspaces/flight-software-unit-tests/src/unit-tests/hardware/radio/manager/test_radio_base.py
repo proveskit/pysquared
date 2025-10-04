@@ -5,18 +5,11 @@ ensuring that abstract methods raise `NotImplementedError` as expected and that
 the default `get_max_packet_size` returns the correct value.
 """
 
-import sys
 from unittest.mock import MagicMock
 
 import pytest
-from mocks.circuitpython.microcontroller import Processor
-
-microcontroller = MagicMock()
-microcontroller.Processor = Processor
-sys.modules["microcontroller"] = microcontroller
-
-from pysquared.hardware.radio.manager.base import BaseRadioManager  # noqa: E402
-from pysquared.hardware.radio.modulation import LoRa  # noqa: E402
+from pysquared.hardware.radio.manager.base import BaseRadioManager
+from pysquared.hardware.radio.modulation import LoRa
 
 
 def test_initialize_radio_not_implemented():
