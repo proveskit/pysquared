@@ -14,7 +14,6 @@ config.update_config("cubesat_name", "Cube1", temporary=False)
 """
 
 import json
-import os
 
 from .radio import RadioConfig
 
@@ -85,13 +84,23 @@ class Config:
         self.detumble_enable_z: bool = json_data["detumble_enable_z"]
         self.detumble_enable_x: bool = json_data["detumble_enable_x"]
         self.detumble_enable_y: bool = json_data["detumble_enable_y"]
-        
+
         # Load jokes from separate jokes.json file in the same directory
-        config_dir = os.path.dirname(config_path) or "."
-        jokes_path = os.path.join(config_dir, "jokes.json")
+        # Extract directory from config_path using string operations (CircuitPython compatible)
+        if "/" in config_path:
+            config_dir = "/".join(config_path.split("/")[:-1])
+        else:
+            config_dir = "."
+
+        # Construct jokes path
+        if config_dir == ".":
+            jokes_path = "jokes.json"
+        else:
+            jokes_path = config_dir + "/jokes.json"
+
         with open(jokes_path, "r") as f:
             self.jokes: list[str] = json.loads(f.read())
-        
+
         self.debug: bool = json_data["debug"]
         self.heating: bool = json_data["heating"]
         self.normal_temp: int = json_data["normal_temp"]
