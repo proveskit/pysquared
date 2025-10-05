@@ -351,3 +351,61 @@ def test_allowed_values(cleanup) -> None:
 
     config.validate("modulation", "LoRa")
     config.validate("modulation", "FSK")
+
+
+def test_jokes_loading(cleanup) -> None:
+    """Tests that jokes are loaded correctly from jokes.json.
+
+    Args:
+        cleanup: Fixture providing the path to the temporary config file.
+    """
+    file = cleanup
+    config = Config(file)
+
+    # Verify jokes were loaded
+    assert hasattr(config, "jokes"), "Config should have jokes attribute"
+    assert isinstance(config.jokes, list), "Jokes should be a list"
+    assert len(config.jokes) > 0, "Jokes list should not be empty"
+    assert all(isinstance(joke, str) for joke in config.jokes), (
+        "All jokes should be strings"
+    )
+
+
+def test_jokes_loading_current_directory() -> None:
+    """Tests jokes loading when config is in current directory (no path separator).
+
+    This tests the edge case where config_path has no '/' character.
+    """
+    import shutil
+
+    # Create temporary files in current directory
+    original_dir = os.getcwd()
+    temp_dir = tempfile.mkdtemp()
+
+    try:
+        os.chdir(temp_dir)
+
+        # Copy config and jokes files to temp directory
+        source_config = os.path.join(
+            original_dir,
+            "cpython-workspaces/flight-software-unit-tests/src/unit-tests/files/config.test.json",
+        )
+        source_jokes = os.path.join(
+            original_dir,
+            "cpython-workspaces/flight-software-unit-tests/src/unit-tests/files/jokes.test.json",
+        )
+
+        shutil.copy(source_config, "config.json")
+        shutil.copy(source_jokes, "jokes.json")
+
+        # Load config with just filename (no path)
+        config = Config("config.json")
+
+        # Verify jokes were loaded
+        assert hasattr(config, "jokes"), "Config should have jokes attribute"
+        assert isinstance(config.jokes, list), "Jokes should be a list"
+        assert len(config.jokes) > 0, "Jokes list should not be empty"
+
+    finally:
+        os.chdir(original_dir)
+        shutil.rmtree(temp_dir)
