@@ -6,10 +6,11 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
+        exclude: 'cpython-workspaces/flight-software-unit-tests/src/(config|jokes)\.json'
       - id: check-added-large-files
       - id: pretty-format-json
         args: [--autofix]
-        exclude: '.vscode/.*'
+        exclude: '.vscode/.*|cpython-workspaces/flight-software-unit-tests/src/(config|jokes)\.json'
     #- id: mixed-line-ending
     #  args: [ --fix=lf ]
 
