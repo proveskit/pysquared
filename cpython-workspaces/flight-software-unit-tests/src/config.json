@@ -39,5 +39,6 @@
   "repeat_code": "RP",
   "sleep_duration": 30,
   "super_secret_code": "ABCD",
+  "hmac_secret": "test_hmac_secret_key",
   "turbo_clock": false
 }

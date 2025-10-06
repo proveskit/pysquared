@@ -24,6 +24,7 @@ import microcontroller
 
 from .config.config import Config
 from .hardware.radio.packetizer.packet_manager import PacketManager
+from .hmac_auth import HMACAuthenticator
 from .logger import Logger
 
 
@@ -55,6 +56,12 @@ class CommandDataHandler:
         self._config: Config = config
         self._packet_manager: PacketManager = packet_manager
         self._send_delay: float = send_delay
+        self._hmac_authenticator: HMACAuthenticator = HMACAuthenticator(
+            config.hmac_secret
+        )
+        self._last_valid_counter: int = (
+            -1
+        )  # Track last valid counter for replay prevention
 
     def listen_for_commands(self, timeout: int) -> None:
         """Listens for commands from the radio and handles them.
@@ -73,7 +80,7 @@ class CommandDataHandler:
 
             msg: dict[str, str] = json.loads(json_str)
 
-            # Check for OSCAR password first
+            # Check for OSCAR password first (legacy authentication)
             if msg.get("password") == self.oscar_password:
                 self._log.debug("OSCAR command received", msg=msg)
                 cmd = msg.get("command")
@@ -96,20 +103,60 @@ class CommandDataHandler:
                 self.oscar_command(cmd, args)
                 return
 
-            # If message has password field, check it
-            if msg.get("password") != self._config.super_secret_code:
-                self._log.debug(
-                    "Invalid password in message",
-                    msg=msg,
-                )
-                return
+            # New HMAC-based authentication
+            hmac_value = msg.get("hmac")
+            counter = msg.get("counter")
 
-            if msg.get("name") != self._config.cubesat_name:
-                self._log.debug(
-                    "Satellite name mismatch in message",
-                    msg=msg,
-                )
-                return
+            if hmac_value is None or counter is None:
+                # Fall back to password-based authentication for backward compatibility
+                if msg.get("password") != self._config.super_secret_code:
+                    self._log.debug(
+                        "Invalid password in message",
+                        msg=msg,
+                    )
+                    return
+
+                if msg.get("name") != self._config.cubesat_name:
+                    self._log.debug(
+                        "Satellite name mismatch in message",
+                        msg=msg,
+                    )
+                    return
+            else:
+                # Use HMAC authentication
+                # Extract message without HMAC for verification
+                msg_without_hmac = {k: v for k, v in msg.items() if k != "hmac"}
+                message_str = json.dumps(msg_without_hmac, separators=(",", ":"))
+
+                # Verify HMAC
+                if not self._hmac_authenticator.verify_hmac(
+                    message_str, counter, hmac_value
+                ):
+                    self._log.debug(
+                        "Invalid HMAC in message",
+                        msg=msg,
+                    )
+                    return
+
+                # Prevent replay attacks - counter must be greater than last valid counter
+                if counter <= self._last_valid_counter:
+                    self._log.debug(
+                        "Replay attack detected - counter not greater than last valid",
+                        counter=counter,
+                        last_valid=self._last_valid_counter,
+                    )
+                    return
+
+                # Update last valid counter
+                self._last_valid_counter = counter
+
+                # Verify satellite name
+                if msg.get("name") != self._config.cubesat_name:
+                    self._log.debug(
+                        "Satellite name mismatch in message",
+                        msg=msg,
+                    )
+                    return
 
             # If message has command field, execute the command
             cmd = msg.get("command")

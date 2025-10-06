@@ -9,6 +9,7 @@ import supervisor
 from pysquared.cdh import CommandDataHandler
 from pysquared.config.config import Config
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
+from pysquared.hmac_auth import HMACAuthenticator
 from pysquared.logger import Logger
 
 
@@ -27,6 +28,8 @@ class GroundStation:
         self._config = config
         self._packet_manager = packet_manager
         self._cdh = cdh
+        self._hmac_authenticator = HMACAuthenticator(config.hmac_secret)
+        self._command_counter = 0  # Counter for replay attack prevention
 
     def listen(self):
         """Listen for incoming packets from the satellite."""
@@ -86,7 +89,6 @@ class GroundStation:
 
         message: dict[str, object] = {
             "name": self._config.cubesat_name,
-            "password": self._config.super_secret_code,
         }
 
         if cmd_selection == "1":
@@ -98,6 +100,17 @@ class GroundStation:
         elif cmd_selection == "3":
             message["command"] = self._cdh.command_send_joke
 
+        # Increment counter for replay attack prevention
+        self._command_counter += 1
+        message["counter"] = self._command_counter
+
+        # Generate HMAC for the message
+        message_str = json.dumps(message, separators=(",", ":"))
+        hmac_value = self._hmac_authenticator.generate_hmac(
+            message_str, self._command_counter
+        )
+        message["hmac"] = hmac_value
+
         while True:
             # Turn on the radio so that it captures any received packets to buffer
             self._packet_manager.listen(1)
@@ -107,6 +120,7 @@ class GroundStation:
                 "Sending command",
                 cmd=message["command"],
                 args=message.get("args", []),
+                counter=self._command_counter,
             )
             self._packet_manager.send(json.dumps(message).encode("utf-8"))
 

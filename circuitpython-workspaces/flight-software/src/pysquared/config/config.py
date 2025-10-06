@@ -47,8 +47,9 @@ class Config:
         critical_battery_voltage (float): Critical battery voltage.
         reboot_time (int): Time before reboot in seconds.
         turbo_clock (bool): Turbo clock enabled flag.
-        super_secret_code (str): Secret code for special operations.
+        super_secret_code (str): Secret code for special operations (deprecated).
         repeat_code (str): Code for repeated operations.
+        hmac_secret (str): Shared secret for HMAC command authentication.
         longest_allowable_sleep_time (int): Maximum allowable sleep time.
         CONFIG_SCHEMA (dict): Validation schema for configuration keys.
 
@@ -114,6 +115,7 @@ class Config:
         self.turbo_clock: bool = json_data["turbo_clock"]
         self.super_secret_code: str = json_data["super_secret_code"]
         self.repeat_code: str = json_data["repeat_code"]
+        self.hmac_secret: str = json_data.get("hmac_secret", "default_hmac_secret")
         self.longest_allowable_sleep_time: int = json_data[
             "longest_allowable_sleep_time"
         ]
@@ -122,6 +124,7 @@ class Config:
             "cubesat_name": {"type": str, "min_length": 1, "max_length": 10},
             "super_secret_code": {"type": bytes, "min": 1, "max": 24},
             "repeat_code": {"type": bytes, "min": 1, "max": 4},
+            "hmac_secret": {"type": bytes, "min": 16, "max": 64},
             "normal_charge_current": {"type": float, "min": 0.0, "max": 2000.0},
             "normal_battery_voltage": {"type": float, "min": 6.0, "max": 8.4},
             "degraded_battery_voltage": {"type": float, "min": 5.4, "max": 8.0},
