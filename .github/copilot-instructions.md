@@ -191,7 +191,7 @@ pysquared/
    ```python
    # ✗ Don't do this in circuitpython-workspaces
    from typing import List, Optional
-   
+
    # ✓ Use this pattern instead
    try:
        from typing import List, Optional
