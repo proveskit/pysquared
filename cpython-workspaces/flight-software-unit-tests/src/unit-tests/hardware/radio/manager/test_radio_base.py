@@ -5,6 +5,8 @@ ensuring that abstract methods raise `NotImplementedError` as expected and that
 the default `get_max_packet_size` returns the correct value.
 """
 
+from unittest.mock import MagicMock
+
 import pytest
 from pysquared.hardware.radio.manager.base import BaseRadioManager
 from pysquared.hardware.radio.modulation import LoRa
@@ -82,3 +84,94 @@ def test_get_max_packet_size():
 
     # Check that get_max_packet_size returns the default packet size
     assert mock_manager.get_max_packet_size() == 128  # Default value
+
+
+def test_send_oversized_packet_truncates():
+    """Tests that oversized packets are truncated and a warning is logged.
+
+    This test verifies that when a packet larger than max_packet_size is sent,
+    the BaseRadioManager logs a warning and truncates the data to max_packet_size
+    before sending.
+    """
+    # Create a mock instance of the BaseRadioManager
+    mock_manager = BaseRadioManager.__new__(BaseRadioManager)
+    mock_manager._log = MagicMock()
+    mock_manager._radio_config = MagicMock()
+    mock_manager._radio_config.license = "test_license"
+
+    # Mock get_max_packet_size to return a small value for testing
+    mock_manager.get_max_packet_size = MagicMock(return_value=10)
+
+    # Mock _send_internal to capture what data is actually sent
+    sent_data = []
+
+    def capture_send(data: bytes) -> bool:
+        """Captures sent data for verification."""
+        sent_data.append(data)
+        return True
+
+    mock_manager._send_internal = capture_send
+
+    # Create data larger than max packet size
+    oversized_data = b"This is a message that is longer than 10 bytes"
+
+    # Send the oversized data
+    result = mock_manager.send(oversized_data)
+
+    # Verify that send was successful
+    assert result is True
+
+    # Verify that a warning was logged
+    mock_manager._log.warning.assert_called_once()
+    warning_call = mock_manager._log.warning.call_args
+    assert warning_call[0][0] == "Data exceeds max packet size, truncating"
+    assert warning_call[1]["data_length"] == len(oversized_data)
+    assert warning_call[1]["max_packet_size"] == 10
+
+    # Verify that the data was truncated to max_packet_size
+    assert len(sent_data) == 1
+    assert sent_data[0] == oversized_data[:10]
+    assert len(sent_data[0]) == 10
+
+
+def test_send_exact_size_packet_no_warning():
+    """Tests that packets at exactly max_packet_size do not trigger a warning.
+
+    This test verifies that when a packet of exactly max_packet_size is sent,
+    no warning is logged and the data is sent as-is.
+    """
+    # Create a mock instance of the BaseRadioManager
+    mock_manager = BaseRadioManager.__new__(BaseRadioManager)
+    mock_manager._log = MagicMock()
+    mock_manager._radio_config = MagicMock()
+    mock_manager._radio_config.license = "test_license"
+
+    # Mock get_max_packet_size to return a small value for testing
+    mock_manager.get_max_packet_size = MagicMock(return_value=10)
+
+    # Mock _send_internal to capture what data is actually sent
+    sent_data = []
+
+    def capture_send(data: bytes) -> bool:
+        """Captures sent data for verification."""
+        sent_data.append(data)
+        return True
+
+    mock_manager._send_internal = capture_send
+
+    # Create data exactly at max packet size
+    exact_size_data = b"0123456789"  # Exactly 10 bytes
+
+    # Send the data
+    result = mock_manager.send(exact_size_data)
+
+    # Verify that send was successful
+    assert result is True
+
+    # Verify that no warning was logged about truncation
+    mock_manager._log.warning.assert_not_called()
+
+    # Verify that the data was sent as-is
+    assert len(sent_data) == 1
+    assert sent_data[0] == exact_size_data
+    assert len(sent_data[0]) == 10
