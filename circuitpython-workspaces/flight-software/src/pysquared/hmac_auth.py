@@ -21,7 +21,6 @@ is_valid = authenticator.verify_hmac(message, counter, hmac_value)
 ```
 """
 
-import hashlib
 import hmac
 
 
@@ -50,7 +49,8 @@ class HMACAuthenticator:
         data = f"{message}|{counter}".encode("utf-8")
 
         # Generate HMAC using SHA-256
-        h = hmac.new(self._secret_key, data, hashlib.sha256)
+        # Use string "sha256" for CircuitPython compatibility
+        h = hmac.new(self._secret_key, data, "sha256")
         return h.hexdigest()
 
     def verify_hmac(self, message: str, counter: int, received_hmac: str) -> bool:

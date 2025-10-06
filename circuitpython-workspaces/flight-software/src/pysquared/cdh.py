@@ -105,9 +105,9 @@ class CommandDataHandler:
 
             # New HMAC-based authentication
             hmac_value = msg.get("hmac")
-            counter = msg.get("counter")
+            counter_raw = msg.get("counter")
 
-            if hmac_value is None or counter is None:
+            if hmac_value is None or counter_raw is None:
                 # Fall back to password-based authentication for backward compatibility
                 if msg.get("password") != self._config.super_secret_code:
                     self._log.debug(
@@ -124,6 +124,16 @@ class CommandDataHandler:
                     return
             else:
                 # Use HMAC authentication
+                # Convert counter to int
+                try:
+                    counter: int = int(counter_raw)
+                except (ValueError, TypeError):
+                    self._log.debug(
+                        "Invalid counter in message",
+                        counter=counter_raw,
+                    )
+                    return
+
                 # Extract message without HMAC for verification
                 msg_without_hmac = {k: v for k, v in msg.items() if k != "hmac"}
                 message_str = json.dumps(msg_without_hmac, separators=(",", ":"))
