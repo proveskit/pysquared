@@ -20,14 +20,7 @@ authenticator = HMACAuthenticator("shared_secret_key")
 is_valid = authenticator.verify_hmac(message, counter, hmac_value)
 ```
 """
-
-try:
-    # Try to import CircuitPython HMAC library
-    import hmac as circuitpython_hmac
-except ImportError:
-    # Fallback to standard library for testing
-    import hmac as circuitpython_hmac
-
+from circuitpython_hmac import HMAC
 
 class HMACAuthenticator:
     """Provides HMAC authentication for command messages."""
