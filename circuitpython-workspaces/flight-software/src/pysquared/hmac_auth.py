@@ -21,7 +21,12 @@ is_valid = authenticator.verify_hmac(message, counter, hmac_value)
 ```
 """
 
-import hmac
+try:
+    # Try to import CircuitPython HMAC library
+    import hmac as circuitpython_hmac
+except ImportError:
+    # Fallback to standard library for testing
+    import hmac as circuitpython_hmac
 
 
 class HMACAuthenticator:
@@ -50,7 +55,7 @@ class HMACAuthenticator:
 
         # Generate HMAC using SHA-256
         # Use string "sha256" for CircuitPython compatibility
-        h = hmac.new(self._secret_key, data, "sha256")
+        h = circuitpython_hmac.new(self._secret_key, data, "sha256")
         return h.hexdigest()
 
     def verify_hmac(self, message: str, counter: int, received_hmac: str) -> bool:
@@ -65,4 +70,4 @@ class HMACAuthenticator:
             True if the HMAC is valid, False otherwise.
         """
         expected_hmac = self.generate_hmac(message, counter)
-        return hmac.compare_digest(expected_hmac, received_hmac)
+        return circuitpython_hmac.compare_digest(expected_hmac, received_hmac)

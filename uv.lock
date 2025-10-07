@@ -389,6 +389,15 @@ wheels = [
 ]
 
 [[package]]
+name = "circuitpython-hmac"
+version = "0.2.2.dev2+g2944cbf9a"
+source = { git = "https://github.com/jimbobbennett/CircuitPython_HMAC.git#2944cbf9a863bf47d2dbc6ade4f89226b179c356" }
+dependencies = [
+    { name = "adafruit-blinka" },
+    { name = "adafruit-circuitpython-hashlib" },
+]
+
+[[package]]
 name = "click"
 version = "8.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1071,6 +1080,7 @@ dependencies = [
     { name = "adafruit-circuitpython-tca9548a" },
     { name = "adafruit-circuitpython-ticks" },
     { name = "adafruit-circuitpython-veml7700" },
+    { name = "circuitpython-hmac" },
     { name = "proves-circuitpython-sx126" },
     { name = "proves-circuitpython-sx1280" },
 ]
@@ -1090,6 +1100,7 @@ requires-dist = [
     { name = "adafruit-circuitpython-tca9548a", git = "https://github.com/proveskit/Adafruit_CircuitPython_TCA9548A?rev=1.1.0" },
     { name = "adafruit-circuitpython-ticks", specifier = "==1.1.1" },
     { name = "adafruit-circuitpython-veml7700", specifier = "==2.1.4" },
+    { name = "circuitpython-hmac", git = "https://github.com/jimbobbennett/CircuitPython_HMAC.git" },
     { name = "proves-circuitpython-sx126", git = "https://github.com/proveskit/micropySX126X?rev=1.0.0" },
     { name = "proves-circuitpython-sx1280", git = "https://github.com/proveskit/CircuitPython_SX1280?rev=1.0.4" },
 ]

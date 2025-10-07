@@ -349,3 +349,70 @@ def test_hmac_integration_different_secrets(
     # Verify command was rejected due to wrong HMAC
     mock_packet_manager.send_acknowledgement.assert_not_called()
     mock_logger.debug.assert_any_call("Invalid HMAC in message", msg=command_message)
+
+
+def test_hmac_integration_large_message(
+    flight_software_cdh,
+    ground_station_authenticator,
+    mock_config,
+    mock_packet_manager,
+    mock_counter16,
+):
+    """Tests HMAC authentication with large message requiring packetization.
+
+    This test verifies that HMAC authentication works correctly even when
+    the message is larger than the packet size (252 bytes) and needs to be
+    broken into multiple packets by the packet_manager.
+
+    Args:
+        flight_software_cdh: Flight software CDH instance.
+        ground_station_authenticator: Ground station HMAC authenticator.
+        mock_config: Mocked Config instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_counter16: Mocked Counter16 instance.
+    """
+    # Create a large command message (approximately 10kB)
+    # Generate a large argument list to make the message size > 10kB
+    large_data = "A" * 10000  # 10kB of data
+    gs_counter = 1
+    command_message = {
+        "name": "TestSat",
+        "command": "send_joke",
+        "args": [large_data],  # Large argument
+        "counter": gs_counter,
+    }
+
+    # Ground station generates HMAC for the complete message
+    message_str = json.dumps(command_message, separators=(",", ":"))
+    hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
+    command_message["hmac"] = hmac_value
+
+    # The complete message as bytes
+    command_bytes = json.dumps(command_message).encode("utf-8")
+
+    # Verify the message is indeed large (> 252 bytes, typical packet size)
+    assert len(command_bytes) > 252, (
+        f"Message size {len(command_bytes)} should be > 252"
+    )
+    assert len(command_bytes) > 10000, (
+        f"Message size {len(command_bytes)} should be > 10kB"
+    )
+
+    # In real scenario, packet_manager would fragment this message
+    # For this test, we simulate that the complete message is reassembled
+    # and returned by packet_manager.listen()
+    mock_packet_manager.listen.return_value = command_bytes
+
+    # Flight software receives and processes the large message
+    with patch("time.sleep"):
+        flight_software_cdh.listen_for_commands(timeout=30)
+
+    # Verify HMAC authentication succeeded despite large message size
+    mock_packet_manager.send_acknowledgement.assert_called_once()
+
+    # Verify counter was updated in NVM
+    mock_counter16.set.assert_called_once_with(gs_counter)
+
+    # Verify the command was accepted and processed
+    # (In this case, send_joke would be called with the large args)
+    assert mock_packet_manager.send_acknowledgement.called

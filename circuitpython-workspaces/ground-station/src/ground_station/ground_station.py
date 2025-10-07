@@ -22,6 +22,7 @@ class GroundStation:
         config: Config,
         packet_manager: PacketManager,
         cdh: CommandDataHandler,
+        starting_counter: int = 0,
     ):
         self._log = logger
         self._log.colorized = True
@@ -29,7 +30,7 @@ class GroundStation:
         self._packet_manager = packet_manager
         self._cdh = cdh
         self._hmac_authenticator = HMACAuthenticator(config.hmac_secret)
-        self._command_counter = 0  # Counter for replay attack prevention
+        self._command_counter = starting_counter  # Counter for replay attack prevention
 
     def listen(self):
         """Listen for incoming packets from the satellite."""
@@ -223,6 +224,25 @@ class GroundStation:
 
     def run(self):
         """Run the ground station interface."""
+        # Prompt for starting counter value
+        while True:
+            try:
+                counter_input = input(
+                    "Enter starting counter value (0-65535, press Enter for 0): "
+                ).strip()
+                if counter_input == "":
+                    self._command_counter = 0
+                    break
+                counter_value = int(counter_input)
+                if 0 <= counter_value <= 65535:
+                    self._command_counter = counter_value
+                    self._log.info(f"Starting counter set to: {self._command_counter}")
+                    break
+                else:
+                    print("Counter must be between 0 and 65535. Please try again.")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+
         while True:
             print(
                 """
