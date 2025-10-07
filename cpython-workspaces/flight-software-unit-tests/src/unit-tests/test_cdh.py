@@ -13,6 +13,7 @@ from pysquared.cdh import CommandDataHandler
 from pysquared.config.config import Config
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
+from pysquared.nvm.counter import Counter16
 
 
 @pytest.fixture
@@ -39,28 +40,43 @@ def mock_config() -> Config:
 
 
 @pytest.fixture
-def cdh(mock_logger, mock_config, mock_packet_manager) -> CommandDataHandler:
+def mock_counter16() -> Counter16:
+    """Mocks the Counter16 class."""
+    counter = MagicMock(spec=Counter16)
+    counter.get.return_value = 0  # Default to 0
+    return counter
+
+
+@pytest.fixture
+def cdh(
+    mock_logger, mock_config, mock_packet_manager, mock_counter16
+) -> CommandDataHandler:
     """Provides a CommandDataHandler instance for testing."""
     return CommandDataHandler(
         logger=mock_logger,
         config=mock_config,
         packet_manager=mock_packet_manager,
+        last_command_counter=mock_counter16,
     )
 
 
-def test_cdh_init(mock_logger, mock_config, mock_packet_manager):
+def test_cdh_init(mock_logger, mock_config, mock_packet_manager, mock_counter16):
     """Tests CommandDataHandler initialization.
 
     Args:
         mock_logger: Mocked Logger instance.
         mock_config: Mocked Config instance.
         mock_packet_manager: Mocked PacketManager instance.
+        mock_counter16: Mocked Counter16 instance.
     """
-    cdh = CommandDataHandler(mock_logger, mock_config, mock_packet_manager)
+    cdh = CommandDataHandler(
+        mock_logger, mock_config, mock_packet_manager, mock_counter16
+    )
 
     assert cdh._log is mock_logger
     assert cdh._config is mock_config
     assert cdh._packet_manager is mock_packet_manager
+    assert cdh._last_command_counter is mock_counter16
 
 
 def test_listen_for_commands_no_message(cdh, mock_packet_manager):
@@ -78,69 +94,77 @@ def test_listen_for_commands_no_message(cdh, mock_packet_manager):
     # If no message received, function should simply return
 
 
-def test_listen_for_commands_invalid_password(cdh, mock_packet_manager, mock_logger):
-    """Tests listen_for_commands with invalid password.
+def test_listen_for_commands_missing_hmac(cdh, mock_packet_manager, mock_logger):
+    """Tests listen_for_commands with missing HMAC/counter.
 
     Args:
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_logger: Mocked Logger instance.
     """
-    # Create a message with wrong password
+    # Create a message without HMAC or counter (old password-based)
     message = {"password": "wrong_password", "command": "send_joke", "args": []}
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
     cdh.listen_for_commands(30)
 
     mock_packet_manager.listen.assert_called_once_with(30)
-    mock_logger.debug.assert_any_call("Invalid password in message", msg=message)
+    mock_logger.debug.assert_any_call("Missing HMAC or counter in message", msg=message)
 
 
-def test_listen_for_commands_invalid_name(cdh, mock_packet_manager, mock_logger):
-    """Tests listen_for_commands with missing command field.
+def test_listen_for_commands_missing_hmac_name_check(
+    cdh, mock_packet_manager, mock_logger
+):
+    """Tests listen_for_commands with missing HMAC (satellite name irrelevant without HMAC).
 
     Args:
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_logger: Mocked Logger instance.
     """
-    # Create a message with valid password and satellite name but no command
+    # Create a message without HMAC
     message = {"password": "test_password", "name": "wrong_name", "args": []}
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
     cdh.listen_for_commands(30)
 
     mock_packet_manager.listen.assert_called_once_with(30)
-    mock_logger.debug.assert_any_call("Satellite name mismatch in message", msg=message)
+    # Should reject due to missing HMAC, not name mismatch
+    mock_logger.debug.assert_any_call("Missing HMAC or counter in message", msg=message)
 
 
-def test_listen_for_commands_missing_command(cdh, mock_packet_manager, mock_logger):
-    """Tests listen_for_commands with missing command field.
+def test_listen_for_commands_missing_command_no_hmac(
+    cdh, mock_packet_manager, mock_logger
+):
+    """Tests listen_for_commands with missing HMAC.
 
     Args:
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_logger: Mocked Logger instance.
     """
-    # Create a message with valid password but no command
+    # Create a message without HMAC
     message = {"password": "test_password", "name": "test_satellite", "args": []}
     mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
 
     cdh.listen_for_commands(30)
 
     mock_packet_manager.listen.assert_called_once_with(30)
-    mock_logger.warning.assert_any_call("No command found in message", msg=message)
+    # Should reject due to missing HMAC
+    mock_logger.debug.assert_any_call("Missing HMAC or counter in message", msg=message)
 
 
-def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger):
-    """Tests listen_for_commands with missing command field.
+def test_listen_for_commands_nonlist_args_no_hmac(
+    cdh, mock_packet_manager, mock_logger
+):
+    """Tests listen_for_commands with missing HMAC.
 
     Args:
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_logger: Mocked Logger instance.
     """
-    # Create a message with valid password but no command
+    # Create a message without HMAC
     message = {
         "password": "test_password",
         "name": "test_satellite",
@@ -152,9 +176,8 @@ def test_listen_for_commands_nonlist_args(cdh, mock_packet_manager, mock_logger)
     cdh.listen_for_commands(30)
 
     mock_packet_manager.listen.assert_called_once_with(30)
-    mock_logger.debug.assert_any_call(
-        "Received command message", cmd="send_joke", args=[]
-    )
+    # Should reject due to missing HMAC
+    mock_logger.debug.assert_any_call("Missing HMAC or counter in message", msg=message)
 
 
 def test_listen_for_commands_invalid_json(cdh, mock_packet_manager, mock_logger):
@@ -292,18 +315,24 @@ def test_listen_for_commands_reset(
         mock_microcontroller: Mocked microcontroller module.
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
+        mock_counter16: Mocked Counter16 instance.
     """
     # Set up mocked attributes
     mock_microcontroller.reset = MagicMock()
     mock_microcontroller.on_next_reset = MagicMock()
 
-    message = {
-        "password": "test_password",
+    counter = 1
+    message_dict = {
         "name": "test_satellite",
         "command": "reset",
         "args": [],
+        "counter": counter,
     }
-    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+    message_str = json.dumps(message_dict, separators=(",", ":"))
+    hmac_value = cdh._hmac_authenticator.generate_hmac(message_str, counter)
+    message_dict["hmac"] = hmac_value
+
+    mock_packet_manager.listen.return_value = json.dumps(message_dict).encode("utf-8")
 
     cdh.listen_for_commands(30)
 
@@ -316,7 +345,12 @@ def test_listen_for_commands_reset(
 @patch("time.sleep")
 @patch("random.choice")
 def test_listen_for_commands_send_joke(
-    mock_random_choice, mock_sleep, cdh, mock_packet_manager, mock_config
+    mock_random_choice,
+    mock_sleep,
+    cdh,
+    mock_packet_manager,
+    mock_config,
+    mock_counter16,
 ):
     """Tests listen_for_commands with send_joke command.
 
@@ -325,14 +359,20 @@ def test_listen_for_commands_send_joke(
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_config: Mocked Config instance.
+        mock_counter16: Mocked Counter16 instance.
     """
-    message = {
-        "password": "test_password",
+    counter = 1
+    message_dict = {
         "name": "test_satellite",
         "command": "send_joke",
         "args": [],
+        "counter": counter,
     }
-    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+    message_str = json.dumps(message_dict, separators=(",", ":"))
+    hmac_value = cdh._hmac_authenticator.generate_hmac(message_str, counter)
+    message_dict["hmac"] = hmac_value
+
+    mock_packet_manager.listen.return_value = json.dumps(message_dict).encode("utf-8")
     mock_random_choice.return_value = mock_config.jokes[0]
 
     cdh.listen_for_commands(30)
@@ -344,7 +384,7 @@ def test_listen_for_commands_send_joke(
 
 @patch("time.sleep")
 def test_listen_for_commands_change_radio_modulation(
-    mock_sleep, cdh, mock_packet_manager, mock_config
+    mock_sleep, cdh, mock_packet_manager, mock_config, mock_counter16
 ):
     """Tests listen_for_commands with change_radio_modulation command.
 
@@ -352,14 +392,20 @@ def test_listen_for_commands_change_radio_modulation(
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_config: Mocked Config instance.
+        mock_counter16: Mocked Counter16 instance.
     """
-    message = {
-        "password": "test_password",
+    counter = 1
+    message_dict = {
         "name": "test_satellite",
         "command": "change_radio_modulation",
         "args": ["FSK"],
+        "counter": counter,
     }
-    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+    message_str = json.dumps(message_dict, separators=(",", ":"))
+    hmac_value = cdh._hmac_authenticator.generate_hmac(message_str, counter)
+    message_dict["hmac"] = hmac_value
+
+    mock_packet_manager.listen.return_value = json.dumps(message_dict).encode("utf-8")
 
     cdh.listen_for_commands(30)
 
@@ -370,7 +416,7 @@ def test_listen_for_commands_change_radio_modulation(
 
 @patch("time.sleep")
 def test_listen_for_commands_unknown_command(
-    mock_sleep, cdh, mock_packet_manager, mock_logger
+    mock_sleep, cdh, mock_packet_manager, mock_logger, mock_counter16
 ):
     """Tests listen_for_commands with an unknown command.
 
@@ -378,14 +424,20 @@ def test_listen_for_commands_unknown_command(
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_logger: Mocked Logger instance.
+        mock_counter16: Mocked Counter16 instance.
     """
-    message = {
-        "password": "test_password",
+    counter = 1
+    message_dict = {
         "name": "test_satellite",
         "command": "unknown_command",
         "args": [],
+        "counter": counter,
     }
-    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+    message_str = json.dumps(message_dict, separators=(",", ":"))
+    hmac_value = cdh._hmac_authenticator.generate_hmac(message_str, counter)
+    message_dict["hmac"] = hmac_value
+
+    mock_packet_manager.listen.return_value = json.dumps(message_dict).encode("utf-8")
 
     cdh.listen_for_commands(30)
 
@@ -616,7 +668,7 @@ def test_listen_for_commands_oscar_ping_integration(
 
 @patch("time.sleep")
 def test_listen_for_commands_valid_hmac(
-    mock_sleep, cdh, mock_packet_manager, mock_logger
+    mock_sleep, cdh, mock_packet_manager, mock_logger, mock_counter16
 ):
     """Tests listen_for_commands with valid HMAC authentication.
 
@@ -625,6 +677,7 @@ def test_listen_for_commands_valid_hmac(
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_logger: Mocked Logger instance.
+        mock_counter16: Mocked Counter16 instance.
     """
     counter = 1
     message_dict = {
@@ -648,6 +701,9 @@ def test_listen_for_commands_valid_hmac(
 
     # Verify command was executed
     mock_packet_manager.send.assert_called_once()
+
+    # Verify counter was updated in NVM
+    mock_counter16.set.assert_called_once_with(counter)
 
 
 @patch("time.sleep")
@@ -684,7 +740,7 @@ def test_listen_for_commands_invalid_hmac(
 
 @patch("time.sleep")
 def test_listen_for_commands_replay_attack(
-    mock_sleep, cdh, mock_packet_manager, mock_logger
+    mock_sleep, cdh, mock_packet_manager, mock_logger, mock_counter16
 ):
     """Tests that replay attacks are prevented.
 
@@ -693,9 +749,12 @@ def test_listen_for_commands_replay_attack(
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_logger: Mocked Logger instance.
+        mock_counter16: Mocked Counter16 instance.
     """
     # First, send a valid command
     counter1 = 10
+    mock_counter16.get.return_value = 0  # Initial counter value
+
     message_dict1 = {
         "name": "test_satellite",
         "command": "send_joke",
@@ -709,24 +768,28 @@ def test_listen_for_commands_replay_attack(
     mock_packet_manager.listen.return_value = json.dumps(message_dict1).encode("utf-8")
     cdh.listen_for_commands(30)
 
-    # Verify first command was accepted
-    assert cdh._last_valid_counter == counter1
+    # Verify counter was updated
+    mock_counter16.set.assert_called_with(counter1)
 
-    # Now try to replay the same command (same counter)
+    # Now set the counter to the stored value for replay
+    mock_counter16.get.return_value = counter1
+
+    # Try to replay the same command (same counter)
     mock_packet_manager.listen.return_value = json.dumps(message_dict1).encode("utf-8")
     cdh.listen_for_commands(30)
 
-    # Verify the replay was rejected
+    # Verify the replay was rejected (counter_diff == 0)
     mock_logger.debug.assert_any_call(
-        "Replay attack detected - counter not greater than last valid",
+        "Replay attack detected - invalid counter",
         counter=counter1,
         last_valid=counter1,
+        diff=0,
     )
 
 
 @patch("time.sleep")
 def test_listen_for_commands_old_counter(
-    mock_sleep, cdh, mock_packet_manager, mock_logger
+    mock_sleep, cdh, mock_packet_manager, mock_logger, mock_counter16
 ):
     """Tests that old counter values are rejected.
 
@@ -735,9 +798,10 @@ def test_listen_for_commands_old_counter(
         cdh: CommandDataHandler instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_logger: Mocked Logger instance.
+        mock_counter16: Mocked Counter16 instance.
     """
     # Set last valid counter to 20
-    cdh._last_valid_counter = 20
+    mock_counter16.get.return_value = 20
 
     # Try to send a command with counter 15 (older than last valid)
     counter = 15
@@ -755,11 +819,12 @@ def test_listen_for_commands_old_counter(
 
     cdh.listen_for_commands(30)
 
-    # Verify the command was rejected
+    # Verify the command was rejected (counter_diff > 0x8000 means backwards)
     mock_logger.debug.assert_any_call(
-        "Replay attack detected - counter not greater than last valid",
+        "Replay attack detected - invalid counter",
         counter=counter,
         last_valid=20,
+        diff=(15 - 20) & 0xFFFF,  # 65531 which is > 0x8000
     )
 
     # Verify acknowledgement was NOT sent
@@ -843,3 +908,74 @@ def test_listen_for_commands_reset_with_hmac(
         mock_microcontroller.RunMode.NORMAL
     )
     mock_microcontroller.reset.assert_called_once()
+
+
+@patch("time.sleep")
+def test_listen_for_commands_counter_wraparound(
+    mock_sleep, cdh, mock_packet_manager, mock_logger, mock_counter16
+):
+    """Tests that counter wraparound is handled correctly.
+
+    Args:
+        mock_sleep: Mocked time.sleep function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+        mock_counter16: Mocked Counter16 instance.
+    """
+    # Set last valid counter near max value
+    mock_counter16.get.return_value = 65530
+
+    # Send command with wrapped counter (small value)
+    counter = 5
+    message_dict = {
+        "name": "test_satellite",
+        "command": "send_joke",
+        "args": [],
+        "counter": counter,
+    }
+    message_str = json.dumps(message_dict, separators=(",", ":"))
+    hmac_value = cdh._hmac_authenticator.generate_hmac(message_str, counter)
+    message_dict["hmac"] = hmac_value
+
+    mock_packet_manager.listen.return_value = json.dumps(message_dict).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    # Verify command was accepted (wraparound handled correctly)
+    mock_packet_manager.send_acknowledgement.assert_called_once()
+    mock_counter16.set.assert_called_once_with(counter)
+
+
+@patch("time.sleep")
+def test_listen_for_commands_counter_out_of_range(
+    mock_sleep, cdh, mock_packet_manager, mock_logger, mock_counter16
+):
+    """Tests that out-of-range counter values are rejected.
+
+    Args:
+        mock_sleep: Mocked time.sleep function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+        mock_counter16: Mocked Counter16 instance.
+    """
+    # Send command with out-of-range counter
+    counter = 70000  # > 65535
+    message_dict = {
+        "name": "test_satellite",
+        "command": "send_joke",
+        "args": [],
+        "counter": counter,
+    }
+    message_str = json.dumps(message_dict, separators=(",", ":"))
+    hmac_value = cdh._hmac_authenticator.generate_hmac(message_str, counter)
+    message_dict["hmac"] = hmac_value
+
+    mock_packet_manager.listen.return_value = json.dumps(message_dict).encode("utf-8")
+
+    cdh.listen_for_commands(30)
+
+    # Verify command was rejected
+    mock_logger.debug.assert_any_call("Counter out of range", counter=counter)
+    mock_packet_manager.send_acknowledgement.assert_not_called()

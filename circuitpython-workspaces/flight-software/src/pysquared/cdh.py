@@ -26,6 +26,7 @@ from .config.config import Config
 from .hardware.radio.packetizer.packet_manager import PacketManager
 from .hmac_auth import HMACAuthenticator
 from .logger import Logger
+from .nvm.counter import Counter16
 
 
 class CommandDataHandler:
@@ -42,6 +43,7 @@ class CommandDataHandler:
         logger: Logger,
         config: Config,
         packet_manager: PacketManager,
+        last_command_counter: Counter16,
         send_delay: float = 0.2,
     ) -> None:
         """Initializes the CommandDataHandler.
@@ -50,6 +52,7 @@ class CommandDataHandler:
             logger: The logger to use.
             config: The configuration to use.
             packet_manager: The packet manager to use for sending and receiving data.
+            last_command_counter: NVM counter tracking the last valid command counter (16-bit).
             send_delay: The delay between sending an acknowledgement and the response.
         """
         self._log: Logger = logger
@@ -59,9 +62,7 @@ class CommandDataHandler:
         self._hmac_authenticator: HMACAuthenticator = HMACAuthenticator(
             config.hmac_secret
         )
-        self._last_valid_counter: int = (
-            -1
-        )  # Track last valid counter for replay prevention
+        self._last_command_counter: Counter16 = last_command_counter
 
     def listen_for_commands(self, timeout: int) -> None:
         """Listens for commands from the radio and handles them.
@@ -103,70 +104,80 @@ class CommandDataHandler:
                 self.oscar_command(cmd, args)
                 return
 
-            # New HMAC-based authentication
+            # HMAC-based authentication (required for non-OSCAR commands)
             hmac_value = msg.get("hmac")
             counter_raw = msg.get("counter")
 
+            # Require HMAC authentication
             if hmac_value is None or counter_raw is None:
-                # Fall back to password-based authentication for backward compatibility
-                if msg.get("password") != self._config.super_secret_code:
-                    self._log.debug(
-                        "Invalid password in message",
-                        msg=msg,
-                    )
-                    return
+                self._log.debug(
+                    "Missing HMAC or counter in message",
+                    msg=msg,
+                )
+                return
 
-                if msg.get("name") != self._config.cubesat_name:
-                    self._log.debug(
-                        "Satellite name mismatch in message",
-                        msg=msg,
-                    )
-                    return
-            else:
-                # Use HMAC authentication
-                # Convert counter to int
-                try:
-                    counter: int = int(counter_raw)
-                except (ValueError, TypeError):
-                    self._log.debug(
-                        "Invalid counter in message",
-                        counter=counter_raw,
-                    )
-                    return
+            # Use HMAC authentication
+            # Convert counter to int
+            try:
+                counter: int = int(counter_raw)
+            except (ValueError, TypeError):
+                self._log.debug(
+                    "Invalid counter in message",
+                    counter=counter_raw,
+                )
+                return
 
-                # Extract message without HMAC for verification
-                msg_without_hmac = {k: v for k, v in msg.items() if k != "hmac"}
-                message_str = json.dumps(msg_without_hmac, separators=(",", ":"))
+            # Validate counter is within 16-bit range
+            if counter < 0 or counter > 0xFFFF:
+                self._log.debug(
+                    "Counter out of range",
+                    counter=counter,
+                )
+                return
 
-                # Verify HMAC
-                if not self._hmac_authenticator.verify_hmac(
-                    message_str, counter, hmac_value
-                ):
-                    self._log.debug(
-                        "Invalid HMAC in message",
-                        msg=msg,
-                    )
-                    return
+            # Extract message without HMAC for verification
+            msg_without_hmac = {k: v for k, v in msg.items() if k != "hmac"}
+            message_str = json.dumps(msg_without_hmac, separators=(",", ":"))
 
-                # Prevent replay attacks - counter must be greater than last valid counter
-                if counter <= self._last_valid_counter:
-                    self._log.debug(
-                        "Replay attack detected - counter not greater than last valid",
-                        counter=counter,
-                        last_valid=self._last_valid_counter,
-                    )
-                    return
+            # Verify HMAC
+            if not self._hmac_authenticator.verify_hmac(
+                message_str, counter, hmac_value
+            ):
+                self._log.debug(
+                    "Invalid HMAC in message",
+                    msg=msg,
+                )
+                return
 
-                # Update last valid counter
-                self._last_valid_counter = counter
+            # Prevent replay attacks with wraparound handling
+            last_valid = self._last_command_counter.get()
 
-                # Verify satellite name
-                if msg.get("name") != self._config.cubesat_name:
-                    self._log.debug(
-                        "Satellite name mismatch in message",
-                        msg=msg,
-                    )
-                    return
+            # Check if counter is valid considering 16-bit wraparound
+            # Accept if counter is greater, or if wraparound occurred
+            # (counter is much smaller, indicating it wrapped around)
+            counter_diff = (counter - last_valid) & 0xFFFF
+
+            # Valid if counter is within forward window (1 to 32768)
+            # This allows for wraparound while preventing replay attacks
+            if counter_diff == 0 or counter_diff > 0x8000:
+                self._log.debug(
+                    "Replay attack detected - invalid counter",
+                    counter=counter,
+                    last_valid=last_valid,
+                    diff=counter_diff,
+                )
+                return
+
+            # Update last valid counter in NVM
+            self._last_command_counter.set(counter)
+
+            # Verify satellite name
+            if msg.get("name") != self._config.cubesat_name:
+                self._log.debug(
+                    "Satellite name mismatch in message",
+                    msg=msg,
+                )
+                return
 
             # If message has command field, execute the command
             cmd = msg.get("command")
