@@ -9,6 +9,7 @@
   "detumble_enable_y": true,
   "detumble_enable_z": true,
   "heating": false,
+  "hmac_secret": "test_hmac_secret_key",
   "last_battery_temp": 20.0,
   "longest_allowable_sleep_time": 600,
   "normal_battery_temp": 1,
@@ -39,6 +40,5 @@
   "repeat_code": "RP",
   "sleep_duration": 30,
   "super_secret_code": "ABCD",
-  "hmac_secret": "test_hmac_secret_key",
   "turbo_clock": false
 }
