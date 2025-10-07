@@ -20,7 +20,16 @@ authenticator = HMACAuthenticator("shared_secret_key")
 is_valid = authenticator.verify_hmac(message, counter, hmac_value)
 ```
 """
-from circuitpython_hmac import HMAC
+
+import hmac
+
+try:
+    # CircuitPython uses adafruit_hashlib
+    import adafruit_hashlib as hashlib
+except ImportError:
+    # Standard Python uses hashlib
+    import hashlib
+
 
 class HMACAuthenticator:
     """Provides HMAC authentication for command messages."""
@@ -47,8 +56,9 @@ class HMACAuthenticator:
         data = f"{message}|{counter}".encode("utf-8")
 
         # Generate HMAC using SHA-256
-        # Use string "sha256" for CircuitPython compatibility
-        h = circuitpython_hmac.new(self._secret_key, data, "sha256")
+        # Note: In CircuitPython, this uses the circuitpython_hmac library
+        # In testing/CPython, this uses the standard hmac library
+        h = hmac.new(self._secret_key, data, hashlib.sha256)
         return h.hexdigest()
 
     def verify_hmac(self, message: str, counter: int, received_hmac: str) -> bool:
@@ -63,4 +73,4 @@ class HMACAuthenticator:
             True if the HMAC is valid, False otherwise.
         """
         expected_hmac = self.generate_hmac(message, counter)
-        return circuitpython_hmac.compare_digest(expected_hmac, received_hmac)
+        return hmac.compare_digest(expected_hmac, received_hmac)
