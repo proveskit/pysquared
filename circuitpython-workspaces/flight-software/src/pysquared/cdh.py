@@ -43,7 +43,7 @@ class CommandDataHandler:
         logger: Logger,
         config: Config,
         packet_manager: PacketManager,
-        last_command_counter: Counter16,
+        last_command_counter: Counter16 = 1,
         send_delay: float = 0.2,
     ) -> None:
         """Initializes the CommandDataHandler.
