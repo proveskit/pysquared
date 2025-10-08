@@ -61,6 +61,33 @@ class HMACAuthenticator:
         h = hmac.new(self._secret_key, data, hashlib.sha256)
         return h.hexdigest()
 
+    def compare_digest(expected_hmac: str, received_hmac: str):
+        """Compares two byte or str sequences in constant time.
+        Returns True if expected_hmac == recieved_hmac, False otherwise.
+        """
+        if not isinstance(expected_hmac, (bytes, bytearray, str)) or not isinstance(received_hmac, (bytes, bytearray, str)):
+            raise TypeError("compare_digest() expects two bytes or two str objects")
+        # Convert strings to bytes if both are str
+        if isinstance(expected_hmac, str) and isinstance(received_hmac, str):
+            expected_hmac = expected_hmac.encode('utf-8')
+            received_hmac = received_hmac.encode('utf-8')
+        elif isinstance(expected_hmac, str) or isinstance(received_hmac, str):
+            raise TypeError("Both inputs must be of the same type")
+        # Ensure both are bytes/bytearray at this point
+        if len(expected_hmac) != len(received_hmac):
+            # Continue processing full length to keep timing consistent
+            result = 0
+            maxlen = max(len(expected_hmac), len(b))
+            for i in range(maxlen):
+                x = expected_hmac[i] if i < len(expected_hmac) else 0
+                y = received_hmac[i] if i < len(received_hmac) else 0
+                result |= x ^ y
+            return False
+        result = 0
+        for x, y in zip(expected_hmac, received_hmac):
+            result |= x ^ y
+        return result == 0
+
     def verify_hmac(self, message: str, counter: int, received_hmac: str) -> bool:
         """Verifies an HMAC for a message with a counter.
 
@@ -73,4 +100,4 @@ class HMACAuthenticator:
             True if the HMAC is valid, False otherwise.
         """
         expected_hmac = self.generate_hmac(message, counter)
-        return hmac.compare_digest(expected_hmac, received_hmac)
+        return HMACAuthenticator.compare_digest(expected_hmac, received_hmac)
