@@ -21,7 +21,7 @@ is_valid = authenticator.verify_hmac(message, counter, hmac_value)
 ```
 """
 
-from circuitpython_hmac import HMAC as hmac
+import circuitpython_hmac as hmac
 
 try:
     # CircuitPython uses adafruit_hashlib
