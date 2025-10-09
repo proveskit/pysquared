@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/.venv/bin/pytest",
             "args": [
-                "tests/unit",
+                "cpython-workspaces/flight-software-unit-tests/src",
                 "--maxfail=1",
                 "--disable-warnings"
             ],
