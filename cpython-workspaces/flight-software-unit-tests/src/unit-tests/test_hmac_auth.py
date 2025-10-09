@@ -4,7 +4,22 @@ This module contains unit tests for the `HMACAuthenticator` class, which is
 responsible for generating and verifying HMAC signatures for command messages.
 """
 
+from typing import Generator
+from unittest.mock import MagicMock, patch
+
+import pytest
 from pysquared.hmac_auth import HMACAuthenticator
+
+
+@pytest.fixture
+def mock_hmac() -> Generator[MagicMock, None, None]:
+    """Mocks the HMAC class.
+    Yields:
+        A MagicMock instance of HMAC.
+    """
+    with patch("pysquared.hmac_auth.HMAC") as mock_class:
+        mock_class.return_value = MagicMock()
+        yield mock_class
 
 
 def test_hmac_authenticator_init():
@@ -89,7 +104,7 @@ def test_generate_hmac_different_secrets():
     assert hmac1 != hmac2
 
 
-def test_verify_hmac_valid():
+def test_verify_hmac_valid(mock_hmac):
     """Tests HMAC verification with valid HMAC."""
     secret_key = "test_secret"
     authenticator = HMACAuthenticator(secret_key)
@@ -97,13 +112,15 @@ def test_verify_hmac_valid():
     message = '{"command": "send_joke"}'
     counter = 75
 
+    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = authenticator.generate_hmac(message, counter)
+
     is_valid = authenticator.verify_hmac(message, counter, hmac_value)
 
     assert is_valid is True
 
 
-def test_verify_hmac_invalid():
+def test_verify_hmac_invalid(mock_hmac):
     """Tests HMAC verification with invalid HMAC."""
     secret_key = "test_secret"
     authenticator = HMACAuthenticator(secret_key)
@@ -113,6 +130,7 @@ def test_verify_hmac_invalid():
 
     # Use a fake HMAC
     fake_hmac = "0" * 64
+    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     is_valid = authenticator.verify_hmac(message, counter, fake_hmac)
 
     assert is_valid is False
@@ -148,7 +166,7 @@ def test_verify_hmac_wrong_counter():
     assert is_valid is False
 
 
-def test_verify_hmac_wrong_secret():
+def test_verify_hmac_wrong_secret(mock_hmac):
     """Tests HMAC verification fails when secret is different."""
     message = '{"command": "send_joke"}'
     counter = 95

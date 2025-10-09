@@ -104,6 +104,7 @@ def test_hmac_integration_valid_command(
 
     # Ground station generates HMAC
     message_str = json.dumps(command_message, separators=(",", ":"))
+    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
     command_message["hmac"] = hmac_value
 
@@ -207,6 +208,7 @@ def test_hmac_integration_replay_attack(
     }
 
     message_str = json.dumps(command_message, separators=(",", ":"))
+    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
     command_message["hmac"] = hmac_value
     command_bytes = json.dumps(command_message).encode("utf-8")
@@ -263,6 +265,7 @@ def test_hmac_integration_counter_sequence(
         }
 
         message_str = json.dumps(command_message, separators=(",", ":"))
+        mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
         hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
         command_message["hmac"] = hmac_value
         command_bytes = json.dumps(command_message).encode("utf-8")
@@ -312,6 +315,7 @@ def test_hmac_integration_counter_wraparound(
     }
 
     message_str = json.dumps(command_message, separators=(",", ":"))
+    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
     command_message["hmac"] = hmac_value
     command_bytes = json.dumps(command_message).encode("utf-8")
@@ -339,6 +343,7 @@ def test_hmac_integration_different_secrets(
         mock_config: Mocked Config instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_counter16: Mocked Counter16 instance.
+        mock_hmac: Mocked Hmac instance
     """
     # Flight software with one secret
     flight_software_cdh = CommandDataHandler(
