@@ -407,6 +407,7 @@ def test_hmac_integration_large_message(
 
     # Ground station generates HMAC for the complete message
     message_str = json.dumps(command_message, separators=(",", ":"))
+    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
     command_message["hmac"] = hmac_value
 
