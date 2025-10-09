@@ -5,6 +5,7 @@ flow between the ground station and the satellite's command data handler.
 """
 
 import json
+from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -63,12 +64,25 @@ def ground_station_authenticator(mock_config):
     return HMACAuthenticator(mock_config.hmac_secret)
 
 
+@pytest.fixture
+def mock_hmac() -> Generator[MagicMock, None, None]:
+    """Mocks the HMAC class.
+
+    Yields:
+        A MagicMock instance of HMAC.
+    """
+    with patch("pysquared.hmac_auth.HMAC") as mock_class:
+        mock_class.return_value = MagicMock()
+        yield mock_class
+
+
 def test_hmac_integration_valid_command(
     flight_software_cdh,
     ground_station_authenticator,
     mock_config,
     mock_packet_manager,
     mock_counter16,
+    mock_hmac,
 ):
     """Tests successful HMAC authentication flow from ground station to flight software.
 
@@ -121,6 +135,7 @@ def test_hmac_integration_invalid_hmac(
     mock_config,
     mock_packet_manager,
     mock_logger,
+    mock_hmac,
 ):
     """Tests that flight software rejects commands with invalid HMAC.
 
@@ -170,6 +185,7 @@ def test_hmac_integration_replay_attack(
     mock_packet_manager,
     mock_counter16,
     mock_logger,
+    mock_hmac,
 ):
     """Tests that flight software prevents replay attacks.
 
@@ -226,6 +242,7 @@ def test_hmac_integration_counter_sequence(
     mock_config,
     mock_packet_manager,
     mock_counter16,
+    mock_hmac,
 ):
     """Tests multiple commands with incrementing counters.
 
@@ -271,6 +288,7 @@ def test_hmac_integration_counter_wraparound(
     mock_config,
     mock_packet_manager,
     mock_counter16,
+    mock_hmac,
 ):
     """Tests counter wraparound handling in integration scenario.
 
@@ -308,7 +326,11 @@ def test_hmac_integration_counter_wraparound(
 
 
 def test_hmac_integration_different_secrets(
-    mock_logger, mock_config, mock_packet_manager, mock_counter16
+    mock_logger,
+    mock_config,
+    mock_packet_manager,
+    mock_counter16,
+    mock_hmac,
 ):
     """Tests that flight software rejects commands with different HMAC secret.
 
@@ -357,6 +379,7 @@ def test_hmac_integration_large_message(
     mock_config,
     mock_packet_manager,
     mock_counter16,
+    mock_hmac,
 ):
     """Tests HMAC authentication with large message requiring packetization.
 

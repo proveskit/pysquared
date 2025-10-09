@@ -21,14 +21,8 @@ is_valid = authenticator.verify_hmac(message, counter, hmac_value)
 ```
 """
 
-import circuitpython_hmac as hmac
-
-try:
-    # CircuitPython uses adafruit_hashlib
-    import adafruit_hashlib as hashlib
-except ImportError:
-    # Standard Python uses hashlib
-    import hashlib
+import adafruit_hashlib as hashlib  # interesting, this lib imports cpython stuff if it's available.... hmmm
+from circuitpython_hmac import HMAC
 
 
 class HMACAuthenticator:
@@ -58,26 +52,28 @@ class HMACAuthenticator:
         # Generate HMAC using SHA-256
         # Note: In CircuitPython, this uses the circuitpython_hmac library
         # In testing/CPython, this uses the standard hmac library
-        h = hmac.new(self._secret_key, data, hashlib.sha256)
+        h = HMAC(self._secret_key, data, hashlib.sha256)
         return h.hexdigest()
 
     def compare_digest(expected_hmac: str, received_hmac: str):
         """Compares two byte or str sequences in constant time.
         Returns True if expected_hmac == recieved_hmac, False otherwise.
         """
-        if not isinstance(expected_hmac, (bytes, bytearray, str)) or not isinstance(received_hmac, (bytes, bytearray, str)):
+        if not isinstance(expected_hmac, (bytes, bytearray, str)) or not isinstance(
+            received_hmac, (bytes, bytearray, str)
+        ):
             raise TypeError("compare_digest() expects two bytes or two str objects")
         # Convert strings to bytes if both are str
         if isinstance(expected_hmac, str) and isinstance(received_hmac, str):
-            expected_hmac = expected_hmac.encode('utf-8')
-            received_hmac = received_hmac.encode('utf-8')
+            expected_hmac = expected_hmac.encode("utf-8")
+            received_hmac = received_hmac.encode("utf-8")
         elif isinstance(expected_hmac, str) or isinstance(received_hmac, str):
             raise TypeError("Both inputs must be of the same type")
         # Ensure both are bytes/bytearray at this point
         if len(expected_hmac) != len(received_hmac):
             # Continue processing full length to keep timing consistent
             result = 0
-            maxlen = max(len(expected_hmac), len(b))
+            maxlen = max(len(expected_hmac), len(received_hmac))
             for i in range(maxlen):
                 x = expected_hmac[i] if i < len(expected_hmac) else 0
                 y = received_hmac[i] if i < len(received_hmac) else 0
