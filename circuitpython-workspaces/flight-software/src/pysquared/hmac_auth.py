@@ -24,11 +24,16 @@ is_valid = authenticator.verify_hmac(message, counter, hmac_value)
 import adafruit_hashlib as hashlib  # interesting, this lib imports cpython stuff if it's available.... hmmm
 from circuitpython_hmac import HMAC
 
+try:
+    from typing import Callable
+except Exception:
+    pass
+
 
 class HMACAuthenticator:
     """Provides HMAC authentication for command messages."""
 
-    def __init__(self, secret_key: str, hmac_class=HMAC) -> None:
+    def __init__(self, secret_key: str, hmac_class: Callable = HMAC) -> None:
         """Initializes the HMACAuthenticator.
 
         Args:
@@ -59,7 +64,7 @@ class HMACAuthenticator:
         return h.hexdigest()
 
     @staticmethod
-    def compare_digest(expected_hmac: str, received_hmac: str):
+    def compare_digest(expected_hmac: str | bytes, received_hmac: str | bytes):
         """Compares two byte or str sequences in constant time.
         Returns True if expected_hmac == received_hmac, False otherwise.
         """
@@ -77,6 +82,9 @@ class HMACAuthenticator:
 
         if isinstance(received_hmac, str):
             received_hmac = received_hmac.encode("utf-8")
+
+        assert isinstance(expected_hmac, bytes)
+        assert isinstance(received_hmac, bytes)
 
         print("expected:", expected_hmac)
         print("received:", received_hmac)

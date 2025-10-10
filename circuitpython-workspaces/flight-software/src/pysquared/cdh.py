@@ -29,6 +29,11 @@ from .hmac_auth import HMACAuthenticator
 from .logger import Logger
 from .nvm.counter import Counter16
 
+try:
+    from typing import Callable
+except Exception:
+    pass
+
 
 class CommandDataHandler:
     """Handles command parsing, validation, and execution for the satellite."""
@@ -45,9 +50,9 @@ class CommandDataHandler:
         logger: Logger,
         config: Config,
         packet_manager: PacketManager,
-        last_command_counter: Counter16 = 1,
+        last_command_counter: Counter16 = Counter16(1),
         send_delay: float = 0.2,
-        hmac_class=HMAC,
+        hmac_class: Callable = HMAC,
     ) -> None:
         """Initializes the CommandDataHandler.
 
