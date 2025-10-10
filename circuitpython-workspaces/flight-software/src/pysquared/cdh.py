@@ -247,7 +247,7 @@ class CommandDataHandler:
 
     def send_counter(self):
         """Send the counter down so the ground station knows how to authenticate"""
-        counter = str(self._last_command_counter)
+        counter = str(self._last_command_counter.get())
         self._log.info("Sending Counter", counter=str(counter))
         self._packet_manager.send(counter.encode("utf-8"))
 
