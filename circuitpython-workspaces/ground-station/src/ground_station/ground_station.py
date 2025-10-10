@@ -273,9 +273,9 @@ class GroundStation:
                     continue
 
                 self._log.info("Received counter response", response=b.decode("utf-8"))
-                current_counter = b.decode["counter"]
+                current_counter = json.loads(b.decode("utf-8"))["counter"]
                 self._command_counter = current_counter
-                self._log.info("current counter set to", current_counter)
+                self._log.info("current counter set to", counter=current_counter)
 
                 break
 
