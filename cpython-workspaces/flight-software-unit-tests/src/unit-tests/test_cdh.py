@@ -5,6 +5,7 @@ responsible for processing commands received by the satellite. The tests cover
 initialization, command parsing, and execution of various commands.
 """
 
+import hmac
 import json
 from unittest.mock import MagicMock, patch
 
@@ -57,6 +58,7 @@ def cdh(
         config=mock_config,
         packet_manager=mock_packet_manager,
         last_command_counter=mock_counter16,
+        hmac_class=hmac.new,
     )
 
 

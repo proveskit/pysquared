@@ -21,6 +21,7 @@ import time
 import traceback
 
 import microcontroller
+from circuitpython_hmac import HMAC
 
 from .config.config import Config
 from .hardware.radio.packetizer.packet_manager import PacketManager
@@ -35,6 +36,7 @@ class CommandDataHandler:
     command_reset: str = "reset"
     command_change_radio_modulation: str = "change_radio_modulation"
     command_send_joke: str = "send_joke"
+    command_get_counter: str = "get_counter"
 
     oscar_password: str = "Hello World!"  # Default password for OSCAR commands
 
@@ -45,6 +47,7 @@ class CommandDataHandler:
         packet_manager: PacketManager,
         last_command_counter: Counter16 = 1,
         send_delay: float = 0.2,
+        hmac_class=HMAC,
     ) -> None:
         """Initializes the CommandDataHandler.
 
@@ -60,7 +63,7 @@ class CommandDataHandler:
         self._packet_manager: PacketManager = packet_manager
         self._send_delay: float = send_delay
         self._hmac_authenticator: HMACAuthenticator = HMACAuthenticator(
-            config.hmac_secret
+            config.hmac_secret, hmac_class=hmac_class
         )
         self._last_command_counter: Counter16 = last_command_counter
 
@@ -78,6 +81,7 @@ class CommandDataHandler:
 
         try:
             json_str = json_bytes.decode("utf-8")
+            print("Got a message!!!")
 
             msg: dict[str, str] = json.loads(json_str)
 
@@ -104,8 +108,19 @@ class CommandDataHandler:
                 self.oscar_command(cmd, args)
                 return
 
+            # If message has command field, get the command
+            cmd = msg.get("command")
+
+            print("Command is", cmd)
+
+            if cmd is not None and cmd == self.command_get_counter:
+                self.send_counter()
+
+            print("got command")
+
             # HMAC-based authentication (required for non-OSCAR commands)
-            hmac_value = msg.get("hmac")
+            hmac_value = str(msg.get("hmac"))
+            print("TYPETYPETYEPE", type(hmac_value))
             counter_raw = msg.get("counter")
 
             # Require HMAC authentication
@@ -116,6 +131,7 @@ class CommandDataHandler:
                 )
                 return
 
+            print("counter and hmac not None")
             # Use HMAC authentication
             # Convert counter to int
             try:
@@ -127,6 +143,8 @@ class CommandDataHandler:
                 )
                 return
 
+            print("counter is an int")
+
             # Validate counter is within 16-bit range
             if counter < 0 or counter > 0xFFFF:
                 self._log.debug(
@@ -135,14 +153,24 @@ class CommandDataHandler:
                 )
                 return
 
+            print("counter is validated")
+
+            print("the message actually is", msg)
+
             # Extract message without HMAC for verification
             msg_without_hmac = {k: v for k, v in msg.items() if k != "hmac"}
             message_str = json.dumps(msg_without_hmac, separators=(",", ":"))
+
+            print("message after loop", msg)
+
+            print("\nmessage is ", message_str)
+            print("\ncounter is ", counter)
 
             # Verify HMAC
             if not self._hmac_authenticator.verify_hmac(
                 message_str, counter, hmac_value
             ):
+                print("Invalid HMAC inmessgae", msg)
                 self._log.debug(
                     "Invalid HMAC in message",
                     msg=msg,
@@ -151,11 +179,13 @@ class CommandDataHandler:
 
             # Prevent replay attacks with wraparound handling
             last_valid = self._last_command_counter.get()
+            print(last_valid, "last valid")
 
             # Check if counter is valid considering 16-bit wraparound
             # Accept if counter is greater, or if wraparound occurred
             # (counter is much smaller, indicating it wrapped around)
             counter_diff = (counter - last_valid) & 0xFFFF
+            print("counter diff", counter_diff)
 
             # Valid if counter is within forward window (1 to 32768)
             # This allows for wraparound while preventing replay attacks
@@ -179,8 +209,6 @@ class CommandDataHandler:
                 )
                 return
 
-            # If message has command field, execute the command
-            cmd = msg.get("command")
             if cmd is None:
                 self._log.warning("No command found in message", msg=msg)
                 self._packet_manager.send(
@@ -225,6 +253,12 @@ class CommandDataHandler:
         joke = random.choice(self._config.jokes)
         self._log.info("Sending joke", joke=joke)
         self._packet_manager.send(joke.encode("utf-8"))
+
+    def send_counter(self):
+        """Send the counter down so the ground station knows how to authenticate"""
+        counter = str(self._last_command_counter)
+        self._log.info("Sending Counter", counter=counter)
+        self._packet_manager.send(counter.encode("utf-8"))
 
     def change_radio_modulation(self, args: list[str]) -> None:
         """Changes the radio modulation.

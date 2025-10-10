@@ -4,8 +4,8 @@ This module contains integration tests that verify the complete HMAC authenticat
 flow between the ground station and the satellite's command data handler.
 """
 
+import hmac
 import json
-from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -55,25 +55,14 @@ def flight_software_cdh(mock_logger, mock_config, mock_packet_manager, mock_coun
         config=mock_config,
         packet_manager=mock_packet_manager,
         last_command_counter=mock_counter16,
+        hmac_class=hmac.new,
     )
 
 
 @pytest.fixture
 def ground_station_authenticator(mock_config):
     """Provides an HMACAuthenticator instance (ground station side)."""
-    return HMACAuthenticator(mock_config.hmac_secret)
-
-
-@pytest.fixture
-def mock_hmac() -> Generator[MagicMock, None, None]:
-    """Mocks the HMAC class.
-
-    Yields:
-        A MagicMock instance of HMAC.
-    """
-    with patch("pysquared.hmac_auth.HMAC") as mock_class:
-        mock_class.return_value = MagicMock()
-        yield mock_class
+    return HMACAuthenticator(mock_config.hmac_secret, hmac_class=hmac.new)
 
 
 def test_hmac_integration_valid_command(
@@ -82,7 +71,6 @@ def test_hmac_integration_valid_command(
     mock_config,
     mock_packet_manager,
     mock_counter16,
-    mock_hmac,
 ):
     """Tests successful HMAC authentication flow from ground station to flight software.
 
@@ -104,7 +92,6 @@ def test_hmac_integration_valid_command(
 
     # Ground station generates HMAC
     message_str = json.dumps(command_message, separators=(",", ":"))
-    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
     command_message["hmac"] = hmac_value
 
@@ -136,7 +123,6 @@ def test_hmac_integration_invalid_hmac(
     mock_config,
     mock_packet_manager,
     mock_logger,
-    mock_hmac,
 ):
     """Tests that flight software rejects commands with invalid HMAC.
 
@@ -162,7 +148,7 @@ def test_hmac_integration_invalid_hmac(
 
     # Modify the command (tampering)
     command_message["command"] = "reset"  # Changed by attacker
-    command_message["hmac"] = hmac_value  # Original HMAC (now invalid)
+    command_message["hmac"] = id(hmac_value)  # Original HMAC (now invalid)
 
     # Attacker sends the tampered command
     command_bytes = json.dumps(command_message).encode("utf-8")
@@ -175,8 +161,9 @@ def test_hmac_integration_invalid_hmac(
         flight_software_cdh.listen_for_commands(timeout=30)
 
     # Verify the command was rejected
-    mock_packet_manager.send_acknowledgement.assert_not_called()
     mock_logger.debug.assert_any_call("Invalid HMAC in message", msg=command_message)
+
+    mock_packet_manager.send_acknowledgement.assert_not_called()
 
 
 def test_hmac_integration_replay_attack(
@@ -186,7 +173,6 @@ def test_hmac_integration_replay_attack(
     mock_packet_manager,
     mock_counter16,
     mock_logger,
-    mock_hmac,
 ):
     """Tests that flight software prevents replay attacks.
 
@@ -208,7 +194,6 @@ def test_hmac_integration_replay_attack(
     }
 
     message_str = json.dumps(command_message, separators=(",", ":"))
-    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
     command_message["hmac"] = hmac_value
     command_bytes = json.dumps(command_message).encode("utf-8")
@@ -244,7 +229,6 @@ def test_hmac_integration_counter_sequence(
     mock_config,
     mock_packet_manager,
     mock_counter16,
-    mock_hmac,
 ):
     """Tests multiple commands with incrementing counters.
 
@@ -265,7 +249,6 @@ def test_hmac_integration_counter_sequence(
         }
 
         message_str = json.dumps(command_message, separators=(",", ":"))
-        mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
         hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
         command_message["hmac"] = hmac_value
         command_bytes = json.dumps(command_message).encode("utf-8")
@@ -291,7 +274,6 @@ def test_hmac_integration_counter_wraparound(
     mock_config,
     mock_packet_manager,
     mock_counter16,
-    mock_hmac,
 ):
     """Tests counter wraparound handling in integration scenario.
 
@@ -315,7 +297,6 @@ def test_hmac_integration_counter_wraparound(
     }
 
     message_str = json.dumps(command_message, separators=(",", ":"))
-    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
     command_message["hmac"] = hmac_value
     command_bytes = json.dumps(command_message).encode("utf-8")
@@ -334,7 +315,6 @@ def test_hmac_integration_different_secrets(
     mock_config,
     mock_packet_manager,
     mock_counter16,
-    mock_hmac,
 ):
     """Tests that flight software rejects commands with different HMAC secret.
 
@@ -343,18 +323,20 @@ def test_hmac_integration_different_secrets(
         mock_config: Mocked Config instance.
         mock_packet_manager: Mocked PacketManager instance.
         mock_counter16: Mocked Counter16 instance.
-        mock_hmac: Mocked Hmac instance
     """
     # Flight software with one secret
+
     flight_software_cdh = CommandDataHandler(
         logger=mock_logger,
         config=mock_config,
         packet_manager=mock_packet_manager,
         last_command_counter=mock_counter16,
+        hmac_class=hmac.new,
     )
 
     # Ground station with different secret (attacker scenario)
-    wrong_authenticator = HMACAuthenticator("wrong_secret_key")
+    wrong_key = "wrong_secret_key"
+    wrong_authenticator = HMACAuthenticator(wrong_key, hmac_class=hmac.new)
 
     gs_counter = 1
     command_message = {
@@ -366,12 +348,16 @@ def test_hmac_integration_different_secrets(
 
     message_str = json.dumps(command_message, separators=(",", ":"))
     hmac_value = wrong_authenticator.generate_hmac(message_str, gs_counter)
-    command_message["hmac"] = hmac_value
+
+    command_message["hmac"] = id(hmac_value)
     command_bytes = json.dumps(command_message).encode("utf-8")
 
     mock_packet_manager.listen.return_value = command_bytes
     with patch("time.sleep"):
         flight_software_cdh.listen_for_commands(timeout=30)
+
+    assert mock_logger.debug.called, "Logger.debug was never called"
+    assert flight_software_cdh._config.hmac_secret != wrong_key
 
     # Verify command was rejected due to wrong HMAC
     mock_packet_manager.send_acknowledgement.assert_not_called()
@@ -384,7 +370,6 @@ def test_hmac_integration_large_message(
     mock_config,
     mock_packet_manager,
     mock_counter16,
-    mock_hmac,
 ):
     """Tests HMAC authentication with large message requiring packetization.
 
@@ -412,7 +397,6 @@ def test_hmac_integration_large_message(
 
     # Ground station generates HMAC for the complete message
     message_str = json.dumps(command_message, separators=(",", ":"))
-    mock_hmac.return_value.hexdigest.return_value = "fake_hmac_value"
     hmac_value = ground_station_authenticator.generate_hmac(message_str, gs_counter)
     command_message["hmac"] = hmac_value
 

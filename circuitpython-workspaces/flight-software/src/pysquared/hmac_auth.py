@@ -28,13 +28,14 @@ from circuitpython_hmac import HMAC
 class HMACAuthenticator:
     """Provides HMAC authentication for command messages."""
 
-    def __init__(self, secret_key: str) -> None:
+    def __init__(self, secret_key: str, hmac_class=HMAC) -> None:
         """Initializes the HMACAuthenticator.
 
         Args:
             secret_key: The shared secret key for HMAC generation and verification.
         """
         self._secret_key: bytes = secret_key.encode("utf-8")
+        self._hmac_class = hmac_class
 
     def generate_hmac(self, message: str, counter: int) -> str:
         """Generates an HMAC for a message with a counter.
@@ -47,30 +48,35 @@ class HMACAuthenticator:
             The HMAC as a hexadecimal string.
         """
         # Combine message and counter
+        print("generating hmac")
+        print("hamc class", self._hmac_class)
         data = f"{message}|{counter}".encode("utf-8")
 
         # Generate HMAC using SHA-256
         # Note: In CircuitPython, this uses the circuitpython_hmac library
         # In testing/CPython, this uses the standard hmac library
-        h = HMAC(self._secret_key, data, hashlib.sha256)
+        h = self._hmac_class(self._secret_key, data, hashlib.sha256)
         return h.hexdigest()
 
+    @staticmethod
     def compare_digest(expected_hmac: str, received_hmac: str):
         """Compares two byte or str sequences in constant time.
-        Returns True if expected_hmac == recieved_hmac, False otherwise.
+        Returns True if expected_hmac == received_hmac, False otherwise.
         """
-        if not isinstance(expected_hmac, (bytes, bytearray, str)) or not isinstance(
-            received_hmac, (bytes, bytearray, str)
-        ):
-            raise TypeError("compare_digest() expects two bytes or two str objects")
+        print("comparing digest")
+
         # Convert strings to bytes if both are str
         if isinstance(expected_hmac, str) and isinstance(received_hmac, str):
             expected_hmac = expected_hmac.encode("utf-8")
             received_hmac = received_hmac.encode("utf-8")
-        elif isinstance(expected_hmac, str) or isinstance(received_hmac, str):
-            raise TypeError("Both inputs must be of the same type")
+
+        print("hehhehehee")
         # Ensure both are bytes/bytearray at this point
+        print("expected hmac", expected_hmac)
+
+        print("expected hmac", type(expected_hmac))
         if len(expected_hmac) != len(received_hmac):
+            print("lens are da same")
             # Continue processing full length to keep timing consistent
             result = 0
             maxlen = max(len(expected_hmac), len(received_hmac))
@@ -78,7 +84,11 @@ class HMACAuthenticator:
                 x = expected_hmac[i] if i < len(expected_hmac) else 0
                 y = received_hmac[i] if i < len(received_hmac) else 0
                 result |= x ^ y
+            print("returning False")
             return False
+        else:
+            print("not the if")
+        print("result is")
         result = 0
         for x, y in zip(expected_hmac, received_hmac):
             result |= x ^ y
@@ -95,5 +105,9 @@ class HMACAuthenticator:
         Returns:
             True if the HMAC is valid, False otherwise.
         """
+        print("verifying hmac")
         expected_hmac = self.generate_hmac(message, counter)
+        print("expected hmac", expected_hmac)
+        print("expected hmac type", type(expected_hmac))
+
         return HMACAuthenticator.compare_digest(expected_hmac, received_hmac)
