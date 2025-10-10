@@ -30,7 +30,7 @@ from .logger import Logger
 from .nvm.counter import Counter16
 
 try:
-    from typing import Callable
+    from typing import Callable, Optional
 except Exception:
     pass
 
@@ -50,7 +50,7 @@ class CommandDataHandler:
         logger: Logger,
         config: Config,
         packet_manager: PacketManager,
-        last_command_counter: Counter16 = Counter16(1),
+        last_command_counter: Optional[Counter16] = None,
         send_delay: float = 0.2,
         hmac_class: Callable = HMAC,
     ) -> None:
@@ -70,7 +70,10 @@ class CommandDataHandler:
         self._hmac_authenticator: HMACAuthenticator = HMACAuthenticator(
             config.hmac_secret, hmac_class=hmac_class
         )
-        self._last_command_counter: Counter16 = last_command_counter
+        if last_command_counter is not None:
+            self._last_command_counter: Counter16 = last_command_counter
+        else:
+            self._last_command_counter = Counter16(1)
 
     def listen_for_commands(self, timeout: int) -> None:
         """Listens for commands from the radio and handles them.
