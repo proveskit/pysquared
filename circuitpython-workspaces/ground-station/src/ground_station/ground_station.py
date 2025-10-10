@@ -298,13 +298,14 @@ class GroundStation:
             | Please Select Your Mode   |
             | 'A': Listen               |
             | 'B': Send                 |
+            | 'C': Manually Set Counter |
             =============================
             """
             )
 
             device_selection = input().lower()
 
-            if device_selection not in ["a", "b"]:
+            if device_selection not in ["a", "b", "c"]:
                 self._log.warning("Invalid Selection. Please try again.")
                 continue
 
@@ -312,5 +313,26 @@ class GroundStation:
                 self.listen()
             elif device_selection == "b":
                 self.send_receive()
+            elif device_selection == "c":
+                while True:
+                    try:
+                        cmd_selection = input(
+                            """
+                            =======================================
+                            | Type Counter Count you want to set  |
+                            =======================================
+                            > """
+                        )
 
-            time.sleep(1)
+                        cmd_selection = int(cmd_selection)  # Convert input to in
+                        self._command_counter = cmd_selection
+                        self._log.debug(f"Command counter set to {cmd_selection}")
+                        break  # Exit loop after successful input
+
+                    except ValueError:
+                        self._log.debug("Invalid input. Please enter an integer.")
+                    except KeyboardInterrupt:
+                        self._log.debug("Keyboard interrupt received, exiting.")
+                        break
+
+                    time.sleep(1)

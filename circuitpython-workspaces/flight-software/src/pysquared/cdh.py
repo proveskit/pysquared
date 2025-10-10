@@ -76,7 +76,7 @@ class CommandDataHandler:
         if last_command_counter is not None:
             self._last_command_counter: Counter16 = last_command_counter
         else:
-            self._last_command_counter = Counter16(1)
+            self._last_command_counter = Counter16(0)
 
     def listen_for_commands(self, timeout: int) -> None:
         """Listens for commands from the radio and handles them.
@@ -248,7 +248,7 @@ class CommandDataHandler:
     def send_counter(self):
         """Send the counter down so the ground station knows how to authenticate"""
         counter = str(self._last_command_counter)
-        self._log.info("Sending Counter", counter=counter)
+        self._log.info("Sending Counter", counter=str(counter))
         self._packet_manager.send(counter.encode("utf-8"))
 
     def change_radio_modulation(self, args: list[str]) -> None:
