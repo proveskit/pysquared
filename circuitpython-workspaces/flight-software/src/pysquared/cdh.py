@@ -114,7 +114,9 @@ class CommandDataHandler:
             print("Command is", cmd)
 
             if cmd is not None and cmd == self.command_get_counter:
+                print("counter sending")
                 self.send_counter()
+                return
 
             print("got command")
 

@@ -7,7 +7,7 @@ initialization, command parsing, and execution of various commands.
 
 import hmac
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 from pysquared.cdh import CommandDataHandler
@@ -981,3 +981,25 @@ def test_listen_for_commands_counter_out_of_range(
     # Verify command was rejected
     mock_logger.debug.assert_any_call("Counter out of range", counter=counter)
     mock_packet_manager.send_acknowledgement.assert_not_called()
+
+
+def test_listen_for_commands_triggers_send_counter(
+    cdh, mock_packet_manager, mock_logger
+):
+    """Tests that listen_for_commands triggers send_counter when command is 'get_counter'.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+        mocker: Pytest-mock fixture for patching.
+    """
+    # Prepare the message with command "get_counter"
+    message = {"command": cdh.command_get_counter}
+    mock_packet_manager.listen.return_value = json.dumps(message).encode("utf-8")
+
+    # Patch send_counter method to monitor its call
+
+    cdh.listen_for_commands(30)
+
+    mock_logger.info.assert_any_call("Sending Counter", counter=ANY)

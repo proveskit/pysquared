@@ -65,16 +65,22 @@ class HMACAuthenticator:
         """
         print("comparing digest")
 
-        # Convert strings to bytes if both are str
-        if isinstance(expected_hmac, str) and isinstance(received_hmac, str):
+        if not isinstance(expected_hmac, (str, bytes)):
+            expected_hmac = str(expected_hmac)
+
+        if isinstance(expected_hmac, str):
             expected_hmac = expected_hmac.encode("utf-8")
+
+        # Ensure received_hmac is bytes
+        if not isinstance(received_hmac, (str, bytes)):
+            received_hmac = str(received_hmac)
+
+        if isinstance(received_hmac, str):
             received_hmac = received_hmac.encode("utf-8")
 
-        print("hehhehehee")
-        # Ensure both are bytes/bytearray at this point
-        print("expected hmac", expected_hmac)
+        print("expected:", expected_hmac)
+        print("received:", received_hmac)
 
-        print("expected hmac", type(expected_hmac))
         if len(expected_hmac) != len(received_hmac):
             print("lens are da same")
             # Continue processing full length to keep timing consistent

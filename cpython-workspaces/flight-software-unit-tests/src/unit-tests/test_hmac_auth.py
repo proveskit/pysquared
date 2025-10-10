@@ -159,3 +159,34 @@ def test_verify_hmac_wrong_secret():
     is_valid = authenticator2.verify_hmac(message, counter, hmac_value)
 
     assert is_valid is False
+
+
+def test_compare_digest_equal_strings():
+    """Returns True when strings are identical."""
+    assert HMACAuthenticator.compare_digest("abcdef", "abcdef") is True
+
+
+def test_compare_digest_different_strings_same_length():
+    """Returns False when strings differ but are same length."""
+    assert HMACAuthenticator.compare_digest("abcdef", "abcdeg") is False
+
+
+def test_compare_digest_different_length_strings():
+    """Returns False when strings are of different lengths."""
+    assert HMACAuthenticator.compare_digest("abcdef", "abcde") is False
+
+
+def test_compare_digest_bytes_vs_string():
+    """Returns True when str and bytes are equivalent."""
+    assert HMACAuthenticator.compare_digest("deadbeef", b"deadbeef") is True
+
+
+def test_compare_digest_empty_strings():
+    """Returns True when both are empty strings."""
+    assert HMACAuthenticator.compare_digest("", "") is True
+
+
+def test_compare_digest_one_empty_string():
+    """Returns False when one is empty and the other is not."""
+    assert HMACAuthenticator.compare_digest("", "a") is False
+    assert HMACAuthenticator.compare_digest("a", "") is False
