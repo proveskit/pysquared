@@ -53,8 +53,6 @@ class HMACAuthenticator:
             The HMAC as a hexadecimal string.
         """
         # Combine message and counter
-        print("generating hmac")
-        print("hamc class", self._hmac_class)
         data = f"{message}|{counter}".encode("utf-8")
 
         # Generate HMAC using SHA-256
@@ -68,7 +66,6 @@ class HMACAuthenticator:
         """Compares two byte or str sequences in constant time.
         Returns True if expected_hmac == received_hmac, False otherwise.
         """
-        print("comparing digest")
 
         if not isinstance(expected_hmac, (str, bytes)):
             expected_hmac = str(expected_hmac)
@@ -86,11 +83,7 @@ class HMACAuthenticator:
         assert isinstance(expected_hmac, bytes)
         assert isinstance(received_hmac, bytes)
 
-        print("expected:", expected_hmac)
-        print("received:", received_hmac)
-
         if len(expected_hmac) != len(received_hmac):
-            print("lens are da same")
             # Continue processing full length to keep timing consistent
             result = 0
             maxlen = max(len(expected_hmac), len(received_hmac))
@@ -98,11 +91,8 @@ class HMACAuthenticator:
                 x = expected_hmac[i] if i < len(expected_hmac) else 0
                 y = received_hmac[i] if i < len(received_hmac) else 0
                 result |= x ^ y
-            print("returning False")
             return False
-        else:
-            print("not the if")
-        print("result is")
+
         result = 0
         for x, y in zip(expected_hmac, received_hmac):
             result |= x ^ y
@@ -119,9 +109,5 @@ class HMACAuthenticator:
         Returns:
             True if the HMAC is valid, False otherwise.
         """
-        print("verifying hmac")
         expected_hmac = self.generate_hmac(message, counter)
-        print("expected hmac", expected_hmac)
-        print("expected hmac type", type(expected_hmac))
-
         return HMACAuthenticator.compare_digest(expected_hmac, received_hmac)
