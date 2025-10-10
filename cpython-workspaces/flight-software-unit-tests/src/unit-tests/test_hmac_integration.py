@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pysquared.cdh import CommandDataHandler
 from pysquared.config.config import Config
+from pysquared.config.jokes_config import JokesConfig
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.hmac_auth import HMACAuthenticator
 from pysquared.logger import Logger
@@ -48,12 +49,23 @@ def mock_counter16():
 
 
 @pytest.fixture
-def flight_software_cdh(mock_logger, mock_config, mock_packet_manager, mock_counter16):
+def mock_joke_config() -> JokesConfig:
+    """Mocks the JokesConfig class"""
+    joke_config = MagicMock(spec=JokesConfig)
+    joke_config.jokes = ["Why did the the chicken cross the asteroid belt"]
+    return joke_config
+
+
+@pytest.fixture
+def flight_software_cdh(
+    mock_logger, mock_config, mock_packet_manager, mock_joke_config, mock_counter16
+):
     """Provides a CommandDataHandler instance (flight software side)."""
     return CommandDataHandler(
         logger=mock_logger,
         config=mock_config,
         packet_manager=mock_packet_manager,
+        jokes_config=mock_joke_config,
         last_command_counter=mock_counter16,
         hmac_class=hmac.new,
     )
@@ -68,7 +80,7 @@ def ground_station_authenticator(mock_config):
 def test_hmac_integration_valid_command(
     flight_software_cdh,
     ground_station_authenticator,
-    mock_config,
+    mock_joke_config,
     mock_packet_manager,
     mock_counter16,
 ):
@@ -114,7 +126,7 @@ def test_hmac_integration_valid_command(
     # Verify the joke was sent
     mock_packet_manager.send.assert_called_once()
     sent_data = mock_packet_manager.send.call_args[0][0]
-    assert sent_data == mock_config.jokes[0].encode("utf-8")
+    assert sent_data == mock_joke_config.jokes[0].encode("utf-8")
 
 
 def test_hmac_integration_invalid_hmac(
@@ -314,6 +326,7 @@ def test_hmac_integration_different_secrets(
     mock_logger,
     mock_config,
     mock_packet_manager,
+    mock_joke_config,
     mock_counter16,
 ):
     """Tests that flight software rejects commands with different HMAC secret.
@@ -330,6 +343,7 @@ def test_hmac_integration_different_secrets(
         logger=mock_logger,
         config=mock_config,
         packet_manager=mock_packet_manager,
+        jokes_config=mock_joke_config,
         last_command_counter=mock_counter16,
         hmac_class=hmac.new,
     )

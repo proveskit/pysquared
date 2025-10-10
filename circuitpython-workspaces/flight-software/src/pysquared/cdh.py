@@ -24,6 +24,7 @@ import microcontroller
 from circuitpython_hmac import HMAC
 
 from .config.config import Config
+from .config.jokes_config import JokesConfig
 from .hardware.radio.packetizer.packet_manager import PacketManager
 from .hmac_auth import HMACAuthenticator
 from .logger import Logger
@@ -50,6 +51,7 @@ class CommandDataHandler:
         logger: Logger,
         config: Config,
         packet_manager: PacketManager,
+        jokes_config: JokesConfig,
         last_command_counter: Optional[Counter16] = None,
         send_delay: float = 0.2,
         hmac_class: Callable = HMAC,
@@ -65,6 +67,7 @@ class CommandDataHandler:
         """
         self._log: Logger = logger
         self._config: Config = config
+        self._jokes_config: JokesConfig = jokes_config
         self._packet_manager: PacketManager = packet_manager
         self._send_delay: float = send_delay
         self._hmac_authenticator: HMACAuthenticator = HMACAuthenticator(
@@ -238,7 +241,7 @@ class CommandDataHandler:
 
     def send_joke(self) -> None:
         """Sends a random joke from the config."""
-        joke = random.choice(self._config.jokes)
+        joke = random.choice(self._jokes_config.jokes)
         self._log.info("Sending joke", joke=joke)
         self._packet_manager.send(joke.encode("utf-8"))
 

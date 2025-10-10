@@ -12,6 +12,7 @@ from unittest.mock import ANY, MagicMock, patch
 import pytest
 from pysquared.cdh import CommandDataHandler
 from pysquared.config.config import Config
+from pysquared.config.jokes_config import JokesConfig
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from pysquared.logger import Logger
 from pysquared.nvm.counter import Counter16
@@ -36,8 +37,15 @@ def mock_config() -> Config:
     config.super_secret_code = "test_password"
     config.cubesat_name = "test_satellite"
     config.hmac_secret = "test_hmac_secret"
-    config.jokes = ["Why did the satellite cross the orbit? To get to the other side!"]
     return config
+
+
+@pytest.fixture
+def mock_joke_config() -> JokesConfig:
+    """Mocks the JokesConfig class"""
+    joke_config = MagicMock(spec=JokesConfig)
+    joke_config.jokes = ["Why did the the chicken cross the asteroid belt"]
+    return joke_config
 
 
 @pytest.fixture
@@ -50,35 +58,40 @@ def mock_counter16() -> Counter16:
 
 @pytest.fixture
 def cdh(
-    mock_logger, mock_config, mock_packet_manager, mock_counter16
+    mock_logger, mock_config, mock_packet_manager, mock_counter16, mock_joke_config
 ) -> CommandDataHandler:
     """Provides a CommandDataHandler instance for testing."""
     return CommandDataHandler(
         logger=mock_logger,
         config=mock_config,
         packet_manager=mock_packet_manager,
+        jokes_config=mock_joke_config,
         last_command_counter=mock_counter16,
         hmac_class=hmac.new,
     )
 
 
-def test_cdh_init(mock_logger, mock_config, mock_packet_manager, mock_counter16):
+def test_cdh_init(
+    mock_logger, mock_config, mock_packet_manager, mock_joke_config, mock_counter16
+):
     """Tests CommandDataHandler initialization.
 
     Args:
         mock_logger: Mocked Logger instance.
         mock_config: Mocked Config instance.
         mock_packet_manager: Mocked PacketManager instance.
+        mock_joke_config: Mocked joke confog
         mock_counter16: Mocked Counter16 instance.
     """
     cdh = CommandDataHandler(
-        mock_logger, mock_config, mock_packet_manager, mock_counter16
+        mock_logger, mock_config, mock_packet_manager, mock_joke_config, mock_counter16
     )
 
     assert cdh._log is mock_logger
     assert cdh._config is mock_config
     assert cdh._packet_manager is mock_packet_manager
     assert cdh._last_command_counter is mock_counter16
+    assert cdh._jokes_config is mock_joke_config
 
 
 def test_listen_for_commands_no_message(cdh, mock_packet_manager):
@@ -201,7 +214,7 @@ def test_listen_for_commands_invalid_json(cdh, mock_packet_manager, mock_logger)
 
 
 @patch("random.choice")
-def test_send_joke(mock_random_choice, cdh, mock_packet_manager, mock_config):
+def test_send_joke(mock_random_choice, cdh, mock_packet_manager, mock_joke_config):
     """Tests the send_joke method.
 
     Args:
@@ -210,13 +223,13 @@ def test_send_joke(mock_random_choice, cdh, mock_packet_manager, mock_config):
         mock_packet_manager: Mocked PacketManager instance.
         mock_config: Mocked Config instance.
     """
-    mock_random_choice.return_value = mock_config.jokes[0]
+    mock_random_choice.return_value = mock_joke_config.jokes[0]
 
     cdh.send_joke()
 
-    mock_random_choice.assert_called_once_with(mock_config.jokes)
+    mock_random_choice.assert_called_once_with(mock_joke_config.jokes)
     mock_packet_manager.send.assert_called_once_with(
-        mock_config.jokes[0].encode("utf-8")
+        mock_joke_config.jokes[0].encode("utf-8")
     )
 
 
@@ -351,7 +364,7 @@ def test_listen_for_commands_send_joke(
     mock_sleep,
     cdh,
     mock_packet_manager,
-    mock_config,
+    mock_joke_config,
     mock_counter16,
 ):
     """Tests listen_for_commands with send_joke command.
@@ -375,12 +388,12 @@ def test_listen_for_commands_send_joke(
     message_dict["hmac"] = hmac_value
 
     mock_packet_manager.listen.return_value = json.dumps(message_dict).encode("utf-8")
-    mock_random_choice.return_value = mock_config.jokes[0]
+    mock_random_choice.return_value = mock_joke_config.jokes[0]
 
     cdh.listen_for_commands(30)
 
     mock_packet_manager.send.assert_called_once_with(
-        mock_config.jokes[0].encode("utf-8")
+        mock_joke_config.jokes[0].encode("utf-8")
     )
 
 
