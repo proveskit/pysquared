@@ -63,6 +63,7 @@ class GroundStation:
             | 2: Change radio modulation  |
             | 3: Send joke                |
             | 4: OSCAR commands           |
+            | 5: Request counnter         |
             ===============================
             """
             )
@@ -79,7 +80,7 @@ class GroundStation:
         Args:
             cmd_selection: The command selection input by the user.
         """
-        if cmd_selection not in ["1", "2", "3", "4"]:
+        if cmd_selection not in ["1", "2", "3", "4", "5"]:
             self._log.warning("Invalid command selection. Please try again.")
             return
 
@@ -88,9 +89,19 @@ class GroundStation:
             self.handle_oscar_commands()
             return
 
+        if cmd_selection == "5":
+            self.handle_counter_request()
+            return
+
         message: dict[str, object] = {
             "name": self._config.cubesat_name,
         }
+
+        if self._command_counter == 0:
+            self._log.info(
+                "Command Counter not set, please request counter before sending commands"
+            )
+            return
 
         if cmd_selection == "1":
             message["command"] = self._cdh.command_reset
@@ -222,26 +233,58 @@ class GroundStation:
         except KeyboardInterrupt:
             self._log.debug("Keyboard interrupt received, exiting OSCAR mode.")
 
+    def handle_counter_request(self):
+        """
+        Handle Counter Request by asking the satellite what its current counter is
+        """
+        message: dict[str, object] = {"command": "get_counter"}
+
+        try:
+            while True:
+                # Turn on the radio so that it captures any received packets to buffer
+                self._packet_manager.listen(1)
+
+                # Send the OSCAR message
+                self._log.info(
+                    "Sending counter request",
+                    cmd=message["command"],
+                )
+                self._packet_manager.send(json.dumps(message).encode("utf-8"))
+
+                # Listen for ACK response
+                b = self._packet_manager.listen(1)
+                if b is None:
+                    self._log.info("No response received, retrying...")
+                    continue
+
+                if b != b"ACK":
+                    self._log.info(
+                        "No ACK response received, retrying...",
+                        response=b.decode("utf-8"),
+                    )
+                    continue
+
+                self._log.info("Received ACK")
+
+                # Now listen for the actual response
+                b = self._packet_manager.listen(1)
+                if b is None:
+                    self._log.info("No response received, retrying...")
+                    continue
+
+                self._log.info("Received counter response", response=b.decode("utf-8"))
+                current_counter = b.decode["counter"]
+                self._command_counter = current_counter
+                self._log.info("current counter set to", current_counter)
+
+                break
+
+        except KeyboardInterrupt:
+            self._log.debug("Keyboard interrupt received, exiting OSCAR mode.")
+
     def run(self):
         """Run the ground station interface."""
         # Prompt for starting counter value
-        while True:
-            try:
-                counter_input = input(
-                    "Enter starting counter value (0-65535, press Enter for 0): "
-                ).strip()
-                if counter_input == "":
-                    self._command_counter = 0
-                    break
-                counter_value = int(counter_input)
-                if 0 <= counter_value <= 65535:
-                    self._command_counter = counter_value
-                    self._log.info(f"Starting counter set to: {self._command_counter}")
-                    break
-                else:
-                    print("Counter must be between 0 and 65535. Please try again.")
-            except ValueError:
-                print("Invalid input. Please enter a number.")
 
         while True:
             print(
