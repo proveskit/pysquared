@@ -8,26 +8,33 @@ import hmac
 
 from pysquared.hmac_auth import HMACAuthenticator
 
-# def test_hmac_authenticator_init():
-#     secret_key = "test_secret"
-#     authenticator = HMACAuthenticator(secret_key, hmac_class=hmac.new)
 
-#     assert authenticator._secret_key == secret_key.encode("utf-8")
+def test_hmac_authenticator_init():
+    """
+    This initizalises the HMACauthenticator and ensures the correct safety key is saved
+    """
+    secret_key = "test_secret"
+    authenticator = HMACAuthenticator(secret_key, hmac_class=hmac.new)
+
+    assert authenticator._secret_key == secret_key.encode("utf-8")
 
 
-# def test_generate_hmac():
-#     secret_key = "test_secret"
-#     authenticator = HMACAuthenticator(secret_key, hmac_class=hmac.new)
+def test_generate_hmac():
+    """
+    this ensures the generate hmac function reyurns a string of the correct size and format
+    """
+    secret_key = "test_secret"
+    authenticator = HMACAuthenticator(secret_key, hmac_class=hmac.new)
 
-#     message = '{"command": "send_joke", "name": "TestSat"}'
-#     counter = 42
+    message = '{"command": "send_joke", "name": "TestSat"}'
+    counter = 42
 
-#     hmac_value = authenticator.generate_hmac(message, counter)
+    hmac_value = authenticator.generate_hmac(message, counter)
 
-#     # Check the HMAC is valid hex and 64 characters
-#     assert isinstance(hmac_value, str)
-#     assert len(hmac_value) == 64
-#     assert all(c in "0123456789abcdef" for c in hmac_value)
+    # Check the HMAC is valid hex and 64 characters
+    assert isinstance(hmac_value, str)
+    assert len(hmac_value) == 64
+    assert all(c in "0123456789abcdef" for c in hmac_value)
 
 
 def test_generate_hmac_consistency():

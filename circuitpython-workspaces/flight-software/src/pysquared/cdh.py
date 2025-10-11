@@ -111,10 +111,6 @@ class CommandDataHandler:
                 if isinstance(raw_args, list):
                     args: list[str] = raw_args
 
-                # Delay to give the ground station time to switch to listening mode
-                time.sleep(self._send_delay)
-                self._packet_manager.send_acknowledgement()
-
                 self.oscar_command(cmd, args)
                 return
 
@@ -218,6 +214,8 @@ class CommandDataHandler:
             time.sleep(self._send_delay)
             self._packet_manager.send_acknowledgement()
 
+            self._log.debug("Sent Acknowledgement", cmd=cmd, args=args)
+
             if cmd == self.command_reset:
                 self.reset()
             elif cmd == self.command_change_radio_modulation:
@@ -288,6 +286,10 @@ class CommandDataHandler:
 
     def reset(self) -> None:
         """Resets the hardware."""
+        # Delay to give the ground station time to switch to listening mode
+        time.sleep(self._send_delay)
+        self._packet_manager.send_acknowledgement()
+
         self._log.info("Resetting satellite")
         self._packet_manager.send(data="Resetting satellite".encode("utf-8"))
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
