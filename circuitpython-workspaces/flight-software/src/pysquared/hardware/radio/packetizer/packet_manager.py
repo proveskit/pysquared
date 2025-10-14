@@ -171,7 +171,7 @@ class PacketManager:
                 "Received packet",
                 packet_length=len(packet),
                 header=self._get_header(packet),
-                payload=self._get_payload(packet).decode("utf-8"),
+                payload=self._get_payload(packet),
             )
 
             if received_packets:
