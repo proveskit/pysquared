@@ -117,6 +117,11 @@ class CommandDataHandler:
             # If message has command field, get the command
             cmd = msg.get("command")
 
+            self._log.debug(
+                "\n______\n_________\nCurrent command, counter and hash",
+                command=cmd,
+            )
+
             if cmd is not None and cmd == self.command_get_counter:
                 self.send_counter()
                 return
@@ -135,6 +140,8 @@ class CommandDataHandler:
 
             # Use HMAC authentication
             # Convert counter to int
+            self._log.debug("The counter is", counter=counter_raw)
+
             try:
                 counter: int = int(counter_raw)
             except (ValueError, TypeError):
@@ -287,8 +294,6 @@ class CommandDataHandler:
     def reset(self) -> None:
         """Resets the hardware."""
         # Delay to give the ground station time to switch to listening mode
-        time.sleep(self._send_delay)
-        self._packet_manager.send_acknowledgement()
 
         self._log.info("Resetting satellite")
         self._packet_manager.send(data="Resetting satellite".encode("utf-8"))
@@ -302,6 +307,10 @@ class CommandDataHandler:
             command: The OSCAR command to execute.
             args: A list of arguments for the command.
         """
+        time.sleep(self._send_delay)
+
+        self._packet_manager.send_acknowledgement()
+
         if command == "ping":
             self._log.info("OSCAR ping command received. Sending pong response.")
             self._packet_manager.send(

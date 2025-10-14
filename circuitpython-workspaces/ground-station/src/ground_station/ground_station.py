@@ -129,10 +129,11 @@ class GroundStation:
 
             # Send the message
             self._log.info(
-                "Sending command",
+                "\n________\nSending command NOW\n_________\n",
                 cmd=message["command"],
                 args=message.get("args", []),
                 counter=self._command_counter,
+                hmac=message["hmac"],
             )
             self._packet_manager.send(json.dumps(message).encode("utf-8"))
 

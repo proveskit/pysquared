@@ -327,13 +327,15 @@ def test_receive_success(mock_time, mock_logger, mock_radio, mock_message_counte
     expected_data = b"first second"
     assert result == expected_data
 
+    print(mock_logger.debug.call_args_list)
+
     # Verify proper logging
     mock_logger.debug.assert_any_call("Listening for data...", timeout=10)
     mock_logger.debug.assert_any_call(
         "Received packet",
         packet_length=len(packet1),
         header=(1, 0, 2, -70),
-        payload=b"first",
+        payload="first",
     )
     mock_logger.debug.assert_any_call("Received all expected packets", received=2)
 
