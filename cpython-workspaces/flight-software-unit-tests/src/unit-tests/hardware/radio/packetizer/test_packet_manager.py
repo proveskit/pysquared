@@ -335,7 +335,7 @@ def test_receive_success(mock_time, mock_logger, mock_radio, mock_message_counte
         "Received packet",
         packet_length=len(packet1),
         header=(1, 0, 2, -70),
-        payload="first",
+        payload=b"first",
     )
     mock_logger.debug.assert_any_call("Received all expected packets", received=2)
 

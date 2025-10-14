@@ -120,11 +120,6 @@ class CommandDataHandler:
             # If message has command field, get the command
             cmd = msg.get("command")
 
-            self._log.debug(
-                "\n______\n_________\nCurrent command, counter and hash",
-                command=cmd,
-            )
-
             if cmd is not None and cmd == self.command_get_counter:
                 self.send_counter()
                 return
@@ -132,6 +127,13 @@ class CommandDataHandler:
             # HMAC-based authentication (required for non-OSCAR commands)
             hmac_value = str(msg.get("hmac"))
             counter_raw = msg.get("counter")
+
+            self._log.debug(
+                "Current command, counter and hash",
+                command=cmd,
+                counter=counter_raw,
+                hasht=hmac_value,
+            )
 
             # Require HMAC authentication
             if hmac_value is None or counter_raw is None:
@@ -162,6 +164,8 @@ class CommandDataHandler:
                 )
                 return
 
+            self._log.debug("counter validated")
+
             # Extract message without HMAC for verification
             msg_without_hmac = {k: v for k, v in msg.items() if k != "hmac"}
             message_str = json.dumps(msg_without_hmac, separators=(",", ":"))
@@ -178,6 +182,9 @@ class CommandDataHandler:
 
             # Prevent replay attacks with wraparound handling
             last_valid = self._last_command_counter.get()
+            self._log.debug("last valid is", lv=last_valid)
+
+            self._log.debug("messagestring is", msrg=message_str)
 
             # Check if counter is valid considering 16-bit wraparound
             # Accept if counter is greater, or if wraparound occurred
@@ -198,6 +205,12 @@ class CommandDataHandler:
             # Update last valid counter in NVM
             self._last_command_counter.set(counter)
 
+            self._log.debug(
+                "Comparing names",
+                name1=msg.get("name"),
+                nameconfig=self._config.cubesat_name,
+            )
+
             # Verify satellite name
             if msg.get("name") != self._config.cubesat_name:
                 self._log.debug(
@@ -206,12 +219,16 @@ class CommandDataHandler:
                 )
                 return
 
+            self._log.debug("Names are the same")
+
             if cmd is None:
                 self._log.warning("No command found in message", msg=msg)
                 self._packet_manager.send(
                     f"No command found in message: {msg}".encode("utf-8")
                 )
                 return
+
+            self._log.debug("COmmand is not none")
 
             args: list[str] = []
             raw_args = msg.get("args")
