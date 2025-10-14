@@ -170,6 +170,11 @@ class CommandDataHandler:
             msg_without_hmac = {k: v for k, v in msg.items() if k != "hmac"}
             message_str = json.dumps(msg_without_hmac, separators=(",", ":"))
 
+            self._log.debug("messagestring is", msrg=message_str)
+            self._log.debug(
+                "hmac valid details", hmac=hmac_value, typeis=type(hmac_value)
+            )
+
             # Verify HMAC
             if not self._hmac_authenticator.verify_hmac(
                 message_str, counter, hmac_value
@@ -180,11 +185,10 @@ class CommandDataHandler:
                 )
                 return
 
+            self._log.debug("passed the authenticate compeint")
             # Prevent replay attacks with wraparound handling
             last_valid = self._last_command_counter.get()
             self._log.debug("last valid is", lv=last_valid)
-
-            self._log.debug("messagestring is", msrg=message_str)
 
             # Check if counter is valid considering 16-bit wraparound
             # Accept if counter is greater, or if wraparound occurred

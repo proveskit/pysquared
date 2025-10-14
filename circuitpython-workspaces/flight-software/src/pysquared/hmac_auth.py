@@ -110,4 +110,5 @@ class HMACAuthenticator:
             True if the HMAC is valid, False otherwise.
         """
         expected_hmac = self.generate_hmac(message, counter)
+        print("generated hmac")
         return HMACAuthenticator.compare_digest(expected_hmac, received_hmac)
