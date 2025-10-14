@@ -184,7 +184,7 @@ class CommandDataHandler:
                     msg=msg,
                 )
                 return
-
+            print("OUT")
             self._log.debug("passed the authenticate compeint")
             # Prevent replay attacks with wraparound handling
             last_valid = self._last_command_counter.get()

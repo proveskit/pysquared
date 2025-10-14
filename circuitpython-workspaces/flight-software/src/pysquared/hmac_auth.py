@@ -111,4 +111,6 @@ class HMACAuthenticator:
         """
         expected_hmac = self.generate_hmac(message, counter)
         print("generated hmac")
-        return HMACAuthenticator.compare_digest(expected_hmac, received_hmac)
+        res = HMACAuthenticator.compare_digest(expected_hmac, received_hmac)
+        print(res)
+        return res
