@@ -88,10 +88,13 @@ class CommandDataHandler:
 
         json_bytes = self._packet_manager.listen(timeout)
         if json_bytes is None:
+            self._log.debug("Nothing Found in the packet")
             return
+        self._log.debug("Found stuff in the packet")
 
         try:
             json_str = json_bytes.decode("utf-8")
+            self._log.debug("json string in the message is", stingis=json_str)
 
             msg: dict[str, str] = json.loads(json_str)
 
