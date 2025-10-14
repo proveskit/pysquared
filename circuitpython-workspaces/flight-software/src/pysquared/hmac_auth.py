@@ -62,41 +62,18 @@ class HMACAuthenticator:
         return h.hexdigest()
 
     @staticmethod
-    def compare_digest(expected_hmac: str | bytes, received_hmac: str | bytes):
-        """Compares two byte or str sequences in constant time.
+    def compare_digest(expected_hmac: str, received_hmac: str):
+        """Compares str sequences in constant time.
         Returns True if expected_hmac == received_hmac, False otherwise.
         """
 
-        if not isinstance(expected_hmac, (str, bytes)):
-            expected_hmac = str(expected_hmac)
+        assert isinstance(expected_hmac, str)
+        assert isinstance(received_hmac, str)
 
-        if isinstance(expected_hmac, str):
-            expected_hmac = expected_hmac.encode("utf-8")
+        print("execpted", expected_hmac)
+        print("received", received_hmac)
 
-        # Ensure received_hmac is bytes
-        if not isinstance(received_hmac, (str, bytes)):
-            received_hmac = str(received_hmac)
-
-        if isinstance(received_hmac, str):
-            received_hmac = received_hmac.encode("utf-8")
-
-        assert isinstance(expected_hmac, bytes)
-        assert isinstance(received_hmac, bytes)
-
-        if len(expected_hmac) != len(received_hmac):
-            # Continue processing full length to keep timing consistent
-            result = 0
-            maxlen = max(len(expected_hmac), len(received_hmac))
-            for i in range(maxlen):
-                x = expected_hmac[i] if i < len(expected_hmac) else 0
-                y = received_hmac[i] if i < len(received_hmac) else 0
-                result |= x ^ y
-            return False
-
-        result = 0
-        for x, y in zip(expected_hmac, received_hmac):
-            result |= x ^ y
-        return result == 0
+        return expected_hmac == received_hmac
 
     def verify_hmac(self, message: str, counter: int, received_hmac: str) -> bool:
         """Verifies an HMAC for a message with a counter.

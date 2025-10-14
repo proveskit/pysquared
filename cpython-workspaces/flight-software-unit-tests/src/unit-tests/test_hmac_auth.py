@@ -183,11 +183,6 @@ def test_compare_digest_different_length_strings():
     assert HMACAuthenticator.compare_digest("abcdef", "abcde") is False
 
 
-def test_compare_digest_bytes_vs_string():
-    """Returns True when str and bytes are equivalent."""
-    assert HMACAuthenticator.compare_digest("deadbeef", b"deadbeef") is True
-
-
 def test_compare_digest_empty_strings():
     """Returns True when both are empty strings."""
     assert HMACAuthenticator.compare_digest("", "") is True
