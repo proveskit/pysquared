@@ -118,11 +118,7 @@ class GroundStation:
 
         # Generate HMAC for the message
         message_str = json.dumps(message, separators=(",", ":"))
-        print(
-            "gen hmac with GROUND STATION",
-            mess=message_str,
-            counter=self._command_counter,
-        )
+        print("gen hmac with GROUND STATION", message_str, self._command_counter)
         hmac_value = self._hmac_authenticator.generate_hmac(
             message_str, self._command_counter
         )
