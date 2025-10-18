@@ -199,6 +199,7 @@ class PacketManager:
     def send_acknowledgement(self) -> None:
         """Sends an acknowledgment to the radio."""
         self.send(b"ACK")
+        print("sending acknowledgment packet")
         self._logger.debug("Sent acknowledgment packet")
 
     def get_last_rssi(self) -> int:
