@@ -281,7 +281,7 @@ class CommandDataHandler:
         self._packet_manager.send_acknowledgement()
 
         counter = str(self._last_command_counter.get())
-        self._log.info("Sending Counter", counter=str(counter))
+        self._log.info("Sending Counter", counter=counter)
         self._packet_manager.send(counter.encode("utf-8"))
 
     def change_radio_modulation(self, args: list[str]) -> None:
