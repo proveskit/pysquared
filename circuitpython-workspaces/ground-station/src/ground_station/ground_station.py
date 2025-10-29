@@ -63,7 +63,7 @@ class GroundStation:
             | 2: Change radio modulation  |
             | 3: Send joke                |
             | 4: OSCAR commands           |
-            | 5: Request counnter         |
+            | 5: Request counter         |
             ===============================
             """
             )
