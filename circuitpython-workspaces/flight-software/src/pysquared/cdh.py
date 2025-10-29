@@ -280,6 +280,9 @@ class CommandDataHandler:
         time.sleep(self._send_delay)
         self._packet_manager.send_acknowledgement()
 
+        # Additional delay to ensure ACK packet transmission completes before sending counter
+        time.sleep(self._send_delay)
+
         counter = str(self._last_command_counter.get())
         self._log.info("Sending Counter", counter=counter)
         self._packet_manager.send(counter.encode("utf-8"))
