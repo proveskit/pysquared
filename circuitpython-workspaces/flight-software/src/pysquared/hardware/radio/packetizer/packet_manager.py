@@ -167,11 +167,18 @@ class PacketManager:
             packet_identifier, _, total_packets, _ = self._get_header(packet)
 
             # Log received packets
+            payload = self._get_payload(packet)
+            try:
+                payload_str = payload.decode("utf-8")
+            except UnicodeDecodeError:
+                # If payload can't be decoded as UTF-8, show hex representation
+                payload_str = payload.hex()
+
             self._logger.debug(
                 "Received packet",
                 packet_length=len(packet),
                 header=self._get_header(packet),
-                payload=self._get_payload(packet).decode("utf-8"),
+                payload=payload_str,
             )
 
             if received_packets:
