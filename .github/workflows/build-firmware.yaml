@@ -1,0 +1,119 @@
+name: Build Frozen Firmware
+
+# This workflow builds custom CircuitPython firmware with PySquared libraries
+# frozen (compiled into the firmware binary).
+#
+# Triggered on:
+# - Push to tags matching v* (e.g., v2.0.0)
+# - Manual workflow dispatch
+#
+# The workflow:
+# 1. Sets up the ARM toolchain
+# 2. Clones CircuitPython at a pinned version
+# 3. Sets up frozen modules (PySquared + dependencies)
+# 4. Builds firmware for all PROVES boards
+# 5. Uploads firmware files as release artifacts
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      circuitpython_version:
+        description: 'CircuitPython version to build'
+        required: false
+        default: '9.2.0'
+
+jobs:
+  build-firmware:
+    name: Build firmware for ${{ matrix.board }}
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        # Build firmware for all supported PROVES boards
+        # Note: Use standard Raspberry Pi Pico boards until custom PROVES
+        # board definitions are added to CircuitPython
+        board:
+          - raspberry_pi_pico
+          - raspberry_pi_pico_w
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Install ARM toolchain and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            python3 \
+            python3-pip \
+            gcc-arm-none-eabi \
+            gettext
+      
+      - name: Set CircuitPython version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.circuitpython_version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=9.2.0" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Build firmware
+        run: |
+          cd firmware
+          make setup CIRCUITPYTHON_VERSION=${{ steps.version.outputs.version }}
+          
+          # Note: add_dependencies.py needs to be updated to actually add submodules
+          # For now, we just link PySquared
+          # ./add_dependencies.py  # This would add all dependencies
+          
+          # Build firmware
+          make firmware BOARD=${{ matrix.board }}
+        
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.board }}
+          path: firmware/build/${{ matrix.board }}-frozen-*.uf2
+          if-no-files-found: error
+      
+      - name: Create release (if tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: firmware/build/${{ matrix.board }}-frozen-*.uf2
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job to verify firmware can be built
+  verify-build:
+    name: Verify firmware build system
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip
+      
+      - name: Test dependency parser
+        run: |
+          cd firmware
+          python3 add_dependencies.py --list
+      
+      - name: Verify Makefile targets
+        run: |
+          cd firmware
+          make help

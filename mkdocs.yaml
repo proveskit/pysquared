@@ -15,6 +15,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Radio Test: radio-test.md
+  - Frozen Modules: frozen-modules.md
   - Design Guide: design-guide.md
   - Contributing Guide: contributing.md
   - API Reference: api.md
@@ -74,6 +75,8 @@ plugins:
           - getting-started.md
         Radio Test:
           - radio-test.md
+        Frozen Modules:
+          - frozen-modules.md
         Design Guide:
           - design-guide.md
         Contributing Guide:
