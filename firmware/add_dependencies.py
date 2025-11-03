@@ -40,14 +40,15 @@ def parse_pyproject_dependencies(pyproject_path: Path) -> list[dict]:
         # Check if it's a git dependency
         if '@' in line and 'git+' in line:
             # Format: "package @ git+https://github.com/org/repo@version"
-            parts = line.split('@')
+            # First split on ' @ ' to separate package from URL
+            parts = line.split(' @ ', 1)
             package_name = parts[0].strip()
-            git_url = parts[1].strip()
+            git_url = parts[1].strip() if len(parts) > 1 else ''
             
             if git_url.startswith('git+'):
                 git_url = git_url[4:]  # Remove 'git+' prefix
             
-            # Split URL and version
+            # Now split URL and version on last '@'
             if '@' in git_url:
                 url, version = git_url.rsplit('@', 1)
                 dep_info['name'] = package_name
