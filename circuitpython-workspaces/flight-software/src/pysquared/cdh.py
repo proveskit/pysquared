@@ -206,8 +206,6 @@ class CommandDataHandler:
         Args:
             args: A list of arguments, the first item must be the filename. All other items in the args list are ignored.
         """
-        filename = "UNSET"
-
         if len(args) < 1:
             self._log.warning("No filename specified")
             self._packet_manager.send(
