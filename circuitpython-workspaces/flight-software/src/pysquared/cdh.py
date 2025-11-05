@@ -21,6 +21,7 @@ import time
 import traceback
 
 import microcontroller
+import supervisor
 
 from .config.config import Config
 from .hardware.radio.packetizer.packet_manager import PacketManager
@@ -33,6 +34,7 @@ class CommandDataHandler:
     command_reset: str = "reset"
     command_change_radio_modulation: str = "change_radio_modulation"
     command_send_joke: str = "send_joke"
+    command_set_next_code_file: str = "set_next_code_file"
 
     oscar_password: str = "Hello World!"  # Default password for OSCAR commands
 
@@ -137,6 +139,8 @@ class CommandDataHandler:
                 self.change_radio_modulation(args)
             elif cmd == self.command_send_joke:
                 self.send_joke()
+            elif cmd == self.command_set_next_code_file:
+                self.set_next_code_file(args)
             else:
                 self._log.warning("Unknown command received", cmd=cmd)
                 self._packet_manager.send(
@@ -195,6 +199,42 @@ class CommandDataHandler:
         self._packet_manager.send(data="Resetting satellite".encode("utf-8"))
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
+
+    def set_next_code_file(self, args: list[str]) -> None:
+        """Sets the next code file to execute after reset.
+
+        Args:
+            args: A list of arguments, the first item must be the filename. All other items in the args list are ignored.
+        """
+        filename = "UNSET"
+
+        if len(args) < 1:
+            self._log.warning("No filename specified")
+            self._packet_manager.send(
+                "No filename specified. Please provide a code file name.".encode(
+                    "utf-8"
+                )
+            )
+            return
+
+        filename = args[0]
+
+        try:
+            supervisor.set_next_code_file(filename)
+            self._log.info("Next code file set", filename=filename)
+            self._packet_manager.send(
+                f"Next code file set to: {filename}. Resetting satellite...".encode(
+                    "utf-8"
+                )
+            )
+            # Reset the satellite to execute the new code file
+            microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
+            microcontroller.reset()
+        except Exception as e:
+            self._log.error("Failed to set next code file", err=e)
+            self._packet_manager.send(
+                f"Failed to set next code file: {e}".encode("utf-8")
+            )
 
     def oscar_command(self, command: str, args: list[str]) -> None:
         """Handles OSCAR commands.

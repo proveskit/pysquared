@@ -6,9 +6,15 @@ initialization, command parsing, and execution of various commands.
 """
 
 import json
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+from mocks.circuitpython import supervisor
+
+sys.modules["supervisor"] = supervisor
+
 from pysquared.cdh import CommandDataHandler
 from pysquared.config.config import Config
 from pysquared.hardware.radio.packetizer.packet_manager import PacketManager
@@ -608,3 +614,140 @@ def test_listen_for_commands_oscar_ping_integration(
 
     # Verify ping response was sent
     mock_packet_manager.send.assert_called_once_with("Pong! -82".encode("utf-8"))
+
+
+def test_set_next_code_file_success(cdh, mock_logger, mock_packet_manager):
+    """Tests set_next_code_file with valid filename.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    with patch("pysquared.cdh.supervisor") as mock_supervisor:
+        with patch("pysquared.cdh.microcontroller") as mock_microcontroller:
+            mock_supervisor.set_next_code_file = MagicMock()
+            mock_microcontroller.reset = MagicMock()
+            mock_microcontroller.on_next_reset = MagicMock()
+            mock_microcontroller.RunMode = MagicMock()
+            mock_microcontroller.RunMode.NORMAL = MagicMock()
+
+            filename = ["test_code.py"]
+
+            cdh.set_next_code_file(filename)
+
+            # Verify supervisor.set_next_code_file was called with correct filename
+            mock_supervisor.set_next_code_file.assert_called_once_with(filename[0])
+
+            # Verify info log
+            mock_logger.info.assert_called_once_with(
+                "Next code file set", filename=filename[0]
+            )
+
+            # Verify success message was sent
+            expected_message = f"Next code file set to: {filename[0]}. Resetting satellite..."
+            mock_packet_manager.send.assert_called_once_with(
+                expected_message.encode("utf-8")
+            )
+
+            # Verify reset was called
+            mock_microcontroller.on_next_reset.assert_called_once_with(
+                mock_microcontroller.RunMode.NORMAL
+            )
+            mock_microcontroller.reset.assert_called_once()
+
+
+def test_set_next_code_file_no_filename(cdh, mock_logger, mock_packet_manager):
+    """Tests set_next_code_file when no filename is specified.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    # Call the method with an empty list
+    cdh.set_next_code_file([])
+
+    # Verify warning was logged
+    mock_logger.warning.assert_called_once_with("No filename specified")
+
+    # Verify error message was sent
+    expected_message = "No filename specified. Please provide a code file name."
+    mock_packet_manager.send.assert_called_once_with(expected_message.encode("utf-8"))
+
+
+def test_set_next_code_file_failure(cdh, mock_logger, mock_packet_manager):
+    """Tests set_next_code_file with an error case.
+
+    Args:
+        cdh: CommandDataHandler instance.
+        mock_logger: Mocked Logger instance.
+        mock_packet_manager: Mocked PacketManager instance.
+    """
+    with patch("pysquared.cdh.supervisor") as mock_supervisor:
+        mock_supervisor.set_next_code_file = MagicMock(
+            side_effect=ValueError("Invalid filename")
+        )
+
+        filename = ["invalid_file.py"]
+
+        cdh.set_next_code_file(filename)
+
+        # Verify error was logged
+        mock_logger.error.assert_called_once()
+
+        # Verify error message was sent
+        expected_message = "Failed to set next code file: Invalid filename"
+        mock_packet_manager.send.assert_called_once_with(
+            expected_message.encode("utf-8")
+        )
+
+
+@patch("time.sleep")
+def test_listen_for_commands_set_next_code_file(
+    mock_sleep, cdh, mock_packet_manager, mock_logger
+):
+    """Tests listen_for_commands with set_next_code_file command.
+
+    Args:
+        mock_sleep: Mocked time.sleep function.
+        cdh: CommandDataHandler instance.
+        mock_packet_manager: Mocked PacketManager instance.
+        mock_logger: Mocked Logger instance.
+    """
+    with patch("pysquared.cdh.supervisor") as mock_supervisor:
+        with patch("pysquared.cdh.microcontroller") as mock_microcontroller:
+            mock_supervisor.set_next_code_file = MagicMock()
+            mock_microcontroller.reset = MagicMock()
+            mock_microcontroller.on_next_reset = MagicMock()
+
+            message = {
+                "password": "test_password",
+                "name": "test_satellite",
+                "command": "set_next_code_file",
+                "args": ["new_code.py"],
+            }
+            mock_packet_manager.listen.return_value = json.dumps(message).encode(
+                "utf-8"
+            )
+
+            cdh.listen_for_commands(30)
+
+            # Verify supervisor.set_next_code_file was called
+            mock_supervisor.set_next_code_file.assert_called_once_with("new_code.py")
+
+            # Verify acknowledgement was sent
+            mock_packet_manager.send_acknowledgement.assert_called_once()
+
+            # Verify success message was sent
+            expected_message = (
+                "Next code file set to: new_code.py. Resetting satellite..."
+            )
+            mock_packet_manager.send.assert_called_once_with(
+                expected_message.encode("utf-8")
+            )
+
+            # Verify reset was called
+            mock_microcontroller.on_next_reset.assert_called_once()
+            mock_microcontroller.reset.assert_called_once()
+
