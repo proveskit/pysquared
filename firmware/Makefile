@@ -54,7 +54,7 @@ check-prereqs: ## Check for required build tools
 	@echo "${GREEN}All prerequisites satisfied${NC}"
 
 .PHONY: setup
-setup: check-prereqs clone-circuitpython setup-frozen-modules ## Complete first-time setup
+setup: check-prereqs clone-circuitpython install-circuitpython-deps setup-frozen-modules ## Complete first-time setup
 	@echo "${GREEN}Setup complete!${NC}"
 	@echo "Run 'make firmware BOARD=<board>' to build firmware"
 
@@ -69,6 +69,16 @@ clone-circuitpython: ## Clone CircuitPython source
 	fi
 	@echo "${GREEN}Fetching CircuitPython submodules (raspberrypi port only)...${NC}"
 	@cd $(CP_DIR) && python3 tools/ci_fetch_deps.py raspberrypi
+
+.PHONY: install-circuitpython-deps
+install-circuitpython-deps: ## Install CircuitPython build dependencies
+	@if [ ! -d "$(CP_DIR)" ]; then \
+		echo "${RED}CircuitPython not cloned. Run 'make clone-circuitpython' first.${NC}"; \
+		exit 1; \
+	fi
+	@echo "${GREEN}Installing CircuitPython build dependencies...${NC}"
+	@pip3 install --user -q -r $(CP_DIR)/requirements-dev.txt || \
+		echo "${YELLOW}Warning: Some dependencies may have failed to install. Build may still work.${NC}"
 
 .PHONY: setup-frozen-modules
 setup-frozen-modules: ## Set up frozen module directory with PySquared and dependencies

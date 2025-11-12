@@ -110,11 +110,14 @@ git clone https://github.com/adafruit/circuitpython.git
 cd circuitpython
 git checkout <stable-version-tag>  # e.g., 9.0.5
 python3 tools/ci_fetch_deps.py raspberrypi
+pip3 install --user -r requirements-dev.txt
 ```
 
 **Note**: This fetches only submodules needed for RP2040/RP2350 (raspberrypi port), significantly reducing download size and time. To fetch all submodules (for other boards), use `make fetch-all-submodules` instead.
 
-**Important**: Always use a tagged stable release, not the main branch, to ensure reproducible builds.
+**Important**: 
+- Always use a tagged stable release, not the main branch, to ensure reproducible builds.
+- The `requirements-dev.txt` install provides Python tools needed for the build (cascadetoml, jinja2, typer, etc.).
 
 ### 3. Add Libraries to Freeze
 
@@ -213,6 +216,7 @@ setup:
 	git clone https://github.com/adafruit/circuitpython.git || true
 	cd circuitpython && git checkout $(CIRCUITPYTHON_VERSION)
 	cd circuitpython && python3 tools/ci_fetch_deps.py raspberrypi
+	pip3 install --user -r circuitpython/requirements-dev.txt
 	$(MAKE) add-dependencies
 
 .PHONY: add-dependencies
@@ -252,6 +256,9 @@ Install the ARM toolchain for your platform (see prerequisites above).
 
 ### Build Fails with Missing Submodules
 For RP2040/RP2350 builds, run `python3 tools/ci_fetch_deps.py raspberrypi` in the circuitpython directory. For all ports, use `make fetch-all-submodules` instead.
+
+### Build Fails with Python Import Errors (cascadetoml, jinja2, typer, etc.)
+Install CircuitPython's build dependencies: `pip3 install --user -r circuitpython/requirements-dev.txt`
 
 ### Firmware File is Too Large
 - Remove unused frozen modules from `mpconfigboard.mk`
