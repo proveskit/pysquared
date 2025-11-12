@@ -72,19 +72,18 @@ EXTERNAL_FLASH_DEVICES = "W25Q16JVxQ"
 FROZEN_MPY_DIRS += $(TOP)/frozen/pysquared
 
 # Adafruit CircuitPython Libraries
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_INA219
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Ina219
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_asyncio
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DRV2605
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS2MDL
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Lis2mdl
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LSM6DS
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_MCP9808
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Mcp9808
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_RFM
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_TCA9548A
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Ticks
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_VEML7700
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_hashlib
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Veml7700
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Hashlib
 
 # PROVES CircuitPython Libraries
 FROZEN_MPY_DIRS += $(TOP)/frozen/micropySX126X
