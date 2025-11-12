@@ -26,7 +26,7 @@ cd firmware
 make setup
 ```
 
-This clones CircuitPython 9.2.0, fetches only the submodules needed for RP2040/RP2350 boards (raspberrypi port), and installs the required Python build dependencies, significantly reducing download size and time.
+This clones CircuitPython 9.2.0, fetches only the submodules needed for RP2040/RP2350 boards (raspberrypi port), and installs the required Python build dependencies in the UV virtual environment (avoiding system Python conflicts on macOS), significantly reducing download size and time.
 
 ### 2. Add Dependencies (Manual)
 
@@ -141,6 +141,7 @@ make update-circuitpython CIRCUITPYTHON_VERSION=9.1.4
 | Import error after flashing | Verify dependency is in `mpconfigboard.mk` |
 | Build fails with submodule error | Run `python3 tools/ci_fetch_deps.py raspberrypi` in circuitpython/ |
 | Python import errors (cascadetoml, jinja2, etc.) | Run `make install-circuitpython-deps` |
+| `externally-managed-environment` error (macOS) | Use `make setup` - now installs in UV virtual environment |
 
 ## Advanced
 

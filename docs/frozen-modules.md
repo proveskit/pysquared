@@ -110,7 +110,12 @@ git clone https://github.com/adafruit/circuitpython.git
 cd circuitpython
 git checkout <stable-version-tag>  # e.g., 9.0.5
 python3 tools/ci_fetch_deps.py raspberrypi
-pip3 install --user -r requirements-dev.txt
+# Return to firmware directory and use UV to install build dependencies
+cd ..
+# Ensure UV is available (installed by root Makefile)
+cd .. && make uv && cd firmware
+# Install in UV virtual environment
+../tools/uv-0.8.14/uv pip install -q -r circuitpython/requirements-dev.txt
 ```
 
 **Note**: This fetches only submodules needed for RP2040/RP2350 (raspberrypi port), significantly reducing download size and time. To fetch all submodules (for other boards), use `make fetch-all-submodules` instead.
@@ -118,6 +123,7 @@ pip3 install --user -r requirements-dev.txt
 **Important**: 
 - Always use a tagged stable release, not the main branch, to ensure reproducible builds.
 - The `requirements-dev.txt` install provides Python tools needed for the build (cascadetoml, jinja2, typer, etc.).
+- Using `make setup` (recommended) automatically installs dependencies in the UV virtual environment, avoiding system Python conflicts.
 
 ### 3. Add Libraries to Freeze
 
@@ -216,7 +222,9 @@ setup:
 	git clone https://github.com/adafruit/circuitpython.git || true
 	cd circuitpython && git checkout $(CIRCUITPYTHON_VERSION)
 	cd circuitpython && python3 tools/ci_fetch_deps.py raspberrypi
-	pip3 install --user -r circuitpython/requirements-dev.txt
+	# Use UV for installing build dependencies (avoids system Python conflicts)
+	cd .. && make uv && cd firmware
+	../tools/uv-0.8.14/uv pip install -q -r circuitpython/requirements-dev.txt
 	$(MAKE) add-dependencies
 
 .PHONY: add-dependencies
@@ -258,7 +266,10 @@ Install the ARM toolchain for your platform (see prerequisites above).
 For RP2040/RP2350 builds, run `python3 tools/ci_fetch_deps.py raspberrypi` in the circuitpython directory. For all ports, use `make fetch-all-submodules` instead.
 
 ### Build Fails with Python Import Errors (cascadetoml, jinja2, typer, etc.)
-Install CircuitPython's build dependencies: `pip3 install --user -r circuitpython/requirements-dev.txt`
+Run `make install-circuitpython-deps` in the firmware directory. This installs CircuitPython's build dependencies in the UV virtual environment, avoiding system Python conflicts.
+
+### "externally-managed-environment" Error on macOS
+This occurs when trying to install packages system-wide. The Makefile now uses UV to install in a virtual environment. If you see this error, ensure you're using `make setup` or `make install-circuitpython-deps` rather than manual pip commands.
 
 ### Firmware File is Too Large
 - Remove unused frozen modules from `mpconfigboard.mk`

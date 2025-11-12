@@ -13,6 +13,12 @@ FROZEN_DIR := $(CP_DIR)/frozen
 BUILD_OUTPUT_DIR := $(FIRMWARE_DIR)/build
 PYSQUARED_SRC := $(FIRMWARE_DIR)/../circuitpython-workspaces/flight-software/src/pysquared
 
+# UV tool for package management
+TOOLS_DIR := $(FIRMWARE_DIR)/../tools
+UV_VERSION ?= 0.8.14
+UV_DIR := $(TOOLS_DIR)/uv-$(UV_VERSION)
+UV := $(UV_DIR)/uv
+
 # Board-specific settings
 RASPBERRYPI_BOARDS := raspberry_pi_pico raspberry_pi_pico_w
 PORT_DIR := $(CP_DIR)/ports/raspberrypi
@@ -76,8 +82,12 @@ install-circuitpython-deps: ## Install CircuitPython build dependencies
 		echo "${RED}CircuitPython not cloned. Run 'make clone-circuitpython' first.${NC}"; \
 		exit 1; \
 	fi
-	@echo "${GREEN}Installing CircuitPython build dependencies...${NC}"
-	@pip3 install --user -q -r $(CP_DIR)/requirements-dev.txt || \
+	@if [ ! -f "$(UV)" ]; then \
+		echo "${YELLOW}UV not found. Installing UV first...${NC}"; \
+		cd .. && $(MAKE) uv; \
+	fi
+	@echo "${GREEN}Installing CircuitPython build dependencies in UV virtual environment...${NC}"
+	@$(UV) pip install -q -r $(CP_DIR)/requirements-dev.txt || \
 		echo "${YELLOW}Warning: Some dependencies may have failed to install. Build may still work.${NC}"
 
 .PHONY: setup-frozen-modules
