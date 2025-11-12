@@ -90,6 +90,8 @@ cd firmware
 make firmware BOARD=raspberry_pi_pico
 ```
 
+**Important:** Always use `make firmware` from the firmware directory. This ensures the build runs with UV's Python environment where dependencies are installed.
+
 Output: `build/raspberry_pi_pico-frozen-9.2.0.uf2`
 
 ### 5. Flash Firmware

@@ -140,11 +140,15 @@ firmware: ## Build firmware for specified BOARD
 		echo "${RED}CircuitPython not found. Run 'make setup' first.${NC}"; \
 		exit 1; \
 	fi
+	@if [ ! -f "$(UV)" ]; then \
+		echo "${YELLOW}UV not found. Installing UV first...${NC}"; \
+		cd .. && $(MAKE) uv; \
+	fi
 	@echo "${GREEN}Building firmware for $(BOARD)...${NC}"
 	@echo "CircuitPython version: $(CIRCUITPYTHON_VERSION)"
 	@echo "Board: $(BOARD)"
 	@mkdir -p $(BUILD_OUTPUT_DIR)
-	@cd $(PORT_DIR) && make BOARD=$(BOARD)
+	@cd $(PORT_DIR) && $(UV) run --no-project make BOARD=$(BOARD)
 	@if [ -f "$(FIRMWARE_FILE)" ]; then \
 		cp $(FIRMWARE_FILE) $(BUILD_OUTPUT_DIR)/$(BOARD)-frozen-$(CIRCUITPYTHON_VERSION).uf2; \
 		echo "${GREEN}Firmware built successfully!${NC}"; \

@@ -165,18 +165,25 @@ FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS2MDL
 
 ### 5. Build Firmware
 
-Navigate to the appropriate port directory and build:
+**Recommended:** Use the firmware Makefile which ensures the correct Python environment:
+
+```bash
+cd firmware
+make firmware BOARD=raspberry_pi_pico
+```
+
+**Manual (advanced):** If building directly in CircuitPython source:
 
 ```bash
 cd firmware/circuitpython/ports/raspberrypi
-make BOARD=<board_name>
+# Use UV to run make with the correct Python environment
+../../tools/uv-0.8.14/uv run --no-project make BOARD=<board_name>
 ```
 
-For PROVES Kit boards:
-- `proves_rp2040_v4`
-- `proves_rp2040_v5` 
-- `proves_rp2350_v5a`
-- `proves_rp2350_v5b`
+For PROVES Kit boards (or use equivalent Raspberry Pi Pico boards):
+- `raspberry_pi_pico` (for v4, v5)
+- `raspberry_pi_pico_w` (with WiFi)
+- Custom PROVES board definitions (once configured)
 
 The build will create a `.uf2` file in `build-<BOARD_NAME>/firmware.uf2`.
 
@@ -266,7 +273,9 @@ Install the ARM toolchain for your platform (see prerequisites above).
 For RP2040/RP2350 builds, run `python3 tools/ci_fetch_deps.py raspberrypi` in the circuitpython directory. For all ports, use `make fetch-all-submodules` instead.
 
 ### Build Fails with Python Import Errors (cascadetoml, jinja2, typer, etc.)
-Run `make install-circuitpython-deps` in the firmware directory. This installs CircuitPython's build dependencies in the UV virtual environment, avoiding system Python conflicts.
+First, ensure dependencies are installed: `make install-circuitpython-deps`
+
+If the error persists during build, ensure you're using the Makefile to build: `make firmware BOARD=<board>`. This runs the build with UV's Python environment. Do NOT run `make` directly in the CircuitPython ports directory, as it won't have access to the installed packages.
 
 ### "externally-managed-environment" Error on macOS
 This occurs when trying to install packages system-wide. The Makefile now uses UV to install in a virtual environment. If you see this error, ensure you're using `make setup` or `make install-circuitpython-deps` rather than manual pip commands.
