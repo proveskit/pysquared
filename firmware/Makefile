@@ -68,7 +68,7 @@ clone-circuitpython: ## Clone CircuitPython source
 		git clone --depth 1 --branch $(CIRCUITPYTHON_VERSION) $(CIRCUITPYTHON_REPO) $(CP_DIR); \
 	fi
 	@echo "${GREEN}Fetching CircuitPython submodules...${NC}"
-	@cd $(CP_DIR) && make fetch-submodules
+	@cd $(CP_DIR) && make fetch-all-submodules
 
 .PHONY: setup-frozen-modules
 setup-frozen-modules: ## Set up frozen module directory with PySquared and dependencies
@@ -172,7 +172,7 @@ update-circuitpython: ## Update CircuitPython to a different version
 	@if [ -d "$(CP_DIR)" ]; then \
 		echo "${YELLOW}Updating CircuitPython to $(CIRCUITPYTHON_VERSION)...${NC}"; \
 		cd $(CP_DIR) && git fetch --tags && git checkout $(CIRCUITPYTHON_VERSION); \
-		cd $(CP_DIR) && make fetch-submodules; \
+		cd $(CP_DIR) && make fetch-all-submodules; \
 		echo "${GREEN}CircuitPython updated${NC}"; \
 	else \
 		echo "${RED}CircuitPython not cloned. Run 'make setup' first.${NC}"; \

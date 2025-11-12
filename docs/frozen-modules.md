@@ -109,7 +109,7 @@ cd firmware/
 git clone https://github.com/adafruit/circuitpython.git
 cd circuitpython
 git checkout <stable-version-tag>  # e.g., 9.0.5
-make fetch-submodules
+make fetch-all-submodules
 ```
 
 **Important**: Always use a tagged stable release, not the main branch, to ensure reproducible builds.
@@ -210,7 +210,7 @@ all: firmware
 setup:
 	git clone https://github.com/adafruit/circuitpython.git || true
 	cd circuitpython && git checkout $(CIRCUITPYTHON_VERSION)
-	cd circuitpython && make fetch-submodules
+	cd circuitpython && make fetch-all-submodules
 	$(MAKE) add-dependencies
 
 .PHONY: add-dependencies
@@ -249,7 +249,7 @@ There's no way to update frozen modules without rebuilding and reflashing the en
 Install the ARM toolchain for your platform (see prerequisites above).
 
 ### Build Fails with Missing Submodules
-Run `make fetch-submodules` in the circuitpython directory.
+Run `make fetch-all-submodules` in the circuitpython directory.
 
 ### Firmware File is Too Large
 - Remove unused frozen modules from `mpconfigboard.mk`

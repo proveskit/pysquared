@@ -139,7 +139,7 @@ make update-circuitpython CIRCUITPYTHON_VERSION=9.1.4
 | `No rule to make target` | Check board name with `make list-boards` |
 | Firmware too large | Remove unused dependencies or use `OPTIMIZATION=-Os` |
 | Import error after flashing | Verify dependency is in `mpconfigboard.mk` |
-| Build fails with submodule error | Run `make fetch-submodules` in circuitpython/ |
+| Build fails with submodule error | Run `make fetch-all-submodules` in circuitpython/ |
 
 ## Advanced
 

@@ -303,7 +303,7 @@ sudo apt install gcc-arm-none-eabi
 ```bash
 cd circuitpython
 git submodule status  # Check submodules
-make fetch-submodules  # Re-fetch if needed
+make fetch-all-submodules  # Re-fetch if needed
 ```
 
 ---
