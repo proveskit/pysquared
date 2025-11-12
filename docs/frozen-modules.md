@@ -32,7 +32,7 @@ This is particularly valuable for resource-constrained boards like SAMD21 or whe
 Building custom CircuitPython firmware requires:
 
 1. **Linux, macOS, or Windows with WSL**: The build system requires a Unix-like environment
-2. **Build Tools**: 
+2. **Build Tools**:
    - `gcc-arm-none-eabi` (ARM cross-compiler)
    - `git` (version control)
    - `python3` and `pip` (for build scripts)
@@ -120,7 +120,7 @@ cd .. && make uv && cd firmware
 
 **Note**: This fetches only submodules needed for RP2040/RP2350 (raspberrypi port), significantly reducing download size and time. To fetch all submodules (for other boards), use `make fetch-all-submodules` instead.
 
-**Important**: 
+**Important**:
 - Always use a tagged stable release, not the main branch, to ensure reproducible builds.
 - The `requirements-dev.txt` install provides Python tools needed for the build (cascadetoml, jinja2, typer, etc.).
 - Using `make setup` (recommended) automatically installs dependencies in the UV virtual environment, avoiding system Python conflicts.
@@ -322,23 +322,23 @@ jobs:
     strategy:
       matrix:
         board: [proves_rp2040_v4, proves_rp2040_v5, proves_rp2350_v5a, proves_rp2350_v5b]
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      
+
       - name: Install ARM toolchain
         run: |
           sudo apt update
           sudo apt install -y gcc-arm-none-eabi build-essential git python3 python3-pip
-      
+
       - name: Build firmware
         run: |
           cd firmware
           make setup CIRCUITPYTHON_VERSION=9.0.5
           make firmware BOARD=${{ matrix.board }}
-      
+
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
