@@ -109,8 +109,10 @@ cd firmware/
 git clone https://github.com/adafruit/circuitpython.git
 cd circuitpython
 git checkout <stable-version-tag>  # e.g., 9.0.5
-make fetch-all-submodules
+python3 tools/ci_fetch_deps.py raspberrypi
 ```
+
+**Note**: This fetches only submodules needed for RP2040/RP2350 (raspberrypi port), significantly reducing download size and time. To fetch all submodules (for other boards), use `make fetch-all-submodules` instead.
 
 **Important**: Always use a tagged stable release, not the main branch, to ensure reproducible builds.
 
@@ -210,7 +212,7 @@ all: firmware
 setup:
 	git clone https://github.com/adafruit/circuitpython.git || true
 	cd circuitpython && git checkout $(CIRCUITPYTHON_VERSION)
-	cd circuitpython && make fetch-all-submodules
+	cd circuitpython && python3 tools/ci_fetch_deps.py raspberrypi
 	$(MAKE) add-dependencies
 
 .PHONY: add-dependencies
@@ -249,7 +251,7 @@ There's no way to update frozen modules without rebuilding and reflashing the en
 Install the ARM toolchain for your platform (see prerequisites above).
 
 ### Build Fails with Missing Submodules
-Run `make fetch-all-submodules` in the circuitpython directory.
+For RP2040/RP2350 builds, run `python3 tools/ci_fetch_deps.py raspberrypi` in the circuitpython directory. For all ports, use `make fetch-all-submodules` instead.
 
 ### Firmware File is Too Large
 - Remove unused frozen modules from `mpconfigboard.mk`

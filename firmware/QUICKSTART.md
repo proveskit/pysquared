@@ -26,7 +26,7 @@ cd firmware
 make setup
 ```
 
-This clones CircuitPython 9.2.0 and sets up the frozen modules directory.
+This clones CircuitPython 9.2.0 and fetches only the submodules needed for RP2040/RP2350 boards (raspberrypi port), significantly reducing download size and time.
 
 ### 2. Add Dependencies (Manual)
 
@@ -139,7 +139,7 @@ make update-circuitpython CIRCUITPYTHON_VERSION=9.1.4
 | `No rule to make target` | Check board name with `make list-boards` |
 | Firmware too large | Remove unused dependencies or use `OPTIMIZATION=-Os` |
 | Import error after flashing | Verify dependency is in `mpconfigboard.mk` |
-| Build fails with submodule error | Run `make fetch-all-submodules` in circuitpython/ |
+| Build fails with submodule error | Run `python3 tools/ci_fetch_deps.py raspberrypi` in circuitpython/ |
 
 ## Advanced
 
