@@ -45,6 +45,7 @@ If you want to contribute to PySquared, follow these steps:
 ## Documentation
 
 - [Getting Started](https://proveskit.github.io/pysquared/getting-started/)
+- [Frozen Modules](https://proveskit.github.io/pysquared/frozen-modules/) - Build custom CircuitPython firmware
 - [Design Guide](https://proveskit.github.io/pysquared/design-guide/)
 - [Configuration](https://proveskit.github.io/pysquared/api/#pysquared.config)
 - [Error Handling & Logging](https://proveskit.github.io/pysquared/api/#pysquared.logger)

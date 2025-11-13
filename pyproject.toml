@@ -67,4 +67,5 @@ verbose = 2
 color = true
 exclude = [
     "circuitpython-workspaces/typeshed",
+    "firmware",
 ]

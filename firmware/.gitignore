@@ -1,0 +1,17 @@
+# CircuitPython source (cloned during setup)
+circuitpython/
+
+# Build artifacts
+build/
+*.uf2
+*.bin
+*.hex
+*.elf
+
+# Temporary files
+*.pyc
+__pycache__/
+.DS_Store
+*.swp
+*.swo
+*~
