@@ -130,3 +130,36 @@ class SX1280Manager(BaseRadioManager):
         except Exception as e:
             self._log.error("Error receiving data", e)
             return None
+        
+    def modify_config(self, key: str, value) -> None:
+        """Modifies a specific radio configuration parameter.
+
+        This method must be implemented by subclasses.
+
+        Args:
+            key: The configuration parameter key to modify.
+            value: The new value to set for the parameter.
+
+        Raises:
+            NotImplementedError: If not implemented by subclass.
+        """
+        self._log.warning(f"modify_config not implemented: {key}={value}")
+    
+    def get_rssi(self) -> int:
+        """Gets the RSSI of the last received packet.
+
+        Returns:
+            The RSSI of the last received packet.
+
+        Raises:
+            NotImplementedError: If not implemented by subclass.
+        """
+        return -1 # placeholder value
+
+    def get_max_packet_size(self) -> int:
+        """Gets the maximum packet size supported by the radio.
+
+        Returns:
+            The maximum packet size in bytes.
+        """
+        return 255  # according to SX 1280 data sheet
