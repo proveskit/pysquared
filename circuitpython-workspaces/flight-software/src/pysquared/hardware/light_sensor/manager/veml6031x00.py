@@ -28,12 +28,6 @@ from ....sensor_reading.light import Light
 from ....sensor_reading.lux import Lux
 from ...exception import HardwareInitializationError
 
-try:
-    pass
-except ImportError:
-    pass
-
-
 # I2C default address
 _DEFAULT_I2C_ADDR = 0x29
 
@@ -151,7 +145,7 @@ class VEML6031x00Manager(LightSensorProto):
         Args:
             logger: Logger to log messages.
             i2c: I2C bus or TCA channel the device is on.
-            address: I2C address of the sensor (default 0x10).
+            address: I2C address of the sensor (default 0x29).
             integration_time: One of `_It.*` indices (default 100ms).
             gain: One of `_Gain.*` indices (default 1x).
             div4: One of `_Div4.*` indices (default full size).
