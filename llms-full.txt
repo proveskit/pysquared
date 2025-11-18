@@ -1,0 +1,6258 @@
+# ProvesKit PySquared
+
+> CircuitPython based Flight Software Library for the PROVES Kit.
+
+# Home
+
+# PySquared
+
+**PySquared** is a CircuitPython-based CubeSat flight software library with [flight](https://space.skyrocket.de/doc_sdat/pleiades-orpheus.htm) [heritage](https://docs.proveskit.space/en/latest/#trials-and-tribulations-in-cubesats). It provides robust, modular components for spacecraft control, telemetry, configuration, and hardware management.
+
+## Features
+
+- Modular architecture for easy extension and customization
+- Type-checked protocols and sensor interfaces
+- Robust error handling and JSON-structured logging
+- Configuration management with validation
+- [High test coverage](https://sonarcloud.io/component_measures?metric=coverage&id=proveskit_circuitpy_flight_software)
+- Designed for microcontroller resource constraints
+
+## Quick Start
+
+### Using PySquared for your Satellite
+
+If you are looking to use PySquared in your own project, see the [Getting Started](https://proveskit.github.io/pysquared/getting-started/) guide.
+
+### Contributing to PySquared
+
+If you want to contribute to PySquared, follow these steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/proveskit/pysquared.git
+   cd pysquared
+
+   ```
+
+1. Install dependencies using `uv`:
+
+   ```bash
+   make
+
+   ```
+
+1. Run tests:
+
+   ```bash
+   make test
+
+   ```
+
+1. See the [contributing](https://proveskit.github.io/pysquared/contributing/) guide for more details.
+
+## Documentation
+
+- [Getting Started](https://proveskit.github.io/pysquared/getting-started/)
+- [Frozen Modules](https://proveskit.github.io/pysquared/frozen-modules/) - Build custom CircuitPython firmware
+- [Design Guide](https://proveskit.github.io/pysquared/design-guide/)
+- [Configuration](https://proveskit.github.io/pysquared/api/#pysquared.config)
+- [Error Handling & Logging](https://proveskit.github.io/pysquared/api/#pysquared.logger)
+- [API Reference](https://proveskit.github.io/pysquared/api/)
+- [Contributing](https://proveskit.github.io/pysquared/contributing/)
+
+## Supported Platforms
+
+- [PROVES Kit hardware](https://docs.proveskit.space/en/latest/)
+- Devices [supported by CircuitPython](https://circuitpython.org/downloads)
+
+## Contributing
+
+We welcome contributions! Please read our [contributing guide](https://proveskit.github.io/pysquared/contributing/) and [design guide](https://proveskit.github.io/pysquared/design-guide/) before submitting changes. If you have questions, open an issue or discussion.
+# Getting Started
+
+# Getting Started with PySquared
+
+## Introduction
+
+PySquared is a flight software library designed for building and deploying satellite systems using CircuitPython. The library is hardware agnostic, meaning it can be used with various CircuitPython-compatible boards but is designed to run on [PROVES](https://docs.proveskit.space/en/latest/) hardware. Like the PROVES hardware, PySquared is an education first software project. We're here to help you learn to develop and launch satellites so be sure to ask questions!
+
+This guide will help you set up your development environment and get you started with building a satellite using the PySquared Flight Software.
+
+## Setting Up Your Computer
+
+Set up your development environment by following the instructions in your OS specific guide.
+
+Linux Guide
+
+Update your package list and install the necessary packages:
+
+```sh
+sudo apt update && sudo apt install make screen zip
+
+```
+
+MacOS Guide
+
+1. **Install Xcode Command Line Tools**: These tools are necessary for compiling and building software.
+
+   ```sh
+   xcode-select --install
+
+   ```
+
+1. **Install Homebrew**: Homebrew is a package manager for MacOS. Follow the instructions on [brew.sh](https://brew.sh/) to install it.
+
+1. **Install Required Packages**: Open a terminal and run the following command to install required packages:
+
+   ```sh
+   brew install screen
+
+   ```
+
+Windows Guide
+
+1. **Install Git**: Download and install the version control system [Git](https://git-scm.com/downloads). Make sure to also install the Git Bash terminal during the setup process.
+
+1. **Install Putty**: Download and install [Putty](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html).
+
+1. **Install Chocolatey**: Download and install the Windows package manager [chocolatey](https://chocolatey.org/install).
+
+1. **Install Required Packages**: Open a command prompt or Git Bash terminal and run the following command to install required packages:
+
+   ```sh
+   choco install make rsync zip
+
+   ```
+
+Keep in mind that the rest of this guide expects that you are using Git Bash.
+
+WSL Guide
+
+Follow the steps in the Linux Guide
+
+## Cloning Your Repository
+
+Let's start by creating your own repository to host your satellite's software. You can use one of the PySquared template repositories to get started quickly. Find your board version below, visit the repository, and click "Fork" to create your own copy of the repository.
+
+| Board Version | Proves Repo | | --- | --- | | v4 | [proveskit/CircuitPython_RP2040_v4](https://github.com/proveskit/CircuitPython_RP2040_v4) | | v5 | [proveskit/CircuitPython_RP2040_v5](https://github.com/proveskit/CircuitPython_RP2040_v5) | | v5a | [proveskit/CircuitPython_RP2350_v5a](https://github.com/proveskit/CircuitPython_RP2350_v5a) | | v5b | [proveskit/CircuitPython_RP2350_v5b](https://github.com/proveskit/CircuitPython_RP2350_v5b) |
+
+Then you can clone your repository to your local machine using the following command:
+
+```sh
+git clone https://github.com/your-username/your-repository.git
+
+```
+
+Learn how to use the git command line
+
+Next, change directory (`cd`) into the repo directory:
+
+```sh
+cd your-repository
+
+```
+
+You are now in your repo directory. This is where you'll write code that makes its way onto your satellite!
+
+## Installing CircuitPython
+
+CircuitPython May Already Be Installed
+
+If you already have CircuitPython installed on your board, you can skip this section. You can check if CircuitPython is installed by plugging in your board and [trying to access the serial console](#accessing-the-serial-console).
+
+Next, we need to install the latest CircuitPython firmware on your board. CircuitPython is a Python runtime for microcontrollers like the one on your board.
+
+First you must find your board's TTY port. You can find the TTY port by plugging in your board and running the following command:
+
+```sh
+make list-tty
+
+```
+
+Example output:
+
+```sh
+TTY ports:
+/dev/cu.usbmodem3101
+
+```
+
+In this example, the TTY port is `/dev/cu.usbmodem3101`. This is the port you will use to communicate with your board.
+
+Seeing more than one TTY port?
+
+If you see more than one TTY port listed, you may need to unplug your board and run the command again to see which one is created when you plug it in. The new port is likely the one you want.
+
+Now you can install CircuitPython by running the following command:
+
+```sh
+make install-circuit-python BOARD_TTY_PORT=<tty_port>
+
+```
+
+## Installing PySquared
+
+### Finding Your Board's Mount Point
+
+Next, make sure your PROVES flight control board is plugged in and we'll find its mount point. The mount point is the location on your computer where the board's filesystem is accessible. This varies by operating system, so follow the guide for your OS below to find it.
+
+Linux Guide
+
+On linux you can use the `findmnt` command to locate your board's mount point.
+
+```sh
+findmnt
+...
+├─/media/username/SOME-VALUE /dev/sdb1 vfat rw,nosuid,nodev,relatime 0 0
+
+```
+
+In this example, the mount point is `/dev/sdb1`. Another common mount point for linux systems is `/media/username/<board_name>`.
+
+MacOS Guide
+
+On Mac, you can find the location of your mount by looking for a mount named `PYSQUARED`, `PROVESKIT` or `CIRCUITPYTHON` in your `/Volumes` directory
+
+```sh
+ls -lah /Volumes
+...
+drwx------@  1 nate  staff    16K Jan  9 08:09 PYSQUARED/
+
+```
+
+In this example, the mount point is `/Volumes/PYSQUARED/`.
+
+Windows Guide
+
+In Git Bash your mount point will be the letter of the drive location in windows. For example, if the board is mounted at `D:\` then your drive location for commands in Git Bash will be `/d/`.
+
+WSL Guide
+
+First you must follow the guides to [connect](https://learn.microsoft.com/en-us/windows/wsl/connect-usb "How to Connect USB to WSL") and [mount](https://learn.microsoft.com/en-us/windows/wsl/wsl2-mount-disk "How to Mount a Disk to WSL") your board in WSL.
+
+After following those guides, your mount point will probably be the letter of the drive location in Windows with `/mnt/` prepended. For example, if the board is mounted at `D:\` then your mount point in WSL will likely be `/mnt/d/`. If you are unsure, you can check the available mount points by running `ls /mnt/` in your terminal.
+
+### Running the Install Command
+
+With the repository cloned and your boards mount point in hand you can now install the flight software to the board. Navigate to the root of your board specific repository and run:
+
+```sh
+make install-flight-software BOARD_MOUNT_POINT=<path_to_your_board>
+
+```
+
+Replace `<path_to_your_board>` with the mount point discovered in the previous section.
+
+## Accessing the Serial Console
+
+To see streaming logs and use the on-board repl you must access the Circuit Python serial console.
+
+Remember the TTY port you found earlier? You will use that to connect to the board's serial console. The serial console allows you to interact with the board and see output from your code. If you don't remember the TTY port, you can run the `make list-tty` command again to find it.
+
+Linux & MacOS Guide
+
+You can then connect to the board using the `screen` command:
+
+```sh
+screen /dev/cu.usbmodem3101
+
+```
+
+For more information visit the [Circuit Python Serial Console documentation](https://learn.adafruit.com/welcome-to-circuitpython/advanced-serial-console-on-mac-and-linux).
+
+Windows Guide
+
+For information on how to access the serial console, visit the [Circuit Python Serial Console documentation](https://learn.adafruit.com/welcome-to-circuitpython/advanced-serial-console-on-windows).
+
+Warning
+
+If all you see is a blank screen when you connect to the serial console, try pressing `CTRL+C` to see if you can get a prompt. If that doesn't work, try pressing `CTRL+D` to reset the board.
+
+## Congratulations!
+
+You have successfully installed PySquared and have started a serial console session to view the output from your flight control board! Now you can start your journey of building and launching satellites using CircuitPython and PySquared.
+
+## Next Steps
+
+Now that you have your development environment set up, you can start [exploring the PySquared library](../api/) and building on the repo you forked and cloned earlier in this guide.
+
+Here are some additional resources to help you get started:
+
+- Are you interested in contributing to PySquared? Check out our [Contributing Guide](../contributing/).
+- Learn more about PROVES hardware with the [PROVES Kit documentation](https://docs.proveskit.space/en/latest/).
+- Learn more about CircuitPython with the [Welcome to CircuitPython guide](https://learn.adafruit.com/welcome-to-circuitpython/overview).
+# Radio Test
+
+# PySquared Radio Test Documentation
+
+When receiving a PROVES device, most teams want to set up a radio test to ensure that the radio is functioning correctly. This document provides a guide on how to set up and run a radio test using the PySquared framework. You will need two boards for this test: one to send data and one to receive data.
+
+Radio License Required
+
+Before running the radio test, ensure that you have the appropriate license to operate the radio frequencies used by the PROVES Kit. Failure to comply with local regulations may result in interference with other devices or legal issues.
+
+## Setting Up the Radio Test
+
+Just like in the [Getting Started Guide](../getting-started/), you will need to clone your board specific repository and make sure that [CircuitPython is installed](../getting-started/#installing-circuitpython) on both boards.
+
+### Setting Up the Configuration
+
+In the root of your board specific repository, you will find a `config.json`. Change the `radio.license` to your callsign or the callsign of the licensed individual you are operating under. This is important for compliance with radio regulations.
+
+```json
+{
+  "radio": {
+    "license": "YOUR_CALLSIGN"
+  }
+}
+
+```
+
+Next, you will need to install the flight control software on one board and the ground station software on the other. To do this, you'll need to [know your board's mount point](../getting-started/#finding-your-boards-mount-point).
+
+### Flight Control Software Installation
+
+On the first board, install the flight control software by running the following command:
+
+```sh
+make install-flight-software BOARD_MOUNT_POINT=<path_to_your_board>
+
+```
+
+### Ground Station Software Installation
+
+On the second board, install the ground station software by running the following command:
+
+```sh
+make install-ground-station BOARD_MOUNT_POINT=<path_to_your_board>
+
+```
+
+### Running the Radio Test
+
+Now, [open the serial console](../getting-started/#accessing-the-serial-console) for both boards. On the ground station board, use the console to send or receive messages to verify communication with the flight control board.
+# Frozen Modules
+
+# Building Custom CircuitPython Firmware with Frozen Modules
+
+## Overview
+
+**Frozen modules** are Python libraries that are compiled directly into the CircuitPython firmware binary, rather than being stored as separate files on the CIRCUITPY filesystem. This approach provides several benefits:
+
+- **RAM Savings**: Frozen modules execute directly from flash memory, freeing up precious RAM for your application code
+- **Flash Efficiency**: Compiled frozen modules take less space than `.mpy` files on the filesystem
+- **Simplified Deployment**: Single firmware file contains everything - no need to copy libraries to each board
+- **Faster Startup**: Pre-compiled modules load faster than filesystem-based libraries
+- **Version Consistency**: Ensures all boards run exactly the same library versions
+
+This is particularly valuable for resource-constrained boards like SAMD21 or when deploying to many satellites.
+
+## When to Use Frozen Modules
+
+**Use frozen modules when:**
+
+- You're deploying to many boards and want consistency
+- Your board is RAM-constrained (e.g., SAMD21 non-Express boards)
+- You want to prevent accidental library modifications on the board
+- You need faster startup times
+- You want to simplify your deployment process
+
+**Use filesystem libraries when:**
+
+- You need to update libraries without reflashing firmware
+- You're actively developing and testing new library versions
+- You want flexibility to mix and match library versions
+- Your board has plenty of RAM and flash
+
+## Prerequisites
+
+Building custom CircuitPython firmware requires:
+
+1. **Linux, macOS, or Windows with WSL**: The build system requires a Unix-like environment
+1. **Build Tools**:
+1. `gcc-arm-none-eabi` (ARM cross-compiler)
+1. `git` (version control)
+1. `python3` and `pip` (for build scripts)
+1. `make` (build system)
+1. **Disk Space**: ~5GB for CircuitPython source and build artifacts
+1. **Time**: Initial build takes 10-30 minutes depending on your system
+
+## Build Process Overview
+
+The frozen module build process involves:
+
+1. **Clone CircuitPython Source**: Get the CircuitPython repository and all submodules
+1. **Add PySquared Dependencies**: Configure which libraries to freeze into firmware
+1. **Configure Board**: Specify board type and frozen module directories
+1. **Build Firmware**: Compile CircuitPython with frozen modules
+1. **Flash Firmware**: Upload the custom firmware to your board
+
+## Directory Structure
+
+We recommend creating a `firmware/` directory in this repository to contain all firmware-related build artifacts:
+
+```text
+pysquared/
+├── firmware/                           # Frozen module build directory (new)
+│   ├── circuitpython/                 # CircuitPython source (git submodule)
+│   ├── frozen/                        # Directory for libraries to freeze
+│   │   ├── pysquared/                 # PySquared library (symlink or copy)
+│   │   └── adafruit_circuitpython_*/  # Adafruit dependencies (git submodules)
+│   ├── boards/                        # Custom board configurations
+│   │   ├── proves_rp2040_v4/
+│   │   ├── proves_rp2040_v5/
+│   │   ├── proves_rp2350_v5a/
+│   │   └── proves_rp2350_v5b/
+│   ├── Makefile                       # Build automation
+│   ├── build-firmware.sh              # Build script
+│   └── README.md                      # Firmware-specific documentation
+├── circuitpython-workspaces/          # Existing PySquared source
+└── docs/                              # Documentation
+
+```
+
+## Step-by-Step Build Instructions
+
+### 1. Set Up Build Environment
+
+#### On Linux (Ubuntu/Debian):
+
+```bash
+sudo apt update
+sudo apt install build-essential git python3 python3-pip gcc-arm-none-eabi
+
+```
+
+#### On macOS:
+
+```bash
+# Install Homebrew if not already installed
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install ARM toolchain
+brew install armmbed/formulae/arm-none-eabi-gcc
+brew install python3 git
+
+```
+
+#### On Windows (WSL):
+
+```bash
+# First install WSL and Ubuntu from Microsoft Store, then:
+sudo apt update
+sudo apt install build-essential git python3 python3-pip gcc-arm-none-eabi
+
+```
+
+### 2. Clone CircuitPython Source
+
+Navigate to the `firmware/` directory and clone CircuitPython:
+
+```bash
+cd firmware/
+git clone https://github.com/adafruit/circuitpython.git
+cd circuitpython
+git checkout <stable-version-tag>  # e.g., 9.0.5
+python3 tools/ci_fetch_deps.py raspberrypi
+# Return to firmware directory and use UV to install build dependencies
+cd ..
+# Ensure UV is available (installed by root Makefile)
+cd .. && make uv && cd firmware
+# Install in UV virtual environment
+../tools/uv-0.8.14/uv pip install -q -r circuitpython/requirements-dev.txt
+
+```
+
+**Note**: This fetches only submodules needed for RP2040/RP2350 (raspberrypi port), significantly reducing download size and time. To fetch all submodules (for other boards), use `make fetch-all-submodules` instead.
+
+**Important**:
+
+- Always use a tagged stable release, not the main branch, to ensure reproducible builds.
+- The `requirements-dev.txt` install provides Python tools needed for the build (cascadetoml, jinja2, typer, etc.).
+- Using `make setup` (recommended) automatically installs dependencies in the UV virtual environment, avoiding system Python conflicts.
+
+### 3. Add Libraries to Freeze
+
+You have two options for adding libraries:
+
+#### Option A: Add as Git Submodules (Recommended for Dependencies)
+
+For each Adafruit library dependency in `circuitpython-workspaces/flight-software/pyproject.toml`:
+
+```bash
+cd firmware/circuitpython/frozen
+git submodule add https://github.com/adafruit/Adafruit_CircuitPython_INA219
+cd Adafruit_CircuitPython_INA219
+git checkout <version-tag>  # Match version in pyproject.toml
+
+```
+
+#### Option B: Symlink PySquared Library
+
+For the PySquared library itself:
+
+```bash
+cd firmware/circuitpython/frozen
+ln -s ../../../circuitpython-workspaces/flight-software/src/pysquared pysquared
+
+```
+
+This keeps the source in one place and avoids duplication.
+
+### 4. Configure Board
+
+Create or modify the board configuration in `ports/raspberrypi/boards/<BOARD_NAME>/mpconfigboard.mk`:
+
+```makefile
+# Add PySquared and dependencies to frozen modules
+FROZEN_MPY_DIRS += $(TOP)/frozen/pysquared
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_INA219
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS2MDL
+# ... add all other dependencies
+
+```
+
+### 5. Build Firmware
+
+**Recommended:** Use the firmware Makefile which ensures the correct Python environment:
+
+```bash
+cd firmware
+make firmware BOARD=raspberry_pi_pico
+
+```
+
+**Manual (advanced):** If building directly in CircuitPython source:
+
+```bash
+cd firmware/circuitpython/ports/raspberrypi
+# Use UV to run make with the correct Python environment
+../../tools/uv-0.8.14/uv run --no-project make BOARD=<board_name>
+
+```
+
+For PROVES Kit boards (or use equivalent Raspberry Pi Pico boards):
+
+- `raspberry_pi_pico` (for v4, v5)
+- `raspberry_pi_pico_w` (with WiFi)
+- Custom PROVES board definitions (once configured)
+
+The build will create a `.uf2` file in `build-<BOARD_NAME>/firmware.uf2`.
+
+### 6. Flash Firmware
+
+1. Put your board in bootloader mode (double-press RESET button)
+1. A USB drive named `RPI-RP2` or similar will appear
+1. Copy the `firmware.uf2` file to this drive
+1. The board will automatically reset and boot with the new firmware
+
+## Verifying Frozen Modules
+
+After flashing, connect to the board's serial console and run:
+
+```python
+import sys
+print(sys.modules)
+
+```
+
+Frozen modules will be listed and can be imported directly without being in `/lib`.
+
+Test that PySquared is frozen:
+
+```python
+import pysquared
+print(pysquared.__file__)  # Should show it's built-in, not from filesystem
+
+```
+
+## Automating the Build
+
+To make builds easier, create a `firmware/Makefile`:
+
+```makefile
+# Version pins
+CIRCUITPYTHON_VERSION ?= 9.0.5
+BOARD ?= proves_rp2040_v5
+
+.PHONY: all
+all: firmware
+
+.PHONY: setup
+setup:
+    git clone https://github.com/adafruit/circuitpython.git || true
+    cd circuitpython && git checkout $(CIRCUITPYTHON_VERSION)
+    cd circuitpython && python3 tools/ci_fetch_deps.py raspberrypi
+    # Use UV for installing build dependencies (avoids system Python conflicts)
+    cd .. && make uv && cd firmware
+    ../tools/uv-0.8.14/uv pip install -q -r circuitpython/requirements-dev.txt
+    $(MAKE) add-dependencies
+
+.PHONY: add-dependencies
+add-dependencies:
+    # Add each dependency from pyproject.toml as a submodule
+    # This would parse the pyproject.toml and add submodules automatically
+
+.PHONY: firmware
+firmware:
+    cd circuitpython/ports/raspberrypi && make BOARD=$(BOARD)
+    cp circuitpython/ports/raspberrypi/build-$(BOARD)/firmware.uf2 ./$(BOARD)-frozen-$(CIRCUITPYTHON_VERSION).uf2
+
+.PHONY: clean
+clean:
+    cd circuitpython/ports/raspberrypi && make BOARD=$(BOARD) clean
+
+```
+
+Then build with:
+
+```bash
+make BOARD=proves_rp2040_v5 firmware
+
+```
+
+## Updating Frozen Modules
+
+When you update PySquared or dependencies:
+
+1. Update the library source code
+1. Rebuild the firmware: `make BOARD=<board> firmware`
+1. Flash the new firmware to all boards
+
+There's no way to update frozen modules without rebuilding and reflashing the entire firmware.
+
+## Troubleshooting
+
+### Build Fails with "arm-none-eabi-gcc: command not found"
+
+Install the ARM toolchain for your platform (see prerequisites above).
+
+### Build Fails with Missing Submodules
+
+For RP2040/RP2350 builds, run `python3 tools/ci_fetch_deps.py raspberrypi` in the circuitpython directory. For all ports, use `make fetch-all-submodules` instead.
+
+### Build Fails with Python Import Errors (cascadetoml, jinja2, typer, etc.)
+
+First, ensure dependencies are installed: `make install-circuitpython-deps`
+
+If the error persists during build, ensure you're using the Makefile to build: `make firmware BOARD=<board>`. This runs the build with UV's Python environment. Do NOT run `make` directly in the CircuitPython ports directory, as it won't have access to the installed packages.
+
+### "externally-managed-environment" Error on macOS
+
+This occurs when trying to install packages system-wide. The Makefile now uses UV to install in a virtual environment. If you see this error, ensure you're using `make setup` or `make install-circuitpython-deps` rather than manual pip commands.
+
+### Firmware File is Too Large
+
+- Remove unused frozen modules from `mpconfigboard.mk`
+- Use `FROZEN_MPY_DIRS` instead of `FROZEN_PY_DIRS` (mpy is more compact)
+- Consider building with optimizations: `make BOARD=<board> OPTIMIZATION=-O2`
+
+### Board Won't Boot After Flashing
+
+- Verify you built for the correct board
+- Try re-flashing the official CircuitPython firmware first
+- Check the build log for errors
+
+### Module Not Found After Freezing
+
+- Verify the module directory is listed in `FROZEN_MPY_DIRS`
+- Check that the module has an `__init__.py`
+- Rebuild with `make clean` first to ensure fresh build
+
+## CI/CD Integration
+
+For automated builds in GitHub Actions, you can create a workflow that:
+
+1. Sets up the ARM toolchain
+1. Clones CircuitPython at a pinned version
+1. Adds dependencies as submodules
+1. Builds firmware for all PROVES boards
+1. Uploads firmware files as release artifacts
+
+Example `.github/workflows/build-firmware.yaml`:
+
+```yaml
+name: Build Frozen Firmware
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-firmware:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board: [proves_rp2040_v4, proves_rp2040_v5, proves_rp2350_v5a, proves_rp2350_v5b]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-arm-none-eabi build-essential git python3 python3-pip
+
+      - name: Build firmware
+        run: |
+          cd firmware
+          make setup CIRCUITPYTHON_VERSION=9.0.5
+          make firmware BOARD=${{ matrix.board }}
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.board }}
+          path: firmware/${{ matrix.board }}-frozen-*.uf2
+
+```
+
+## Best Practices
+
+1. **Pin Versions**: Always use specific version tags for CircuitPython and libraries
+1. **Document Dependencies**: Keep a clear record of what's frozen and why
+1. **Test Thoroughly**: Test firmware on actual hardware before deploying to all boards
+1. **Backup**: Keep copies of working firmware files for rollback
+1. **Version Firmware**: Include version info in the firmware filename
+1. **Automate**: Use Makefiles or scripts to make builds reproducible
+1. **CI/CD**: Automate firmware builds for releases
+
+## References
+
+- [CircuitPython Building Documentation](https://docs.circuitpython.org/en/latest/BUILDING.html)
+- [Adafruit Guide: Adding Frozen Modules](https://learn.adafruit.com/building-circuitpython/adding-frozen-modules)
+- [CircuitPython Frozen Libraries Overview](https://learn.adafruit.com/welcome-to-circuitpython/library-file-types-and-frozen-libraries)
+- [CircuitPython GitHub Repository](https://github.com/adafruit/circuitpython)
+
+## Support
+
+If you encounter issues building firmware:
+
+1. Check the [CircuitPython Discord](https://adafru.it/discord) #help-with-circuitpython channel
+1. Open an issue in this repository with your build log
+1. Review the CircuitPython documentation for your specific board
+# Design Guide
+
+# Design Guide
+
+This document provides an overview of the design principles and architecture of the PySquared Flight Software. It is intended for developers who want to understand how the software is structured and how to contribute effectively.
+
+## CircuitPython
+
+PySquared is built on top of CircuitPython, which is a version of Python designed for microcontrollers. CircuitPython is a fork of MicroPython which adhears to a subset of the Python language specification. Python 3.4 syntax is supported with some additional features pulled from later releases such as type hinting.
+
+### Resources
+
+- [Python 3.4 Reference](https://docs.python.org/3.4/reference/index.html)
+- [Differences between MicroPython and Python](https://docs.micropython.org/en/latest/genrst/index.html#cpython-diffs)
+- [Differences between CircuitPython and MicroPython](https://docs.circuitpython.org/en/latest/README.html#differences-from-micropython)
+- [CircuitPython Shared Bindings Documentation](https://docs.circuitpython.org/en/latest/shared-bindings/index.html)
+- [CircuitPython Standard Libraries Documentation](https://docs.circuitpython.org/en/latest/docs/library/index.html)
+- [CircuitPython Design Guide](https://docs.circuitpython.org/en/latest/docs/design_guide.html)
+
+## Types and Type Checking
+
+We use type hints throughout the PySquared codebase to ensure that our code is clear and maintainable. Type hints help us catch errors early and make it easier to understand the expected types of variables and function parameters.
+
+We use [typeshed](https://peps.python.org/pep-0561/) stubs to provide more accurate type hints for CircuitPython, replacing the default Python standard library type hints. These CircuitPython-specific stubs are located in the `typeshed/` directory. This helps the typechecker catch compatibility issues with CircuitPython code before running it on a device.
+
+We do not accept changes to files in the `pysquared/` directory that include lines ignoring the type checker (e.g., `# type: ignore`). The only exceptions are:
+
+- **Upstream Fix in Progress:** If a type error is caused by a bug or limitation in an external dependency, you may ignore the line only when leaving a comment with a link to the issue or PR where it is fixed or a fix is in progress. A valid type hint might look like this:
+
+  ```python
+  some_variable = some_function()  # type: ignore  # PR https://github.com/adafruit/circuitpython/pull/10603
+
+  ```
+
+If you encounter a type error, first consider if it can be resolved by improving your code's design. If you believe an exception is necessary, please reach out for assistance before proceeding.
+
+Using the Typing Module
+
+For more advanced type hinting we can use the Python standard library's `typing` module which was introduced in Python 3.5. This module provides a variety of type hints that can be used to specify more complex types, such as `List`, `Dict`, and `Optional`. CircuitPython does not support the `typing` module so we must wrap the import in a try/except block to avoid import errors. For example:
+
+```python
+try:
+    from typing import List, Dict, Optional
+except ImportError:
+    pass
+
+```
+
+This pattern allows us to use type hints in our code while still being compatible with CircuitPython.
+
+Additionally we cannot use `typing`'s `Any` type hint in CircuitPython. Instead, we can use `object` as a generic type hint.
+
+## Protocols
+
+Protocols are a way to define a set of methods that a class must implement. They are similar to interfaces in other programming languages or header files in C. Protocols allow us to define a contract for classes to follow, ensuring that they implement the required methods. CircuitPython does not support Protocols, so we use base classes to define our protocols where all required methods are implemented with `...` (Ellipsis). All classes that implement the protocol must override these methods. Protocols can be found in `pysquared/protos/`.
+
+## Testing
+
+We use [pytest](https://docs.pytest.org/en/stable/) for unit testing our code. We are designing software for spacecraft, so it is important that we have a robust testing framework to ensure our code is reliable and works as expected. We write tests for all of our code, and we run these tests automatically using GitHub Actions. We aim to have 100% test coverage for all of our code, which means that every line of code is tested by at least one test case.
+
+## Documentation
+
+We use [MkDocs](https://www.mkdocs.org/) to build our documentation. We write our documentation in Markdown, which is a lightweight markup language that is easy to read and write. We document our code using docstrings, which are special comments that describe the purpose and usage of a function or class. We also use type hints in our docstrings to provide additional information about the expected types of parameters and return values. Where it makes sense, add usage examples following [CommonMark fenced code blocks](https://spec.commonmark.org/0.30/#fenced-code-blocks) to document how to use your code.
+
+### Module Documentation
+
+Start with a brief summary, followed by an optional extended description:
+
+```python
+"""This module provides utilities for parsing and validating telemetry data from spacecraft sensors.
+
+It includes classes and functions for decoding sensor packets, verifying data integrity, and converting
+raw readings into SI units for further analysis.
+"""
+
+```
+
+### Class Documentation
+
+Begin with a short description, a detailed explanation, and a practical usage example:
+
+```python
+"""The TelemetryParser class extracts and validates sensor readings from raw telemetry packets.
+
+TelemetryParser handles packet decoding, error checking, and conversion to SI units. It is designed
+for use in spacecraft flight software where reliable sensor data is critical.
+
+**Usage:**
+~~~python
+from pysquared.telemetry import TelemetryParser
+
+parser = TelemetryParser()
+packet = b'\x01\x02\x03\x04'
+reading = parser.parse(packet)
+print(reading.timestamp, reading.acceleration)  # Output: 2024-06-01T12:00:00Z (0.0, 9.8, 0.0)
+~~~
+"""
+
+```
+
+### Function/Method Documentation
+
+Include a description, argument details, return values, and any exceptions raised:
+
+```python
+"""
+Validate a sensor reading and convert it to SI units.
+
+Args:
+    reading: Raw sensor reading with keys 'value' and 'unit'.
+    sensor_type: Type of sensor (e.g., 'acceleration', 'temperature').
+
+Returns:
+    float: The validated reading in SI units.
+
+Raises:
+    KeyError: If required keys are missing from the reading.
+    ValueError: If the reading value is out of expected range.
+"""
+
+```
+
+## Sensor Readings
+
+All sensor readings must be in SI units and stored in a structure that includes the time of the reading. Including the time of the reading is important for analysing sensor data and ensuring that processes such as detumbling and attitude control can be performed accurately.
+
+The following table lists possible sensor properties, their corresponding types and units for common sensor readings. The table was pulled directly from the [CircuitPython Design Guide](https://docs.circuitpython.org/en/latest/docs/design_guide.html#sensor-properties-and-units):
+
+| Property Name | Python Type | Units / Description | | --- | --- | --- | | acceleration | (float, float, float) | x, y, z meter per second² | | alarm | (time.struct, str) | Sample alarm time and frequency string | | CO2 | float | measured CO₂ in ppm | | color | int | RGB, eight bits per channel (0xff0000 is red) | | current | float | milliamps (mA) | | datetime | time.struct | date and time | | distance | float | centimeters (cm) | | duty_cycle | int | 16-bit PWM duty cycle | | eCO2 | float | equivalent/estimated CO₂ in ppm | | frequency | int | Hertz (Hz) | | angular velocity | (float, float, float) | x, y, z radians per second | | light | float | non-unit-specific light levels | | lux | float | SI lux | | magnetic | (float, float, float) | x, y, z micro-Tesla (uT) | | orientation | (float, float, float) | x, y, z degrees | | pressure | float | hectopascal (hPa) | | proximity | int | non-unit-specific proximity values | | relative_humidity | float | percent | | sound_level | float | non-unit-specific sound level | | temperature | float | degrees Celsius | | TVOC | float | Total Volatile Organic Compounds in ppb | | voltage | float | volts (V) | | weight | float | grams (g) |
+
+Definitions for sensor readings can be found in `pysquared/sensors/`
+
+Handling Sensor Reading Failures
+
+Sensor reading failures must be expected and handled gracefully. If a sensor reading fails, the code should log an error message and return a default value (e.g., `0.0` for numeric readings or `None` for optional readings). This ensures that the system can continue to operate even if a sensor is temporarily unavailable. In the case of a sensor hanging, the attempt must time out and return a default value.
+
+### Resources
+
+- [Adafruit Unified Sensor Driver](https://learn.adafruit.com/using-the-adafruit-unified-sensor-driver?view=all)
+- [Android Motion Sensor Documentation](https://developer.android.com/develop/sensors-and-location/sensors/sensors_motion)
+- [Android Position Sensor Documentation](https://developer.android.com/develop/sensors-and-location/sensors/sensors_position)
+- [Android Environment Sensor Documentation](https://developer.android.com/develop/sensors-and-location/sensors/sensors_environment)
+
+## Dependency Management
+
+We use [`uv`](https://docs.astral.sh/uv/) for managing our python development environment and dependencies. It allows us to define our dependencies in a `pyproject.toml` file and provides a consistent way to install and manage them across different environments. We use dependency groups to separate the dependencies needed for running on the satellite `pyproject.dependencies`, development `pyproject.dev`, and documentation `pyproject.docs`.
+
+`uv` is downloaded and installed automatically when you use run `make` commands. Please see the <Makefile> or `make help` for more information on how to use `uv` to manage your development environment.
+
+## Linting and Code Style
+
+We use [`ruff`](https://docs.astral.sh/ruff/) for linting and formatting our code. `ruff` is a fast, extensible linter that checks our code for errors and enforces specific coding standards and style. We use `ruff`'s [default configuration](https://github.com/astral-sh/ruff/tree/0.12.3?tab=readme-ov-file#configuration) with only one addition, isort (`-I`), for linting and formatting our code.
+
+### Linting
+
+`ruff` checks our code for errors following [pyflakes](https://pypi.org/project/pyflakes/) logic.
+
+### Code Style
+
+By default `ruff`, enforces the [`black`](https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html) style with [a few deviations](https://docs.astral.sh/ruff/formatter/#style-guide) decided by `ruff` for formatting our code. Code formatting ensures that our code is consistent and easy to read.
+
+## Error Handling
+
+Error handling in PySquared is designed to be robust and predictable. We use standard `try...except` blocks to catch exceptions. When an exception is caught, it should be logged with the `logger.error()` or `logger.critical()` method. This ensures that we have a record of the error and can diagnose it later.
+
+```python
+try:
+    # Code that may raise an exception
+except Exception as e:
+    logger.error("An error occurred", err=e)
+
+```
+
+Custom exceptions should be used to represent specific error conditions in your code. This allows us to handle different types of errors in a more granular way. Custom exceptions should inherit from the built-in `Exception` class and should be named using the `Error` suffix.
+
+```python
+class CustomError(Exception):
+    """Custom exception for specific error conditions."""
+    pass
+
+try:
+    # Code that may raise a CustomError
+except CustomError as e:
+    logger.error("A custom error occurred", err=e)
+
+```
+
+When raising exceptions, always provide a clear and descriptive error message. This will help us understand the context of the error when it is logged.
+
+```python
+raise CustomError("This is a custom error message")
+
+```
+
+## Logging
+
+The syntax for our logging module `logger` is based off the popular Python logger [`Loguru`](https://loguru.readthedocs.io/en/stable/). We use the `logger` module to log messages at different levels (`debug`, `info`, `warning`, `error`, `critical`) throughout our code. This allows us to track the flow of execution and diagnose issues when they arise.
+
+Logs are structured as JSON, which makes them easy to parse and analyze. When logging, you can include additional key-value pairs to provide context.
+
+```python
+logger.info("User logged in", user_id=123)
+
+```
+
+Code that raises an exception should log at the `error` level. Code that failed but is recoverable should log at the `warning` level. The `debug` level should be used to understand the flow of the program during development and debugging. The `info` level should be used for general information about the program's execution, such as startup, shutdown, and other important updates. `critical` should be used for serious errors that may prevent the satellite from continuing operation, requiring a restart.
+
+## Configuration
+
+Configuration management in PySquared is centralized in the `Config` class. This class is responsible for loading, validating, and providing access to all configuration settings, which are stored in a JSON file.
+
+### Loading and Accessing Configuration
+
+The `Config` class is initialized with the path to the configuration file. It parses the JSON and exposes the settings as attributes.
+
+**Usage:**
+
+```python
+from pysquared.config import Config
+
+# Initialize the config with the path to your settings file
+config = Config("config.json")
+
+# Access configuration values directly
+print(f"Satellite Name: {config.cubesat_name}")
+print(f"Sleep Duration: {config.sleep_duration} seconds")
+
+```
+
+### Updating Configuration
+
+The `update_config` method allows for both temporary (in-memory) and permanent (persisted to the JSON file) changes to the configuration.
+
+- **Temporary Updates:** Changes are only applied to the `Config` object in memory and will be lost on restart.
+- **Permanent Updates:** Changes are written back to the configuration file.
+
+```python
+# Temporarily update the sleep duration
+config.update_config("sleep_duration", 120, temporary=True)
+
+# Permanently update the satellite's name
+config.update_config("cubesat_name", "PyCubed", temporary=False)
+
+```
+
+### Validation
+
+The `Config` class includes a validation schema to ensure that all configuration values are within expected ranges and of the correct type. Any attempt to set an invalid value will raise a `TypeError` or `ValueError`. This helps prevent runtime errors due to misconfiguration.
+
+### Radio Configuration
+
+Radio-specific settings are managed by the `RadioConfig` class, which is a nested object within the main `Config` class.
+
+## Imports
+
+We use relative imports for all of our modules. This allows us to easily import pysquared into downstream libraries like our board specific repos. For example, if we have a module `pysquared.sensors.temperature`, we can import it in another module using:
+
+```python
+from .sensors.temperature import TemperatureSensor
+
+```
+
+## Non-Volatile Memory (NVM)
+
+We use the `pysquared.nvm` module to manage non-volatile memory (NVM) on the flight control board. This module provides a way to store persistent data across reboots, such as error counters and other important state information. The NVM module includes a `Counter` class for counting events and a `Flag` class for storing boolean flags.
+# Contributing Guide
+
+# Contributing Guide
+
+Welcome to the contributing guide for PySquared! This guide will help you set up your development environment and get you started with contributing to the repository.
+
+### Setting up your code editor
+
+#### Workspaces
+
+Working with the PySquared repo is different from working with other Python repos because part of the repo is designed to run on CircuitPython (e.g. the flight software) while another part is designed to run on standard CPython (e.g. the tests and development tools). To make the development experience as smooth as possible, we use [`uv`](https://docs.astral.sh/uv) workspaces for python environment management, a CircuitPython specific [`typeshed`](https://peps.python.org/pep-0561/) to give developers accurate type information for CircuitPython code, and [`pyright`](https://github.com/microsoft/pyright) configurations to control when the CircuitPython typeshed is loaded.
+
+To experience the best development environment, we recommend using a code editor that supports [code workspaces](https://code.visualstudio.com/docs/editing/workspaces/workspaces) such as VS Code. When you open up the PySquared repository in your editor, open the workspace file located at `pysquared.code-workspace` and click `Open Workspace`. This will reload VS Code into workspace mode.
+
+When you're in workspace mode, your editor will be able to autocomplete and tell you if you have any type errors in your code for both CircuitPython and CPython.
+
+Not using VS Code?
+
+If you're using a different code editor and you have configured it to provide this functionality, please consider contributing a section to this guide to help others get set up.
+
+#### Dev Containers
+
+Every repository comes with a `.devcontainer` directory that contains configuration for a ready-to-use development environment. This environment includes all the necessary tools and dependencies to work on the repository. You can use any code editor that supports dev containers, such as [Visual Studio Code](https://code.visualstudio.com/), to open the repository in a dev container.
+
+### Testing custom versions of PySquared
+
+If you're making a change to PySquared, you can test it in a board specific repository by installing a specific version of PySquared.
+
+Start by pushing your PySquared changes to a branch in the pysquared repository. Then, you can install that version of PySquared in a board specific repository by running the following command:
+
+```sh
+PYSQUARED_VERSION=<version_commit_or_branch_name> make install-flight-software BOARD_MOUNT_POINT=<board_mount_point>
+
+```
+
+If you've forgotten how to find your board's mount point, the instructions are in the [Getting Started Guide](../getting-started/).
+
+### Testing Documentation Changes
+
+We use [MkDocs](https://www.mkdocs.org/) to build our documentation. If you make changes to the documentation, you can build and test it locally by running:
+
+```sh
+make docs
+
+```
+
+This will generate the documentation and serve it locally. You can then open your web browser and navigate to `http://localhost:8000` to see the changes.
+
+## Continuous Integration (CI)
+
+This repo has a continuous integration system using Github Actions. Anytime you push code to the repo, it will run a series of tests. If you see a failure in the CI, you can click on the details to see what went wrong.
+
+### Common Build Failures
+
+Here are some common build failures you might see and how to fix them:
+
+#### Lint Failure
+
+Every time you make a change in git, it's called a commit. We have a tool called a pre-commit hook that will run before you make each commit to ensure your code is safe and formatted correctly. If you experience a lint failure you can run the following to fix it for you or tell you what's wrong.
+
+```sh
+make fmt
+
+```
+
+#### Test Failure
+
+To ensure our code works as we expect we use automated testing. If you're seeing a testing failure in your build, you can see what's wrong by running those tests yourself with:
+
+```sh
+make test
+
+```
+
+#### Type Checking Failure
+
+We use a tool called pyright to check our code for type errors. An example of a type error is if you try to add a string and an integer together. Pyright will catch these errors before they cause problems in your code. If you see a type checking failure in your build, you can run the following command to see what the error is:
+
+```sh
+make typecheck
+
+```
+# API Reference
+
+# pysquared
+
+PySquared Satellite Flight Software
+
+Modules:
+
+- **`beacon`** – This module provides a Beacon class for sending periodic status messages.
+- **`binary_encoder`** – Binary encoding utilities for efficient packet transmission.
+- **`boot`** – This module provides utilities that can run during the boot process by adding them to boot.py.
+- **`cdh`** – This module provides the CommandDataHandler for managing and processing commands.
+- **`config`** – This module provides an interface for managing configuration settings in the PySquared project.
+- **`detumble`** – This module provides functions for satellite detumbling using magnetorquers.
+- **`file_validation`** – File validation package for PySquared.
+- **`hardware`** – This module provides managers for various hardware components including sensors, actuators, communication interfaces, etc.
+- **`logger`** – This module provides a Logger class for handling logging messages.
+- **`nvm`** – The NVM package is a collection of functionality that interacts with non-volatile memory
+- **`power_health`** – This module provides a PowerHealth class for monitoring the power system.
+- **`protos`** – This module defines hardware agnostic protocols for accessing devices with certain features.
+- **`rtc`** – This module provides Real-Time Clock (RTC) management functionality for the PySquared satellite.
+- **`sensor_reading`** – Module for sensor reading definitions.
+- **`sleep_helper`** – This module provides the SleepHelper class for managing safe sleep and hibernation
+- **`watchdog`** – This module provides the Watchdog class for managing the hardware watchdog timer
+
+## beacon
+
+This module provides a Beacon class for sending periodic status messages.
+
+The Beacon class collects data from various sensors and system components, formats it as a JSON string, and sends it using a provided packet manager. This is typically used for sending telemetry or health information from a satellite or remote device.
+
+**Usage:**
+
+```python
+logger = Logger()
+packet_manager = PacketManager(logger, radio)
+boot_time = time.time()
+beacon = Beacon(logger, "MySat", packet_manager, boot_time, imu, power_monitor)
+beacon.send()
+
+```
+
+Classes:
+
+- **`Beacon`** – A beacon for sending status messages.
+
+### Beacon
+
+```python
+Beacon(logger: Logger, name: str, packet_manager: PacketManager, boot_time: float, *args: PowerMonitorProto | RadioProto | IMUProto | MagnetometerProto | TemperatureSensorProto | Flag | Counter | Processor)
+
+```
+
+A beacon for sending status messages.
+
+Parameters:
+
+- #### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- #### **`name`**
+
+  (`str`) – The name of the beacon.
+
+- #### **`packet_manager`**
+
+  (`PacketManager`) – The packet manager to use for sending the beacon.
+
+- #### **`boot_time`**
+
+  (`float`) – The time the system booted.
+
+- #### **`*args`**
+
+  (`PowerMonitorProto | RadioProto | IMUProto | MagnetometerProto | TemperatureSensorProto | Flag | Counter | Processor`, default: `()` ) – A list of sensors and other components to include in the beacon.
+
+Methods:
+
+- **`decode_binary_beacon`** – Decode binary beacon data received from another satellite.
+- **`generate_key_mapping`** – Create a key mapping for this beacon's data structure.
+- **`send`** – Sends the beacon.
+- **`send_json`** – Sends the beacon using JSON encoding (legacy method).
+
+#### decode_binary_beacon
+
+```python
+decode_binary_beacon(data: bytes, key_map: dict | None = None) -> dict
+
+```
+
+Decode binary beacon data received from another satellite.
+
+Parameters:
+
+- ##### **`data`**
+
+  (`bytes`) – Binary encoded beacon data
+
+- ##### **`key_map`**
+
+  (`dict | None`, default: `None` ) – Optional key mapping for decoding (hash -> key name)
+
+Returns:
+
+- `dict` – Dictionary containing decoded beacon data
+
+#### generate_key_mapping
+
+```python
+generate_key_mapping() -> dict
+
+```
+
+Create a key mapping for this beacon's data structure.
+
+This method generates a template beacon packet and returns the key mapping that can be used to decode binary beacon data with the same structure.
+
+Returns:
+
+- `dict` – Dictionary mapping key hashes to key names
+
+#### send
+
+```python
+send() -> bool
+
+```
+
+Sends the beacon.
+
+Returns:
+
+- `bool` – True if the beacon was sent successfully, False otherwise.
+
+#### send_json
+
+```python
+send_json() -> bool
+
+```
+
+Sends the beacon using JSON encoding (legacy method).
+
+Returns:
+
+- `bool` – True if the beacon was sent successfully, False otherwise.
+
+## binary_encoder
+
+Binary encoding utilities for efficient packet transmission.
+
+This module provides functions to encode and decode int and float values directly into byte arrays instead of string representations, significantly reducing packet size and improving transmission efficiency.
+
+**Usage:**
+
+```python
+encoder = BinaryEncoder()
+encoder.add_float("temperature", 23.5)
+encoder.add_int("battery_level", 85)
+data = encoder.to_bytes()
+
+decoder = BinaryDecoder(data)
+temperature = decoder.get_float("temperature")
+battery_level = decoder.get_int("battery_level")
+
+```
+
+Classes:
+
+- **`BinaryDecoder`** – Decodes data from binary format.
+- **`BinaryEncoder`** – Encodes data into a compact binary format.
+
+### BinaryDecoder
+
+```python
+BinaryDecoder(data: bytes, key_map: Optional[Dict[int, str]] = None)
+
+```
+
+Decodes data from binary format.
+
+Parameters:
+
+- #### **`data`**
+
+  (`bytes`) – The binary data to decode
+
+- #### **`key_map`**
+
+  (`Optional[Dict[int, str]]`, default: `None` ) – Optional mapping from hash to key name
+
+Methods:
+
+- **`get_all`** – Get all decoded data.
+- **`get_float`** – Get a float value.
+- **`get_int`** – Get an integer value.
+- **`get_string`** – Get a string value.
+
+#### get_all
+
+```python
+get_all() -> Dict[str, Union[int, float, str]]
+
+```
+
+Get all decoded data.
+
+Returns:
+
+- `Dict[str, Union[int, float, str]]` – Dictionary containing all decoded key-value pairs
+
+#### get_float
+
+```python
+get_float(key: str) -> Optional[float]
+
+```
+
+Get a float value.
+
+Parameters:
+
+- ##### **`key`**
+
+  (`str`) – The key name
+
+Returns:
+
+- `Optional[float]` – The float value or None if not found
+
+#### get_int
+
+```python
+get_int(key: str) -> Optional[int]
+
+```
+
+Get an integer value.
+
+Parameters:
+
+- ##### **`key`**
+
+  (`str`) – The key name
+
+Returns:
+
+- `Optional[int]` – The integer value or None if not found
+
+#### get_string
+
+```python
+get_string(key: str) -> Optional[str]
+
+```
+
+Get a string value.
+
+Parameters:
+
+- ##### **`key`**
+
+  (`str`) – The key name
+
+Returns:
+
+- `Optional[str]` – The string value or None if not found
+
+### BinaryEncoder
+
+```python
+BinaryEncoder()
+
+```
+
+Encodes data into a compact binary format.
+
+Methods:
+
+- **`add_float`** – Add a float value.
+- **`add_int`** – Add an integer value.
+- **`add_string`** – Add a string value with length prefix.
+- **`get_key_map`** – Get the key mapping for decoding.
+- **`to_bytes`** – Convert the encoded data to bytes using a compact format.
+
+#### add_float
+
+```python
+add_float(key: str, value: float, double_precision: bool = False) -> None
+
+```
+
+Add a float value.
+
+Parameters:
+
+- ##### **`key`**
+
+  (`str`) – The key name for the value
+
+- ##### **`value`**
+
+  (`float`) – The float value
+
+- ##### **`double_precision`**
+
+  (`bool`, default: `False` ) – Use double precision (8 bytes) instead of single (4 bytes)
+
+#### add_int
+
+```python
+add_int(key: str, value: int, size: int | None = None) -> None
+
+```
+
+Add an integer value.
+
+Parameters:
+
+- ##### **`key`**
+
+  (`str`) – The key name for the value
+
+- ##### **`value`**
+
+  (`int`) – The integer value
+
+- ##### **`size`**
+
+  (`int | None`, default: `None` ) – Size in bytes (1, 2, 4, or 8). If None, automatically determined based on value range.
+
+#### add_string
+
+```python
+add_string(key: str, value: str, max_length: int = 255) -> None
+
+```
+
+Add a string value with length prefix.
+
+Parameters:
+
+- ##### **`key`**
+
+  (`str`) – The key name for the value
+
+- ##### **`value`**
+
+  (`str`) – The string value
+
+- ##### **`max_length`**
+
+  (`int`, default: `255` ) – Maximum string length
+
+#### get_key_map
+
+```python
+get_key_map() -> Dict[int, str]
+
+```
+
+Get the key mapping for decoding.
+
+Returns:
+
+- `Dict[int, str]` – Dictionary mapping key hashes to key names
+
+#### to_bytes
+
+```python
+to_bytes() -> bytes
+
+```
+
+Convert the encoded data to bytes using a compact format.
+
+Format: key_hash:4[data:variable]...
+
+Returns:
+
+- `bytes` – The binary representation of all added data
+
+## boot
+
+This module provides utilities that can run during the boot process by adding them to boot.py.
+
+Modules:
+
+- **`filesystem`** – File includes utilities for managing the filesystem during the boot process.
+
+### filesystem
+
+File includes utilities for managing the filesystem during the boot process.
+
+Functions:
+
+- **`mkdir`** – Create directories on internal storage during boot.
+
+#### mkdir
+
+```python
+mkdir(path: str, storage_action_delay: float = 0.02) -> None
+
+```
+
+Create directories on internal storage during boot.
+
+In CircuitPython the internal storage is not writable by default. In order to mount any external storage (such as an SD Card) the drive must be remounted in read/write mode. This function handles the necessary steps to safely create a directory on the internal storage during boot.
+
+Parameters:
+
+- ##### **`mount_point`**
+
+  – Path to mount point
+
+- ##### **`storage_action_delay`**
+
+  (`float`, default: `0.02` ) – Delay after storage actions to ensure stability
+
+Usage
+
+```python
+from pysquared.boot.filesystem import mkdir
+mkdir("/sd")
+
+```
+
+## cdh
+
+This module provides the CommandDataHandler for managing and processing commands.
+
+This module is responsible for handling commands received by the satellite. It includes command parsing, validation, execution, and handling of radio communications. The CommandDataHandler class is the main entry point for this functionality.
+
+**Usage:**
+
+```python
+logger = Logger()
+config = Config("config.json")
+packet_manager = PacketManager(logger, radio)
+cdh = CommandDataHandler(logger, config, packet_manager)
+cdh.listen_for_commands(timeout=60)
+
+```
+
+Classes:
+
+- **`CommandDataHandler`** – Handles command parsing, validation, and execution for the satellite.
+
+### CommandDataHandler
+
+```python
+CommandDataHandler(logger: Logger, config: Config, packet_manager: PacketManager, send_delay: float = 0.2)
+
+```
+
+Handles command parsing, validation, and execution for the satellite.
+
+Parameters:
+
+- #### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- #### **`config`**
+
+  (`Config`) – The configuration to use.
+
+- #### **`packet_manager`**
+
+  (`PacketManager`) – The packet manager to use for sending and receiving data.
+
+- #### **`send_delay`**
+
+  (`float`, default: `0.2` ) – The delay between sending an acknowledgement and the response.
+
+Methods:
+
+- **`change_radio_modulation`** – Changes the radio modulation.
+- **`listen_for_commands`** – Listens for commands from the radio and handles them.
+- **`oscar_command`** – Handles OSCAR commands.
+- **`reset`** – Resets the hardware.
+- **`send_joke`** – Sends a random joke from the config.
+
+#### change_radio_modulation
+
+```python
+change_radio_modulation(args: list[str]) -> None
+
+```
+
+Changes the radio modulation.
+
+Parameters:
+
+- ##### **`args`**
+
+  (`list[str]`) – A list of arguments, the first item must be the new modulation. All other items in the args list are ignored.
+
+#### listen_for_commands
+
+```python
+listen_for_commands(timeout: int) -> None
+
+```
+
+Listens for commands from the radio and handles them.
+
+Parameters:
+
+- ##### **`timeout`**
+
+  (`int`) – The time in seconds to listen for commands.
+
+#### oscar_command
+
+```python
+oscar_command(command: str, args: list[str]) -> None
+
+```
+
+Handles OSCAR commands.
+
+Parameters:
+
+- ##### **`command`**
+
+  (`str`) – The OSCAR command to execute.
+
+- ##### **`args`**
+
+  (`list[str]`) – A list of arguments for the command.
+
+#### reset
+
+```python
+reset() -> None
+
+```
+
+Resets the hardware.
+
+#### send_joke
+
+```python
+send_joke() -> None
+
+```
+
+Sends a random joke from the config.
+
+## config
+
+This module provides an interface for managing configuration settings in the PySquared project.
+
+Modules:
+
+- **`config`** – This module provides the Config, which encapsulates the configuration
+- **`radio`** – This module provides classes for handling and validating radio configuration parameters, including support for both FSK and LoRa modulation schemes.
+
+### config
+
+This module provides the Config, which encapsulates the configuration logic for the PySquared project. It loads, validates, and updates configuration values from a JSON file, and distributes these values across the application.
+
+Classes:
+
+- **`Config`** – Handles loading, validating, and updating configuration values, including radio settings.
+
+**Usage:**
+
+```python
+config = Config("config.json")
+config.update_config("cubesat_name", "Cube1", temporary=False)
+
+```
+
+#### Config
+
+```python
+Config(config_path: str)
+
+```
+
+Configuration handler for PySquared.
+
+Loads configuration from a JSON file, validates values, and provides methods to update configuration settings. Supports both temporary (RAM-only) and permanent (file-persisted) updates. Delegates radio-related validation and updates to the RadioConfig class. Jokes are loaded from a separate jokes.json file in the same directory as the config file.
+
+Attributes:
+
+- **`config_file`** (`str`) – Path to the configuration JSON file.
+- **`radio`** (`RadioConfig`) – Radio configuration handler.
+- **`cubesat_name`** (`str`) – Name of the cubesat.
+- **`sleep_duration`** (`int`) – Sleep duration in seconds.
+- **`detumble_enable_z`** (`bool`) – Enable detumbling on Z axis.
+- **`detumble_enable_x`** (`bool`) – Enable detumbling on X axis.
+- **`detumble_enable_y`** (`bool`) – Enable detumbling on Y axis.
+- **`jokes`** (`list[str]`) – List of jokes for the cubesat (loaded from jokes.json).
+- **`debug`** (`bool`) – Debug mode flag.
+- **`heating`** (`bool`) – Heating system enabled flag.
+- **`normal_temp`** (`int`) – Normal operating temperature.
+- **`normal_battery_temp`** (`int`) – Normal battery temperature.
+- **`normal_micro_temp`** (`int`) – Normal microcontroller temperature.
+- **`normal_charge_current`** (`float`) – Normal charge current.
+- **`normal_battery_voltage`** (`float`) – Normal battery voltage.
+- **`critical_battery_voltage`** (`float`) – Critical battery voltage.
+- **`reboot_time`** (`int`) – Time before reboot in seconds.
+- **`turbo_clock`** (`bool`) – Turbo clock enabled flag.
+- **`super_secret_code`** (`str`) – Secret code for special operations.
+- **`repeat_code`** (`str`) – Code for repeated operations.
+- **`longest_allowable_sleep_time`** (`int`) – Maximum allowable sleep time.
+- **`CONFIG_SCHEMA`** (`dict`) – Validation schema for configuration keys.
+
+Methods:
+
+- **`validate`** – Validates a configuration value against its schema.
+- **`_save_config`** – Saves a configuration value to the JSON file.
+- **`update_config`** – Updates a configuration value, either temporarily or permanently.
+
+Parameters:
+
+- ##### **`config_path`**
+
+  (`str`) – Path to the configuration JSON file.
+
+Raises:
+
+- `FileNotFoundError` – If the configuration file or jokes.json does not exist.
+- `JSONDecodeError` – If the configuration file or jokes.json is not valid JSON.
+
+##### update_config
+
+```python
+update_config(key: str, value, temporary: bool) -> None
+
+```
+
+Updates a configuration value, either temporarily (RAM only) or permanently (persisted to file).
+
+Parameters:
+
+- ###### **`key`**
+
+  (`str`) – The configuration key to update.
+
+- ###### **`value`**
+
+  – The new value to set.
+
+- ###### **`temporary`**
+
+  (`bool`) – If True, update only in RAM; if False, persist to file.
+
+Raises:
+
+- `TypeError` – If the value is not of the expected type.
+- `ValueError` – If the value is out of the allowed range or length.
+
+##### validate
+
+```python
+validate(key: str, value) -> None
+
+```
+
+Validates a configuration value against its schema.
+
+Parameters:
+
+- ###### **`key`**
+
+  (`str`) – The configuration key to validate.
+
+- ###### **`value`**
+
+  – The value to validate.
+
+Raises:
+
+- `TypeError` – If the value is not of the expected type.
+- `ValueError` – If the value is out of the allowed range or length.
+
+### radio
+
+This module provides classes for handling and validating radio configuration parameters, including support for both FSK and LoRa modulation schemes.
+
+Classes:
+
+- **`RadioConfig`** – Handles top-level radio configuration and validation.
+- **`FSKConfig`** – Handles FSK-specific configuration and validation.
+- **`LORAConfig`** – Handles LoRa-specific configuration and validation.
+
+#### FSKConfig
+
+```python
+FSKConfig(fsk_dict: dict)
+
+```
+
+Handles FSK-specific radio configuration and validation.
+
+Attributes:
+
+- **`broadcast_address`** (`int`) – Broadcast address for FSK.
+- **`node_address`** (`int`) – Node address for FSK.
+- **`modulation_type`** (`int`) – Modulation type for FSK.
+- **`FSK_SCHEMA`** (`dict`) – Validation schema for FSK configuration keys.
+
+Parameters:
+
+- ##### **`fsk_dict`**
+
+  (`dict`) – Dictionary containing FSK configuration values.
+
+#### LORAConfig
+
+```python
+LORAConfig(lora_dict: dict)
+
+```
+
+Handles LoRa-specific radio configuration and validation.
+
+Attributes:
+
+- **`ack_delay`** (`float`) – Acknowledgement delay in seconds.
+- **`coding_rate`** (`int`) – Coding rate for LoRa.
+- **`cyclic_redundancy_check`** (`bool`) – CRC enabled flag.
+- **`spreading_factor`** (`Literal[6, 7, 8, 9, 10, 11, 12]`) – LoRa spreading factor.
+- **`transmit_power`** (`int`) – Transmit power in dBm.
+- **`LORA_SCHEMA`** (`dict`) – Validation schema for LoRa configuration keys.
+
+Parameters:
+
+- ##### **`lora_dict`**
+
+  (`dict`) – Dictionary containing LoRa configuration values.
+
+#### RadioConfig
+
+```python
+RadioConfig(radio_dict: dict)
+
+```
+
+Handles radio configuration and validation for PySquared.
+
+Attributes:
+
+- **`license`** (`str`) – The radio license identifier.
+- **`modulation`** (`Literal['LoRa', 'FSK']`) – The modulation type.
+- **`transmit_frequency`** (`int`) – The transmission frequency in MHz.
+- **`start_time`** (`int`) – The radio start time in seconds.
+- **`fsk`** (`FSKConfig`) – FSK-specific configuration handler.
+- **`lora`** (`LORAConfig`) – LoRa-specific configuration handler.
+- **`RADIO_SCHEMA`** (`dict`) – Validation schema for radio configuration keys.
+
+Methods:
+
+- **`validate`** – Validates a radio configuration value against its schema.
+
+Parameters:
+
+- ##### **`radio_dict`**
+
+  (`dict`) – Dictionary containing radio configuration values.
+
+##### validate
+
+```python
+validate(key: str, value) -> None
+
+```
+
+Validates a radio configuration value against its schema.
+
+Parameters:
+
+- ###### **`key`**
+
+  (`str`) – The configuration key to validate.
+
+- ###### **`value`**
+
+  – The value to validate.
+
+Raises:
+
+- `KeyError` – If the key is not found in any schema.
+- `TypeError` – If the value is not of the expected type or not allowed.
+- `ValueError` – If the value is out of the allowed range.
+
+## detumble
+
+This module provides functions for satellite detumbling using magnetorquers. Includes vector math utilities and the main dipole calculation for attitude control.
+
+Functions:
+
+- **`dot_product`** – Computes the dot product of two 3-element vectors.
+- **`gain_func`** – Returns the gain value for the detumble control law.
+- **`magnetorquer_dipole`** – Calculates the required dipole moment for the magnetorquers to detumble the satellite.
+- **`x_product`** – Computes the cross product of two 3-element vectors.
+
+### dot_product
+
+```python
+dot_product(vector1: tuple, vector2: tuple) -> float
+
+```
+
+Computes the dot product of two 3-element vectors.
+
+Parameters:
+
+- #### **`vector1`**
+
+  (`tuple`) – First vector (length 3).
+
+- #### **`vector2`**
+
+  (`tuple`) – Second vector (length 3).
+
+Returns:
+
+- **`float`** ( `float` ) – The dot product of the two vectors.
+
+### gain_func
+
+```python
+gain_func() -> float
+
+```
+
+Returns the gain value for the detumble control law.
+
+Returns:
+
+- **`float`** ( `float` ) – Gain value (default 1.0).
+
+### magnetorquer_dipole
+
+```python
+magnetorquer_dipole(mag_field: tuple, ang_vel: tuple) -> list
+
+```
+
+Calculates the required dipole moment for the magnetorquers to detumble the satellite.
+
+Parameters:
+
+- #### **`mag_field`**
+
+  (`tuple`) – The measured magnetic field vector (length 3).
+
+- #### **`ang_vel`**
+
+  (`tuple`) – The measured angular velocity vector (length 3).
+
+Returns:
+
+- **`list`** ( `list` ) – The dipole moment vector to be applied (length 3).
+
+### x_product
+
+```python
+x_product(vector1: tuple, vector2: tuple) -> list
+
+```
+
+Computes the cross product of two 3-element vectors.
+
+Parameters:
+
+- #### **`vector1`**
+
+  (`tuple`) – First vector (length 3).
+
+- #### **`vector2`**
+
+  (`tuple`) – Second vector (length 3).
+
+Returns:
+
+- **`list`** ( `list` ) – The cross product vector (length 3).
+
+## file_validation
+
+File validation package for PySquared.
+
+Modules:
+
+- **`manager`** – File validation manager package.
+
+### manager
+
+File validation manager package.
+
+Modules:
+
+- **`file_validation`** – File Validation Manager implementation.
+
+#### file_validation
+
+File Validation Manager implementation.
+
+This module provides file validation functionality for creating checksums, validating file integrity, and assessing codebase completeness in CircuitPython.
+
+Usage Example
+
+```python
+import board
+from pysquared.logger import Logger
+from pysquared.file_validation.manager.file_validation import FileValidationManager
+
+# Initialize logger
+logger = Logger("file_validation")
+
+# Create file validation manager
+file_validator = FileValidationManager(logger)
+
+# Create checksum for a single file (MD5 by default for speed)
+# Memory usage is automatically optimized for constrained devices like RP2040
+checksum = file_validator.create_file_checksum("main.py")
+print(f"main.py checksum: {checksum}")
+
+# Create checksum with specific algorithm
+sha256_checksum = file_validator.create_file_checksum("config.py", algorithm="sha256")
+print(f"config.py SHA256: {sha256_checksum}")
+
+# Validate file integrity
+expected_checksum = "d41d8cd98f00b204e9800998ecf8427e"
+is_valid = file_validator.validate_file_integrity("main.py", expected_checksum)
+print(f"File integrity: {'PASS' if is_valid else 'FAIL'}")
+
+# Create checksums for entire codebase
+# Hidden files (starting with .) are automatically ignored
+checksums = file_validator.create_codebase_checksum("/", exclude_patterns=["__pycache__", ".pyc"])
+print(f"Codebase has {len(checksums)} files")
+
+# Assess codebase completeness
+assessment = file_validator.assess_codebase_completeness("/", checksums)
+print(f"Codebase complete: {assessment['is_complete']}")
+print(f"Codebase valid: {assessment['is_valid']}")
+print(f"Missing files: {assessment['missing_files']}")
+print(f"Extra files: {assessment['extra_files']}")
+
+# Get file and codebase sizes
+file_size = file_validator.get_file_size("main.py")
+codebase_size = file_validator.get_codebase_size("/")
+print(f"main.py size: {file_size} bytes")
+print(f"Codebase size: {codebase_size} bytes")
+
+```
+
+Classes:
+
+- **`FileValidationManager`** – File validation functionality for CircuitPython applications.
+
+##### FileValidationManager
+
+```python
+FileValidationManager(logger: Logger)
+
+```
+
+File validation functionality for CircuitPython applications.
+
+:param Logger logger: Logger instance for logging messages.
+
+Methods:
+
+- **`assess_codebase_completeness`** – Assess the completeness and integrity of the codebase.
+- **`create_codebase_checksum`** – Create checksums for all files in the codebase.
+- **`create_file_checksum`** – Create a checksum for a single file.
+- **`get_codebase_size`** – Get the total size of all files in the codebase.
+- **`get_extra_files`** – Get a list of files that exist but are not in the expected file list.
+- **`get_file_size`** – Get the size of a file in bytes.
+- **`get_missing_files`** – Get a list of files that are expected but missing from the codebase.
+- **`validate_codebase_integrity`** – Validate the integrity of all files in the codebase against expected checksums.
+- **`validate_file_integrity`** – Validate the integrity of a single file against an expected checksum.
+
+###### assess_codebase_completeness
+
+```python
+assess_codebase_completeness(base_path: str, expected_checksums: dict) -> dict
+
+```
+
+Assess the completeness and integrity of the codebase.
+
+:param str base_path: The base directory path to scan for files. :param Dict[str, str] expected_checksums: Dictionary mapping file paths to their expected checksums. :return: A dictionary containing assessment results including:
+
+- is_complete: bool - Whether all expected files are present
+- is_valid: bool - Whether all present files have correct checksums
+- missing_files: List[str] - List of missing files
+- extra_files: List[str] - List of unexpected files
+- corrupted_files: List[str] - List of files with incorrect checksums
+- total_files: int - Total number of files checked
+- valid_files: int - Number of files with correct checksums :rtype: Dict[str, Any] :raises RuntimeError: If there is an error during assessment.
+
+###### create_codebase_checksum
+
+```python
+create_codebase_checksum(base_path: str, exclude_patterns: list | None = None) -> dict
+
+```
+
+Create checksums for all files in the codebase.
+
+:param str base_path: The base directory path to scan for files. :param List[str] | None exclude_patterns: Optional list of file patterns to exclude from checksumming. :return: A dictionary mapping file paths to their checksums. :rtype: Dict[str, str] :raises ValueError: If the base path is not found. :raises RuntimeError: If there is an error scanning the directory or creating checksums.
+
+###### create_file_checksum
+
+```python
+create_file_checksum(file_path: str, timeout: float = 10.0, algorithm: str = 'md5') -> str
+
+```
+
+Create a checksum for a single file.
+
+:param str file_path: The path to the file to checksum. :param float timeout: Maximum time (in seconds) to allow for reading the file. Default is 5 seconds. :param str algorithm: Hash algorithm to use ('md5', 'sha1', 'sha224', 'sha256', 'sha512'). Default is 'md5' for speed. :return: The checksum of the file as a hexadecimal string. :rtype: str :raises FileNotFoundError: If the file is not found. :raises TimeoutError: If reading the file takes longer than the timeout. :raises MemoryError: If there is insufficient memory to process the file. :raises RuntimeError: If there is an error reading the file or creating the checksum.
+
+###### get_codebase_size
+
+```python
+get_codebase_size(base_path: str, exclude_patterns: list | None = None) -> int
+
+```
+
+Get the total size of all files in the codebase.
+
+:param str base_path: The base directory path to scan for files. :param List[str] | None exclude_patterns: Optional list of file patterns to exclude. :return: The total size of all files in bytes. :rtype: int :raises ValueError: If the base path is not found. :raises RuntimeError: If there is an error scanning the directory.
+
+###### get_extra_files
+
+```python
+get_extra_files(base_path: str, expected_files: list) -> list
+
+```
+
+Get a list of files that exist but are not in the expected file list.
+
+:param str base_path: The base directory path to scan for files. :param List[str] expected_files: List of file paths that should exist. :return: List of file paths that are extra/unexpected. :rtype: List[str] :raises RuntimeError: If there is an error scanning the directory.
+
+###### get_file_size
+
+```python
+get_file_size(file_path: str) -> int
+
+```
+
+Get the size of a file in bytes.
+
+:param str file_path: The path to the file. :return: The size of the file in bytes. :rtype: int :raises FileNotFoundError: If the file is not found. :raises RuntimeError: If there is an error accessing the file.
+
+###### get_missing_files
+
+```python
+get_missing_files(base_path: str, expected_files: list) -> list
+
+```
+
+Get a list of files that are expected but missing from the codebase.
+
+:param str base_path: The base directory path to scan for files. :param List[str] expected_files: List of file paths that should exist. :return: List of file paths that are missing. :rtype: List[str] :raises RuntimeError: If there is an error scanning the directory.
+
+###### validate_codebase_integrity
+
+```python
+validate_codebase_integrity(base_path: str, expected_checksums: dict) -> tuple
+
+```
+
+Validate the integrity of all files in the codebase against expected checksums.
+
+:param str base_path: The base directory path to scan for files. :param Dict[str, str] expected_checksums: Dictionary mapping file paths to their expected checksums. :return: A tuple containing (is_valid, list_of_failed_files). :rtype: Tuple\[bool, List[str]\] :raises RuntimeError: If there is an error scanning the directory or validating files.
+
+###### validate_file_integrity
+
+```python
+validate_file_integrity(file_path: str, expected_checksum: str) -> bool
+
+```
+
+Validate the integrity of a single file against an expected checksum.
+
+:param str file_path: The path to the file to validate. :param str expected_checksum: The expected checksum to compare against. :return: True if the file checksum matches the expected checksum, False otherwise. :rtype: bool :raises FileNotFoundError: If the file is not found. :raises RuntimeError: If there is an error reading the file or creating the checksum.
+
+## hardware
+
+This module provides managers for various hardware components including sensors, actuators, communication interfaces, etc.
+
+Modules:
+
+- **`burnwire`** – This module provides an interface for controlling burnwire systems.
+- **`busio`** – This module provides functions for initializing and configuring SPI and I2C buses
+- **`digitalio`** – This module provides functions for initializing DigitalInOut pins on the PySquared
+- **`exception`** – This module provides a custom exception for hardware initialization errors.
+- **`imu`** – This module provides an interface for controlling inertial measurement units (IMUs).
+- **`light_sensor`** – This module provides an interface to the light sensors.
+- **`load_switch`** – Load switch hardware interface.
+- **`magnetometer`** – This module provides an interface for controlling magnetormeters.
+- **`power_monitor`** – This module provides an interface for controlling power monitors.
+- **`radio`** – This module provides an interface for controlling radios.
+- **`temperature_sensor`** – This module provides temperature sensor hardware managers.
+
+### burnwire
+
+This module provides an interface for controlling burnwire systems.
+
+Modules:
+
+- **`manager`** – This module provides the managers for various burnwire implementations
+
+#### manager
+
+This module provides the managers for various burnwire implementations
+
+Modules:
+
+- **`burnwire`** – This module defines the BurnwireManager class, which provides a high-level interface
+
+##### burnwire
+
+This module defines the `BurnwireManager` class, which provides a high-level interface for controlling burnwire circuits, which are commonly used for deployment mechanisms in satellites. It handles the timing and sequencing of the burnwire activation and provides error handling and logging.
+
+**Usage:**
+
+```python
+logger = Logger()
+enable_pin = DigitalInOut(board.D1)
+fire_pin = DigitalInOut(board.D2)
+burnwire = BurnwireManager(logger, enable_pin, fire_pin)
+burnwire.burn()
+
+```
+
+Classes:
+
+- **`BurnwireManager`** – Manages the activation of a burnwire.
+
+###### BurnwireManager
+
+```python
+BurnwireManager(logger: Logger, enable_burn: DigitalInOut, fire_burn: DigitalInOut, enable_logic: bool = True)
+
+```
+
+Bases: `BurnwireProto`
+
+Manages the activation of a burnwire.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- ###### **`enable_burn`**
+
+  (`DigitalInOut`) – The pin used to enable the burnwire circuit.
+
+- ###### **`fire_burn`**
+
+  (`DigitalInOut`) – The pin used to fire the burnwire.
+
+- ###### **`enable_logic`**
+
+  (`bool`, default: `True` ) – The logic level to enable the burnwire.
+
+Methods:
+
+- **`burn`** – Fires the burnwire for a specified amount of time.
+
+###### burn
+
+```python
+burn(timeout_duration: float = 5.0) -> bool
+
+```
+
+Fires the burnwire for a specified amount of time.
+
+Parameters:
+
+- ###### **`timeout_duration`**
+
+  (`float`, default: `5.0` ) – The maximum amount of time to keep the burnwire on.
+
+Returns:
+
+- `bool` – True if the burn was successful, False otherwise.
+
+Raises:
+
+- `Exception` – If there is an error toggling the burnwire pins.
+
+### busio
+
+This module provides functions for initializing and configuring SPI and I2C buses on the PySquared satellite hardware. Includes retry logic for robust hardware initialization and error handling.
+
+Functions:
+
+- **`initialize_i2c_bus`** – Initializes an I2C bus with the specified parameters. Includes retry logic.
+- **`initialize_spi_bus`** – Initializes and configures an SPI bus with the specified parameters.
+
+#### initialize_i2c_bus
+
+```python
+initialize_i2c_bus(logger: Logger, scl: Pin, sda: Pin, frequency: Optional[int]) -> I2C
+
+```
+
+Initializes an I2C bus with the specified parameters. Includes retry logic.
+
+Parameters:
+
+- ##### **`logger`**
+
+  (`Logger`) – Logger instance to log messages.
+
+- ##### **`scl`**
+
+  (`Pin`) – The pin to use for the SCL signal.
+
+- ##### **`sda`**
+
+  (`Pin`) – The pin to use for the SDA signal.
+
+- ##### **`frequency`**
+
+  (`Optional[int]`) – The baudrate of the I2C bus (default 100000).
+
+Raises:
+
+- `HardwareInitializationError` – If the I2C bus fails to initialize.
+
+Returns:
+
+- **`I2C`** ( `I2C` ) – The initialized I2C object.
+
+#### initialize_spi_bus
+
+```python
+initialize_spi_bus(logger: Logger, clock: Pin, mosi: Optional[Pin] = None, miso: Optional[Pin] = None, baudrate: Optional[int] = 100000, phase: Optional[int] = 0, polarity: Optional[int] = 0, bits: Optional[int] = 8) -> SPI
+
+```
+
+Initializes and configures an SPI bus with the specified parameters.
+
+Parameters:
+
+- ##### **`logger`**
+
+  (`Logger`) – Logger instance to log messages.
+
+- ##### **`clock`**
+
+  (`Pin`) – The pin to use for the clock signal.
+
+- ##### **`mosi`**
+
+  (`Optional[Pin]`, default: `None` ) – The pin to use for the MOSI signal.
+
+- ##### **`miso`**
+
+  (`Optional[Pin]`, default: `None` ) – The pin to use for the MISO signal.
+
+- ##### **`baudrate`**
+
+  (`Optional[int]`, default: `100000` ) – The baudrate of the SPI bus (default 100000).
+
+- ##### **`phase`**
+
+  (`Optional[int]`, default: `0` ) – The phase of the SPI bus (default 0).
+
+- ##### **`polarity`**
+
+  (`Optional[int]`, default: `0` ) – The polarity of the SPI bus (default 0).
+
+- ##### **`bits`**
+
+  (`Optional[int]`, default: `8` ) – The number of bits per transfer (default 8).
+
+Raises:
+
+- `HardwareInitializationError` – If the SPI bus fails to initialize.
+
+Returns:
+
+- **`SPI`** ( `SPI` ) – The initialized SPI object.
+
+### digitalio
+
+This module provides functions for initializing DigitalInOut pins on the PySquared satellite hardware. Includes retry logic for robust hardware initialization and error handling.
+
+Functions:
+
+- **`initialize_pin`** – Initializes a DigitalInOut pin with the specified direction and initial value.
+
+#### initialize_pin
+
+```python
+initialize_pin(logger: Logger, pin: Pin, direction: Direction, initial_value: bool) -> DigitalInOut
+
+```
+
+Initializes a DigitalInOut pin with the specified direction and initial value.
+
+Parameters:
+
+- ##### **`logger`**
+
+  (`Logger`) – The logger instance to log messages.
+
+- ##### **`pin`**
+
+  (`Pin`) – The pin to initialize.
+
+- ##### **`direction`**
+
+  (`Direction`) – The direction of the pin.
+
+- ##### **`initial_value`**
+
+  (`bool`) – The initial value of the pin (default is True).
+
+Raises:
+
+- `HardwareInitializationError` – If the pin fails to initialize.
+
+Returns:
+
+- **`DigitalInOut`** ( `DigitalInOut` ) – The initialized DigitalInOut object.
+
+### exception
+
+This module provides a custom exception for hardware initialization errors.
+
+This exception is raised when a hardware component fails to initialize after a certain number of retries.
+
+**Usage:**
+
+```python
+raise HardwareInitializationError("Failed to initialize the IMU.")
+
+```
+
+Classes:
+
+- **`HardwareInitializationError`** – Exception raised for errors in hardware initialization.
+
+#### HardwareInitializationError
+
+Bases: `Exception`
+
+Exception raised for errors in hardware initialization.
+
+### imu
+
+This module provides an interface for controlling inertial measurement units (IMUs).
+
+Modules:
+
+- **`manager`** – This module provides the managers for various inertial measurement unit (IMU) implementations
+
+#### manager
+
+This module provides the managers for various inertial measurement unit (IMU) implementations
+
+Modules:
+
+- **`lsm6dsox`** – This module defines the LSM6DSOXManager class, which provides a high-level interface
+
+##### lsm6dsox
+
+This module defines the `LSM6DSOXManager` class, which provides a high-level interface for interacting with the LSM6DSOX inertial measurement unit. It handles the initialization of the sensor and provides methods for reading angular_velocity, acceleration, and temperature data.
+
+**Usage:**
+
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+imu = LSM6DSOXManager(logger, i2c, 0x6A)
+angular_velocity = imu.get_angular_velocity()
+accel_data = imu.get_acceleration()
+temp_data = imu.get_temperature()
+
+```
+
+Classes:
+
+- **`LSM6DSOXManager`** – Manages the LSM6DSOX IMU.
+
+###### LSM6DSOXManager
+
+```python
+LSM6DSOXManager(logger: Logger, i2c: I2C, address: int)
+
+```
+
+Bases: `IMUProto`, `TemperatureSensorProto`
+
+Manages the LSM6DSOX IMU.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- ###### **`i2c`**
+
+  (`I2C`) – The I2C bus connected to the chip.
+
+- ###### **`address`**
+
+  (`int`) – The I2C address of the IMU.
+
+Raises:
+
+- `HardwareInitializationError` – If the IMU fails to initialize.
+
+Methods:
+
+- **`get_acceleration`** – Gets the acceleration data from the IMU.
+- **`get_angular_velocity`** – Gets the angular velocity from the IMU.
+- **`get_temperature`** – Gets the temperature reading from the IMU.
+
+###### get_acceleration
+
+```python
+get_acceleration() -> Acceleration
+
+```
+
+Gets the acceleration data from the IMU.
+
+Returns:
+
+- `Acceleration` – An Acceleration object containing the x, y, and z acceleration values in m/s².
+
+Raises:
+
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the acceleration data.
+
+###### get_angular_velocity
+
+```python
+get_angular_velocity() -> AngularVelocity
+
+```
+
+Gets the angular velocity from the IMU.
+
+Returns:
+
+- `AngularVelocity` – An AngularVelocity object containing the x, y, and z angular velocity in radians per second.
+
+Raises:
+
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the angular velocity.
+
+###### get_temperature
+
+```python
+get_temperature() -> Temperature
+
+```
+
+Gets the temperature reading from the IMU.
+
+Returns:
+
+- `Temperature` – A Temperature object containing the temperature in degrees Celsius.
+
+Raises:
+
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the temperature.
+
+### light_sensor
+
+This module provides an interface to the light sensors.
+
+Modules:
+
+- **`manager`** – These managers interface with specific light sensor implementations.
+
+#### manager
+
+These managers interface with specific light sensor implementations.
+
+Modules:
+
+- **`veml6031x00`** – VEML6031x00 light sensor manager for CircuitPython.
+- **`veml7700`** – This module defines the VEML7700Manager class, which provides a high-level interface
+
+##### veml6031x00
+
+VEML6031x00 light sensor manager for CircuitPython.
+
+This module provides a CircuitPython implementation to interact with the VEML6031/VEML6030 ambient light sensor family using direct I2C register access. It mirrors the behavior of the Zephyr driver with support for single-measurement (active force) mode and data-ready polling.
+
+Usage
+
+logger = Logger() i2c = initialize_i2c_bus(logger, board.SCL, board.SDA, 100000) sensor = VEML6031x00Manager(logger, i2c) lux = sensor.get_lux()
+
+Classes:
+
+- **`VEML6031x00Manager`** – Manages the VEML6031/VEML6030 ambient light sensor via I2C.
+
+###### VEML6031x00Manager
+
+```python
+VEML6031x00Manager(logger: Logger, i2c: I2C | TCA9548A_Channel, address: int = _DEFAULT_I2C_ADDR, integration_time: int = IT_100MS, gain: int = GAIN_1, div4: int = SIZE_4_4, persistence: int = 0)
+
+```
+
+Bases: `LightSensorProto`
+
+Manages the VEML6031/VEML6030 ambient light sensor via I2C.
+
+Implements single-shot measurement using active force mode and polls the data-ready bit before reading ambient light and IR data. Converts counts to lux using the device's resolution matrix based on configuration.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – Logger to log messages.
+
+- ###### **`i2c`**
+
+  (`I2C | TCA9548A_Channel`) – I2C bus or TCA channel the device is on.
+
+- ###### **`address`**
+
+  (`int`, default: `_DEFAULT_I2C_ADDR` ) – I2C address of the sensor (default 0x29).
+
+- ###### **`integration_time`**
+
+  (`int`, default: `IT_100MS` ) – One of \_It.\* indices (default 100ms).
+
+- ###### **`gain`**
+
+  (`int`, default: `GAIN_1` ) – One of \_Gain.\* indices (default 1x).
+
+- ###### **`div4`**
+
+  (`int`, default: `SIZE_4_4` ) – One of \_Div4.\* indices (default full size).
+
+- ###### **`persistence`**
+
+  (`int`, default: `0` ) – Persistence setting for ambient-light channel (0 maps to 1 sample).
+
+Methods:
+
+- **`get_light`** – Perform a single measurement and return raw ambient-light counts.
+- **`get_lux`** – Perform a single measurement and return the light level in lux.
+- **`reset`** – Place device into shutdown briefly and then resume operation.
+
+###### get_light
+
+```python
+get_light() -> Light
+
+```
+
+Perform a single measurement and return raw ambient-light counts.
+
+Returns:
+
+- **`Light`** ( `Light` ) – Non-unit-specific reading (sensor counts).
+
+###### get_lux
+
+```python
+get_lux() -> Lux
+
+```
+
+Perform a single measurement and return the light level in lux.
+
+Returns:
+
+- **`Lux`** ( `Lux` ) – Light level in SI lux.
+
+###### reset
+
+```python
+reset() -> None
+
+```
+
+Place device into shutdown briefly and then resume operation.
+
+##### veml7700
+
+This module defines the `VEML7700Manager` class, which provides a high-level interface for interacting with the VEML7700 light sensor. It handles the initialization of the sensor and provides methods for reading light levels in various formats.
+
+**Usage:**
+
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+i2c = initialize_i2c_bus(logger, board.SCL, board.SDA, 100000,)
+light_sensor = VEML7700Manager(logger, i2c)
+lux_data = light_sensor.get_lux()
+
+```
+
+Classes:
+
+- **`VEML7700Manager`** – Manages the VEML7700 ambient light sensor.
+
+###### VEML7700Manager
+
+```python
+VEML7700Manager(logger: Logger, i2c: I2C | TCA9548A_Channel, integration_time: Literal[0, 1, 2, 3, 8, 12] = 12)
+
+```
+
+Bases: `LightSensorProto`
+
+Manages the VEML7700 ambient light sensor.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- ###### **`i2c`**
+
+  (`I2C | TCA9548A_Channel`) – The I2C bus connected to the chip.
+
+- ###### **`integration_time`**
+
+  (`Literal[0, 1, 2, 3, 8, 12]`, default: `12` ) – The integration time for the light sensor (default is 25ms). Integration times can be one of the following:
+
+  - 12: 25ms
+  - 8: 50ms
+  - 0: 100ms
+  - 1: 200ms
+  - 2: 400ms
+  - 3: 800ms
+
+Raises:
+
+- `HardwareInitializationError` – If the light sensor fails to initialize.
+
+Methods:
+
+- **`get_auto_lux`** – Gets the auto lux reading of the sensor. This runs the sensor in auto mode
+- **`get_light`** – Gets the light reading of the sensor with default gain and integration time.
+- **`get_lux`** – Gets the light reading of the sensor with default gain and integration time.
+- **`reset`** – Resets the light sensor.
+
+###### get_auto_lux
+
+```python
+get_auto_lux() -> Lux
+
+```
+
+Gets the auto lux reading of the sensor. This runs the sensor in auto mode and returns the lux value by searching through the available gain and integration time combinations to find the best match.
+
+Returns:
+
+- `Lux` – A Lux object containing the light level in SI lux.
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the sensor.
+
+###### get_light
+
+```python
+get_light() -> Light
+
+```
+
+Gets the light reading of the sensor with default gain and integration time.
+
+Returns:
+
+- `Light` – A Light object containing a non-unit-specific light level reading.
+
+Raises:
+
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the sensor.
+
+###### get_lux
+
+```python
+get_lux() -> Lux
+
+```
+
+Gets the light reading of the sensor with default gain and integration time.
+
+Returns:
+
+- `Lux` – A Lux object containing the light level in SI lux.
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the sensor.
+
+###### reset
+
+```python
+reset() -> None
+
+```
+
+Resets the light sensor.
+
+### load_switch
+
+Load switch hardware interface.
+
+Modules:
+
+- **`manager`** – Load switch manager class.
+
+#### manager
+
+Load switch manager class.
+
+Modules:
+
+- **`loadswitch_manager`** – This is a generic load switch manager for controlling power to components.
+
+##### loadswitch_manager
+
+This is a generic load switch manager for controlling power to components.
+
+Usage:
+
+from lib.pysquared.hardware.load_switch.manager.loadswitch_manager import LoadSwitchManager
+
+load_switch_0 = LoadSwitchManager( FACE0_ENABLE, True )
+
+load_switch_0.enable_load() load_switch_0.disable_load() load_switch_0.reset_load() is_enabled = load_switch_0.is_enabled
+
+Classes:
+
+- **`LoadSwitchManager`** – Manages load switch operations for any component or group of components that
+
+###### LoadSwitchManager
+
+```python
+LoadSwitchManager(load_switch_pin: DigitalInOut, enable_high: bool = True)
+
+```
+
+Bases: `LoadSwitchManagerProto`
+
+Manages load switch operations for any component or group of components that has an independent load switch for power control.
+
+This class provides methods to enable, disable, and reset the load switch, as well as check its current state. It is designed to work with a digital pin that controls the load switch, allowing for high or low enable logic.
+
+:param enable_high: If True, load switch enables when pin is HIGH. If False, enables when LOW
+
+Methods:
+
+- **`disable_load`** – Disables the load switch, cutting power.
+- **`enable_load`** – Enables the load switch, allowing power to flow.
+- **`reset_load`** – Reset the load switch by momentarily disabling then re-enabling it.
+
+Attributes:
+
+- **`is_enabled`** (`bool`) – Check if the load switch is currently enabled.
+
+###### is_enabled
+
+```python
+is_enabled: bool
+
+```
+
+Check if the load switch is currently enabled. :raises RuntimeError: If the load switch state cannot be read due to hardware issues :return: True if the load switch is enabled, False otherwise
+
+###### disable_load
+
+```python
+disable_load() -> None
+
+```
+
+Disables the load switch, cutting power. :raises RuntimeError: If the load switch cannot be disabled due to hardware issues
+
+###### enable_load
+
+```python
+enable_load() -> None
+
+```
+
+Enables the load switch, allowing power to flow. :raises RuntimeError: If the load switch cannot be enabled due to hardware issues
+
+###### reset_load
+
+```python
+reset_load() -> None
+
+```
+
+Reset the load switch by momentarily disabling then re-enabling it. This method performs a momentary power cycle (0.1s) to reset the load switch and any connected components. Errors from underlying drivers are reraised. :raises RuntimeError: If the load switch cannot be reset due to hardware issues
+
+### magnetometer
+
+This module provides an interface for controlling magnetormeters.
+
+Modules:
+
+- **`manager`** – This module provides the managers for various magnetometer implementations
+
+#### manager
+
+This module provides the managers for various magnetometer implementations
+
+Modules:
+
+- **`lis2mdl`** – This module defines the LIS2MDLManager class, which provides a high-level interface
+
+##### lis2mdl
+
+This module defines the `LIS2MDLManager` class, which provides a high-level interface for interacting with the LIS2MDL magnetometer. It handles the initialization of the sensor and provides a method for reading the magnetic field vector.
+
+**Usage:**
+
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+magnetometer = LIS2MDLManager(logger, i2c)
+mag_field = magnetometer.get_magnetic_field()
+
+```
+
+Classes:
+
+- **`LIS2MDLManager`** – Manages the LIS2MDL magnetometer.
+
+###### LIS2MDLManager
+
+```python
+LIS2MDLManager(logger: Logger, i2c: I2C)
+
+```
+
+Bases: `MagnetometerProto`
+
+Manages the LIS2MDL magnetometer.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- ###### **`i2c`**
+
+  (`I2C`) – The I2C bus connected to the chip.
+
+Raises:
+
+- `HardwareInitializationError` – If the magnetometer fails to initialize.
+
+Methods:
+
+- **`get_magnetic_field`** – Gets the magnetic field vector from the magnetometer.
+
+###### get_magnetic_field
+
+```python
+get_magnetic_field() -> Magnetic
+
+```
+
+Gets the magnetic field vector from the magnetometer.
+
+Returns:
+
+- `Magnetic` – A Magnetic object containing the x, y, and z magnetic field values in micro-Tesla (uT)
+
+Raises:
+
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the magnetometer.
+
+### power_monitor
+
+This module provides an interface for controlling power monitors.
+
+Modules:
+
+- **`manager`** – This module provides the managers for various power monitor implementations
+
+#### manager
+
+This module provides the managers for various power monitor implementations
+
+Modules:
+
+- **`ina219`** – This module defines the INA219Manager class, which provides a high-level interface
+
+##### ina219
+
+This module defines the `INA219Manager` class, which provides a high-level interface for interacting with the INA219 power monitor. It handles the initialization of the sensor and provides methods for reading bus voltage, shunt voltage, and current.
+
+**Usage:**
+
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+power_monitor = INA219Manager(logger, i2c, 0x40)
+bus_voltage = power_monitor.get_bus_voltage()
+shunt_voltage = power_monitor.get_shunt_voltage()
+current = power_monitor.get_current()
+
+```
+
+Classes:
+
+- **`INA219Manager`** – Manages the INA219 power monitor.
+
+###### INA219Manager
+
+```python
+INA219Manager(logger: Logger, i2c: I2C, addr: int)
+
+```
+
+Bases: `PowerMonitorProto`
+
+Manages the INA219 power monitor.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- ###### **`i2c`**
+
+  (`I2C`) – The I2C bus connected to the chip.
+
+- ###### **`addr`**
+
+  (`int`) – The I2C address of the INA219.
+
+Raises:
+
+- `HardwareInitializationError` – If the INA219 fails to initialize.
+
+Methods:
+
+- **`get_bus_voltage`** – Gets the bus voltage from the INA219.
+- **`get_current`** – Gets the current from the INA219.
+- **`get_shunt_voltage`** – Gets the shunt voltage from the INA219.
+
+###### get_bus_voltage
+
+```python
+get_bus_voltage() -> Voltage
+
+```
+
+Gets the bus voltage from the INA219.
+
+Returns:
+
+- `Voltage` – A Voltage object containing the bus voltage in volts.
+
+Raises:
+
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+###### get_current
+
+```python
+get_current() -> Current
+
+```
+
+Gets the current from the INA219.
+
+Returns:
+
+- `Current` – A Current object containing the current in milliamps (mA)
+
+Raises:
+
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+###### get_shunt_voltage
+
+```python
+get_shunt_voltage() -> Voltage
+
+```
+
+Gets the shunt voltage from the INA219.
+
+Returns:
+
+- `Voltage` – A Voltage object containing the shunt voltage in volts.
+
+Raises:
+
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+### radio
+
+This module provides an interface for controlling radios.
+
+Modules:
+
+- **`manager`** – This module provides the managers for various radio implementations.
+- **`modulation`** – This module defines the available radio modulation types.
+- **`packetizer`** – This package provides an interface for packetizing data for radio communication.
+
+#### manager
+
+This module provides the managers for various radio implementations.
+
+Modules:
+
+- **`base`** – This module provides a base class for radio managers.
+- **`rfm9x`** – This module provides a manager for RFM9x radios.
+- **`sx126x`** – This module provides a manager for SX126x radios.
+- **`sx1280`** – This module provides a manager for SX1280 radios.
+
+##### base
+
+This module provides a base class for radio managers.
+
+This module defines the `BaseRadioManager` class, which serves as an abstract base class for all radio managers in the system. It provides common functionality and ensures that all radio managers adhere to a consistent interface.
+
+Classes:
+
+- **`BaseRadioManager`** – Base class for radio managers (CircuitPython compatible).
+
+###### BaseRadioManager
+
+```python
+BaseRadioManager(logger: Logger, radio_config: RadioConfig, **kwargs: object)
+
+```
+
+Bases: `RadioProto`
+
+Base class for radio managers (CircuitPython compatible).
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – Logger instance for logging messages.
+
+- ###### **`radio_config`**
+
+  (`RadioConfig`) – Radio configuration object.
+
+- ###### **`**kwargs`**
+
+  (`object`, default: `{}` ) – Hardware-specific arguments (e.g., spi, cs, rst).
+
+Raises:
+
+- `HardwareInitializationError` – If the radio fails to initialize after retries.
+
+Methods:
+
+- **`get_max_packet_size`** – Gets the maximum packet size supported by the radio.
+- **`get_modulation`** – Gets the modulation mode from the initialized radio hardware.
+- **`get_rssi`** – Gets the RSSI of the last received packet.
+- **`modify_config`** – Modifies a specific radio configuration parameter.
+- **`receive`** – Receives data from the radio.
+- **`send`** – Sends data over the radio.
+- **`set_modulation`** – Requests a change in the radio modulation mode.
+
+###### get_max_packet_size
+
+```python
+get_max_packet_size() -> int
+
+```
+
+Gets the maximum packet size supported by the radio.
+
+Returns:
+
+- `int` – The maximum packet size in bytes.
+
+###### get_modulation
+
+```python
+get_modulation() -> Type[RadioModulation]
+
+```
+
+Gets the modulation mode from the initialized radio hardware.
+
+Returns:
+
+- `Type[RadioModulation]` – The current modulation mode of the hardware.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+###### get_rssi
+
+```python
+get_rssi() -> int
+
+```
+
+Gets the RSSI of the last received packet.
+
+Returns:
+
+- `int` – The RSSI of the last received packet.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+###### modify_config
+
+```python
+modify_config(key: str, value) -> None
+
+```
+
+Modifies a specific radio configuration parameter.
+
+This method must be implemented by subclasses.
+
+Parameters:
+
+- ###### **`key`**
+
+  (`str`) – The configuration parameter key to modify.
+
+- ###### **`value`**
+
+  – The new value to set for the parameter.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+###### receive
+
+```python
+receive(timeout: Optional[int] = None) -> bytes | None
+
+```
+
+Receives data from the radio.
+
+This method must be implemented by subclasses.
+
+Parameters:
+
+- ###### **`timeout`**
+
+  (`Optional[int]`, default: `None` ) – Optional receive timeout in seconds. If None, use the default timeout.
+
+Returns:
+
+- `bytes | None` – The received data as bytes, or None if no data was received.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+- `Exception` – If receiving fails unexpectedly.
+
+###### send
+
+```python
+send(data: bytes) -> bool
+
+```
+
+Sends data over the radio.
+
+This method must be implemented by subclasses.
+
+Parameters:
+
+- ###### **`data`**
+
+  (`bytes`) – The data to send.
+
+Returns:
+
+- `bool` – True if the data was sent successfully, False otherwise.
+
+###### set_modulation
+
+```python
+set_modulation(modulation: Type[RadioModulation]) -> None
+
+```
+
+Requests a change in the radio modulation mode.
+
+This change might take effect immediately or after a reset, depending on implementation.
+
+Parameters:
+
+- ###### **`modulation`**
+
+  (`Type[RadioModulation]`) – The desired modulation mode.
+
+##### rfm9x
+
+This module provides a manager for RFM9x radios.
+
+This module defines the `RFM9xManager` class, which implements the `RadioProto` interface for RFM9x radios. It handles the initialization and configuration of the radio, as well as sending and receiving data.
+
+**Usage:**
+
+```python
+logger = Logger()
+radio_config = RadioConfig()
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+cs = digitalio.DigitalInOut(board.D5)
+reset = digitalio.DigitalInOut(board.D6)
+rfm9x_manager = RFM9xManager(logger, radio_config, spi, cs, reset)
+rfm9x_manager.send(b"Hello world!")
+
+```
+
+Classes:
+
+- **`RFM9xManager`** – Manages RFM9x radios, implementing the RadioProto interface.
+
+###### RFM9xManager
+
+```python
+RFM9xManager(logger: Logger, radio_config: RadioConfig, spi: SPI, chip_select: DigitalInOut, reset: DigitalInOut)
+
+```
+
+Bases: `BaseRadioManager`, `TemperatureSensorProto`
+
+Manages RFM9x radios, implementing the RadioProto interface.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – Logger instance for logging messages.
+
+- ###### **`radio_config`**
+
+  (`RadioConfig`) – Radio configuration object.
+
+- ###### **`spi`**
+
+  (`SPI`) – The SPI bus connected to the chip.
+
+- ###### **`chip_select`**
+
+  (`DigitalInOut`) – A DigitalInOut object connected to the chip's CS/chip select line.
+
+- ###### **`reset`**
+
+  (`DigitalInOut`) – A DigitalInOut object connected to the chip's RST/reset line.
+
+Raises:
+
+- `HardwareInitializationError` – If the radio fails to initialize after retries.
+
+Methods:
+
+- **`get_max_packet_size`** – Gets the maximum packet size supported by the radio.
+- **`get_modulation`** – Gets the modulation mode from the initialized RFM9x radio.
+- **`get_rssi`** – Gets the RSSI of the last received packet.
+- **`get_temperature`** – Gets the temperature reading from the radio sensor.
+- **`modify_config`** – Modifies a specific radio configuration parameter.
+- **`receive`** – Receives data from the radio.
+- **`send`** – Sends data over the radio.
+- **`set_modulation`** – Requests a change in the radio modulation mode.
+
+###### get_max_packet_size
+
+```python
+get_max_packet_size() -> int
+
+```
+
+Gets the maximum packet size supported by the radio.
+
+Returns:
+
+- `int` – The maximum packet size in bytes.
+
+###### get_modulation
+
+```python
+get_modulation() -> Type[RadioModulation]
+
+```
+
+Gets the modulation mode from the initialized RFM9x radio.
+
+Returns:
+
+- `Type[RadioModulation]` – The current modulation mode of the hardware.
+
+###### get_rssi
+
+```python
+get_rssi() -> int
+
+```
+
+Gets the RSSI of the last received packet.
+
+Returns:
+
+- `int` – The RSSI of the last received packet.
+
+###### get_temperature
+
+```python
+get_temperature() -> Temperature
+
+```
+
+Gets the temperature reading from the radio sensor.
+
+Returns:
+
+- `Temperature` – A Temperature object containing the temperature in degrees Celsius.
+
+Raises: SensorReadingUnknownError: If an unknown error occurs while reading the temperature.
+
+###### modify_config
+
+```python
+modify_config(key: str, value) -> None
+
+```
+
+Modifies a specific radio configuration parameter.
+
+Parameters:
+
+- ###### **`key`**
+
+  (`str`) – The configuration parameter key to modify.
+
+- ###### **`value`**
+
+  – The new value to set for the parameter.
+
+Raises:
+
+- `ValueError` – If the key is not recognized or invalid for the current radio type.
+
+###### receive
+
+```python
+receive(timeout: Optional[int] = None) -> bytes | None
+
+```
+
+Receives data from the radio.
+
+Parameters:
+
+- ###### **`timeout`**
+
+  (`Optional[int]`, default: `None` ) – Optional receive timeout in seconds. If None, use the default timeout.
+
+Returns:
+
+- `bytes | None` – The received data as bytes, or None if no data was received.
+
+###### send
+
+```python
+send(data: bytes) -> bool
+
+```
+
+Sends data over the radio.
+
+This method must be implemented by subclasses.
+
+Parameters:
+
+- ###### **`data`**
+
+  (`bytes`) – The data to send.
+
+Returns:
+
+- `bool` – True if the data was sent successfully, False otherwise.
+
+###### set_modulation
+
+```python
+set_modulation(modulation: Type[RadioModulation]) -> None
+
+```
+
+Requests a change in the radio modulation mode.
+
+This change might take effect immediately or after a reset, depending on implementation.
+
+Parameters:
+
+- ###### **`modulation`**
+
+  (`Type[RadioModulation]`) – The desired modulation mode.
+
+##### sx126x
+
+This module provides a manager for SX126x radios.
+
+This module defines the `SX126xManager` class, which implements the `RadioProto` interface for SX126x radios. It handles the initialization and configuration of the radio, as well as sending and receiving data.
+
+**Usage:**
+
+```python
+logger = Logger()
+radio_config = RadioConfig()
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+cs = digitalio.DigitalInOut(board.D5)
+irq = digitalio.DigitalInOut(board.D6)
+reset = digitalio.DigitalInOut(board.D7)
+gpio = digitalio.DigitalInOut(board.D8)
+sx126x_manager = SX126xManager(logger, radio_config, spi, cs, irq, reset, gpio)
+sx126x_manager.send(b"Hello world!")
+
+```
+
+Classes:
+
+- **`SX126xManager`** – Manages SX126x radios, implementing the RadioProto interface.
+
+###### SX126xManager
+
+```python
+SX126xManager(logger: Logger, radio_config: RadioConfig, spi: SPI, chip_select: DigitalInOut, irq: DigitalInOut, reset: DigitalInOut, gpio: DigitalInOut)
+
+```
+
+Bases: `BaseRadioManager`
+
+Manages SX126x radios, implementing the RadioProto interface.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – Logger instance for logging messages.
+
+- ###### **`radio_config`**
+
+  (`RadioConfig`) – Radio configuration object.
+
+- ###### **`spi`**
+
+  (`SPI`) – The SPI bus connected to the chip.
+
+- ###### **`chip_select`**
+
+  (`DigitalInOut`) – Chip select pin.
+
+- ###### **`irq`**
+
+  (`DigitalInOut`) – Interrupt request pin.
+
+- ###### **`reset`**
+
+  (`DigitalInOut`) – Reset pin.
+
+- ###### **`gpio`**
+
+  (`DigitalInOut`) – General purpose IO pin (used by SX126x).
+
+Raises:
+
+- `HardwareInitializationError` – If the radio fails to initialize after retries.
+
+Methods:
+
+- **`get_max_packet_size`** – Gets the maximum packet size supported by the radio.
+- **`get_modulation`** – Gets the modulation mode from the initialized SX126x radio.
+- **`get_rssi`** – Gets the RSSI of the last received packet.
+- **`modify_config`** – Modifies a specific radio configuration parameter.
+- **`receive`** – Receives data from the radio.
+- **`send`** – Sends data over the radio.
+- **`set_modulation`** – Requests a change in the radio modulation mode.
+
+###### get_max_packet_size
+
+```python
+get_max_packet_size() -> int
+
+```
+
+Gets the maximum packet size supported by the radio.
+
+Returns:
+
+- `int` – The maximum packet size in bytes.
+
+###### get_modulation
+
+```python
+get_modulation() -> Type[RadioModulation]
+
+```
+
+Gets the modulation mode from the initialized SX126x radio.
+
+Returns:
+
+- `Type[RadioModulation]` – The current modulation mode of the hardware.
+
+###### get_rssi
+
+```python
+get_rssi() -> int
+
+```
+
+Gets the RSSI of the last received packet.
+
+Returns:
+
+- `int` – The RSSI of the last received packet.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+###### modify_config
+
+```python
+modify_config(key: str, value) -> None
+
+```
+
+Modifies a specific radio configuration parameter.
+
+This method must be implemented by subclasses.
+
+Parameters:
+
+- ###### **`key`**
+
+  (`str`) – The configuration parameter key to modify.
+
+- ###### **`value`**
+
+  – The new value to set for the parameter.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+###### receive
+
+```python
+receive(timeout: Optional[int] = None) -> bytes | None
+
+```
+
+Receives data from the radio.
+
+Parameters:
+
+- ###### **`timeout`**
+
+  (`Optional[int]`, default: `None` ) – Optional receive timeout in seconds. If None, use the default timeout.
+
+Returns:
+
+- `bytes | None` – The received data as bytes, or None if no data was received.
+
+###### send
+
+```python
+send(data: bytes) -> bool
+
+```
+
+Sends data over the radio.
+
+This method must be implemented by subclasses.
+
+Parameters:
+
+- ###### **`data`**
+
+  (`bytes`) – The data to send.
+
+Returns:
+
+- `bool` – True if the data was sent successfully, False otherwise.
+
+###### set_modulation
+
+```python
+set_modulation(modulation: Type[RadioModulation]) -> None
+
+```
+
+Requests a change in the radio modulation mode.
+
+This change might take effect immediately or after a reset, depending on implementation.
+
+Parameters:
+
+- ###### **`modulation`**
+
+  (`Type[RadioModulation]`) – The desired modulation mode.
+
+##### sx1280
+
+This module provides a manager for SX1280 radios.
+
+This module defines the `SX1280Manager` class, which implements the `RadioProto` interface for SX1280 radios. It handles the initialization and configuration of the radio, as well as sending and receiving data.
+
+**Usage:**
+
+```python
+logger = Logger()
+radio_config = RadioConfig()
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+cs = digitalio.DigitalInOut(board.D5)
+reset = digitalio.DigitalInOut(board.D6)
+busy = digitalio.DigitalInOut(board.D7)
+txen = digitalio.DigitalInOut(board.D8)
+rxen = digitalio.DigitalInOut(board.D9)
+sx1280_manager = SX1280Manager(logger, radio_config, spi, cs, reset, busy, 2400.0, txen, rxen)
+sx1280_manager.send(b"Hello world!")
+
+```
+
+Classes:
+
+- **`SX1280Manager`** – Manages SX1280 radios, implementing the RadioProto interface.
+
+###### SX1280Manager
+
+```python
+SX1280Manager(logger: Logger, radio_config: RadioConfig, spi: SPI, chip_select: DigitalInOut, reset: DigitalInOut, busy: DigitalInOut, frequency: float, txen: DigitalInOut, rxen: DigitalInOut)
+
+```
+
+Bases: `BaseRadioManager`
+
+Manages SX1280 radios, implementing the RadioProto interface.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – Logger instance for logging messages.
+
+- ###### **`radio_config`**
+
+  (`RadioConfig`) – Radio configuration object.
+
+- ###### **`spi`**
+
+  (`SPI`) – The SPI bus connected to the chip.
+
+- ###### **`chip_select`**
+
+  (`DigitalInOut`) – Chip select pin.
+
+- ###### **`reset`**
+
+  (`DigitalInOut`) – Reset pin.
+
+- ###### **`busy`**
+
+  (`DigitalInOut`) – Busy pin.
+
+- ###### **`frequency`**
+
+  (`float`) – The frequency to operate on.
+
+- ###### **`txen`**
+
+  (`DigitalInOut`) – Transmit enable pin.
+
+- ###### **`rxen`**
+
+  (`DigitalInOut`) – Receive enable pin.
+
+Methods:
+
+- **`get_max_packet_size`** – Gets the maximum packet size supported by the radio.
+- **`get_modulation`** – Gets the modulation mode from the initialized SX1280 radio.
+- **`get_rssi`** – Gets the RSSI of the last received packet.
+- **`modify_config`** – Modifies a specific radio configuration parameter.
+- **`receive`** – Receives data from the radio.
+- **`send`** – Sends data over the radio.
+- **`set_modulation`** – Requests a change in the radio modulation mode.
+
+###### get_max_packet_size
+
+```python
+get_max_packet_size() -> int
+
+```
+
+Gets the maximum packet size supported by the radio.
+
+Returns:
+
+- `int` – The maximum packet size in bytes.
+
+###### get_modulation
+
+```python
+get_modulation() -> Type[RadioModulation]
+
+```
+
+Gets the modulation mode from the initialized SX1280 radio.
+
+Returns:
+
+- `Type[RadioModulation]` – The current modulation mode of the hardware.
+
+###### get_rssi
+
+```python
+get_rssi() -> int
+
+```
+
+Gets the RSSI of the last received packet.
+
+Returns:
+
+- `int` – The RSSI of the last received packet.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+###### modify_config
+
+```python
+modify_config(key: str, value) -> None
+
+```
+
+Modifies a specific radio configuration parameter.
+
+This method must be implemented by subclasses.
+
+Parameters:
+
+- ###### **`key`**
+
+  (`str`) – The configuration parameter key to modify.
+
+- ###### **`value`**
+
+  – The new value to set for the parameter.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+###### receive
+
+```python
+receive(timeout: Optional[int] = None) -> bytes | None
+
+```
+
+Receives data from the radio.
+
+Parameters:
+
+- ###### **`timeout`**
+
+  (`Optional[int]`, default: `None` ) – Optional receive timeout in seconds. If None, use the default timeout.
+
+Returns:
+
+- `bytes | None` – The received data as bytes, or None if no data was received.
+
+###### send
+
+```python
+send(data: bytes) -> bool
+
+```
+
+Sends data over the radio.
+
+This method must be implemented by subclasses.
+
+Parameters:
+
+- ###### **`data`**
+
+  (`bytes`) – The data to send.
+
+Returns:
+
+- `bool` – True if the data was sent successfully, False otherwise.
+
+###### set_modulation
+
+```python
+set_modulation(modulation: Type[RadioModulation]) -> None
+
+```
+
+Requests a change in the radio modulation mode.
+
+This change might take effect immediately or after a reset, depending on implementation.
+
+Parameters:
+
+- ###### **`modulation`**
+
+  (`Type[RadioModulation]`) – The desired modulation mode.
+
+#### modulation
+
+This module defines the available radio modulation types.
+
+This module provides a set of classes that represent the different radio modulation types that can be used by the radio hardware. These classes are used to configure the radio and to identify the current modulation type.
+
+Classes:
+
+- **`FSK`** – Represents the FSK modulation mode.
+- **`LoRa`** – Represents the LoRa modulation mode.
+- **`RadioModulation`** – Base class for radio modulation modes.
+
+##### FSK
+
+Bases: `RadioModulation`
+
+Represents the FSK modulation mode.
+
+##### LoRa
+
+Bases: `RadioModulation`
+
+Represents the LoRa modulation mode.
+
+##### RadioModulation
+
+Base class for radio modulation modes.
+
+#### packetizer
+
+This package provides an interface for packetizing data for radio communication.
+
+Modules:
+
+- **`packet_manager`** – This module provides a PacketManager for sending and receiving data over a radio.
+
+##### packet_manager
+
+This module provides a PacketManager for sending and receiving data over a radio.
+
+This module handles the fragmentation and reassembly of data into packets for transmission over a radio. It also provides methods for sending and receiving acknowledgments.
+
+**Usage:**
+
+```python
+logger = Logger()
+radio = RFM9xManager(logger, radio_config, spi, cs, reset)
+packet_manager = PacketManager(logger, radio, "my_license_key")
+packet_manager.send(b"Hello world!")
+received_data = packet_manager.listen()
+
+```
+
+Classes:
+
+- **`PacketManager`** – Manages the sending and receiving of data packets over a radio.
+
+###### PacketManager
+
+```python
+PacketManager(logger: Logger, radio: RadioProto, license: str, message_counter: Counter, send_delay: float = 0.2)
+
+```
+
+Manages the sending and receiving of data packets over a radio.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- ###### **`radio`**
+
+  (`RadioProto`) – The radio instance to use for communication.
+
+- ###### **`license`**
+
+  (`str`) – The license key for sending data.
+
+- ###### **`send_delay`**
+
+  (`float`, default: `0.2` ) – The delay between sending packets.
+
+Methods:
+
+- **`get_last_rssi`** – Gets the RSSI of the last received packet.
+- **`listen`** – Listens for data from the radio.
+- **`send`** – Sends data over the radio.
+- **`send_acknowledgement`** – Sends an acknowledgment to the radio.
+
+###### get_last_rssi
+
+```python
+get_last_rssi() -> int
+
+```
+
+Gets the RSSI of the last received packet.
+
+Returns:
+
+- `int` – The RSSI of the last received packet.
+
+###### listen
+
+```python
+listen(timeout: Optional[int] = None) -> bytes | None
+
+```
+
+Listens for data from the radio.
+
+Parameters:
+
+- ###### **`timeout`**
+
+  (`Optional[int]`, default: `None` ) – Optional receive timeout in seconds. If None, use the default timeout.
+
+Returns:
+
+- `bytes | None` – The received data as bytes, or None if no data was received.
+
+###### send
+
+```python
+send(data: bytes) -> bool
+
+```
+
+Sends data over the radio.
+
+Parameters:
+
+- ###### **`data`**
+
+  (`bytes`) – The data to send.
+
+Returns:
+
+- `bool` – True if the data was sent successfully, False otherwise.
+
+###### send_acknowledgement
+
+```python
+send_acknowledgement() -> None
+
+```
+
+Sends an acknowledgment to the radio.
+
+### temperature_sensor
+
+This module provides temperature sensor hardware managers.
+
+Modules:
+
+- **`manager`** – This module provides temperature sensor manager implementations.
+
+#### manager
+
+This module provides temperature sensor manager implementations.
+
+Modules:
+
+- **`mcp9808`** – This module defines the MCP9808Manager class, which provides a high-level interface
+
+##### mcp9808
+
+This module defines the `MCP9808Manager` class, which provides a high-level interface for interacting with the MCP9808 temperature sensor. It handles the initialization of the sensor and provides methods for reading temperature data.
+
+**Usage:**
+
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+temp_sensor = MCP9808Manager(logger, i2c, 0x18)
+temperature = temp_sensor.get_temperature()
+
+```
+
+Classes:
+
+- **`MCP9808Manager`** – Manages the MCP9808 temperature sensor.
+
+###### MCP9808Manager
+
+```python
+MCP9808Manager(logger: Logger, i2c: I2C | TCA9548A_Channel, addr: int)
+
+```
+
+Bases: `TemperatureSensorProto`
+
+Manages the MCP9808 temperature sensor.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- ###### **`i2c`**
+
+  (`I2C | TCA9548A_Channel`) – The I2C bus connected to the chip.
+
+- ###### **`addr`**
+
+  (`int`) – The I2C address of the MCP9808. Defaults to 0x18.
+
+- ###### **`resolution`**
+
+  – The resolution of the temperature sensor. Defaults to 1 which is 0.25 degrees celsius.
+
+Raises:
+
+- `HardwareInitializationError` – If the MCP9808 fails to initialize.
+
+Methods:
+
+- **`get_temperature`** – Gets the temperature reading from the MCP9808.
+
+###### get_temperature
+
+```python
+get_temperature() -> Temperature
+
+```
+
+Gets the temperature reading from the MCP9808.
+
+Returns:
+
+- `Temperature` – A Temperature object containing the temperature in degrees Celsius.
+
+Raises:
+
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the temperature.
+
+## logger
+
+This module provides a Logger class for handling logging messages.
+
+The Logger class supports different severity levels, colorized output, and error counting. Logs are formatted as JSON and can be output to the console.
+
+**Usage:**
+
+```python
+error_counter = Counter(nvm)
+logger = Logger(error_counter, log_level=LogLevel.INFO, colorized=True)
+logger.info("This is an informational message.")
+logger.error("This is an error message.", err=Exception("Something went wrong."))
+
+```
+
+Classes:
+
+- **`LogLevel`** – Defines log level constants for Logger.
+- **`Logger`** – Handles logging messages with different severity levels.
+
+### LogLevel
+
+Defines log level constants for Logger.
+
+### Logger
+
+```python
+Logger(error_counter: Counter, log_level: int = NOTSET, colorized: bool = False)
+
+```
+
+Handles logging messages with different severity levels.
+
+Parameters:
+
+- #### **`error_counter`**
+
+  (`Counter`) – Counter for error occurrences.
+
+- #### **`log_level`**
+
+  (`int`, default: `NOTSET` ) – Initial log level.
+
+- #### **`colorized`**
+
+  (`bool`, default: `False` ) – Whether to colorize output.
+
+Methods:
+
+- **`critical`** – Log a message with severity level CRITICAL.
+- **`debug`** – Log a message with severity level DEBUG.
+- **`error`** – Log a message with severity level ERROR.
+- **`get_error_count`** – Returns the current error count.
+- **`info`** – Log a message with severity level INFO.
+- **`set_log_dir`** – Sets the log directory for file logging.
+- **`warning`** – Log a message with severity level WARNING.
+
+#### critical
+
+```python
+critical(message: str, err: Exception, **kwargs: object) -> None
+
+```
+
+Log a message with severity level CRITICAL.
+
+Parameters:
+
+- ##### **`message`**
+
+  (`str`) – The log message.
+
+- ##### **`err`**
+
+  (`Exception`) – The exception to log.
+
+- ##### **`**kwargs`**
+
+  (`object`, default: `{}` ) – Additional key/value pairs to include in the log.
+
+#### debug
+
+```python
+debug(message: str, **kwargs: object) -> None
+
+```
+
+Log a message with severity level DEBUG.
+
+Parameters:
+
+- ##### **`message`**
+
+  (`str`) – The log message.
+
+- ##### **`**kwargs`**
+
+  (`object`, default: `{}` ) – Additional key/value pairs to include in the log.
+
+#### error
+
+```python
+error(message: str, err: Exception, **kwargs: object) -> None
+
+```
+
+Log a message with severity level ERROR.
+
+Parameters:
+
+- ##### **`message`**
+
+  (`str`) – The log message.
+
+- ##### **`err`**
+
+  (`Exception`) – The exception to log.
+
+- ##### **`**kwargs`**
+
+  (`object`, default: `{}` ) – Additional key/value pairs to include in the log.
+
+#### get_error_count
+
+```python
+get_error_count() -> int
+
+```
+
+Returns the current error count.
+
+Returns:
+
+- **`int`** ( `int` ) – The number of errors logged.
+
+#### info
+
+```python
+info(message: str, **kwargs: object) -> None
+
+```
+
+Log a message with severity level INFO.
+
+Parameters:
+
+- ##### **`message`**
+
+  (`str`) – The log message.
+
+- ##### **`**kwargs`**
+
+  (`object`, default: `{}` ) – Additional key/value pairs to include in the log.
+
+#### set_log_dir
+
+```python
+set_log_dir(log_dir: str) -> None
+
+```
+
+Sets the log directory for file logging.
+
+Parameters:
+
+- ##### **`log_dir`**
+
+  (`str`) – Directory to save log files.
+
+Raises:
+
+- `ValueError` – If the provided path is not a valid directory.
+
+#### warning
+
+```python
+warning(message: str, **kwargs: object) -> None
+
+```
+
+Log a message with severity level WARNING.
+
+Parameters:
+
+- ##### **`message`**
+
+  (`str`) – The log message.
+
+- ##### **`**kwargs`**
+
+  (`object`, default: `{}` ) – Additional key/value pairs to include in the log.
+
+## nvm
+
+The NVM package is a collection of functionality that interacts with non-volatile memory
+
+Modules:
+
+- **`counter`** – This module provides the Counter class for managing 8-bit counters stored in
+- **`flag`** – This module provides the Flag class for managing boolean flags stored in
+
+### counter
+
+This module provides the Counter class for managing 8-bit counters stored in non-volatile memory (NVM) on CircuitPython devices.
+
+Classes:
+
+- **`Counter`** – Counter class for managing 8-bit counters stored in non-volatile memory.
+
+#### Counter
+
+```python
+Counter(index: int)
+
+```
+
+Counter class for managing 8-bit counters stored in non-volatile memory.
+
+Attributes:
+
+- **`_index`** (`int`) – The index of the counter in the NVM datastore.
+- **`_datastore`** (`ByteArray`) – The NVM datastore.
+
+Parameters:
+
+- ##### **`index`**
+
+  (`int`) – The index of the counter in the datastore.
+
+Raises:
+
+- `ValueError` – If NVM is not available.
+
+Methods:
+
+- **`get`** – Returns the value of the counter.
+- **`get_name`** – get_name returns the name of the counter
+- **`increment`** – Increases the counter by one, with 8-bit rollover.
+
+##### get
+
+```python
+get() -> int
+
+```
+
+Returns the value of the counter.
+
+Returns:
+
+- **`int`** ( `int` ) – The current value of the counter.
+
+##### get_name
+
+```python
+get_name() -> str
+
+```
+
+get_name returns the name of the counter
+
+##### increment
+
+```python
+increment() -> None
+
+```
+
+Increases the counter by one, with 8-bit rollover.
+
+### flag
+
+This module provides the Flag class for managing boolean flags stored in non-volatile memory (NVM) on CircuitPython devices.
+
+Classes:
+
+- **`Flag`** – Flag class for managing boolean flags stored in non-volatile memory.
+
+#### Flag
+
+```python
+Flag(index: int, bit_index: int)
+
+```
+
+Flag class for managing boolean flags stored in non-volatile memory.
+
+Attributes:
+
+- **`_index`** (`int`) – The index of the flag (byte) in the NVM datastore.
+- **`_bit`** (`int`) – The bit index within the byte.
+- **`_datastore`** (`ByteArray`) – The NVM datastore.
+- **`_bit_mask`** (`int`) – Bitmask for the flag's bit position.
+
+Parameters:
+
+- ##### **`index`**
+
+  (`int`) – The index of the flag (byte) in the datastore.
+
+- ##### **`bit_index`**
+
+  (`int`) – The index of the bit within the byte.
+
+Raises:
+
+- `ValueError` – If NVM is not available.
+
+Methods:
+
+- **`get`** – Returns the value of the flag.
+- **`get_name`** – get_name returns the name of the flag
+- **`toggle`** – Sets or clears the flag value.
+
+##### get
+
+```python
+get() -> bool
+
+```
+
+Returns the value of the flag.
+
+Returns:
+
+- **`bool`** ( `bool` ) – The current value of the flag.
+
+##### get_name
+
+```python
+get_name() -> str
+
+```
+
+get_name returns the name of the flag
+
+##### toggle
+
+```python
+toggle(value: bool) -> None
+
+```
+
+Sets or clears the flag value.
+
+Parameters:
+
+- ###### **`value`**
+
+  (`bool`) – If True, sets the flag; if False, clears the flag.
+
+## power_health
+
+This module provides a PowerHealth class for monitoring the power system.
+
+The PowerHealth class checks the battery voltage and current draw to determine the overall health of the power system. It returns one of four states: NOMINAL, DEGRADED, CRITICAL, or UNKNOWN.
+
+**Usage:**
+
+```python
+logger = Logger()
+config = Config("config.json")
+power_monitor = INA219Manager(logger, i2c)
+power_health = PowerHealth(logger, config, power_monitor)
+health_status = power_health.get()
+
+```
+
+Classes:
+
+- **`CRITICAL`** – Represents a critical power health state.
+- **`DEGRADED`** – Represents a degraded power health state.
+- **`NOMINAL`** – Represents a nominal power health state.
+- **`PowerHealth`** – Monitors the power system and determines its health.
+- **`State`** – Base class for power health states.
+- **`UNKNOWN`** – Represents an unknown power health state.
+
+### CRITICAL
+
+Bases: `State`
+
+Represents a critical power health state.
+
+### DEGRADED
+
+Bases: `State`
+
+Represents a degraded power health state.
+
+### NOMINAL
+
+Bases: `State`
+
+Represents a nominal power health state.
+
+### PowerHealth
+
+```python
+PowerHealth(logger: Logger, config: Config, power_monitor: PowerMonitorProto)
+
+```
+
+Monitors the power system and determines its health.
+
+Parameters:
+
+- #### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- #### **`config`**
+
+  (`Config`) – The configuration to use.
+
+- #### **`power_monitor`**
+
+  (`PowerMonitorProto`) – The power monitor to use.
+
+Methods:
+
+- **`get`** – Gets the current power health.
+
+#### get
+
+```python
+get() -> NOMINAL | DEGRADED | CRITICAL | UNKNOWN
+
+```
+
+Gets the current power health.
+
+Returns:
+
+- `NOMINAL | DEGRADED | CRITICAL | UNKNOWN` – The current power health state.
+
+### State
+
+Base class for power health states.
+
+### UNKNOWN
+
+Bases: `State`
+
+Represents an unknown power health state.
+
+## protos
+
+This module defines hardware agnostic protocols for accessing devices with certain features. This allows for flexibility in the design of the system, enabling the use of different hardware implementations without changing the code that uses them.
+
+CircuitPython does not support Protocols directly, but these classes can still be used to define an interface for type checking and ensuring multi-device compatibility.
+
+https://docs.python.org/3/library/typing.html#typing.Protocol
+
+Modules:
+
+- **`burnwire`** – This protocol specifies the interface that any burnwire implementation must adhere
+- **`imu`** – This protocol specifies the interface that any IMU implementation must adhere to,
+- **`light_sensor`** – This protocol specifies the interface that any light sensor implementation
+- **`loadswitch`** – Load switch manager protocol for generic components.
+- **`magnetometer`** – This protocol specifies the interface that any magnetometer implementation must
+- **`power_monitor`** – This protocol specifies the interface that any power monitor implementation must
+- **`radio`** – This protocol specifies the interface that any radio implementation must adhere
+- **`reading`** – This protocol specifies the interface that any sensor reading protocol implementation must
+- **`rtc`** – This protocol specifies the interface that any Real-Time Clock (RTC) implementation
+- **`temperature_sensor`** – This protocol specifies the interface that any temperature sensor implementation
+
+### burnwire
+
+This protocol specifies the interface that any burnwire implementation must adhere to, ensuring consistent behavior across different burnwire hardware.
+
+Classes:
+
+- **`BurnwireProto`** – Protocol defining the interface for a burnwire port.
+
+#### BurnwireProto
+
+Protocol defining the interface for a burnwire port.
+
+Methods:
+
+- **`burn`** – Fires the burnwire for a specified amount of time.
+
+##### burn
+
+```python
+burn(timeout_duration: float) -> bool
+
+```
+
+Fires the burnwire for a specified amount of time.
+
+Parameters:
+
+- ###### **`timeout_duration`**
+
+  (`float`) – The maximum amount of time to keep the burnwire on.
+
+Returns:
+
+- `bool` – True if the burn occurred successfully, False otherwise.
+
+Raises:
+
+- `Exception` – If there is an error toggling the burnwire pins.
+
+### imu
+
+This protocol specifies the interface that any IMU implementation must adhere to, ensuring consistent behavior across different IMU hardware.
+
+Classes:
+
+- **`IMUProto`** – Protocol defining the interface for an Inertial Measurement Unit (IMU).
+
+#### IMUProto
+
+Protocol defining the interface for an Inertial Measurement Unit (IMU).
+
+Methods:
+
+- **`get_acceleration`** – Gets the acceleration data from the inertial measurement unit.
+- **`get_angular_velocity`** – Gets the angular velocity from the inertial measurement unit.
+
+##### get_acceleration
+
+```python
+get_acceleration() -> Acceleration
+
+```
+
+Gets the acceleration data from the inertial measurement unit.
+
+Returns:
+
+- `Acceleration` – An Acceleration object containing the x, y, and z acceleration values in m/s².
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+##### get_angular_velocity
+
+```python
+get_angular_velocity() -> AngularVelocity
+
+```
+
+Gets the angular velocity from the inertial measurement unit.
+
+Returns:
+
+- `AngularVelocity` – An AngularVelocity object containing the x, y, and z angular velocity in radians per second.
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+### light_sensor
+
+This protocol specifies the interface that any light sensor implementation must adhere to, ensuring consistent behavior across different light sensor hardware.
+
+Classes:
+
+- **`LightSensorProto`** – Protocol defining the interface for a light sensor.
+
+#### LightSensorProto
+
+Protocol defining the interface for a light sensor.
+
+Methods:
+
+- **`get_light`** – Gets the light reading of the sensor.
+- **`get_lux`** – Gets the lux reading of the sensor.
+
+##### get_light
+
+```python
+get_light() -> Light
+
+```
+
+Gets the light reading of the sensor.
+
+Returns:
+
+- `Light` – A Light object containing a non-unit-specific light level reading.
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+##### get_lux
+
+```python
+get_lux() -> Lux
+
+```
+
+Gets the lux reading of the sensor.
+
+Returns:
+
+- `Lux` – A Lux object containing the light level in SI lux.
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+### loadswitch
+
+Load switch manager protocol for generic components.
+
+Classes:
+
+- **`LoadSwitchManagerProto`** – Protocol for load switch management in generic systems.
+
+#### LoadSwitchManagerProto
+
+Protocol for load switch management in generic systems. This protocol defines the interface for managing load switches that control power to components. Load switches can be enabled, disabled, and reset with momentary power cycling.
+
+Methods:
+
+- **`disable_load`** – Disable the load switch to cut power to the component.
+- **`enable_load`** – Enable the load switch to provide power to the component.
+- **`reset_load`** – Reset the load switch by momentarily disabling then re-enabling it.
+
+Attributes:
+
+- **`is_enabled`** (`bool`) – Check if the load switch is currently enabled.
+
+##### is_enabled
+
+```python
+is_enabled: bool
+
+```
+
+Check if the load switch is currently enabled. :raises RuntimeError: If the load switch state cannot be read due to hardware issues :return: True if the load switch is enabled, False otherwise
+
+##### disable_load
+
+```python
+disable_load() -> None
+
+```
+
+Disable the load switch to cut power to the component. :raises RuntimeError: If the load switch cannot be disabled due to hardware issues
+
+##### enable_load
+
+```python
+enable_load() -> None
+
+```
+
+Enable the load switch to provide power to the component. :raises RuntimeError: If the load switch cannot be enabled due to hardware issues
+
+##### reset_load
+
+```python
+reset_load() -> None
+
+```
+
+Reset the load switch by momentarily disabling then re-enabling it. This method performs a momentary power cycle (0.1s) to reset the load switch and any connected components. Errors from underlying drivers are reraised. :raises RuntimeError: If the load switch cannot be reset due to hardware issues
+
+### magnetometer
+
+This protocol specifies the interface that any magnetometer implementation must adhere to, ensuring consistent behavior across different magnetometer hardware.
+
+Classes:
+
+- **`MagnetometerProto`** – Protocol defining the interface for a Magnetometer.
+
+#### MagnetometerProto
+
+Protocol defining the interface for a Magnetometer.
+
+Methods:
+
+- **`get_magnetic_field`** – Gets the magnetic field vector from the magnetometer.
+
+##### get_magnetic_field
+
+```python
+get_magnetic_field() -> Magnetic
+
+```
+
+Gets the magnetic field vector from the magnetometer.
+
+Returns:
+
+- `Magnetic` – A Magnetic object containing the x, y, and z magnetic field values in micro-Tesla (uT)
+
+Raises:
+
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the magnetometer.
+
+### power_monitor
+
+This protocol specifies the interface that any power monitor implementation must adhere to, ensuring consistent behavior across different power monitor hardware.
+
+Classes:
+
+- **`PowerMonitorProto`** – Protocol defining the interface for a Power Monitor.
+
+#### PowerMonitorProto
+
+Protocol defining the interface for a Power Monitor.
+
+Methods:
+
+- **`get_bus_voltage`** – Gets the bus voltage from the power monitor.
+- **`get_current`** – Gets the current from the power monitor.
+- **`get_shunt_voltage`** – Gets the shunt voltage from the power monitor.
+
+##### get_bus_voltage
+
+```python
+get_bus_voltage() -> Voltage
+
+```
+
+Gets the bus voltage from the power monitor.
+
+Returns:
+
+- `Voltage` – A Voltage object containing the bus voltage in volts.
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+##### get_current
+
+```python
+get_current() -> Current
+
+```
+
+Gets the current from the power monitor.
+
+Returns:
+
+- `Current` – A Current object containing the current in milliamps (mA)
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+##### get_shunt_voltage
+
+```python
+get_shunt_voltage() -> Voltage
+
+```
+
+Gets the shunt voltage from the power monitor.
+
+Returns:
+
+- `Voltage` – A Voltage object containing the shunt voltage in volts.
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the light sensor.
+
+### radio
+
+This protocol specifies the interface that any radio implementation must adhere to, ensuring consistent behavior across different radio hardware.
+
+Classes:
+
+- **`RadioProto`** – Protocol defining the interface for a radio.
+
+#### RadioProto
+
+Protocol defining the interface for a radio.
+
+Methods:
+
+- **`get_max_packet_size`** – Gets the maximum packet size supported by the radio.
+- **`get_modulation`** – Gets the currently configured or active radio modulation mode.
+- **`get_rssi`** – Gets the RSSI of the last received packet.
+- **`modify_config`** – Modifies a specific radio configuration parameter.
+- **`receive`** – Receives data from the radio.
+- **`send`** – Sends data over the radio.
+- **`set_modulation`** – Requests a change in the radio modulation mode.
+
+##### get_max_packet_size
+
+```python
+get_max_packet_size() -> int
+
+```
+
+Gets the maximum packet size supported by the radio.
+
+Returns:
+
+- `int` – The maximum packet size in bytes.
+
+##### get_modulation
+
+```python
+get_modulation() -> Type[RadioModulation]
+
+```
+
+Gets the currently configured or active radio modulation mode.
+
+Returns:
+
+- `Type[RadioModulation]` – The current modulation mode.
+
+##### get_rssi
+
+```python
+get_rssi() -> int
+
+```
+
+Gets the RSSI of the last received packet.
+
+Returns:
+
+- `int` – The RSSI value in dBm.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+##### modify_config
+
+```python
+modify_config(key: str, value) -> None
+
+```
+
+Modifies a specific radio configuration parameter.
+
+Parameters:
+
+- ###### **`key`**
+
+  (`str`) – The configuration parameter key to modify.
+
+- ###### **`value`**
+
+  – The new value to set for the parameter.
+
+Raises:
+
+- `NotImplementedError` – If not implemented by subclass.
+
+##### receive
+
+```python
+receive(timeout: Optional[int] = None) -> Optional[bytes]
+
+```
+
+Receives data from the radio.
+
+Parameters:
+
+- ###### **`timeout`**
+
+  (`Optional[int]`, default: `None` ) – Optional receive timeout in seconds. If None, use the default timeout.
+
+Returns:
+
+- `Optional[bytes]` – The received data as bytes, or None if no data was received.
+
+##### send
+
+```python
+send(data: bytes) -> bool
+
+```
+
+Sends data over the radio.
+
+Parameters:
+
+- ###### **`data`**
+
+  (`bytes`) – The data to send.
+
+Returns:
+
+- `bool` – True if the send was successful, False otherwise.
+
+##### set_modulation
+
+```python
+set_modulation(modulation: Type[RadioModulation]) -> None
+
+```
+
+Requests a change in the radio modulation mode.
+
+This change might take effect immediately or after a reset, depending on implementation.
+
+Parameters:
+
+- ###### **`modulation`**
+
+  (`Type[RadioModulation]`) – The desired modulation mode.
+
+### reading
+
+This protocol specifies the interface that any sensor reading protocol implementation must adhere to, ensuring consistent behavior across different types of sensor readings.
+
+Classes:
+
+- **`ReadingProto`** – Protocol defining the interface for a sensor reading.
+
+#### ReadingProto
+
+Protocol defining the interface for a sensor reading.
+
+Attributes:
+
+- **`timestamp`** (`float`) – Gets the timestamp of the reading.
+- **`value`** (`Tuple[float, float, float] | float`) – Gets the value of the sensor reading.
+
+##### timestamp
+
+```python
+timestamp: float
+
+```
+
+Gets the timestamp of the reading.
+
+Returns:
+
+- `float` – The timestamp of the reading in seconds since the epoch.
+
+##### value
+
+```python
+value: Tuple[float, float, float] | float
+
+```
+
+Gets the value of the sensor reading.
+
+Returns:
+
+- `Tuple[float, float, float] | float` – The reading value, which may be a float or a tuple of floats, depending on the implementation.
+
+Raises:
+
+- `SensorReadingValueError` – If the sensor reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the sensor reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the sensor.
+
+### rtc
+
+This protocol specifies the interface that any Real-Time Clock (RTC) implementation must adhere to, ensuring consistent behavior across different RTC hardware.
+
+Classes:
+
+- **`RTCProto`** – Protocol defining the interface for a Real Time Clock (RTC).
+
+#### RTCProto
+
+Protocol defining the interface for a Real Time Clock (RTC).
+
+Methods:
+
+- **`set_time`** – Sets the time on the real-time clock.
+
+##### set_time
+
+```python
+set_time(year: int, month: int, date: int, hour: int, minute: int, second: int, weekday: int) -> None
+
+```
+
+Sets the time on the real-time clock.
+
+Parameters:
+
+- ###### **`year`**
+
+  (`int`) – The year value (0-9999).
+
+- ###### **`month`**
+
+  (`int`) – The month value (1-12).
+
+- ###### **`date`**
+
+  (`int`) – The date value (1-31).
+
+- ###### **`hour`**
+
+  (`int`) – The hour value (0-23).
+
+- ###### **`minute`**
+
+  (`int`) – The minute value (0-59).
+
+- ###### **`second`**
+
+  (`int`) – The second value (0-59).
+
+- ###### **`weekday`**
+
+  (`int`) – The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday.
+
+Raises:
+
+- `Exception` – If there is an error setting the values.
+
+### temperature_sensor
+
+This protocol specifies the interface that any temperature sensor implementation must adhere to, ensuring consistent behavior across different temperature sensor hardware.
+
+Classes:
+
+- **`TemperatureSensorProto`** – Protocol defining the interface for a temperature sensor.
+
+#### TemperatureSensorProto
+
+Protocol defining the interface for a temperature sensor.
+
+Methods:
+
+- **`get_temperature`** – Gets the temperature reading of the sensor.
+
+##### get_temperature
+
+```python
+get_temperature() -> Temperature
+
+```
+
+Gets the temperature reading of the sensor.
+
+Returns:
+
+- `Temperature` – A Temperature object containing the temperature in degrees Celsius.
+
+Raises:
+
+- `SensorReadingValueError` – If the reading returns an invalid value.
+- `SensorReadingTimeoutError` – If the reading times out.
+- `SensorReadingUnknownError` – If an unknown error occurs while reading the temperature
+
+## rtc
+
+This module provides Real-Time Clock (RTC) management functionality for the PySquared satellite.
+
+Modules:
+
+- **`manager`** – This module provides the managers for various Real-Time Clock (RTC) implementations
+
+### manager
+
+This module provides the managers for various Real-Time Clock (RTC) implementations
+
+Modules:
+
+- **`microcontroller`** – This module provides a manager for the Microcontroller's Real-Time Clock (RTC).
+- **`rv3028`** – This module provides a manager for the RV3028 Real-Time Clock (RTC).
+
+#### microcontroller
+
+This module provides a manager for the Microcontroller's Real-Time Clock (RTC).
+
+This module defines the `MicrocontrollerManager` class, which provides an interface for interacting with the microcontroller's built-in RTC. It allows for setting the current time.
+
+**Usage:**
+
+```python
+rtc_manager = MicrocontrollerManager()
+rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 AM, Monday
+
+```
+
+Classes:
+
+- **`MicrocontrollerManager`** – Manages the Microcontroller's Real Time Clock (RTC).
+
+##### MicrocontrollerManager
+
+```python
+MicrocontrollerManager()
+
+```
+
+Bases: `RTCProto`
+
+Manages the Microcontroller's Real Time Clock (RTC).
+
+This method is required on every boot to ensure the RTC is ready for use.
+
+Methods:
+
+- **`set_time`** – Updates the Microcontroller's Real Time Clock (RTC).
+
+###### set_time
+
+```python
+set_time(year: int, month: int, date: int, hour: int, minute: int, second: int, weekday: int) -> None
+
+```
+
+Updates the Microcontroller's Real Time Clock (RTC).
+
+Parameters:
+
+- ###### **`year`**
+
+  (`int`) – The year value (0-9999).
+
+- ###### **`month`**
+
+  (`int`) – The month value (1-12).
+
+- ###### **`date`**
+
+  (`int`) – The date value (1-31).
+
+- ###### **`hour`**
+
+  (`int`) – The hour value (0-23).
+
+- ###### **`minute`**
+
+  (`int`) – The minute value (0-59).
+
+- ###### **`second`**
+
+  (`int`) – The second value (0-59).
+
+- ###### **`weekday`**
+
+  (`int`) – The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday.
+
+#### rv3028
+
+This module provides a manager for the RV3028 Real-Time Clock (RTC).
+
+This module defines the `RV3028Manager` class, which provides a high-level interface for interacting with the RV3028 RTC. It handles the initialization of the sensor and provides methods for setting the current time.
+
+**Usage:**
+
+```python
+logger = Logger()
+i2c = busio.I2C(board.SCL, board.SDA)
+rtc_manager = RV3028Manager(logger, i2c)
+rtc_manager.set_time(2024, 7, 8, 10, 30, 0, 1) # Set to July 8, 2024, 10:30:00 AM, Monday
+
+```
+
+Classes:
+
+- **`RV3028Manager`** – Manages the RV3028 RTC.
+
+##### RV3028Manager
+
+```python
+RV3028Manager(logger: Logger, i2c: I2C)
+
+```
+
+Bases: `RTCProto`
+
+Manages the RV3028 RTC.
+
+Parameters:
+
+- ###### **`logger`**
+
+  (`Logger`) – The logger to use.
+
+- ###### **`i2c`**
+
+  (`I2C`) – The I2C bus connected to the chip.
+
+Raises:
+
+- `HardwareInitializationError` – If the RTC fails to initialize.
+
+Methods:
+
+- **`set_time`** – Sets the time on the real-time clock.
+
+###### set_time
+
+```python
+set_time(year: int, month: int, date: int, hour: int, minute: int, second: int, weekday: int) -> None
+
+```
+
+Sets the time on the real-time clock.
+
+Parameters:
+
+- ###### **`year`**
+
+  (`int`) – The year value (0-9999).
+
+- ###### **`month`**
+
+  (`int`) – The month value (1-12).
+
+- ###### **`date`**
+
+  (`int`) – The date value (1-31).
+
+- ###### **`hour`**
+
+  (`int`) – The hour value (0-23).
+
+- ###### **`minute`**
+
+  (`int`) – The minute value (0-59).
+
+- ###### **`second`**
+
+  (`int`) – The second value (0-59).
+
+- ###### **`weekday`**
+
+  (`int`) – The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday.
+
+Raises:
+
+- `Exception` – If there is an error setting the values.
+
+## sensor_reading
+
+Module for sensor reading definitions.
+
+Modules:
+
+- **`acceleration`** – Acceleration sensor reading.
+- **`angular_velocity`** – AngularVelocity sensor reading.
+- **`avg`** – File with helper for averaging sensor readings.
+- **`base`** – A sensor reading.
+- **`current`** – Current sensor reading.
+- **`error`** – This file contains custom error classes for handling sensor reading errors.
+- **`light`** – Light sensor reading.
+- **`lux`** – Lux sensor reading.
+- **`magnetic`** – Magnetic sensor reading.
+- **`temperature`** – Temperature sensor reading.
+- **`voltage`** – Voltage sensor reading.
+
+### acceleration
+
+Acceleration sensor reading.
+
+Classes:
+
+- **`Acceleration`** – Acceleration sensor reading in meter per second².
+
+#### Acceleration
+
+```python
+Acceleration(x: float, y: float, z: float)
+
+```
+
+Bases: `Reading`
+
+Acceleration sensor reading in meter per second².
+
+Parameters:
+
+- ##### **`x`**
+
+  (`float`) – The x acceleration in meter per second²
+
+- ##### **`y`**
+
+  (`float`) – The y acceleration in meter per second²
+
+- ##### **`z`**
+
+  (`float`) – The z acceleration in meter per second²
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`Tuple[float, float, float]`) – Acceleration in x, y, z meter per second².
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: Tuple[float, float, float]
+
+```
+
+Acceleration in x, y, z meter per second².
+
+Returns:
+
+- `Tuple[float, float, float]` – A tuple containing the x, y, and z components of the acceleration.
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+### angular_velocity
+
+AngularVelocity sensor reading.
+
+Classes:
+
+- **`AngularVelocity`** – AngularVelocity sensor reading in radians per second.
+
+#### AngularVelocity
+
+```python
+AngularVelocity(x: float, y: float, z: float)
+
+```
+
+Bases: `Reading`
+
+AngularVelocity sensor reading in radians per second.
+
+Parameters:
+
+- ##### **`x`**
+
+  (`float`) – The x angular velocity in radians per second
+
+- ##### **`y`**
+
+  (`float`) – The y angular velocity in radians per second
+
+- ##### **`z`**
+
+  (`float`) – The z angular velocity in radians per second
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`Tuple[float, float, float]`) – Angular velocity in x, y, z radians per second
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: Tuple[float, float, float]
+
+```
+
+Angular velocity in x, y, z radians per second
+
+Returns:
+
+- `Tuple[float, float, float]` – A tuple containing the x, y, and z components of the angular velocity.
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+### avg
+
+File with helper for averaging sensor readings.
+
+Functions:
+
+- **`avg_readings`** – Gets the average of the readings from a function.
+
+#### avg_readings
+
+```python
+avg_readings(func: Callable[..., Current | Voltage], num_readings: int = 50) -> float
+
+```
+
+Gets the average of the readings from a function.
+
+Parameters:
+
+- ##### **`func`**
+
+  (`Callable[..., Current | Voltage]`) – The function to call.
+
+- ##### **`num_readings`**
+
+  (`int`, default: `50` ) – The number of readings to take.
+
+Returns:
+
+- `float` – The average of the readings, or None if the readings could not be taken.
+
+Raises:
+
+- `RuntimeError` – If there is an error retrieving the reading from the function.
+
+### base
+
+A sensor reading.
+
+Classes:
+
+- **`Reading`** – A sensor reading.
+
+#### Reading
+
+```python
+Reading()
+
+```
+
+Bases: `ReadingProto`
+
+A sensor reading.
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`Tuple[float, float, float] | float`) – Get the value of the reading.
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: Tuple[float, float, float] | float
+
+```
+
+Get the value of the reading.
+
+This method should be overridden by subclasses to return the specific sensor reading value.
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+### current
+
+Current sensor reading.
+
+Classes:
+
+- **`Current`** – Current sensor reading in milliamps (mA).
+
+#### Current
+
+```python
+Current(value: float)
+
+```
+
+Bases: `Reading`
+
+Current sensor reading in milliamps (mA).
+
+Parameters:
+
+- ##### **`value`**
+
+  (`float`) – The current in milliamps (mA)
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`float`) – Get the current value in milliamps (mA).
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: float
+
+```
+
+Get the current value in milliamps (mA).
+
+Returns:
+
+- `float` – The current in milliamps (mA).
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+### error
+
+This file contains custom error classes for handling sensor reading errors.
+
+Classes:
+
+- **`SensorReadingError`** – Base class for all sensor reading errors.
+- **`SensorReadingTimeoutError`** – Raised when a sensor reading operation times out.
+- **`SensorReadingUnknownError`** – Raised when an unknown error occurs during sensor reading.
+- **`SensorReadingValueError`** – Raised when a sensor reading returns an invalid value.
+
+#### SensorReadingError
+
+Bases: `Exception`
+
+Base class for all sensor reading errors.
+
+#### SensorReadingTimeoutError
+
+```python
+SensorReadingTimeoutError(message: str = 'Sensor reading operation timed out.')
+
+```
+
+Bases: `SensorReadingError`
+
+Raised when a sensor reading operation times out.
+
+#### SensorReadingUnknownError
+
+```python
+SensorReadingUnknownError(message: str = 'An unknown error occurred during sensor reading.')
+
+```
+
+Bases: `SensorReadingError`
+
+Raised when an unknown error occurs during sensor reading.
+
+#### SensorReadingValueError
+
+```python
+SensorReadingValueError(message: str = 'Sensor reading returned an invalid value.')
+
+```
+
+Bases: `SensorReadingError`
+
+Raised when a sensor reading returns an invalid value.
+
+### light
+
+Light sensor reading.
+
+Classes:
+
+- **`Light`** – Light sensor reading (non-unit-specific light levels).
+
+#### Light
+
+```python
+Light(value: float)
+
+```
+
+Bases: `Reading`
+
+Light sensor reading (non-unit-specific light levels).
+
+Parameters:
+
+- ##### **`value`**
+
+  (`float`) – The light level (non-unit-specific)
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`float`) – Get the light level (non-unit-specific).
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: float
+
+```
+
+Get the light level (non-unit-specific).
+
+Returns:
+
+- `float` – The light level (non-unit-specific).
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+### lux
+
+Lux sensor reading.
+
+Classes:
+
+- **`Lux`** – Lux sensor reading in SI lux.
+
+#### Lux
+
+```python
+Lux(value: float)
+
+```
+
+Bases: `Reading`
+
+Lux sensor reading in SI lux.
+
+Parameters:
+
+- ##### **`value`**
+
+  (`float`) – The light level in SI lux
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`float`) – Get the light level in SI lux.
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: float
+
+```
+
+Get the light level in SI lux.
+
+Returns:
+
+- `float` – The light level in SI lux.
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+### magnetic
+
+Magnetic sensor reading.
+
+Classes:
+
+- **`Magnetic`** – Magnetic sensor reading in micro-Tesla (uT).
+
+#### Magnetic
+
+```python
+Magnetic(x: float, y: float, z: float)
+
+```
+
+Bases: `Reading`
+
+Magnetic sensor reading in micro-Tesla (uT).
+
+Parameters:
+
+- ##### **`x`**
+
+  (`float`) – The x magnetic field in micro-Tesla (uT)
+
+- ##### **`y`**
+
+  (`float`) – The y magnetic field in micro-Tesla (uT)
+
+- ##### **`z`**
+
+  (`float`) – The z magnetic field in micro-Tesla (uT)
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`Tuple[float, float, float]`) – Magnetic field in x, y, z micro-Tesla (uT).
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: Tuple[float, float, float]
+
+```
+
+Magnetic field in x, y, z micro-Tesla (uT).
+
+Returns:
+
+- `Tuple[float, float, float]` – A tuple containing the x, y, and z components of the magnetic field.
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+### temperature
+
+Temperature sensor reading.
+
+Classes:
+
+- **`Temperature`** – Temperature sensor reading in degrees celsius.
+
+#### Temperature
+
+```python
+Temperature(value: float)
+
+```
+
+Bases: `Reading`
+
+Temperature sensor reading in degrees celsius.
+
+Parameters:
+
+- ##### **`value`**
+
+  (`float`) – Temperature in degrees Celsius.
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`float`) – Get the temperature value in degrees celsius.
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: float
+
+```
+
+Get the temperature value in degrees celsius.
+
+Returns:
+
+- `float` – The temperature in degrees Celsius.
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+### voltage
+
+Voltage sensor reading.
+
+Classes:
+
+- **`Voltage`** – Voltage sensor reading.
+
+#### Voltage
+
+```python
+Voltage(value: float)
+
+```
+
+Bases: `Reading`
+
+Voltage sensor reading.
+
+Parameters:
+
+- ##### **`value`**
+
+  (`float`) – The voltage in volts (V)
+
+Methods:
+
+- **`to_dict`** – Convert reading to dictionary for JSON serialization.
+
+Attributes:
+
+- **`timestamp`** – Get the timestamp of the reading.
+- **`value`** (`float`) – Get the voltage value in volts (V).
+
+##### timestamp
+
+```python
+timestamp
+
+```
+
+Get the timestamp of the reading.
+
+##### value
+
+```python
+value: float
+
+```
+
+Get the voltage value in volts (V).
+
+Returns:
+
+- `float` – The voltage in volts (V).
+
+##### to_dict
+
+```python
+to_dict() -> dict
+
+```
+
+Convert reading to dictionary for JSON serialization.
+
+## sleep_helper
+
+This module provides the SleepHelper class for managing safe sleep and hibernation modes for the PySquared satellite. It ensures the satellite sleeps for specified durations while maintaining system safety and watchdog activity.
+
+Classes:
+
+- **`SleepHelper`** – Class responsible for sleeping the Satellite to conserve power.
+
+### SleepHelper
+
+```python
+SleepHelper(logger: Logger, config: Config, watchdog: Watchdog)
+
+```
+
+Class responsible for sleeping the Satellite to conserve power.
+
+Attributes:
+
+- **`logger`** (`Logger`) – Logger instance for logging events and errors.
+- **`watchdog`** (`Watchdog`) – Watchdog instance for system safety.
+- **`config`** (`Config`) – Configuration object.
+
+Parameters:
+
+- #### **`logger`**
+
+  (`Logger`) – Logger instance for logging events and errors.
+
+- #### **`watchdog`**
+
+  (`Watchdog`) – Watchdog instance for system safety.
+
+- #### **`config`**
+
+  (`Config`) – Configuration object.
+
+Methods:
+
+- **`safe_sleep`** – Puts the Satellite to sleep for a specified duration, in seconds while still petting the watchdog at least every 15 seconds.
+
+#### safe_sleep
+
+```python
+safe_sleep(duration, watchdog_timeout=15) -> None
+
+```
+
+Puts the Satellite to sleep for a specified duration, in seconds while still petting the watchdog at least every 15 seconds.
+
+Allows for a maximum sleep duration of the longest_allowable_sleep_time field specified in config
+
+Parameters:
+
+- ##### **`duration`**
+
+  (`int`) – Specified time, in seconds, to sleep the Satellite for.
+
+- ##### **`watchdog_timeout`**
+
+  (`int`, default: `15` ) – Time, in seconds, to wait before petting the watchdog. Default is 15 seconds.
+
+## watchdog
+
+This module provides the Watchdog class for managing the hardware watchdog timer on the PySquared satellite. The watchdog helps ensure system reliability by requiring periodic "petting" to prevent system resets.
+
+Classes:
+
+- **`Watchdog`** – Watchdog class for managing the hardware watchdog timer.
+
+### Watchdog
+
+```python
+Watchdog(logger: Logger, pin: Pin)
+
+```
+
+Watchdog class for managing the hardware watchdog timer.
+
+Attributes:
+
+- **`_log`** (`Logger`) – Logger instance for logging messages.
+- **`_digital_in_out`** (`DigitalInOut`) – Digital output for controlling the watchdog pin.
+
+Parameters:
+
+- #### **`logger`**
+
+  (`Logger`) – Logger instance for logging messages.
+
+- #### **`pin`**
+
+  (`Pin`) – Pin to use for the watchdog timer.
+
+Raises:
+
+- `HardwareInitializationError` – If the pin fails to initialize.
+
+Methods:
+
+- **`pet`** – Pets (resets) the watchdog timer to prevent system reset.
+
+#### pet
+
+```python
+pet() -> None
+
+```
+
+Pets (resets) the watchdog timer to prevent system reset.
+# License
+
+# License
+
+```text
+MIT License
+
+Copyright (c) 2024 Michael Pham and Nicole Maggard
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```

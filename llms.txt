@@ -1,0 +1,36 @@
+# ProvesKit PySquared
+
+> CircuitPython based Flight Software Library for the PROVES Kit.
+
+## Home
+
+- [Home](https://docs.proveskit.space/index.md)
+
+## Getting Started
+
+- [Getting Started](https://docs.proveskit.space/getting-started/index.md)
+
+## Radio Test
+
+- [Radio Test](https://docs.proveskit.space/radio-test/index.md)
+
+## Frozen Modules
+
+- [Frozen Modules](https://docs.proveskit.space/frozen-modules/index.md)
+
+## Design Guide
+
+- [Design Guide](https://docs.proveskit.space/design-guide/index.md)
+
+## Contributing Guide
+
+- [Contributing Guide](https://docs.proveskit.space/contributing/index.md)
+
+## API Reference
+
+- [API Reference](https://docs.proveskit.space/api/index.md)
+
+## License
+
+- [License](https://docs.proveskit.space/license/index.md)
+
