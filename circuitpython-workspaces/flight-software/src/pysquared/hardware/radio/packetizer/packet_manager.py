@@ -167,11 +167,17 @@ class PacketManager:
             packet_identifier, _, total_packets, _ = self._get_header(packet)
 
             # Log received packets
+            payload = self._get_payload(packet)
+            try:
+                payload_str = payload.decode("utf-8")
+            except ValueError:
+                payload_str = payload
+
             self._logger.debug(
                 "Received packet",
                 packet_length=len(packet),
                 header=self._get_header(packet),
-                payload=self._get_payload(packet),
+                payload=payload_str,
             )
 
             if received_packets:
@@ -199,6 +205,7 @@ class PacketManager:
     def send_acknowledgement(self) -> None:
         """Sends an acknowledgment to the radio."""
         self.send(b"ACK")
+        print("sending acknowledgment packet")
         self._logger.debug("Sent acknowledgment packet")
 
     def get_last_rssi(self) -> int:
